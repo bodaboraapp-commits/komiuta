@@ -45,19 +45,20 @@
                     for="login-identifier"
                     class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest"
                   >
-                    Phone or Email
+                    Phone
                   </label>
                   <input
                     id="login-identifier"
-                    type="text"
+                    type="tel"
+                    inputmode="tel"
                     name="user[identifier]"
-                    autocomplete="username"
-                    placeholder="07XX XXX XXX or you@example.com"
+                    autocomplete="tel"
+                    placeholder="07XX XXX XXX"
                     class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:border-[#FF4C00] transition outline-none"
                     required
                   />
                   <p class="text-[10px] font-bold text-slate-400 mt-2 leading-relaxed">
-                    We'll email you a 6-digit login code. No password needed.
+                    Enter your phone number. We'll email you a 6-digit login code.
                   </p>
                 </div>
                 <button
