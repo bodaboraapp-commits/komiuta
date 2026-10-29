@@ -1,0 +1,71 @@
+<Layouts.app flash={@flash}>
+  <div class="min-h-screen bg-white text-slate-900">
+    <.main_header step={:login} />
+
+    <main class="pt-[80px] md:pt-[100px] pb-12">
+      <div class="mx-auto max-w-7xl px-6">
+        <div class="flex flex-col items-center justify-start min-h-[calc(100vh-140px)] py-8">
+          <div class="w-full max-w-sm">
+            <div class="text-center mb-8">
+              <div class="w-16 h-16 bg-[#FF4C00] rounded-2xl flex items-center justify-center text-white text-3xl font-black mx-auto mb-4 shadow-lg shadow-orange-200">
+                <span class="material-symbols-outlined">person</span>
+              </div>
+              <h1 class="text-3xl font-black text-slate-900 tracking-tight">User Login</h1>
+              <p class="text-xs font-bold text-slate-400 mt-1 tracking-wide">
+                Sign in to access your dashboard
+              </p>
+            </div>
+
+            <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+              <a
+                href="/auth/google"
+                class="flex items-center justify-center gap-3 w-full bg-white border-2 border-slate-100 py-4 rounded-2xl font-black text-slate-700 hover:bg-slate-50 transition-all shadow-sm group active:scale-95"
+              >
+                <img
+                  src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png"
+                  class="w-5 h-5"
+                  alt="Google"
+                />
+                <span class="text-sm tracking-tight">Sign in with Gmail</span>
+              </a>
+
+              <div class="relative my-6">
+                <div class="absolute inset-0 flex items-center">
+                  <div class="w-full border-t border-slate-100"></div>
+                </div>
+                <div class="relative flex justify-center text-[9px] uppercase font-black tracking-widest">
+                  <span class="bg-white px-4 text-slate-400">or</span>
+                </div>
+              </div>
+
+              <form action={~p"/user/auth"} method="post" class="space-y-5">
+                <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
+                <div>
+                  <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Phone Number</label>
+                  <input
+                    type="tel"
+                    name="user[phone]"
+                    placeholder="07XX XXX XXX"
+                    class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:border-[#FF4C00] transition outline-none"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  class="w-full bg-[#FF4C00] text-white py-4 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-[#E64400] transition shadow-lg shadow-orange-200"
+                >
+                  Sign In
+                </button>
+              </form>
+            </div>
+
+            <p class="text-center mt-6 text-sm font-bold text-slate-400">
+              Don't have an account?
+              <a href={~p"/user/signup"} class="text-[#FF4C00] hover:underline">Sign up today</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</Layouts.app>

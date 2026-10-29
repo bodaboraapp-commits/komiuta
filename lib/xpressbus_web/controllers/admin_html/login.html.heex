@@ -1,0 +1,55 @@
+<Layouts.app flash={@flash}>
+  <div class="min-h-screen bg-white text-slate-900">
+    <div class="mx-auto max-w-7xl px-6 py-12">
+      <div class="flex items-center justify-center min-h-[calc(100vh-96px)]">
+        <div class="w-full max-w-sm">
+          <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-[#FF4C00] rounded-2xl flex items-center justify-center text-white text-3xl font-black mx-auto mb-4 shadow-lg shadow-orange-200">
+              A
+            </div>
+            <h1 class="text-3xl font-black text-slate-900 tracking-tight">Admin Login</h1>
+            <p class="text-sm font-bold text-slate-400 mt-2">
+              Sign in to access the admin dashboard
+            </p>
+          </div>
+
+          <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+            <form action={~p"/admin/auth"} method="post" class="space-y-5">
+              <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
+              <div>
+                <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Email</label>
+                <input
+                  type="email"
+                  name="admin[email]"
+                  placeholder="admin@example.com"
+                  class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:border-[#FF4C00] transition outline-none"
+                  required
+                />
+              </div>
+              <div>
+                <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Password</label>
+                <input
+                  type="password"
+                  name="admin[password]"
+                  placeholder="••••••••"
+                  class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:border-[#FF4C00] transition outline-none"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                class="w-full bg-[#FF4C00] text-white py-4 rounded-2xl font-black text-sm hover:bg-[#E64400] transition shadow-lg shadow-orange-200"
+              >
+                Sign In
+              </button>
+            </form>
+          </div>
+
+          <p class="text-center mt-6 text-xs font-bold text-slate-400">
+            Protected area. Authorized personnel only.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layouts.app>

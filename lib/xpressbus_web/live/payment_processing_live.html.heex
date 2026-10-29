@@ -1,0 +1,63 @@
+<Layouts.app flash={@flash}>
+  <div class="min-h-screen bg-[#f8fafc] flex flex-col items-center justify-center p-6">
+    <div class="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 p-8 md:p-12 max-w-lg w-full text-center">
+      <%= case @status do %>
+        <% :processing -> %>
+          <div class="animate-spin rounded-full h-16 w-16 border-4 border-slate-100 border-t-[#FF4C00] mx-auto mb-6">
+          </div>
+          <h1 class="text-2xl font-black text-slate-900 mb-2">Processing Payment</h1>
+          <p class="text-sm font-bold text-slate-400 mb-6">
+            Please wait while we confirm your payment with {@payment_method}.
+          </p>
+          <p class="text-xs font-bold text-slate-400">
+            Do not close this page...
+          </p>
+        <% :success -> %>
+          <div class="w-20 h-20 bg-green-500 text-white rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-xl shadow-green-100">
+            ✓
+          </div>
+          <h1 class="text-2xl font-black text-slate-900 mb-2">Payment Successful!</h1>
+          <p class="text-sm font-bold text-slate-400 mb-6">
+            Your payment has been confirmed and your ticket is ready.
+          </p>
+
+          <%= if @ticket do %>
+            <div class="bg-slate-50 rounded-2xl p-4 mb-6 text-left">
+              <p class="text-[10px] font-black uppercase text-slate-400 mb-1">Ticket Number</p>
+              <p class="font-mono font-black text-slate-900 text-lg mb-3">{@ticket.ticket_id}</p>
+              <p class="text-[10px] font-black uppercase text-slate-400 mb-1">Passenger</p>
+              <p class="font-black text-slate-900 text-sm mb-3">{@ticket.passenger_name}</p>
+              <p class="text-[10px] font-black uppercase text-slate-400 mb-1">Route</p>
+              <p class="font-black text-slate-900 text-sm uppercase">
+                {@ticket.from} → {@ticket.to}
+              </p>
+            </div>
+          <% end %>
+
+          <button
+            phx-click="close_modal"
+            class="w-full bg-[#FF4C00] text-white py-4 rounded-2xl font-black shadow-lg shadow-orange-200 hover:bg-[#E64400] transition-all uppercase tracking-widest"
+          >
+            View Ticket
+          </button>
+        <% :failed -> %>
+          <div class="w-20 h-20 bg-red-500 text-white rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-xl shadow-red-100">
+            ✕
+          </div>
+          <h1 class="text-2xl font-black text-slate-900 mb-2">Payment Failed</h1>
+          <p class="text-sm font-bold text-slate-400 mb-6">
+            {@message}
+          </p>
+
+          <div class="flex gap-3">
+            <button
+              phx-click="close_modal"
+              class="flex-1 border-2 border-slate-100 text-slate-700 py-4 rounded-2xl font-black hover:border-[#FF4C00] hover:text-[#FF4C00] transition-all uppercase tracking-widest"
+            >
+              Go Back
+            </button>
+          </div>
+      <% end %>
+    </div>
+  </div>
+</Layouts.app>

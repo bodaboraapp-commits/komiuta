@@ -1,0 +1,594 @@
+<Layouts.app flash={@flash}>
+  <div class="flex min-h-screen bg-[#f8fafc]">
+    <.sidebar
+      active_tab={@active_tab}
+      bus_expanded={@bus_expanded}
+      chyllz_expanded={@chyllz_expanded}
+      settings_expanded={@settings_expanded}
+      collapsed={@sidebar_collapsed}
+    />
+
+    <div class={[
+      "flex-1 transition-all duration-300",
+      if(@sidebar_collapsed, do: "lg:pl-20", else: "lg:pl-72")
+    ]}>
+      <header class="h-20 bg-gradient-to-r from-orange-50 to-white border-b border-slate-100 flex items-center justify-between px-8 sticky top-0 z-30">
+        <h2 class="text-xl font-black text-slate-900 tracking-tight uppercase tracking-widest">
+          System Integrations
+        </h2>
+
+        <div class="flex items-center gap-6">
+          <button class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-[#FF4C00] transition-colors relative">
+            <span class="material-symbols-outlined">notifications</span>
+            <div class="absolute top-2.5 right-2.5 w-2 h-2 bg-[#FF4C00] rounded-full border-2 border-white">
+            </div>
+          </button>
+
+          <div class="flex items-center gap-4 border-l border-slate-100 pl-6">
+            <div class="text-right hidden sm:block">
+              <p class="text-[11px] font-black text-slate-900 leading-none">Admin User</p>
+              <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">Super Admin</p>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-[#FF4C00] font-black text-xs border-2 border-white shadow-sm">
+              AD
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="p-6 md:p-10">
+        <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
+          <div class="p-6 md:p-10">
+            <%!-- Provider Tabs --%>
+            <div class="flex gap-4 mb-4 border-b border-slate-50">
+              <%= for {provider_key, provider_info} <- @providers do %>
+                <button
+                  phx-click="switch_provider"
+                  phx-value-provider={provider_key}
+                  class={[
+                    "px-8 py-5 text-xs font-black transition-all border-b-4 -mb-px uppercase tracking-widest",
+                    @current_provider == provider_key && "border-[#FF4C00] text-[#FF4C00]",
+                    @current_provider != provider_key &&
+                      "border-transparent text-slate-400 hover:text-slate-600"
+                  ]}
+                >
+                  <span class="material-symbols-outlined text-lg mr-2 align-middle">{provider_info.icon}</span>
+                  {provider_info.label}
+                </button>
+              <% end %>
+            </div>
+
+            <%!-- MPESA Integration Form --%>
+            <%= if @current_provider == "mpesa" do %>
+              <% mpesa_config = provider_config(@settings, "mpesa") %>
+              <div class="animate-fade-in-up">
+                <form phx-submit="save" class="space-y-6">
+                  <input type="hidden" name="provider" value="mpesa" />
+
+                  <div class="flex items-center justify-between p-4 bg-slate-50 rounded-[2rem] border border-slate-100">
+                    <div>
+                      <h4 class="font-black text-slate-900 text-sm uppercase tracking-widest">
+                        Active Status
+                      </h4>
+                      <p class="text-[11px] font-bold text-slate-400">
+                        Toggle M-PESA payment availability during checkout
+                      </p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        phx-click="toggle_active"
+                        phx-value-provider="mpesa"
+                        checked={Map.get(@settings["mpesa"], :active, true)}
+                        class="sr-only peer"
+                      />
+                      <div class="relative w-20 h-9 bg-[#FF4C00] peer-focus:outline-none rounded-full peer-checked:after:translate-x-[3rem] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-7 after:w-7 after:transition-all peer-checked:bg-green-500">
+                        <span class={[
+                          "absolute inset-0 flex items-center justify-end pr-3 text-[11px] font-black uppercase tracking-wider text-white transition-opacity duration-200 z-10 drop-shadow-sm",
+                          if(Map.get(@settings["mpesa"], :active, true), do: "opacity-0")
+                        ]}>OFF</span>
+                        <span class={[
+                          "absolute inset-0 flex items-center justify-start pl-3 text-[11px] font-black uppercase tracking-wider text-white transition-opacity duration-200 opacity-0 z-10 drop-shadow-sm",
+                          if(Map.get(@settings["mpesa"], :active, true), do: "opacity-100")
+                        ]}>ON</span>
+                      </div>
+                    </label>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Environment Mode</label>
+                      <select
+                        name="config[mode]"
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all appearance-none cursor-pointer"
+                      >
+                        <option value="sandbox" selected={mpesa_config["mode"] == "sandbox"}>
+                          Sandbox / Test
+                        </option>
+                        <option value="production" selected={mpesa_config["mode"] == "production"}>
+                          Live Production
+                        </option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Service Type</label>
+                      <select
+                        name="config[type]"
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all appearance-none cursor-pointer"
+                      >
+                        <option value="paybill" selected={mpesa_config["type"] == "paybill"}>
+                          Lipa Na M-PESA Paybill
+                        </option>
+                        <option value="till" selected={mpesa_config["type"] == "till"}>
+                          Lipa Na M-PESA Buy Goods (Till)
+                        </option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Short Code / Till Number</label>
+                      <input
+                        type="text"
+                        name="config[business_shortcode]"
+                        value={mpesa_config["business_shortcode"]}
+                        placeholder="e.g. 174379"
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Initiator Name (HQ/HO)</label>
+                      <input
+                        type="text"
+                        name="config[initiator_name]"
+                        value={mpesa_config["initiator_name"]}
+                        placeholder="Business Initiator"
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Consumer Key</label>
+                      <input
+                        type="password"
+                        name="config[consumer_key]"
+                        value={mpesa_config["consumer_key"]}
+                        placeholder="Daraja API Consumer Key"
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Consumer Secret</label>
+                      <input
+                        type="password"
+                        name="config[consumer_secret]"
+                        value={mpesa_config["consumer_secret"]}
+                        placeholder="Daraja API Consumer Secret"
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        required
+                      />
+                    </div>
+
+                    <div class="md:col-span-2">
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Passkey (Online Checkout)</label>
+                      <input
+                        type="password"
+                        name="config[passkey]"
+                        value={mpesa_config["passkey"]}
+                        placeholder="bfb279f9aa9bdbcf158e97dd71a467cd2..."
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                      />
+                    </div>
+
+                    <div class="md:col-span-2">
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Callback URL (Webhook)</label>
+                      <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-300">link</span>
+                        <input
+                          type="url"
+                          name="config[callback_url]"
+                          value={mpesa_config["callback_url"]}
+                          placeholder="https://api.komiuta.com/v1/payments/mpesa/callback"
+                          class="w-full pl-12 pr-3 py-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="pt-6 flex gap-4">
+                    <button
+                      type="submit"
+                      class="flex-1 bg-[#FF4C00] text-white py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-orange-100 hover:bg-[#E64400] transition-all transform active:scale-95"
+                    >
+                      Update M-PESA Link
+                    </button>
+                    <button
+                      type="button"
+                      phx-click="test_connection"
+                      class="px-10 bg-slate-900 text-white py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-slate-200 hover:bg-black transition-all"
+                    >
+                      Test API
+                    </button>
+                  </div>
+                </form>
+              </div>
+            <% end %>
+
+            <%!-- Flutterwave Integration Form --%>
+            <%= if @current_provider == "flutterwave" do %>
+              <% flutterwave_config = provider_config(@settings, "flutterwave") %>
+              <div class="animate-fade-in-up">
+                <form phx-submit="save" class="space-y-6">
+                  <input type="hidden" name="provider" value="flutterwave" />
+
+                  <div class="flex items-center justify-between p-4 bg-slate-50 rounded-[2rem] border border-slate-100">
+                    <div>
+                      <h4 class="font-black text-slate-900 text-sm uppercase tracking-widest">
+                        Active Status
+                      </h4>
+                      <p class="text-[11px] font-bold text-slate-400">
+                        Toggle Flutterwave card payments during checkout
+                      </p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        phx-click="toggle_active"
+                        phx-value-provider="flutterwave"
+                        checked={Map.get(@settings["flutterwave"], :active, true)}
+                        class="sr-only peer"
+                      />
+                      <div class="relative w-20 h-9 bg-[#FF4C00] peer-focus:outline-none rounded-full peer-checked:after:translate-x-[3rem] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-7 after:w-7 after:transition-all peer-checked:bg-green-500">
+                        <span class={[
+                          "absolute inset-0 flex items-center justify-end pr-3 text-[11px] font-black uppercase tracking-wider text-white transition-opacity duration-200 z-10 drop-shadow-sm",
+                          if(Map.get(@settings["flutterwave"], :active, true), do: "opacity-0")
+                        ]}>OFF</span>
+                        <span class={[
+                          "absolute inset-0 flex items-center justify-start pl-3 text-[11px] font-black uppercase tracking-wider text-white transition-opacity duration-200 opacity-0 z-10 drop-shadow-sm",
+                          if(Map.get(@settings["flutterwave"], :active, true), do: "opacity-100")
+                        ]}>ON</span>
+                      </div>
+                    </label>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Environment</label>
+                      <select
+                        name="config[environment]"
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all appearance-none cursor-pointer"
+                      >
+                        <option
+                          value="sandbox"
+                          selected={flutterwave_config["environment"] != "production"}
+                        >
+                          Sandbox / Test
+                        </option>
+                        <option
+                          value="production"
+                          selected={flutterwave_config["environment"] == "production"}
+                        >
+                          Live Production
+                        </option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Public Key</label>
+                      <input
+                        type="text"
+                        name="config[public_key]"
+                        value={flutterwave_config["public_key"]}
+                        placeholder="FLWPUBK-..."
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Secret Key</label>
+                      <input
+                        type="password"
+                        name="config[secret_key]"
+                        value={flutterwave_config["secret_key"]}
+                        placeholder="FLWSECK-..."
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Encryption Key</label>
+                      <input
+                        type="text"
+                        name="config[encryption_key]"
+                        value={flutterwave_config["encryption_key"]}
+                        placeholder="FLWSECK_TEST-..."
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                      />
+                    </div>
+
+                    <div class="md:col-span-2">
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Callback URL</label>
+                      <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-300">link</span>
+                        <input
+                          type="url"
+                          name="config[callback_url]"
+                          value={flutterwave_config["callback_url"]}
+                          placeholder="https://api.komiuta.com/v1/payments/flutterwave/callback"
+                          class="w-full pl-12 pr-3 py-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div class="md:col-span-2">
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Webhook URL</label>
+                      <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-300">webhook</span>
+                        <input
+                          type="url"
+                          name="config[webhook_url]"
+                          value={flutterwave_config["webhook_url"]}
+                          placeholder="https://api.komiuta.com/v1/payments/flutterwave/webhook"
+                          class="w-full pl-12 pr-3 py-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="pt-6 flex gap-4">
+                    <button
+                      type="submit"
+                      class="flex-1 bg-[#FF4C00] text-white py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-orange-100 hover:bg-[#E64400] transition-all transform active:scale-95"
+                    >
+                      Update Flutterwave Link
+                    </button>
+                    <button
+                      type="button"
+                      phx-click="test_connection"
+                      class="px-10 bg-slate-900 text-white py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-slate-200 hover:bg-black transition-all"
+                    >
+                      Test API
+                    </button>
+                  </div>
+                </form>
+              </div>
+            <% end %>
+
+            <%!-- Paystack Integration Form --%>
+            <%= if @current_provider == "paystack" do %>
+              <% paystack_config = provider_config(@settings, "paystack") %>
+              <div class="animate-fade-in-up">
+                <form phx-submit="save" class="space-y-6">
+                  <input type="hidden" name="provider" value="paystack" />
+
+                  <div class="flex items-center justify-between p-4 bg-slate-50 rounded-[2rem] border border-slate-100">
+                    <div>
+                      <h4 class="font-black text-slate-900 text-sm uppercase tracking-widest">
+                        Active Status
+                      </h4>
+                      <p class="text-[11px] font-bold text-slate-400">
+                        Toggle Paystack card payments during checkout
+                      </p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        phx-click="toggle_active"
+                        phx-value-provider="paystack"
+                        checked={Map.get(@settings["paystack"], :active, true)}
+                        class="sr-only peer"
+                      />
+                      <div class="relative w-20 h-9 bg-[#FF4C00] peer-focus:outline-none rounded-full peer-checked:after:translate-x-[3rem] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-7 after:w-7 after:transition-all peer-checked:bg-green-500">
+                        <span class={[
+                          "absolute inset-0 flex items-center justify-end pr-3 text-[11px] font-black uppercase tracking-wider text-white transition-opacity duration-200 z-10 drop-shadow-sm",
+                          if(Map.get(@settings["paystack"], :active, true), do: "opacity-0")
+                        ]}>OFF</span>
+                        <span class={[
+                          "absolute inset-0 flex items-center justify-start pl-3 text-[11px] font-black uppercase tracking-wider text-white transition-opacity duration-200 opacity-0 z-10 drop-shadow-sm",
+                          if(Map.get(@settings["paystack"], :active, true), do: "opacity-100")
+                        ]}>ON</span>
+                      </div>
+                    </label>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Environment</label>
+                      <select
+                        name="config[environment]"
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all appearance-none cursor-pointer"
+                      >
+                        <option
+                          value="sandbox"
+                          selected={paystack_config["environment"] != "production"}
+                        >
+                          Sandbox / Test
+                        </option>
+                        <option
+                          value="production"
+                          selected={paystack_config["environment"] == "production"}
+                        >
+                          Live Production
+                        </option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Public Key</label>
+                      <input
+                        type="text"
+                        name="config[public_key]"
+                        value={paystack_config["public_key"]}
+                        placeholder="pk_test_..."
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Secret Key</label>
+                      <input
+                        type="password"
+                        name="config[secret_key]"
+                        value={paystack_config["secret_key"]}
+                        placeholder="sk_test_..."
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        required
+                      />
+                    </div>
+
+                    <div class="md:col-span-2">
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Callback URL</label>
+                      <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-300">link</span>
+                        <input
+                          type="url"
+                          name="config[callback_url]"
+                          value={paystack_config["callback_url"]}
+                          placeholder="https://api.komiuta.com/v1/payments/paystack/callback"
+                          class="w-full pl-12 pr-3 py-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div class="md:col-span-2">
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Webhook URL</label>
+                      <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-300">webhook</span>
+                        <input
+                          type="url"
+                          name="config[webhook_url]"
+                          value={paystack_config["webhook_url"]}
+                          placeholder="https://api.komiuta.com/v1/payments/paystack/webhook"
+                          class="w-full pl-12 pr-3 py-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="pt-6 flex gap-4">
+                    <button
+                      type="submit"
+                      class="flex-1 bg-[#FF4C00] text-white py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-orange-100 hover:bg-[#E64400] transition-all transform active:scale-95"
+                    >
+                      Update Paystack Link
+                    </button>
+                    <button
+                      type="button"
+                      phx-click="test_connection"
+                      class="px-10 bg-slate-900 text-white py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-slate-200 hover:bg-black transition-all"
+                    >
+                      Test API
+                    </button>
+                  </div>
+                </form>
+              </div>
+            <% end %>
+
+            <%!-- Google Integration Form --%>
+            <%= if @current_provider == "google" do %>
+              <% google_config = provider_config(@settings, "google") %>
+              <div class="animate-fade-in-up">
+                <form phx-submit="save" class="space-y-8">
+                  <input type="hidden" name="provider" value="google" />
+
+                  <div class="flex items-center justify-between p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
+                    <div>
+                      <h4 class="font-black text-slate-900 text-sm uppercase tracking-widest">
+                        OAuth Status
+                      </h4>
+                      <p class="text-[11px] font-bold text-slate-400">
+                        Enable or disable Google Sign-In for travelers
+                      </p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        phx-click="toggle_active"
+                        phx-value-provider="google"
+                        checked={Map.get(@settings["google"], :active, true)}
+                        class="sr-only peer"
+                      />
+                      <div class="relative w-20 h-9 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-[3rem] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-7 after:w-7 after:transition-all peer-checked:bg-[#FF4C00]">
+                        <span class="absolute inset-0 flex items-center justify-between px-2 pointer-events-none">
+                          <span class="text-[11px] font-black uppercase tracking-wider text-white opacity-0 peer-checked:opacity-100 transition-opacity">OFF</span>
+                          <span class="text-[11px] font-black uppercase tracking-wider text-white opacity-100 peer-checked:opacity-0 transition-opacity">ON</span>
+                        </span>
+                      </div>
+                    </label>
+                  </div>
+
+                  <div class="grid grid-cols-1 gap-y-12">
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Client ID</label>
+                      <input
+                        type="text"
+                        name="config[client_id]"
+                        value={google_config["client_id"]}
+                        placeholder="your-app-id.apps.googleusercontent.com"
+                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Client Secret</label>
+                      <input
+                        type="password"
+                        name="config[client_secret]"
+                        value={google_config["client_secret"]}
+                        placeholder="Enter Google OAuth Client Secret"
+                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Authorized Redirect URI</label>
+                      <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-300">link</span>
+                        <input
+                          type="url"
+                          name="config[redirect_uri]"
+                          value={google_config["redirect_uri"]}
+                          placeholder="https://yourdomain.com/auth/google/callback"
+                          class="w-full pl-12 pr-4 py-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="pt-8 flex gap-4">
+                    <button
+                      type="submit"
+                      class="flex-1 bg-[#FF4C00] text-white py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-orange-100 hover:bg-[#E64400] transition-all transform active:scale-95"
+                    >
+                      Update Google Auth Link
+                    </button>
+                    <button
+                      type="button"
+                      phx-click="test_connection"
+                      class="px-10 bg-slate-900 text-white py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-slate-200 hover:bg-black transition-all"
+                    >
+                      Test API
+                    </button>
+                  </div>
+                </form>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</Layouts.app>

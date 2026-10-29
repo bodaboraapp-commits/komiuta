@@ -1,0 +1,264 @@
+<Layouts.app flash={@flash}>
+  <div class="min-h-screen bg-[#f8fafc] live-content py-12 px-6">
+    <div class="max-w-2xl mx-auto">
+      <div class="text-center mb-10">
+        <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight mb-2">
+          Track Your Ticket
+        </h1>
+        <p class="text-sm font-bold text-slate-400">
+          Enter your ticket ID to view booking details
+        </p>
+      </div>
+
+      <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-100">
+        <.form for={@search_form} phx-submit="search" id="ticket-search-form" class="flex gap-3">
+          <.input
+            field={@search_form[:query]}
+            type="text"
+            placeholder="Enter Ticket ID (e.g. TKT-ABC123)"
+            class="flex-1 !rounded-2xl !border-slate-200 !bg-slate-50 focus:!bg-white focus:!border-[#FF4C00]"
+          />
+          <button
+            type="submit"
+            class="bg-[#FF4C00] text-white px-8 py-3 rounded-2xl font-black text-sm hover:bg-[#E64400] transition shadow-lg shadow-orange-200"
+          >
+            Search
+          </button>
+        </.form>
+      </div>
+    </div>
+
+    <%= if @searched do %>
+      <%= if @ticket do %>
+        <div class="mt-12 max-w-6xl mx-auto animate-fade-in px-4">
+          <%!-- Industrial Ticket (Exact Template Match) --%>
+          <div class="relative bg-[#f1f5f9] rounded-[3rem] shadow-2xl overflow-hidden font-sans border-2 border-slate-100">
+            <%!-- Vivid Orange Background (Top Bar) --%>
+            <div class="h-24 bg-[#FF4C00] relative">
+              <%!-- Background Glow --%>
+              <div class="absolute inset-0 bg-gradient-to-r from-orange-600/50 to-transparent pointer-events-none">
+              </div>
+            </div>
+
+            <%!-- Overlapping Pill Container (1/2 in orange, 1/2 in grey) --%>
+            <div class="absolute top-24 left-10 right-[320px] -translate-y-1/2 z-20 bg-white rounded-full py-2.5 px-8 border-[3px] border-slate-900 flex items-center gap-6 shadow-sm">
+              <span class="material-symbols-outlined !text-3xl text-slate-900">directions_bus</span>
+              <div class="flex items-center gap-4 flex-1">
+                <span class="text-base font-black text-slate-900 uppercase tracking-tighter">
+                  <%= if @ticket.bus do %>
+                    {@ticket.bus.company} Bus Ticket
+                  <% else %>
+                    {@ticket.company} Bus Ticket
+                  <% end %>
+                </span>
+                <div class="flex items-center gap-1.5 ml-2">
+                  <span class="text-[10px] font-black text-[#FF4C00] uppercase">NO.</span>
+                  <span class="text-[10px] font-black text-[#FF4C00] uppercase tracking-widest">{@ticket.ticket_id}</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-[10px] font-black text-[#FF4C00] uppercase tracking-widest">valid</span>
+                <span class="text-base font-black text-slate-900 tracking-widest">{Calendar.strftime(
+                  @ticket.travel_date,
+                  "%d / %m / %y"
+                )}</span>
+              </div>
+            </div>
+
+            <%!-- Overlapping Price Bubble --%>
+            <div class="absolute top-24 right-10 -translate-y-1/2 z-30 w-36 h-24 bg-[#FF4C00] rounded-full border-[4px] border-white flex flex-col items-center justify-center text-white shadow-xl">
+              <span class="text-[11px] font-black uppercase tracking-widest opacity-80 mb-1">Price</span>
+              <span class="text-3xl font-black tracking-tighter">{@ticket.price}</span>
+            </div>
+
+            <%!-- Ticket Body --%>
+            <div class="p-8 pt-16 flex flex-col lg:flex-row gap-12 bg-[#f1f5f9] relative">
+              <%!-- Left: Journey Section --%>
+              <div class="flex flex-col justify-between items-start min-h-[160px] relative px-6">
+                <div class="space-y-2">
+                  <span class="text-[11px] font-black uppercase text-[#FF4C00] tracking-[0.2em]">DEPART</span>
+                  <div class="flex items-center gap-4">
+                    <div class="w-4 h-4 rounded-full border-[3px] border-slate-900 bg-white flex items-center justify-center">
+                      <div class="w-1.5 h-1.5 rounded-full bg-slate-900"></div>
+                    </div>
+                    <span class="text-2xl font-black text-slate-900 uppercase tracking-tighter">{@ticket.from}</span>
+                  </div>
+                </div>
+
+                <%!-- Vertical Orange Connector --%>
+                <div class="absolute left-[31px] top-12 bottom-12 w-[1.5px] bg-orange-500/20 flex flex-col items-center justify-between py-1">
+                  <div class="w-px h-full border-l border-dashed border-orange-500/40"></div>
+                  <span class="material-symbols-outlined !text-xl text-[#FF4C00] font-black rotate-0">expand_more</span>
+                </div>
+
+                <div class="space-y-2">
+                  <span class="text-[11px] font-black uppercase text-[#FF4C00] tracking-[0.2em]">ARRIVE</span>
+                  <div class="flex items-center gap-4">
+                    <div class="w-4 h-4 rounded-full border-[3px] border-slate-900 bg-white flex items-center justify-center">
+                      <div class="w-1.5 h-1.5 rounded-full bg-slate-900"></div>
+                    </div>
+                    <span class="text-2xl font-black text-slate-900 uppercase tracking-tighter">{@ticket.to}</span>
+                  </div>
+                </div>
+
+                <%!-- Vertical Separator --%>
+                <div class="absolute -right-8 top-4 bottom-4 w-px bg-orange-200"></div>
+              </div>
+
+              <%!-- Middle: Passenger Info --%>
+              <div class="flex-1 space-y-6 pt-2 lg:pl-8">
+                <div class="space-y-1.5">
+                  <span class="text-[11px] font-black uppercase text-[#FF4C00] tracking-[0.2em]">NAME</span>
+                  <p class="text-2xl font-black text-slate-900 uppercase tracking-tight">
+                    {@ticket.passenger_name}
+                  </p>
+                </div>
+
+                <div class="space-y-1.5">
+                  <span class="text-[11px] font-black uppercase text-[#FF4C00] tracking-[0.2em]">TYPE</span>
+                  <p class="text-lg font-bold text-slate-600 tracking-tight">
+                    {@ticket.type || "One Way Ticket"}
+                  </p>
+                </div>
+
+                <div class="space-y-4">
+                  <span class="inline-block bg-[#FF4C00] text-white text-[11px] font-black px-6 py-2 rounded-lg shadow-sm tracking-[0.1em] uppercase">STATUS</span>
+                  <p class="text-lg font-black text-slate-900 uppercase tracking-widest">
+                    {Enum.count(List.wrap(@ticket.seats))} Person / Adult
+                  </p>
+                </div>
+              </div>
+
+              <%!-- Center Highlight Box (Seat/Gate) --%>
+              <div class="bg-[#FF4C00] rounded-[3rem] p-8 text-white min-w-[280px] shadow-2xl shadow-orange-200/50 relative overflow-hidden group/box">
+                <div class="absolute -top-4 -right-4 text-white/5 material-symbols-outlined !text-[8rem] transform -rotate-12 transition-transform group-hover/box:rotate-0">
+                  confirmation_number
+                </div>
+
+                <div class="flex justify-between items-start mb-6 border-b border-white/10 pb-6">
+                  <div class="space-y-1.5">
+                    <span class="text-[11px] font-black uppercase opacity-60 tracking-[0.2em]">SEAT</span>
+                    <div class="text-6xl font-black tracking-tighter">
+                      {Enum.at(List.wrap(@ticket.seats), 0) || "N/A"}
+                    </div>
+                  </div>
+                  <div class="space-y-1.5">
+                    <span class="text-[11px] font-black uppercase opacity-60 tracking-[0.2em]">GATE</span>
+                    <div class="text-6xl font-black tracking-tighter">03</div>
+                  </div>
+                </div>
+
+                <div class="space-y-2">
+                  <span class="text-[11px] font-black uppercase opacity-60 tracking-[0.2em]">ARRIVAL</span>
+                  <p class="text-base font-black leading-snug tracking-tight">
+                    {@ticket.arrival} at {@ticket.to} <br />
+                    <span class="text-white text-[10px] font-black uppercase tracking-[0.1em]">ticket no. {String.slice(
+                      @ticket.ticket_id,
+                      -4,
+                      4
+                    )}</span>
+                  </p>
+                </div>
+              </div>
+
+              <%!-- Right Section: QR & Branding --%>
+              <div class="flex flex-col items-center justify-between lg:border-l lg:border-slate-200 lg:pl-12 shrink-0">
+                <div class="w-40 h-40 bg-white p-4 rounded-3xl shadow-xl border-4 border-slate-900 mb-8 overflow-hidden">
+                  <img
+                    src={"https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=#{URI.encode(@ticket.ticket_id)}"}
+                    class="w-full h-full object-contain"
+                  />
+                </div>
+
+                <div class="text-center space-y-4">
+                  <div class="text-[12px] font-black uppercase tracking-[0.4em] text-slate-900">
+                    {if @ticket.bus && @ticket.bus.bus_operator,
+                      do: @ticket.bus.bus_operator.name,
+                      else: @ticket.company}
+                  </div>
+                  <div class="w-full h-0.5 bg-orange-500/30"></div>
+                  <p class="text-[10px] font-black text-[#FF4C00] uppercase tracking-[0.1em]">
+                    Ticket no. {@ticket.ticket_id}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-10 flex flex-wrap justify-center gap-4">
+            <button
+              phx-click="print_ticket"
+              class="px-12 py-5 rounded-[2rem] bg-slate-900 text-white font-black uppercase tracking-[0.2em] text-xs hover:bg-slate-800 transition shadow-xl active:scale-95"
+            >DOWNLOAD PASS</button>
+            <button class="px-12 py-5 rounded-[2rem] bg-white text-slate-900 border-2 border-slate-100 font-black uppercase tracking-[0.2em] text-xs hover:border-[#FF4C00] hover:text-[#FF4C00] transition shadow-sm active:scale-95">SHARE TICKET</button>
+          </div>
+        </div>
+      <% else %>
+        <div class="max-w-2xl mx-auto mt-8 bg-orange-50 border border-orange-100 rounded-2xl p-6 flex gap-4">
+          <div class="shrink-0">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="stroke-current shrink-0 h-6 w-6 text-orange-500"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-black text-orange-900 mb-1">Ticket Not Found</h3>
+            <p class="text-sm font-bold text-orange-700 leading-relaxed">
+              No ticket found with ID "{@search_query}". Please check and try again.
+            </p>
+          </div>
+        </div>
+
+        <%= if length(@search_results) > 0 do %>
+          <div class="max-w-2xl mx-auto mt-8">
+            <h3 class="font-black text-slate-900 mb-4">Similar Results</h3>
+            <div class="space-y-3">
+              <%= for result <- @search_results do %>
+                <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4">
+                  <div class="flex justify-between items-center">
+                    <div>
+                      <p class="font-mono font-black text-slate-900">{result.ticket_id}</p>
+                      <p class="text-xs font-bold text-slate-400 mt-1">
+                        {result.from} → {result.to}
+                      </p>
+                    </div>
+                    <span class={[
+                      "badge",
+                      result.status == "confirmed" &&
+                        "bg-green-100 text-green-700 border border-green-200",
+                      result.status == "cancelled" &&
+                        "bg-red-100 text-red-700 border border-red-200",
+                      result.status == "completed" &&
+                        "bg-blue-100 text-blue-700 border border-blue-200"
+                    ]}>
+                      {String.capitalize(result.status || "confirmed")}
+                    </span>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <div class="text-center mt-12">
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 text-slate-400 font-black hover:text-[#FF4C00] transition text-sm"
+      >
+        <span class="w-8 h-8 bg-white shadow-md rounded-full flex items-center justify-center border border-slate-100 text-sm">🏠</span>
+        Back to Home Page
+      </a>
+    </div>
+  </div>
+</Layouts.app>

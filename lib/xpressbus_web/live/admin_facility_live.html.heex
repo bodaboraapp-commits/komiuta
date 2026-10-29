@@ -1,0 +1,137 @@
+<Layouts.app flash={@flash}>
+  <div class="flex min-h-screen bg-[#f8fafc]">
+    <%!-- Sidebar Component --%>
+    <.sidebar
+      active_tab="facility"
+      bus_expanded={@bus_expanded}
+      chyllz_expanded={@chyllz_expanded}
+      settings_expanded={@settings_expanded}
+      collapsed={@sidebar_collapsed}
+    />
+
+    <%!-- Main Content Area --%>
+    <div class={[
+      "flex-1 transition-all duration-300",
+      if(@sidebar_collapsed, do: "lg:pl-20", else: "lg:pl-72")
+    ]}>
+      <%!-- Top Bar --%>
+      <header class="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-8 sticky top-0 z-30">
+        <h2 class="text-xl font-black text-slate-900 tracking-tight">Facility Management</h2>
+
+        <div class="flex items-center gap-6">
+          <button class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-[#FF4C00] transition-colors relative">
+            <span class="material-symbols-outlined">notifications</span>
+            <div class="absolute top-2.5 right-2.5 w-2 h-2 bg-[#FF4C00] rounded-full border-2 border-white">
+            </div>
+          </button>
+
+          <div class="flex items-center gap-3 border-l border-slate-100 pl-6">
+            <div class="text-right hidden sm:block">
+              <p class="text-[11px] font-black text-slate-900 leading-none">Admin User</p>
+              <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">Super Admin</p>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-[#FF4C00] font-black text-xs border-2 border-white shadow-sm">
+              AD
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <%!-- Main Scrollable Content --%>
+      <main class="p-8 md:p-12 pt-10 md:pt-16">
+        <div class="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+          <%!-- Table Controls --%>
+          <div class="p-8 flex flex-col md:flex-row justify-between items-center gap-4 border-b border-slate-50">
+            <div class="flex items-center gap-3">
+              <span class="text-sm font-bold text-slate-400">Show</span>
+              <select class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 font-bold text-slate-700 outline-none focus:border-orange-500">
+                <option>10</option>
+                <option>25</option>
+                <option>50</option>
+              </select>
+              <span class="text-sm font-bold text-slate-400">entries</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-sm font-bold text-slate-400">Search:</span>
+              <input
+                type="text"
+                class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-1.5 font-bold text-slate-700 outline-none focus:border-orange-500"
+              />
+            </div>
+          </div>
+
+          <%!-- Table --%>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead>
+                <tr class="border-b border-slate-50 bg-white">
+                  <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-[#FF4C00]">
+                    SR NO.
+                  </th>
+                  <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    FACILITY NAME
+                  </th>
+                  <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    ICON
+                  </th>
+                  <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    DESCRIPTION
+                  </th>
+                  <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    STATUS
+                  </th>
+                  <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    ACTION
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-50">
+                <%= if Enum.empty?(@facilities) do %>
+                  <tr>
+                    <td colspan="6" class="px-8 py-12 text-center">
+                      <span class="material-symbols-outlined text-4xl text-slate-200 mb-4">headset_mic</span>
+                      <p class="text-sm font-bold text-slate-400">No facilities found.</p>
+                    </td>
+                  </tr>
+                <% else %>
+                  <%= for {facility, index} <- Enum.with_index(@facilities) do %>
+                    <tr class="hover:bg-slate-50/50 transition-colors group">
+                      <td class="px-8 py-6 text-sm font-bold text-slate-500">{index + 1}</td>
+                      <td class="px-8 py-6 text-sm font-black text-slate-900">{facility.name}</td>
+                      <td class="px-8 py-6 text-sm font-bold text-slate-500">
+                        {facility.icon || "—"}
+                      </td>
+                      <td class="px-8 py-6 text-sm font-bold text-slate-500">
+                        {facility.description || "—"}
+                      </td>
+                      <td class="px-8 py-6">
+                        <span class={[
+                          "inline-flex items-center gap-1.5 text-[11px] font-black uppercase",
+                          facility.active && "text-[#00c9a7]",
+                          !facility.active && "text-red-500"
+                        ]}>
+                          <span class={[
+                            "w-1.5 h-1.5 rounded-full",
+                            facility.active && "bg-[#00c9a7]",
+                            !facility.active && "bg-red-500"
+                          ]}></span>
+                          {if facility.active, do: "Active", else: "Inactive"}
+                        </span>
+                      </td>
+                      <td class="px-8 py-6">
+                        <button class="w-9 h-9 bg-orange-50 rounded-lg flex items-center justify-center text-[#FF4C00] hover:bg-[#FF4C00] hover:text-white transition-all shadow-sm">
+                          <span class="material-symbols-outlined !text-lg">edit_square</span>
+                        </button>
+                      </td>
+                    </tr>
+                  <% end %>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+          <.pager page={@page} page_size={@page_size} total_count={@total_count} />
+        </div>
+      </main>
+    </div>
+  </div>
+</Layouts.app>

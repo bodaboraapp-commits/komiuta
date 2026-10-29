@@ -1,0 +1,206 @@
+<Layouts.app flash={@flash}>
+  <div class="flex min-h-screen bg-[#f8fafc]">
+    <%!-- Sidebar Component --%>
+    <.sidebar
+      active_tab="dashboard"
+      bus_expanded={@bus_expanded}
+      chyllz_expanded={@chyllz_expanded}
+      settings_expanded={@settings_expanded}
+      collapsed={@sidebar_collapsed}
+    />
+
+    <%!-- Main Content Area --%>
+    <div class={[
+      "flex-1 transition-all duration-300",
+      if(@sidebar_collapsed, do: "lg:pl-20", else: "lg:pl-72")
+    ]}>
+      <%!-- Top Bar --%>
+      <header class="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-8 sticky top-0 z-30">
+        <h2 class="text-xl font-black text-slate-900 tracking-tight">Dashboard Overview</h2>
+
+        <div class="flex items-center gap-6">
+          <button class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-[#FF4C00] transition-colors relative">
+            <span class="material-symbols-outlined">notifications</span>
+            <div class="absolute top-2.5 right-2.5 w-2 h-2 bg-[#FF4C00] rounded-full border-2 border-white">
+            </div>
+          </button>
+
+          <div class="flex items-center gap-3 border-l border-slate-100 pl-6">
+            <div class="text-right hidden sm:block">
+              <p class="text-[11px] font-black text-slate-900 leading-none">Admin User</p>
+              <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">Super Admin</p>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-[#FF4C00] font-black text-xs border-2 border-white shadow-sm">
+              AD
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <%!-- Main Scrollable Content --%>
+      <main class="p-8 md:p-12">
+        <div class="mb-12">
+          <h1 class="text-4xl font-black text-slate-900 tracking-tighter">Welcome Back! 👋</h1>
+          <p class="text-sm font-bold text-slate-400 mt-2 italic">
+            Real-time performance metrics for Komiuta platform.
+          </p>
+        </div>
+
+        <%!-- Stats Grid --%>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-12">
+          <%!-- Buses --%>
+          <div class="bg-white rounded-[1.5rem] p-6 shadow-sm border border-slate-100 hover:shadow-xl transition-all group">
+            <div class="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-[#FF4C00] mb-4 group-hover:scale-110 transition-transform">
+              <span class="material-symbols-outlined !text-xl">directions_bus</span>
+            </div>
+            <p class="text-[9px] font-black uppercase text-slate-400 tracking-widest mb-1">
+              Buses
+            </p>
+            <p class="text-2xl font-black text-slate-900 tabular-nums">{@stats.buses}</p>
+          </div>
+
+          <%!-- Tickets --%>
+          <div class="bg-white rounded-[1.5rem] p-6 shadow-sm border border-slate-100 hover:shadow-xl transition-all group">
+            <div class="w-10 h-10 rounded-xl bg-pink-50 flex items-center justify-center text-pink-500 mb-4 group-hover:scale-110 transition-transform">
+              <span class="material-symbols-outlined !text-xl">confirmation_number</span>
+            </div>
+            <p class="text-[9px] font-black uppercase text-slate-400 tracking-widest mb-1">
+              Tickets
+            </p>
+            <p class="text-2xl font-black text-slate-900 tabular-nums">{@stats.tickets}</p>
+          </div>
+
+          <%!-- Hotels --%>
+          <div class="bg-white rounded-[1.5rem] p-6 shadow-sm border border-slate-100 hover:shadow-xl transition-all group">
+            <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500 mb-4 group-hover:scale-110 transition-transform">
+              <span class="material-symbols-outlined !text-xl">hotel</span>
+            </div>
+            <p class="text-[9px] font-black uppercase text-slate-400 tracking-widest mb-1">
+              Hotels
+            </p>
+            <p class="text-2xl font-black text-slate-900 tabular-nums">{@stats.hotels}</p>
+          </div>
+
+          <%!-- Hidden Gems --%>
+          <div class="bg-white rounded-[1.5rem] p-6 shadow-sm border border-slate-100 hover:shadow-xl transition-all group">
+            <div class="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-green-500 mb-4 group-hover:scale-110 transition-transform">
+              <span class="material-symbols-outlined !text-xl">explore</span>
+            </div>
+            <p class="text-[9px] font-black uppercase text-slate-400 tracking-widest mb-1">
+              Gems
+            </p>
+            <p class="text-2xl font-black text-slate-900 tabular-nums">{@stats.gems}</p>
+          </div>
+
+          <%!-- Car Hire --%>
+          <div class="bg-white rounded-[1.5rem] p-6 shadow-sm border border-slate-100 hover:shadow-xl transition-all group">
+            <div class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-500 mb-4 group-hover:scale-110 transition-transform">
+              <span class="material-symbols-outlined !text-xl">directions_car</span>
+            </div>
+            <p class="text-[9px] font-black uppercase text-slate-400 tracking-widest mb-1">
+              Cars
+            </p>
+            <p class="text-2xl font-black text-slate-900 tabular-nums">{@stats.cars}</p>
+          </div>
+
+          <%!-- Events --%>
+          <div class="bg-white rounded-[1.5rem] p-6 shadow-sm border border-slate-100 hover:shadow-xl transition-all group">
+            <div class="w-10 h-10 rounded-xl bg-yellow-50 flex items-center justify-center text-yellow-600 mb-4 group-hover:scale-110 transition-transform">
+              <span class="material-symbols-outlined !text-xl">local_activity</span>
+            </div>
+            <p class="text-[9px] font-black uppercase text-slate-400 tracking-widest mb-1">
+              Events
+            </p>
+            <p class="text-2xl font-black text-slate-900 tabular-nums">{@stats.events}</p>
+          </div>
+        </div>
+
+        <%!-- Recent Bookings Table --%>
+        <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 mb-12">
+          <div class="flex items-center justify-between mb-8">
+            <h3 class="text-xl font-black text-slate-900 tracking-tight">Recent Bookings</h3>
+            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Live from DB</span>
+          </div>
+
+          <%= if Enum.empty?(@recent_tickets) do %>
+            <div class="text-center py-12">
+              <span class="material-symbols-outlined text-4xl text-slate-200 mb-4">confirmation_number</span>
+              <p class="text-sm font-bold text-slate-400">
+                No bookings yet. Bookings will appear here after checkout.
+              </p>
+            </div>
+          <% else %>
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead>
+                  <tr class="border-b border-slate-50">
+                    <th class="text-left py-4 px-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      Ticket ID
+                    </th>
+                    <th class="text-left py-4 px-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      Route
+                    </th>
+                    <th class="text-left py-4 px-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      Date
+                    </th>
+                    <th class="text-left py-4 px-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      Passenger
+                    </th>
+                    <th class="text-left py-4 px-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      Amount
+                    </th>
+                    <th class="text-left py-4 px-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <%= for ticket <- @recent_tickets do %>
+                    <tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
+                      <td class="py-4 px-2">
+                        <span class="font-mono font-black text-sm text-slate-900">{ticket.ticket_id}</span>
+                      </td>
+                      <td class="py-4 px-2">
+                        <div class="flex items-center gap-2">
+                          <span class="text-sm font-bold text-slate-700">{ticket.from}</span>
+                          <span class="material-symbols-outlined !text-sm text-slate-300">arrow_forward</span>
+                          <span class="text-sm font-bold text-slate-700">{ticket.to}</span>
+                        </div>
+                      </td>
+                      <td class="py-4 px-2 text-sm font-bold text-slate-500">
+                        {format_date(ticket.travel_date)}
+                      </td>
+                      <td class="py-4 px-2 text-sm font-bold text-slate-700">
+                        {ticket.passenger_name}
+                      </td>
+                      <td class="py-4 px-2 text-sm font-black text-slate-900">{ticket.price}</td>
+                      <td class="py-4 px-2">
+                        <div class={[
+                          "inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase border",
+                          ticket.status == "confirmed" &&
+                            "bg-green-50 text-green-700 border-green-100",
+                          ticket.status == "cancelled" && "bg-red-50 text-red-700 border-red-100",
+                          ticket.status == "completed" &&
+                            "bg-blue-50 text-blue-700 border-blue-100"
+                        ]}>
+                          <span class={[
+                            "w-1 h-1 rounded-full mr-1.5",
+                            ticket.status == "confirmed" && "bg-green-500",
+                            ticket.status == "cancelled" && "bg-red-500",
+                            ticket.status == "completed" && "bg-blue-500"
+                          ]}></span>
+                          {ticket.status || "confirmed"}
+                        </div>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          <% end %>
+          <.pager page={@page} page_size={@page_size} total_count={@total_count} />
+        </div>
+      </main>
+    </div>
+  </div>
+</Layouts.app>

@@ -1,0 +1,1946 @@
+﻿<Layouts.app flash={@flash} current_scope={@current_user}>
+  <div class="min-h-screen bg-[#f8fafc] font-sans pt-20">
+    <.main_header step={@step} current_user={@current_user} />
+    <%= cond do %>
+      <% @step == :search -> %>
+        <%!-- Step :search (Landing Page) --%>
+        <div class="relative z-10">
+          <section class="relative pt-0 pb-[200px] px-6 overflow-hidden rounded-b-[4rem] md:rounded-b-[8rem] shadow-lg">
+            <%!-- Elite Background Layer --%>
+            <div class="absolute inset-0 z-0">
+              <img
+                src="/images/hero_bg.png"
+                class="w-full h-full object-cover opacity-100"
+                alt="Skyline"
+              />
+              <div class="absolute inset-0 bg-black/20"></div>
+            </div>
+
+            <div class="max-w-[1350px] mx-auto flex flex-col items-center justify-center relative z-10 text-center pt-16 md:pt-24 animate-fade-in">
+              <h1 class="text-5xl md:text-7xl lg:text-8xl font-black text-white tracking-tighter mb-6 drop-shadow-2xl">
+                Online Bus Ticket Booking
+              </h1>
+
+              <p class="max-w-3xl mx-auto text-white font-bold text-lg md:text-2xl leading-relaxed mb-12 drop-shadow-lg opacity-90">
+                The most reliable way to book bus travel across Kenya and
+                <br class="hidden md:block" /> East Africa.
+              </p>
+            </div>
+          </section>
+          <div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-full max-w-[1350px] px-6 z-50 font-sans">
+            <div class="bg-white rounded-full shadow-2xl shadow-slate-200/60 border border-slate-100 p-2 md:p-3 transition-transform hover:scale-[1.01] duration-500">
+              <.form
+                for={@search_form}
+                id="search-form"
+                phx-submit="search"
+                phx-change="search_input"
+                class="flex flex-col md:flex-row items-center gap-2"
+              >
+                <div class="flex-1 flex flex-col md:flex-row items-center gap-2 w-full">
+                  <%!-- From --%>
+                  <div class="flex-1 relative group px-6 py-3 rounded-full hover:bg-slate-50 transition-colors border-r border-slate-50 last:border-0">
+                    <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1 ml-7">From City</label>
+                    <div class="flex items-center gap-3">
+                      <span class="material-symbols-outlined text-slate-300 group-focus-within:text-[#FF4C00] transition-colors">my_location</span>
+                      <.input
+                        field={@search_form[:from]}
+                        type="text"
+                        placeholder="Where are you leaving from?"
+                        autocomplete="off"
+                        phx-debounce="300"
+                        class="w-full border-0 focus:ring-0 focus:outline-none focus:ring-transparent focus:border-transparent p-0 text-base font-bold text-slate-900 placeholder:text-slate-300 placeholder:font-bold"
+                      />
+                    </div>
+
+                    <%= if Enum.any?(@from_suggestions) do %>
+                      <div class="absolute top-full left-4 right-4 z-50 mt-4 bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-fade-in">
+                        <%= for city <- @from_suggestions do %>
+                          <button
+                            type="button"
+                            phx-click="select_city"
+                            phx-value-field="from"
+                            phx-value-city={city}
+                            class="w-full px-6 py-4 text-left hover:bg-orange-50 hover:text-[#FF4C00] font-black text-slate-700 transition-all border-b border-slate-50 last:border-0 flex items-center gap-3"
+                          >
+                            <span class="material-symbols-outlined !text-lg opacity-40">location_on</span> {city}
+                          </button>
+                        <% end %>
+                      </div>
+                    <% end %>
+                  </div>
+                  <%!-- Swap Button --%>
+                  <button
+                    type="button"
+                    phx-click="swap_locations"
+                    class="shrink-0 w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-[#FF4C00] hover:bg-[#FF4C00] hover:text-white transition-all shadow-sm z-10 -mx-4 rotate-90 md:rotate-0"
+                  >
+                    <span class="material-symbols-outlined !text-xl font-black">sync_alt</span>
+                  </button>
+                  <%!-- To --%>
+                  <div class="flex-1 relative group px-6 py-3 rounded-full hover:bg-slate-50 transition-colors border-r border-slate-50 last:border-0">
+                    <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1 ml-7">To City</label>
+                    <div class="flex items-center gap-3">
+                      <span class="material-symbols-outlined text-slate-300 group-focus-within:text-[#FF4C00] transition-colors">location_on</span>
+                      <.input
+                        field={@search_form[:to]}
+                        type="text"
+                        placeholder="Where are you going?"
+                        autocomplete="off"
+                        phx-debounce="300"
+                        class="w-full border-0 focus:ring-0 focus:outline-none focus:ring-transparent focus:border-transparent p-0 text-base font-bold text-slate-900 placeholder:text-slate-300 placeholder:font-bold"
+                      />
+                    </div>
+
+                    <%= if Enum.any?(@to_suggestions) do %>
+                      <div class="absolute top-full left-4 right-4 z-50 mt-4 bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-fade-in">
+                        <%= for city <- @to_suggestions do %>
+                          <button
+                            type="button"
+                            phx-click="select_city"
+                            phx-value-field="to"
+                            phx-value-city={city}
+                            class="w-full px-6 py-4 text-left hover:bg-orange-50 hover:text-[#FF4C00] font-black text-slate-700 transition-all border-b border-slate-50 last:border-0 flex items-center gap-3"
+                          >
+                            <span class="material-symbols-outlined !text-lg opacity-40">flag</span> {city}
+                          </button>
+                        <% end %>
+                      </div>
+                    <% end %>
+                  </div>
+                  <%!-- Date --%>
+                  <div class="flex-1 group px-6 py-3 rounded-full hover:bg-slate-50 transition-colors">
+                    <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1 ml-7">Travel Date</label>
+                    <div class="flex items-center gap-3">
+                      <span class="material-symbols-outlined text-slate-300 group-focus-within:text-[#FF4C00] transition-colors">calendar_month</span>
+                      <.input
+                        field={@search_form[:date]}
+                        type="date"
+                        min={Date.to_string(Date.utc_today())}
+                        class="w-full border-0 focus:ring-0 focus:outline-none focus:ring-transparent focus:border-transparent p-0 text-base font-bold text-slate-900 cursor-pointer"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  class="shrink-0 h-14 md:h-16 px-10 md:px-14 rounded-full bg-[#FF4C00] text-white font-black uppercase tracking-[0.2em] text-[10px] md:text-xs hover:bg-[#E64400] transition-all shadow-xl shadow-orange-500/20 active:scale-95 whitespace-nowrap flex items-center justify-center gap-3"
+                >
+                  <span>Search Bus</span>
+                  <span class="material-symbols-outlined !text-xl">arrow_forward</span>
+                </button>
+              </.form>
+            </div>
+          </div>
+        </div>
+        <%!-- Trusted Operators & Value Propositions Group --%>
+        <section class="bg-white pt-20 pb-24 border-b border-slate-50 relative overflow-hidden">
+          <div class="max-w-[1350px] mx-auto">
+            <%!-- Unified Partner Marquee Row --%>
+            <div class="px-6 mb-16 flex flex-col lg:flex-row items-center gap-12">
+              <div class="shrink-0 flex items-center gap-4">
+                <span class="text-[9px] font-black uppercase tracking-[0.4em] text-slate-300">
+                  Trusted by 100+<br />bus operators across<br />East Africa
+                </span>
+
+                <div class="hidden lg:block w-12 h-px bg-slate-100/50"></div>
+              </div>
+
+              <div class="partner-scroll-container flex-1 opacity-60 hover:opacity-100 transition-opacity duration-700">
+                <div class="partner-track">
+                  <%= for _ <- 1..3 do %>
+                    <%= for partner <- @partners do %>
+                      <div class="partner-item group flex items-center gap-4 px-12">
+                        <div class="h-10 w-10 shrink-0 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center p-2 transition-all grayscale group-hover:grayscale-0 group-hover:bg-[#FF4C00] group-hover:text-white group-hover:scale-110">
+                          <%= if partner.logo_url do %>
+                            <img
+                              src={partner.logo_url}
+                              alt={partner.name}
+                              class="max-w-full max-h-full object-contain group-hover:invert group-hover:brightness-0"
+                            />
+                          <% else %>
+                            <span class="material-symbols-outlined !text-xl opacity-20 group-hover:opacity-100">directions_bus</span>
+                          <% end %>
+                        </div>
+
+                        <span class="text-xs font-black uppercase tracking-tighter text-slate-400 group-hover:text-slate-900 transition-colors whitespace-nowrap">{partner.name}</span>
+                      </div>
+                    <% end %>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+            <%!-- Value Propositions Section --%>
+            <div class="px-6 pt-12">
+              <h2 class="text-center text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-20">
+                The #1 Choice for Bus Travel in Kenya
+              </h2>
+
+              <div class="grid md:grid-cols-3 gap-12 max-w-6xl mx-auto">
+                <%!-- Card 1 --%>
+                <div class="flex items-start gap-5 group">
+                  <div class="w-14 h-14 shrink-0 rounded-[1.2rem] bg-orange-50 border border-orange-100 flex items-center justify-center text-orange-500 shadow-sm group-hover:scale-105 transition-transform duration-500">
+                    <span class="material-symbols-outlined !text-2xl">account_balance_wallet</span>
+                  </div>
+
+                  <div class="space-y-1">
+                    <h3 class="text-base font-black text-slate-900">Flexible payments</h3>
+
+                    <p class="text-slate-400 font-bold text-[10px] leading-relaxed max-w-[240px]">
+                      Pay with M-pesa, Airtel, credit cards or bank transfers. We have you fully covered.
+                    </p>
+                  </div>
+                </div>
+                <%!-- Card 2 --%>
+                <div class="flex items-start gap-5 group">
+                  <div class="w-14 h-14 shrink-0 rounded-[1.2rem] bg-pink-50 border border-pink-100 flex items-center justify-center text-pink-500 shadow-sm group-hover:scale-105 transition-transform duration-500">
+                    <span class="material-symbols-outlined !text-2xl">support_agent</span>
+                  </div>
+
+                  <div class="space-y-1">
+                    <h3 class="text-base font-black text-slate-900">Great customer care</h3>
+
+                    <p class="text-slate-400 font-bold text-[10px] leading-relaxed max-w-[240px]">
+                      Get excellent customer service available 8:00 AM to 10:00 PM, via phone, chat or email.
+                    </p>
+                  </div>
+                </div>
+                <%!-- Card 3 --%>
+                <div class="flex items-start gap-5 group">
+                  <div class="w-14 h-14 shrink-0 rounded-[1.2rem] bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-500 shadow-sm group-hover:scale-105 transition-transform duration-500">
+                    <span class="material-symbols-outlined !text-2xl">schedule</span>
+                  </div>
+
+                  <div class="space-y-1">
+                    <h3 class="text-base font-black text-slate-900">Enjoy convenience</h3>
+
+                    <p class="text-slate-400 font-bold text-[10px] leading-relaxed max-w-[240px]">
+                      Book anytime from the convenience of your office, home, school, or market.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="py-24 px-6 bg-white border-b border-slate-50">
+          <div class="max-w-[1350px] mx-auto">
+            <div class="bg-white rounded-[3rem] p-12 md:p-16 shadow-2xl shadow-slate-200 border border-slate-50 relative overflow-hidden group">
+              <%!-- Global Stats Row --%>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-12 mb-24 text-center">
+                <div>
+                  <p class="text-[10px] font-black uppercase text-slate-400 tracking-[0.3em] mb-2">
+                    Customers
+                  </p>
+
+                  <div class="text-5xl font-black text-[#FF4C00] tracking-tighter">0.63M+</div>
+
+                  <p class="text-[9px] font-bold text-slate-300 mt-2 uppercase">
+                    Total customers
+                  </p>
+                </div>
+
+                <div>
+                  <p class="text-[10px] font-black uppercase text-slate-400 tracking-[0.3em] mb-2">
+                    Buses
+                  </p>
+
+                  <div class="text-5xl font-black text-[#FF4C00] tracking-tighter">310+</div>
+
+                  <p class="text-[9px] font-bold text-slate-300 mt-2 uppercase">
+                    Total buses in operations
+                  </p>
+                </div>
+
+                <div>
+                  <p class="text-[10px] font-black uppercase text-slate-400 tracking-[0.3em] mb-2">
+                    Routes
+                  </p>
+
+                  <div class="text-5xl font-black text-[#FF4C00] tracking-tighter">200+</div>
+
+                  <p class="text-[9px] font-bold text-slate-300 mt-2 uppercase">
+                    Total routes covered
+                  </p>
+                </div>
+
+                <div>
+                  <p class="text-[10px] font-black uppercase text-slate-400 tracking-[0.3em] mb-2">
+                    Tickets
+                  </p>
+
+                  <div class="text-5xl font-black text-[#FF4C00] tracking-tighter">2.25M+</div>
+
+                  <p class="text-[9px] font-bold text-slate-300 mt-2 uppercase">
+                    Bus tickets sold
+                  </p>
+                </div>
+              </div>
+              <%!-- Industrial Journey Timeline --%>
+              <div class="relative h-[240px] flex items-center justify-center overflow-x-auto no-scrollbar">
+                <%!-- Center Line --%>
+                <div class="absolute w-full h-[3px] bg-[#FF4C00] rounded-full"></div>
+
+                <div class="relative w-full flex justify-between px-12 min-w-[1000px]">
+                  <%!-- 2019 --%>
+                  <div class="flex flex-col items-center relative flex-1">
+                    <div class="absolute bottom-[calc(100%+16px)] text-center w-max">
+                      <div class="text-xl font-black text-[#FF4C00]">2019</div>
+
+                      <div class="text-[8px] font-black text-slate-400 uppercase tracking-tighter">
+                        Started with 15 buses
+                      </div>
+                    </div>
+
+                    <div class="w-4 h-4 bg-white border-4 border-[#FF4C00] rounded-full z-10 shadow-sm">
+                    </div>
+
+                    <div class="absolute top-[calc(100%+16px)] flex flex-col items-center">
+                      <div class="w-14 h-14 rounded-2xl bg-orange-50 border border-orange-100 flex items-center justify-center text-orange-600 shadow-sm">
+                        <span class="material-symbols-outlined !text-3xl">potted_plant</span>
+                      </div>
+                    </div>
+                  </div>
+                  <%!-- 2021 --%>
+                  <div class="flex flex-col items-center relative flex-1">
+                    <div class="absolute bottom-[calc(100%+16px)]">
+                      <div class="w-16 h-16 rounded-2xl bg-white shadow-xl border border-slate-50 flex items-center justify-center p-2">
+                        <img src="/images/logo_brand.png" class="w-10 grayscale opacity-40" />
+                      </div>
+                    </div>
+
+                    <div class="w-4 h-4 bg-white border-4 border-[#FF4C00] rounded-full z-10 shadow-sm">
+                    </div>
+
+                    <div class="absolute top-[calc(100%+16px)] text-center w-max">
+                      <div class="text-xl font-black text-slate-900 opacity-30">2021</div>
+
+                      <div class="text-[8px] font-black text-slate-400 uppercase tracking-tighter">
+                        Expanded to 80 cities
+                      </div>
+                    </div>
+                  </div>
+                  <%!-- 2022 --%>
+                  <div class="flex flex-col items-center relative flex-1">
+                    <div class="absolute bottom-[calc(100%+16px)] text-center w-max">
+                      <div class="text-xl font-black text-[#FF4C00]">2022</div>
+
+                      <div class="text-[8px] font-black text-slate-400 uppercase tracking-tighter">
+                        0.5M Travellers
+                      </div>
+                    </div>
+
+                    <div class="w-4 h-4 bg-white border-4 border-[#FF4C00] rounded-full z-10 shadow-sm">
+                    </div>
+
+                    <div class="absolute top-[calc(100%+16px)] flex flex-col items-center">
+                      <div class="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shadow-sm">
+                        <span class="material-symbols-outlined !text-3xl">luggage</span>
+                      </div>
+                    </div>
+                  </div>
+                  <%!-- 2024 --%>
+                  <div class="flex flex-col items-center relative flex-1">
+                    <div class="absolute bottom-[calc(100%+16px)]">
+                      <div class="w-16 h-16 rounded-2xl bg-slate-900 shadow-xl flex items-center justify-center text-white">
+                        <span class="material-symbols-outlined !text-3xl">directions_bus</span>
+                      </div>
+                    </div>
+
+                    <div class="w-4 h-4 bg-white border-4 border-[#FF4C00] rounded-full z-10 shadow-sm">
+                    </div>
+
+                    <div class="absolute top-[calc(100%+16px)] text-center w-max">
+                      <div class="text-xl font-black text-slate-900 opacity-30">2024</div>
+
+                      <div class="text-[8px] font-black text-slate-400 uppercase tracking-tighter">
+                        Komiuta Maxx
+                      </div>
+                    </div>
+                  </div>
+                  <%!-- 2025 --%>
+                  <div class="flex flex-col items-center relative flex-1">
+                    <div class="absolute bottom-[calc(100%+16px)] text-center w-max">
+                      <div class="text-xl font-black text-[#FF4C00]">2025</div>
+
+                      <div class="text-[8px] font-black text-slate-400 uppercase tracking-tighter">
+                        EV Fleets
+                      </div>
+                    </div>
+
+                    <div class="w-4 h-4 bg-white border-4 border-[#FF4C00] rounded-full z-10 shadow-sm">
+                    </div>
+
+                    <div class="absolute top-[calc(100%+16px)] flex flex-col items-center">
+                      <div class="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shadow-sm">
+                        <span class="material-symbols-outlined !text-3xl">bolt</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <%!-- Exclusive Bus Deals & Premium Travel Offers --%>
+        <section class="py-24 px-6 max-w-[1350px] mx-auto text-center">
+          <h2 class="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">
+            Exclusive Bus Deals & Premium Travel Offers
+          </h2>
+
+          <p class="text-slate-500 font-bold max-w-3xl mx-auto text-sm md:text-base leading-relaxed mb-16 opacity-80 uppercase tracking-widest">
+            Experience the gold standard of travel for less. Whether you are booking the popular
+            <br class="hidden md:block" /> <span class="text-slate-900">Nairobi-Mombasa</span>
+            corridor or exploring new regional routes, Komiuta guarantees
+            <br class="hidden md:block" />
+            unbeatable value on East Africa's safest, most reliable bus operators.
+          </p>
+
+          <div class="relative group">
+            <%!-- Navigation Arrows --%>
+            <button class="absolute -left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white shadow-xl border border-slate-50 flex items-center justify-center text-slate-900 hover:text-[#FF4C00] transition-all transform hover:scale-110 active:scale-95">
+              <span class="material-symbols-outlined !text-2xl">chevron_left</span>
+            </button>
+
+            <button class="absolute -right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white shadow-xl border border-slate-50 flex items-center justify-center text-slate-900 hover:text-[#FF4C00] transition-all transform hover:scale-110 active:scale-95">
+              <span class="material-symbols-outlined !text-2xl">chevron_right</span>
+            </button>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <%!-- Card 1: Purple --%>
+              <div class="relative overflow-hidden rounded-[3rem] bg-[#8b5cf6] p-10 min-h-[280px] shadow-2xl shadow-purple-500/10 group/card cursor-pointer flex flex-col justify-between transition-all hover:scale-[1.02] text-left">
+                <%!-- Bus Illustration --%>
+                <div class="absolute right-[-20px] bottom-10 z-10 w-48 opacity-20 group-hover/card:opacity-100 transition-all duration-700 transform translate-x-10 group-hover/card:translate-x-0">
+                  <div class="relative">
+                    <div class="absolute -top-4 -right-2 text-yellow-300 material-symbols-outlined !text-2xl animate-pulse">
+                      sparkle
+                    </div>
+
+                    <div class="bg-white rounded-[2rem] h-28 w-44 border-[6px] border-slate-900 shadow-2xl flex items-center justify-center relative overflow-hidden">
+                      <div class="absolute top-4 left-4 right-4 h-10 bg-slate-900/10 rounded-lg">
+                      </div>
+
+                      <div class="absolute bottom-[-12px] left-8 w-10 h-10 bg-white border-[6px] border-slate-900 rounded-full">
+                      </div>
+
+                      <div class="absolute bottom-[-12px] right-8 w-10 h-10 bg-white border-[6px] border-slate-900 rounded-full">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="relative z-10">
+                  <h3 class="text-3xl font-black text-white leading-tight mb-4">
+                    It’s all about travel!
+                  </h3>
+
+                  <p class="text-white/80 font-bold text-xs leading-relaxed max-w-[200px] mb-8">
+                    Helping people book travel and accommodation for more than 20 years
+                  </p>
+
+                  <div class="flex items-center gap-4">
+                    <span class="text-[11px] font-black text-white uppercase tracking-widest underline underline-offset-8 decoration-2">VIEW BUSES</span>
+                    <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white backdrop-blur-md group-hover/card:translate-x-2 transition-transform">
+                      <span class="material-symbols-outlined">arrow_forward</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <%!-- Card 2: Orange --%>
+              <div class="relative overflow-hidden rounded-[3rem] bg-[#f59e0b] p-10 min-h-[280px] shadow-2xl shadow-orange-500/10 group/card cursor-pointer flex flex-col justify-between transition-all hover:scale-[1.02] text-left">
+                <%!-- Bus Illustration --%>
+                <div class="absolute right-[-20px] bottom-10 z-10 w-48 opacity-20 group-hover/card:opacity-100 transition-all duration-700 transform translate-x-10 group-hover/card:translate-x-0">
+                  <div class="relative">
+                    <div class="absolute -top-4 -right-2 text-yellow-300 material-symbols-outlined !text-2xl animate-pulse">
+                      sparkle
+                    </div>
+
+                    <div class="bg-white rounded-[2rem] h-28 w-44 border-[6px] border-slate-900 shadow-2xl flex items-center justify-center relative overflow-hidden">
+                      <div class="absolute top-4 left-4 right-4 h-10 bg-slate-900/10 rounded-lg">
+                      </div>
+
+                      <div class="absolute bottom-[-12px] left-8 w-10 h-10 bg-white border-[6px] border-slate-900 rounded-full">
+                      </div>
+
+                      <div class="absolute bottom-[-12px] right-8 w-10 h-10 bg-white border-[6px] border-slate-900 rounded-full">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="relative z-10">
+                  <h3 class="text-3xl font-black text-white leading-tight mb-4">
+                    Fastest Bus Booking
+                  </h3>
+
+                  <p class="text-white/80 font-bold text-xs leading-relaxed max-w-[200px] mb-8">
+                    Swift and seamless bus ticket booking experience
+                  </p>
+
+                  <div class="flex items-center gap-4">
+                    <span class="text-[11px] font-black text-white uppercase tracking-widest underline underline-offset-8 decoration-2">VIEW BUSES</span>
+                    <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white backdrop-blur-md group-hover/card:translate-x-2 transition-transform">
+                      <span class="material-symbols-outlined">arrow_forward</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <%!-- Card 3: Green --%>
+              <div class="relative overflow-hidden rounded-[3rem] bg-[#22c55e] p-10 min-h-[280px] shadow-2xl shadow-green-500/10 group/card cursor-pointer flex flex-col justify-between transition-all hover:scale-[1.02] text-left">
+                <%!-- Bus Illustration --%>
+                <div class="absolute right-[-20px] bottom-10 z-10 w-48 opacity-20 group-hover/card:opacity-100 transition-all duration-700 transform translate-x-10 group-hover/card:translate-x-0">
+                  <div class="relative">
+                    <div class="absolute -top-4 -right-2 text-yellow-300 material-symbols-outlined !text-2xl animate-pulse">
+                      sparkle
+                    </div>
+
+                    <div class="bg-white rounded-[2rem] h-28 w-44 border-[6px] border-slate-900 shadow-2xl flex items-center justify-center relative overflow-hidden">
+                      <div class="absolute top-4 left-4 right-4 h-10 bg-slate-900/10 rounded-lg">
+                      </div>
+
+                      <div class="absolute bottom-[-12px] left-8 w-10 h-10 bg-white border-[6px] border-slate-900 rounded-full">
+                      </div>
+
+                      <div class="absolute bottom-[-12px] right-8 w-10 h-10 bg-white border-[6px] border-slate-900 rounded-full">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="relative z-10">
+                  <h3 class="text-3xl font-black text-white leading-tight mb-4">
+                    Best Deal & Discounts
+                  </h3>
+
+                  <p class="text-white/80 font-bold text-xs leading-relaxed max-w-[200px] mb-8">
+                    Unlock best value with exclusive deals and savings on every trip
+                  </p>
+
+                  <div class="flex items-center gap-4">
+                    <span class="text-[11px] font-black text-white uppercase tracking-widest underline underline-offset-8 decoration-2">VIEW BUSES</span>
+                    <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white backdrop-blur-md group-hover/card:translate-x-2 transition-transform">
+                      <span class="material-symbols-outlined">arrow_forward</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <%!-- App Download Section (Industrial End-to-End) --%>
+        <section
+          id="app-section"
+          class="w-full bg-gradient-to-br from-[#FF4C00] to-[#FF6B21] py-[2.21rem] md:py-[3.32rem] relative overflow-hidden shadow-2xl shadow-orange-500/20 border-y border-white/5"
+        >
+          <%!-- Background Accent --%>
+          <div class="absolute right-0 top-0 bottom-0 w-1/4 bg-black/5 hidden md:block skew-x-[-20deg] translate-x-20">
+          </div>
+          <div class="absolute left-0 top-0 bottom-0 w-1/6 bg-white/5 hidden md:block skew-x-[-20deg] -translate-x-10">
+          </div>
+
+          <div class="max-w-[1350px] mx-auto px-6 text-white flex flex-col md:flex-row items-center gap-12 md:gap-24 relative z-10">
+            <%!-- Left: Promo Text --%>
+            <div class="flex-1 text-center md:text-left">
+              <h2 class="text-3xl md:text-4xl lg:text-6xl font-black leading-tight tracking-tighter uppercase mb-2">
+                Download the app now
+              </h2>
+              <p class="text-xl md:text-2xl font-black tracking-tight opacity-90 uppercase">
+                & get up to
+                <span class="bg-white text-[#FF4C00] px-4 py-1 rounded-full mx-1 shadow-lg inline-block align-middle">KSH 500</span>
+                OFF on your first booking
+              </p>
+            </div>
+
+            <%!-- Middle: App Stores --%>
+            <div class="flex flex-col sm:flex-row md:flex-col gap-4 shrink-0 w-full md:w-auto items-center">
+              <a
+                href="#"
+                class="hover:scale-105 transition-all shadow-xl shadow-black/10 rounded-xl group w-full max-w-[200px] md:max-w-none"
+              >
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg"
+                  alt="App Store"
+                  class="h-[52px] w-auto mx-auto"
+                />
+              </a>
+
+              <a
+                href="#"
+                class="hover:scale-105 transition-all shadow-xl shadow-black/10 rounded-xl group w-full max-w-[200px] md:max-w-none"
+              >
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
+                  alt="Google Play"
+                  class="h-[52px] w-auto mx-auto"
+                />
+              </a>
+            </div>
+
+            <%!-- Right: QR Code --%>
+            <div class="flex items-center gap-8 pl-12 border-l border-white/10 hidden lg:flex shrink-0">
+              <div class="text-right">
+                <p class="text-[10px] font-black uppercase tracking-[0.2em] mb-1">Scan the</p>
+                <p class="text-xl font-black uppercase tracking-widest leading-none">QR Code</p>
+                <div class="flex justify-end mt-4">
+                  <span class="material-symbols-outlined !text-4xl text-white rotate-[-135deg] animate-pulse">trending_flat</span>
+                </div>
+              </div>
+
+              <div class="bg-white p-5 rounded-[2.5rem] shadow-2xl shrink-0 group hover:scale-110 transition-transform duration-500">
+                <div class="w-32 h-32 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-center relative overflow-hidden">
+                  <span class="material-symbols-outlined !text-6xl text-[#FF4C00] opacity-10">qr_code_2</span>
+                  <%!-- Industrial QR Decorative Pattern --%>
+                  <div
+                    class="absolute inset-0 opacity-5"
+                    style="background-image: radial-gradient(#FF4C00 1px, transparent 0); background-size: 8px 8px;"
+                  >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <%!-- Komiuta Dispatch Newsletter Section --%>
+        <section class="py-24 px-6 max-w-[1350px] mx-auto text-center">
+          <div class="mb-12">
+            <h2 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
+              Connect with Every Major City in East Africa
+            </h2>
+
+            <p class="text-slate-500 font-bold mt-2 max-w-3xl mx-auto text-sm md:text-base leading-relaxed opacity-80 uppercase tracking-widest">
+              From Nairobi to Mombasa, Kampala to Dar es Salaam - Komiuta brings the entire region to your fingertips.
+            </p>
+          </div>
+
+          <div class="relative overflow-hidden rounded-[3rem] bg-[#0f172a] p-10 md:p-16 shadow-2xl shadow-black/20 text-left">
+            <div
+              class="absolute inset-0 z-0 opacity-10"
+              style="background-image: radial-gradient(#1e293b 1px, transparent 1px); background-size: 20px 20px;"
+            >
+            </div>
+
+            <div class="relative z-10 flex flex-col lg:flex-row items-center gap-16">
+              <div class="flex-1 text-white">
+                <span class="text-[10px] font-black uppercase tracking-[0.5em] text-[#FF4C00] mb-4 block">The Komiuta Dispatch</span>
+                <h2 class="text-3xl md:text-4xl font-black tracking-tighter leading-[1.1] mb-4">
+                  Weekly Travel Insights. <br /> Straight to your inbox.
+                </h2>
+
+                <p class="text-white/60 font-bold text-sm leading-relaxed opacity-80 max-w-md">
+                  Join thousands of travelers getting the latest on new bus routes, operator changes, and exclusive city guides.
+                </p>
+              </div>
+
+              <div class="w-full lg:w-[450px] bg-white/5 backdrop-blur-xl rounded-[2.5rem] p-6 border border-white/10 shadow-2xl">
+                <form phx-submit="subscribe" class="space-y-4">
+                  <div class="space-y-2">
+                    <label class="block text-[10px] font-black uppercase text-white/40 tracking-[0.2em] ml-1">Stay in the loop</label>
+                    <input
+                      type="email"
+                      name="email"
+                      placeholder="you@company.co.ke"
+                      class="w-full rounded-2xl bg-white/5 border-2 border-white/10 py-3 px-6 font-black text-white focus:bg-white/10 focus:border-[#FF4C00] outline-none transition-all placeholder:text-white/20 text-sm"
+                      required
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    class="w-full bg-[#FF4C00] text-white py-3.5 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-orange-500/20 hover:bg-[#E64400] transition-all transform active:scale-95 flex items-center justify-center gap-3 group"
+                  >
+                    Subscribe
+                    <span class="material-symbols-outlined !text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                  </button>
+
+                  <div class="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      name="offers"
+                      checked
+                      class="mt-1 w-5 h-5 rounded border-white/10 bg-transparent text-[#FF4C00] focus:ring-[#FF4C00]"
+                    />
+                    <span class="text-[9px] font-bold text-white/40 leading-tight uppercase tracking-wider">Send me occasional route offers. Unsubscribe anytime.</span>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </section>
+      <% @step == :results -> %>
+        <%!-- Step :results (Bus Listing) --%>
+        <section class="pt-6 pb-16 px-6">
+          <div class="max-w-[1350px] mx-auto">
+            <%!-- Top Search Summary --%>
+            <div class="bg-white rounded-2xl border border-slate-100 p-1.5 mb-10 flex flex-wrap items-center gap-2 shadow-sm">
+              <div class="flex-1 flex items-center px-5 py-2.5 border-r border-slate-50 gap-3 min-w-[140px]">
+                <span class="material-symbols-outlined text-slate-300 !text-lg">location_on</span>
+                <div class="text-sm font-bold text-slate-900 uppercase tracking-tight truncate">
+                  {@from}
+                </div>
+              </div>
+
+              <button
+                phx-click="swap_cities"
+                class="w-9 h-9 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 hover:text-[#FF4C00] transition-all shrink-0"
+              >
+                <span class="material-symbols-outlined !text-lg">sync_alt</span>
+              </button>
+
+              <div class="flex-1 flex items-center px-5 py-2.5 border-r border-slate-50 gap-3 min-w-[140px]">
+                <span class="material-symbols-outlined text-slate-300 !text-lg">location_on</span>
+                <div class="text-sm font-bold text-slate-900 uppercase tracking-tight truncate">
+                  {@to}
+                </div>
+              </div>
+
+              <div class="flex-1 flex items-center px-5 py-2.5 border-r border-slate-50 gap-3 min-w-[140px]">
+                <span class="material-symbols-outlined text-slate-300 !text-lg">calendar_month</span>
+                <div class="text-sm font-bold text-slate-900">{@date}</div>
+              </div>
+
+              <button
+                phx-click="back_to_search"
+                class="px-8 h-11 rounded-xl bg-[#d52263] text-white font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] transition-all active:scale-95 shadow-lg shadow-pink-500/20 shrink-0"
+              >
+                MODIFY
+              </button>
+            </div>
+            <%!-- Route Title --%>
+            <div class="text-center mb-10">
+              <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter">
+                {@from} <span class="text-[#FF4C00] text-2xl mx-2">→</span> {@to}
+              </h1>
+            </div>
+            <%!-- Date Navigator --%>
+            <div class="flex items-center justify-center gap-2 mb-10">
+              <button class="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-300 hover:text-slate-900 hover:border-orange-100 transition-all shadow-sm">
+                <span class="material-symbols-outlined !text-lg">chevron_left</span>
+              </button>
+
+              <div class="flex items-center bg-white rounded-2xl border border-slate-100 p-1 shadow-sm overflow-x-auto">
+                <%= for d <- @date_range do %>
+                  <button
+                    phx-click="change_date"
+                    phx-value-date={d.date}
+                    class={[
+                      "px-5 py-3 rounded-xl transition-all text-xs font-black tracking-tight whitespace-nowrap",
+                      d.is_selected && "bg-[#FF4C00] text-white shadow-md shadow-orange-100",
+                      !d.is_selected && !d.is_past && "text-slate-500 hover:text-slate-900",
+                      d.is_past && "text-slate-200 cursor-not-allowed"
+                    ]}
+                    disabled={d.is_past}
+                  >
+                    <span class="block text-[9px] font-black uppercase tracking-widest opacity-70">{d.month_label}</span>
+                    <span class="block text-sm font-black">{d.day_label}</span>
+                  </button>
+                <% end %>
+              </div>
+
+              <button class="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-300 hover:text-slate-900 hover:border-orange-100 transition-all shadow-sm">
+                <span class="material-symbols-outlined !text-lg">chevron_right</span>
+              </button>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-6">
+              <%!-- Filters Sidebar --%>
+              <aside class="space-y-5 md:w-80 md:shrink-0 filter-sidebar">
+                <div class="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm">
+                  <div class="flex items-center gap-2.5 mb-6 pb-4 border-b border-slate-50">
+                    <span class="material-symbols-outlined text-[#FF4C00] !text-xl">filter_alt</span>
+                    <h3 class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-900">
+                      Filters
+                    </h3>
+                  </div>
+
+                  <div class="space-y-6">
+                    <div>
+                      <h4 class="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-3">
+                        Operator
+                      </h4>
+
+                      <div class="space-y-2.5">
+                        <%= for operator <- @available_operators do %>
+                          <label class="flex items-center gap-2.5 cursor-pointer group">
+                            <input
+                              type="checkbox"
+                              checked={operator in @selected_operators}
+                              phx-click="toggle_operator"
+                              phx-value-operator={operator}
+                              class="w-3.5 h-3.5 rounded border-2 border-slate-200 text-[#FF4C00] focus:ring-[#FF4C00] transition-all accent-[#FF4C00]"
+                            />
+                            <span class="text-[11px] font-bold text-slate-500 group-hover:text-slate-900 transition-colors tracking-tight">{operator}</span>
+                          </label>
+                        <% end %>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 class="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-3">
+                        Departure
+                      </h4>
+
+                      <div class="grid grid-cols-2 gap-2">
+                        <button
+                          phx-click="toggle_departure"
+                          phx-value-period="morning"
+                          class={"flex flex-col items-center justify-center p-3 rounded-xl border transition-all gap-1 " <> (if("morning" in @selected_departures, do: "border-[#FF4C00] bg-orange-50/50", else: "border-slate-50 bg-white hover:border-orange-100"))}
+                        >
+                          <span class={"material-symbols-outlined text-base " <> (if("morning" in @selected_departures, do: "text-[#FF4C00]", else: "text-slate-300"))}>wb_sunny</span>
+                          <p class="text-[9px] font-black text-slate-900 leading-none">Morning</p>
+                        </button>
+
+                        <button
+                          phx-click="toggle_departure"
+                          phx-value-period="afternoon"
+                          class={"flex flex-col items-center justify-center p-3 rounded-xl border transition-all gap-1 " <> (if("afternoon" in @selected_departures, do: "border-[#FF4C00] bg-orange-50/50", else: "border-slate-50 bg-white hover:border-orange-100"))}
+                        >
+                          <span class={"material-symbols-outlined text-base " <> (if("afternoon" in @selected_departures, do: "text-[#FF4C00]", else: "text-slate-300"))}>light_mode</span>
+                          <p class="text-[9px] font-black text-slate-900 leading-none">
+                            Afternoon
+                          </p>
+                        </button>
+
+                        <button
+                          phx-click="toggle_departure"
+                          phx-value-period="evening"
+                          class={"flex flex-col items-center justify-center p-3 rounded-xl border transition-all gap-1 " <> (if("evening" in @selected_departures, do: "border-[#FF4C00] bg-orange-50/50", else: "border-slate-50 bg-white hover:border-orange-100"))}
+                        >
+                          <span class={"material-symbols-outlined text-base " <> (if("evening" in @selected_departures, do: "text-[#FF4C00]", else: "text-slate-300"))}>dark_mode</span>
+                          <p class="text-[9px] font-black text-slate-900 leading-none">Evening</p>
+                        </button>
+
+                        <button
+                          phx-click="toggle_departure"
+                          phx-value-period="other"
+                          class={"flex flex-col items-center justify-center p-3 rounded-xl border transition-all gap-1 " <> (if("other" in @selected_departures, do: "border-[#FF4C00] bg-orange-50/50", else: "border-slate-50 bg-white hover:border-orange-100"))}
+                        >
+                          <span class={"material-symbols-outlined text-base " <> (if("other" in @selected_departures, do: "text-[#FF4C00]", else: "text-slate-300"))}>more_time</span>
+                          <p class="text-[9px] font-black text-slate-900 leading-none">Other</p>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 class="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-3">
+                        Seat Type
+                      </h4>
+
+                      <div class="space-y-2.5">
+                        <%= for st <- @available_seat_types do %>
+                          <label class="flex items-center gap-2.5 cursor-pointer group">
+                            <input
+                              type="checkbox"
+                              checked={st in @selected_seat_types}
+                              phx-click="toggle_seat_type"
+                              phx-value-seat_type={st}
+                              class="w-3.5 h-3.5 rounded border-2 border-slate-200 text-[#FF4C00] focus:ring-[#FF4C00] transition-all accent-[#FF4C00]"
+                            />
+                            <span class="text-[11px] font-bold text-slate-500 group-hover:text-slate-900 transition-colors capitalize tracking-tight">{String.replace(
+                              st,
+                              "_",
+                              " "
+                            )}</span>
+                          </label>
+                        <% end %>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <%!-- Bus Details Card --%>
+                <%= if @selected_bus do %>
+                  <div class="bg-white rounded-[2.5rem] border border-slate-100 p-10 shadow-sm mt-6">
+                    <h3 class="text-sm font-black text-slate-900 mb-8 uppercase tracking-widest border-b border-slate-50 pb-6">
+                      Bus Details
+                    </h3>
+
+                    <div class="flex items-center gap-6 mb-8">
+                      <%= if Map.get(@selected_bus, :bus_operator) && @selected_bus.bus_operator.logo_url do %>
+                        <img
+                          src={@selected_bus.bus_operator.logo_url}
+                          alt={@selected_bus.company}
+                          class="w-16 h-16 object-contain"
+                        />
+                      <% else %>
+                        <div class="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[#FF4C00] text-3xl">
+                          <span class="material-symbols-outlined">directions_bus</span>
+                        </div>
+                      <% end %>
+
+                      <div>
+                        <h4 class="text-lg font-black text-slate-900 uppercase tracking-tighter">
+                          {@selected_bus.company}
+                        </h4>
+
+                        <%= if Map.get(@selected_bus, :rating) do %>
+                          <div class="flex items-center gap-1 text-xs font-black text-orange-500 uppercase tracking-tighter mt-1">
+                            <span class="material-symbols-outlined !text-sm">star</span> {@selected_bus.rating} Rating
+                          </div>
+                        <% end %>
+                      </div>
+                    </div>
+
+                    <div class="space-y-4">
+                      <div class="flex justify-between">
+                        <span class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Category</span>
+                        <span class="text-xs font-black text-slate-900 uppercase">{Map.get(
+                          @selected_bus,
+                          :category,
+                          "Standard"
+                        ) || "Standard"}</span>
+                      </div>
+
+                      <div class="flex justify-between">
+                        <span class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Seat Type</span>
+                        <span class="text-xs font-black text-slate-900 uppercase">{Map.get(
+                          @selected_bus,
+                          :seat_type,
+                          "Sleeper"
+                        ) || "Sleeper"}</span>
+                      </div>
+
+                      <div class="flex justify-between">
+                        <span class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Duration</span>
+                        <span class="text-xs font-black text-slate-900">{@selected_bus.duration ||
+                          "N/A"}</span>
+                      </div>
+
+                      <div class="flex justify-between">
+                        <span class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Departure</span>
+                        <span class="text-xs font-black text-slate-900">{@selected_bus.departure}</span>
+                      </div>
+
+                      <div class="flex justify-between">
+                        <span class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Arrival</span>
+                        <span class="text-xs font-black text-slate-900">{@selected_bus.arrival}</span>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </aside>
+              <%!-- Buses Listing --%>
+              <div class="space-y-4 flex-1 min-w-0">
+                <div id="buses" phx-update="stream" class="space-y-4">
+                  <div :for={{id, bus} <- @streams.buses} id={id} class="group">
+                    <div class="bg-white rounded-2xl border border-slate-100 p-4 md:p-5 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300">
+                      <div class="grid grid-cols-1 md:grid-cols-[180px_1fr_180px] gap-4 md:gap-6">
+                        <%!-- Col 1: Operator --%>
+                        <div class="flex items-center gap-3">
+                          <div class="w-16 h-16 rounded-xl border border-slate-100 shadow-inner flex items-center justify-center p-2 bg-slate-50 overflow-hidden shrink-0">
+                            <%= if Map.get(bus, :bus_operator) && bus.bus_operator.logo_url do %>
+                              <img
+                                src={bus.bus_operator.logo_url}
+                                class="max-w-full max-h-full object-contain"
+                                alt={bus.company}
+                              />
+                            <% else %>
+                              <div class={"h-full w-full rounded-xl flex items-center justify-center text-white font-black text-xs #{initials_color(bus.company)}"}>
+                                {String.slice(bus.company, 0, 2)}
+                              </div>
+                            <% end %>
+                          </div>
+
+                          <div class="min-w-0">
+                            <h4 class="text-sm font-bold uppercase tracking-tighter text-slate-900 leading-tight truncate">
+                              {bus.company}
+                            </h4>
+
+                            <%= if Map.get(bus, :rating) do %>
+                              <div class="mt-1 flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-50 text-[10px] font-black text-orange-600 w-fit">
+                                <span class="material-symbols-outlined !text-[12px]">star</span> {bus.rating}
+                              </div>
+                            <% end %>
+                          </div>
+                        </div>
+                        <%!-- Col 2: Journey --%>
+                        <div class="flex flex-col items-center justify-center gap-2">
+                          <div class="flex items-center justify-between w-full gap-3">
+                            <div class="text-center">
+                              <p class="text-xl md:text-2xl font-black text-slate-900 tracking-tighter">
+                                {bus.departure}
+                              </p>
+
+                              <p class="text-[10px] font-bold text-slate-400 uppercase truncate">
+                                {@from}
+                              </p>
+                            </div>
+
+                            <div class="flex-1 flex flex-col items-center px-2">
+                              <span class="text-[10px] font-black text-slate-400 uppercase mb-1">{bus.duration}</span>
+                              <div class="w-full flex items-center gap-1.5">
+                                <div class="w-1.5 h-1.5 rounded-full bg-slate-900 shrink-0"></div>
+
+                                <div class="flex-1 h-[2px] bg-slate-200 relative">
+                                  <div class="absolute inset-0 flex items-center justify-center -top-3.5">
+                                    <span class="material-symbols-outlined text-[#FF4C00] text-base">directions_bus</span>
+                                  </div>
+                                </div>
+
+                                <div class="w-1.5 h-1.5 rounded-full bg-slate-900 shrink-0"></div>
+                              </div>
+                            </div>
+
+                            <div class="text-center">
+                              <p class="text-xl md:text-2xl font-black text-slate-900 tracking-tighter">
+                                {bus.arrival}
+                              </p>
+
+                              <p class="text-[10px] font-bold text-slate-400 uppercase truncate">
+                                {@to}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-50 text-[10px] font-black text-orange-600">
+                            <span class="material-symbols-outlined !text-xs">airline_seat_recline_extra</span> {bus.seats} left
+                          </div>
+                        </div>
+                        <%!-- Col 3: Prices + Action --%>
+                        <div class="flex flex-col items-end justify-between gap-2">
+                          <div class="flex flex-col gap-0.5 w-full">
+                            <div class="flex items-baseline justify-between gap-2">
+                              <span class="text-[10px] font-bold text-slate-400 uppercase">Normal</span>
+                              <span class="text-base font-black text-slate-900">KES {String.replace(
+                                to_string(bus.price),
+                                ~r/[^0-9]/,
+                                ""
+                              )}</span>
+                            </div>
+
+                            <%= if Map.get(bus, :vip_price) do %>
+                              <div class="flex items-baseline justify-between gap-2">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase">VIP</span>
+                                <span class="text-sm font-black text-slate-900">KES {String.replace(
+                                  to_string(bus.vip_price),
+                                  ~r/[^0-9]/,
+                                  ""
+                                )}</span>
+                              </div>
+                            <% end %>
+
+                            <%= if Map.get(bus, :business_price) do %>
+                              <div class="flex items-baseline justify-between gap-2">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase">Business</span>
+                                <span class="text-sm font-black text-slate-900">KES {String.replace(
+                                  to_string(bus.business_price),
+                                  ~r/[^0-9]/,
+                                  ""
+                                )}</span>
+                              </div>
+                            <% end %>
+
+                            <%= if Map.get(bus, :first_class_price) do %>
+                              <div class="flex items-baseline justify-between gap-2">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase">First</span>
+                                <span class="text-sm font-black text-slate-900">KES {String.replace(
+                                  to_string(bus.first_class_price),
+                                  ~r/[^0-9]/,
+                                  ""
+                                )}</span>
+                              </div>
+                            <% end %>
+                          </div>
+
+                          <button
+                            phx-click="select_bus"
+                            phx-value-id={bus.id}
+                            phx-disable-with="Opening..."
+                            class="w-full py-2.5 rounded-xl bg-gradient-to-br from-[#d52263] via-[#ff4c00] to-[#ff4c00] text-white font-black uppercase tracking-widest text-[10px] hover:shadow-lg hover:shadow-orange-200 transition-all active:scale-[0.98]"
+                          >
+                            Select Seat
+                          </button>
+                        </div>
+                      </div>
+                      <%!-- Amenities (compact) --%>
+                      <%= if Map.get(bus, :amenities) && !Enum.empty?(bus.amenities) do %>
+                        <div class="mt-3 pt-3 border-t border-slate-50 flex items-center gap-2 overflow-x-auto no-scrollbar">
+                          <%= for amenity <- bus.amenities do %>
+                            <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 border border-slate-100 flex-shrink-0">
+                              <% icon =
+                                Map.get(
+                                  %{
+                                    "AC" => "ac_unit",
+                                    "Wi-Fi" => "wifi",
+                                    "Charging" => "power",
+                                    "TV" => "tv",
+                                    "Snacks" => "restaurant",
+                                    "Drinks" => "local_drink",
+                                    "Blanket" => "bed",
+                                    "Water" => "water_drop",
+                                    "Toilet" => "wc"
+                                  },
+                                  amenity,
+                                  "info"
+                                ) %>
+                              <span class="material-symbols-outlined !text-xs text-orange-400">{icon}</span>
+                              <span class="text-[10px] font-black text-slate-500">{amenity}</span>
+                            </div>
+                          <% end %>
+                        </div>
+                      <% end %>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <%!-- Seat Picker Drawer --%>
+        <%= if @seat_drawer_open and @selected_bus do %>
+          <div class="fixed inset-0 z-[100] flex justify-end">
+            <div
+              class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+              phx-click="close_seat_picker"
+            >
+            </div>
+
+            <div class="relative bg-white w-full max-w-md h-full shadow-2xl flex flex-col animate-slide-in">
+              <div class="p-8 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                  <h3 class="text-xl font-black text-slate-900 uppercase tracking-tighter">
+                    Choose Seats
+                  </h3>
+
+                  <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">
+                    {@selected_bus.company} — {@from} to {@to}
+                  </p>
+                </div>
+
+                <button
+                  phx-click="close_seat_picker"
+                  class="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all"
+                >
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              </div>
+
+              <div class="flex-1 overflow-y-auto p-6">
+                <div class="mb-6 flex flex-wrap gap-x-6 gap-y-4 justify-center items-center">
+                  <div class="flex items-center gap-2">
+                    <div class="w-5 h-5 rounded-md bg-white border-2 border-amber-400"></div>
+                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">First</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <div class="w-5 h-5 rounded-md bg-white border-2 border-orange-300"></div>
+                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">VIP</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <div class="w-5 h-5 rounded-md bg-white border-2 border-indigo-300"></div>
+                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Business</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <div class="w-5 h-5 rounded-md bg-white border-2 border-slate-100"></div>
+                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Normal</span>
+                  </div>
+                  <div class="flex items-center gap-2 border-l border-slate-100 pl-6 ml-2">
+                    <div class="w-5 h-5 rounded-md bg-[#FF4C00] shadow-lg shadow-orange-100">
+                    </div>
+                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Selected</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <div class="w-5 h-5 rounded-md bg-slate-900"></div>
+                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Taken</span>
+                  </div>
+                </div>
+                <%!-- Seat Grid --%>
+                <div class="max-w-[240px] mx-auto bg-slate-50 rounded-[2.5rem] p-4 border border-slate-100 relative">
+                  <div class="absolute top-4 left-1/2 -translate-x-1/2 w-8 h-[2px] bg-slate-200">
+                  </div>
+
+                  <div class="space-y-2 pt-6">
+                    <%= for row <- @seat_layout do %>
+                      <div class="flex justify-between items-center gap-2">
+                        <div class="flex gap-1 flex-1">
+                          <%= for seat <- Enum.take(row, 2) do %>
+                            <.render_seat seat={seat} selected={@selected_seats} />
+                          <% end %>
+                        </div>
+                        <%!-- Aisle --%>
+                        <div class="w-4"></div>
+
+                        <div class="flex gap-1 flex-1 justify-end">
+                          <%= for seat <- Enum.slice(row, 2, 2) do %>
+                            <.render_seat seat={seat} selected={@selected_seats} />
+                          <% end %>
+                        </div>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-6 bg-white border-t border-slate-100 shadow-[0_-20px_40px_rgba(0,0,0,0.02)]">
+                <div class="flex justify-between items-end mb-4">
+                  <div>
+                    <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                      {Enum.count(@selected_seats)} SEATS SELECTED
+                    </div>
+
+                    <div class="text-sm font-black text-slate-900">
+                      {Enum.join(@selected_seats, ", ")}
+                    </div>
+                  </div>
+
+                  <div class="text-right">
+                    <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                      TOTAL FARE
+                    </div>
+
+                    <div class="text-2xl font-black text-[#FF4C00]">KSH {@final_price}</div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  phx-click="confirm_seats"
+                  disabled={Enum.empty?(@selected_seats)}
+                  class={[
+                    "w-full py-5 rounded-[1.8rem] font-black uppercase tracking-widest text-sm transition-all shadow-xl",
+                    Enum.empty?(@selected_seats) &&
+                      "bg-slate-100 text-slate-300 cursor-not-allowed",
+                    !Enum.empty?(@selected_seats) &&
+                      "bg-[#FF4C00] text-white hover:bg-[#E64400] hover:shadow-orange-200 active:scale-95"
+                  ]}
+                >
+                  CONFIRM SEATS
+                </button>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      <% @step == :passenger_info -> %>
+        <%!-- Step :passenger_info (Industrial Reference Match) --%>
+        <section class="pt-10 pb-24 px-6 max-w-[1350px] mx-auto font-sans">
+          <%!-- Industrial Breadcrumbs --%>
+          <nav class="flex items-center gap-2 mb-8 text-[11px] font-bold text-slate-400">
+            <span>Home</span> <span class="text-slate-300">›</span> <span>Booking</span>
+            <span class="text-slate-300">›</span>
+            <span class="text-slate-900 font-black">Passenger Details</span>
+            <span class="text-slate-300">›</span> <span>Payment</span>
+          </nav>
+          <%!-- Dynamic Page Title --%>
+          <h1 class="text-4xl font-black text-slate-900 mb-12 tracking-tighter">
+            {@from} <span class="text-[#FF4C00] opacity-50">→</span> {@to}
+            <%= if @return_date && !String.match?(@return_date, ~r/^null$/) do %>
+              round trip
+            <% else %>
+              one way trip
+            <% end %>
+          </h1>
+
+          <.form
+            for={@passenger_form}
+            id="passenger-form"
+            phx-change="validate_passengers"
+            phx-submit="save_passenger"
+          >
+            <div class="grid lg:grid-cols-[1fr_420px] gap-12 items-start">
+              <%!-- Left Column (Form interaction hub) --%>
+              <div class="space-y-10">
+                <%!-- Section: Passenger Details --%>
+                <div class="bg-white rounded-[2rem] border border-slate-100 p-8 shadow-sm">
+                  <h2 class="text-xl font-black text-slate-900 mb-2 uppercase tracking-tight">
+                    Passenger Details
+                  </h2>
+
+                  <div class="space-y-12 mt-8">
+                    <.inputs_for :let={p} field={@passenger_form[:passengers]}>
+                      <% seat_id = p.index %> <% display_index =
+                        Enum.find_index(@selected_seats, &(&1 == to_string(seat_id)))
+                        |> then(&((&1 || 0) + 1)) %>
+                      <div class="space-y-6">
+                        <div class="flex items-center gap-2 mb-2">
+                          <span class="text-xs font-bold text-slate-400">Passenger {display_index} details Seat {seat_id} 🚩</span>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-x-8 gap-y-6">
+                          <div class="space-y-1.5">
+                            <label class="text-xs font-black text-slate-900">Firstname</label>
+                            <.input
+                              field={p[:firstname]}
+                              type="text"
+                              placeholder="First Name"
+                              phx-debounce="500"
+                              class="w-full rounded-xl border-slate-200 p-3.5 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
+                            />
+                          </div>
+
+                          <div class="space-y-1.5">
+                            <label class="text-xs font-black text-slate-900">Lastname</label>
+                            <.input
+                              field={p[:lastname]}
+                              type="text"
+                              placeholder="Last Name"
+                              phx-debounce="500"
+                              class="w-full rounded-xl border-slate-200 p-3.5 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
+                            />
+                          </div>
+
+                          <div class="space-y-1.5">
+                            <label class="text-xs font-black text-slate-900">Phone number</label>
+                            <.input
+                              field={p[:phone]}
+                              type="tel"
+                              placeholder="e.g 0722..."
+                              phx-debounce="500"
+                              class="w-full rounded-xl border-slate-200 p-3.5 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
+                            />
+                          </div>
+
+                          <div class="space-y-1.5">
+                            <label class="text-xs font-black text-slate-900">ID number or Passport</label>
+                            <.input
+                              field={p[:id_number]}
+                              type="text"
+                              placeholder="ID/Passport"
+                              phx-debounce="500"
+                              class="w-full rounded-xl border-slate-200 p-3.5 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
+                            />
+                          </div>
+
+                          <div class="space-y-1.5">
+                            <label class="text-xs font-black text-slate-900">Nationality</label>
+                            <.input
+                              field={p[:nationality]}
+                              type="select"
+                              options={["Kenyan", "Ugandan", "Tanzanian", "Other"]}
+                              class="w-full rounded-xl border-slate-200 p-3.5 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </.inputs_for>
+                  </div>
+                </div>
+                <%!-- Section: Payment Details --%>
+                <div class="bg-white rounded-[2rem] border border-slate-100 p-8 shadow-sm mt-10">
+                  <h2 class="text-xl font-black text-slate-900 mb-8 uppercase tracking-tight">
+                    Payment Details
+                  </h2>
+
+                  <div class="space-y-8">
+                    <div class="space-y-1.5">
+                      <label class="text-xs font-black text-slate-900">Email address (Optional)</label>
+                      <.input
+                        field={@passenger_form[:payment_email]}
+                        type="email"
+                        placeholder="john@example.com"
+                        phx-debounce="500"
+                        class="w-full rounded-xl border-slate-200 p-3.5 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
+                      />
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div class="space-y-1.5">
+                        <label class="text-xs font-black text-slate-900">Full name</label>
+                        <.input
+                          field={@passenger_form[:payment_name]}
+                          type="text"
+                          placeholder="Full Name"
+                          phx-debounce="500"
+                          class="w-full rounded-xl border-slate-200 p-3.5 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
+                        />
+                      </div>
+
+                      <div class="space-y-1.5">
+                        <label class="text-xs font-black text-slate-900">Payment mobile number</label>
+                        <.input
+                          field={@passenger_form[:payment_phone]}
+                          type="tel"
+                          placeholder="0712..."
+                          phx-debounce="500"
+                          class="w-full rounded-xl border-slate-200 p-3.5 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <%!-- Right Column (Summary Card - Exact Image Match) --%>
+              <aside class="sticky top-32">
+                <div class="bg-white rounded-[2.5rem] border border-slate-100 p-10 shadow-2xl shadow-slate-200/50">
+                  <h3 class="text-[10px] font-black text-slate-900 mb-8 uppercase tracking-[0.2em] border-b border-slate-50 pb-6">
+                    ONE-WAY TICKET
+                  </h3>
+
+                  <div class="grid grid-cols-2 gap-8 mb-10">
+                    <div class="space-y-2">
+                      <label class="text-[9px] font-black uppercase text-orange-500 tracking-widest">DEPARTURE</label>
+                      <div class="text-sm font-black text-slate-900">{@from}</div>
+
+                      <div class="text-xs font-bold text-slate-400">{@date}</div>
+
+                      <div class="text-xs font-bold text-slate-400">
+                        {@selected_bus.departure}
+                      </div>
+                    </div>
+
+                    <div class="space-y-2">
+                      <label class="text-[9px] font-black uppercase text-orange-500 tracking-widest">DROPOFF</label>
+                      <div class="text-sm font-black text-slate-900">{@to}</div>
+
+                      <div class="text-xs font-bold text-slate-400">{@date}</div>
+
+                      <div class="text-xs font-bold text-slate-400">{@selected_bus.arrival}</div>
+                    </div>
+                  </div>
+
+                  <div class="text-[10px] font-bold text-slate-500 flex justify-between items-center py-6 border-t border-slate-50">
+                    <span class="uppercase tracking-widest">Onward seat(s) No.</span>
+                    <span class="font-black text-slate-900">{Enum.join(@selected_seats, ", ")}</span>
+                  </div>
+
+                  <div class="flex justify-between items-center py-8 border-y border-slate-50">
+                    <span class="text-xl font-black text-slate-900">Total</span>
+                    <span class="text-xl font-black text-slate-900">Ksh {@final_price}</span>
+                  </div>
+                  <%!-- Industrial Promo Box (Image Match) --%>
+                  <div class="bg-orange-50 rounded-3xl p-6 mt-8 border border-orange-100 flex gap-4">
+                    <div class="w-10 h-10 shrink-0 rounded-xl bg-white flex items-center justify-center text-[#FF4C00] shadow-sm border border-orange-100/50">
+                      <span class="material-symbols-outlined !text-xl">redeem</span>
+                    </div>
+
+                    <div class="space-y-1">
+                      <p class="text-[11px] font-black text-slate-900 leading-snug">
+                        Complete this booking and earn <span class="text-[#FF4C00]">100 KSH</span>
+                        for every friend you refer!
+                      </p>
+
+                      <p class="text-[9px] font-bold text-slate-400 leading-relaxed">
+                        Share your Referral Code and
+                        <span class="text-[#FF4C00]">earn up to 2,500 KSH in cashback!</span>
+                        both you and your friend get rewarded after their first completed trip.
+                      </p>
+
+                      <a
+                        href="#"
+                        class="text-[9px] font-black text-[#FF4C00] underline decoration-1 underline-offset-4"
+                      >T&Cs applied</a>
+                    </div>
+                  </div>
+                  <%!-- Disclaimer & Actions --%>
+                  <div class="mt-10 space-y-8">
+                    <p class="text-[8px] font-black text-slate-300 uppercase leading-relaxed tracking-widest">
+                      PLEASE NOTE: ONCE SEATS ARE SELECTED AND PAID FOR, THEY CANNOT BE CHANGED. TICKETS ARE NON-REFUNDABLE.
+                    </p>
+
+                    <div class="space-y-6">
+                      <label class="flex items-center gap-3 cursor-pointer group">
+                        <.input
+                          field={@passenger_form[:agreed]}
+                          type="checkbox"
+                          class="w-5 h-5 rounded border-slate-200 text-[#FF4C00] focus:ring-0"
+                        />
+                        <span class="text-[10px] font-bold text-slate-500 group-hover:text-slate-900 transition-all">
+                          By continuing, you agree to the <a
+                            href="#"
+                            class="text-[#FF4C00] underline decoration-1 underline-offset-4 font-black"
+                          >Terms and Conditions</a>.
+                        </span>
+                      </label>
+
+                      <button
+                        type="submit"
+                        phx-disable-with="PROCESSING..."
+                        class={[
+                          "w-full py-5 rounded-[1.5rem] font-black uppercase tracking-widest text-[11px] transition-all shadow-xl",
+                          if(@passenger_form[:agreed].value in ["true", true],
+                            do: "bg-[#FF4C00] text-white hover:bg-[#E64400]",
+                            else:
+                              "bg-slate-100 text-slate-300 border border-slate-200 cursor-not-allowed"
+                          )
+                        ]}
+                      >
+                        GO TO PAYMENT
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </.form>
+        </section>
+      <% @step == :review_and_pay -> %>
+        <%!-- Step :review_and_pay --%>
+        <section class="pt-10 pb-24 px-6 max-w-[1350px] mx-auto">
+          <div class="flex items-center gap-4 mb-12">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-black">✓</span>
+              <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Passenger Info</span>
+            </div>
+
+            <div class="w-8 h-[2px] bg-slate-100"></div>
+
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-[#FF4C00] text-white flex items-center justify-center text-[10px] font-black">3</span>
+              <span class="text-[10px] font-black text-slate-900 uppercase tracking-widest">Review & Pay</span>
+            </div>
+          </div>
+
+          <div class="flex flex-col lg:flex-row gap-12 items-start">
+            <div class="flex-1 space-y-8 min-w-0">
+              <h2 class="text-3xl font-black text-slate-900 uppercase tracking-tighter">
+                Review Booking
+              </h2>
+              <%!-- Trip Summary Card --%>
+              <div class="bg-white rounded-[2.5rem] border border-slate-100 p-10 shadow-sm">
+                <div class="flex items-center justify-between mb-10 border-b border-slate-50 pb-8">
+                  <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 rounded-2xl bg-orange-50 flex items-center justify-center text-[#FF4C00]">
+                      <span class="material-symbols-outlined !text-3xl">directions_bus</span>
+                    </div>
+
+                    <div>
+                      <h3 class="text-lg font-black text-slate-900 uppercase tracking-tighter">
+                        Trip Details
+                      </h3>
+
+                      <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                        Confirmed Itinerary
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    phx-click="back_to_search"
+                    class="text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-[#FF4C00] transition-colors"
+                  >EDIT TRIP</button>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-10">
+                  <div class="space-y-6">
+                    <div>
+                      <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">OPERATOR</label>
+                      <div class="text-sm font-black text-slate-900 uppercase tracking-widest">
+                        {@selected_bus.company}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">DEPARTURE</label>
+                      <div class="text-sm font-black text-slate-900">
+                        {@date} at {@selected_bus.departure}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">BOARDING POINT</label>
+                      <div class="text-sm font-black text-slate-900">{@pickup_stop}</div>
+                    </div>
+                  </div>
+
+                  <div class="space-y-6">
+                    <div>
+                      <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">ROUTE</label>
+                      <div class="text-sm font-black text-slate-900 uppercase tracking-tighter">
+                        {@from} → {@to}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">SEATS</label>
+                      <div class="text-sm font-black text-[#FF4C00]">
+                        {Enum.join(@selected_seats, ", ")}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">DROPOFF POINT</label>
+                      <div class="text-sm font-black text-slate-900">{@dropoff_stop}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <%!-- Passenger Summary Card --%>
+              <div class="bg-white rounded-[2.5rem] border border-slate-100 p-10 shadow-sm">
+                <div class="flex items-center justify-between mb-8 border-b border-slate-50 pb-6">
+                  <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest">
+                    PASSENGERS
+                  </h3>
+
+                  <button
+                    phx-click={
+                      JS.patch(
+                        ~p"/passenger-details/#{Base.encode64(:crypto.strong_rand_bytes(18), padding: false)}?bus_id=#{@selected_bus.id}&seats=#{Enum.join(@selected_seats, ",")}"
+                      )
+                    }
+                    class="text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-[#FF4C00] transition-colors"
+                  >EDIT INFO</button>
+                </div>
+
+                <div class="space-y-4">
+                  <%= for seat_id <- @selected_seats do %>
+                    <% passenger = passenger_info(@passenger_form, seat_id) %>
+                    <div class="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                      <div class="flex items-center gap-4">
+                        <div class="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-black text-xs">
+                          {seat_id}
+                        </div>
+
+                        <div class="text-sm font-black text-slate-900">
+                          <% firstname =
+                            Map.get(passenger, "firstname") || Map.get(passenger, :firstname) %>
+                          <% lastname =
+                            Map.get(passenger, "lastname") || Map.get(passenger, :lastname) %>
+                          <%= if firstname && firstname != "" do %>
+                            {firstname} {lastname}
+                          <% else %>
+                            Passenger {seat_id}
+                          <% end %>
+                        </div>
+                      </div>
+
+                      <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        {Map.get(passenger, "id_number") || Map.get(passenger, :id_number) ||
+                          "NOT PROVIDED"}
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+
+            <%!-- Sidebar Payment Summary --%>
+            <aside class="w-full lg:w-[400px] lg:shrink-0 sticky top-32 space-y-6">
+              <%!-- Payment Method Selection --%>
+              <div class="bg-white rounded-[2.5rem] border border-slate-100 p-8 shadow-sm">
+                <h3 class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-8">
+                  SELECT PAYMENT METHOD
+                </h3>
+
+                <div class="grid grid-cols-1 gap-4">
+                  <%= for provider <- @active_integrations do %>
+                    <button
+                      type="button"
+                      phx-click="select_payment_method"
+                      phx-value-method={provider}
+                      class={[
+                        "flex items-center justify-between p-5 rounded-[1.8rem] border-2 transition-all group",
+                        @payment_method == provider && "border-[#FF4C00] bg-orange-50/30",
+                        @payment_method != provider && "border-slate-100 hover:border-slate-300"
+                      ]}
+                    >
+                      <div class="flex items-center gap-4">
+                        <div class={[
+                          "w-10 h-10 rounded-xl flex items-center justify-center transition-colors shadow-sm",
+                          if(@payment_method == provider,
+                            do: "bg-[#FF4C00] text-white",
+                            else: "bg-white text-slate-300 group-hover:text-slate-900"
+                          )
+                        ]}>
+                          <span class="material-symbols-outlined !text-xl">
+                            <%= case provider do %>
+                              <% "mpesa" -> %>
+                                account_balance_wallet
+                              <% "paystack" -> %>
+                                credit_card
+                              <% "flutterwave" -> %>
+                                language
+                              <% _ -> %>
+                                payments
+                            <% end %>
+                          </span>
+                        </div>
+
+                        <div class="text-left">
+                          <div class="text-[10px] font-black text-slate-900 uppercase tracking-widest leading-none">
+                            {String.upcase(provider)}
+                          </div>
+
+                          <div class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                            Instant
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="w-5 h-5 rounded-full border-2 border-slate-200 flex items-center justify-center">
+                        <div class={[
+                          "w-2.5 h-2.5 rounded-full bg-[#FF4C00]",
+                          if(@payment_method != provider, do: "hidden")
+                        ]}>
+                        </div>
+                      </div>
+                    </button>
+                  <% end %>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm">
+                <h3 class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-8">
+                  PAYMENT SUMMARY
+                </h3>
+
+                <div class="space-y-4 mb-8">
+                  <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">BASE FARE</span>
+                    <span class="text-sm font-black text-slate-900">KSH {@total_price}</span>
+                  </div>
+
+                  <%= if @discount_amount > 0 do %>
+                    <div class="flex justify-between items-center text-emerald-600">
+                      <span class="text-[10px] font-black uppercase tracking-widest">DISCOUNT</span>
+                      <span class="text-sm font-black">- KSH {@discount_amount}</span>
+                    </div>
+                  <% end %>
+
+                  <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">TAXES & FEES</span>
+                    <span class="text-sm font-black text-slate-900">KSH 0</span>
+                  </div>
+                </div>
+                <%!-- Coupon Form --%>
+                <div class="mb-8 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <label class="block text-[8px] font-black uppercase tracking-widest text-slate-400 mb-2">PROMO CODE</label>
+                  <form phx-submit="apply_coupon" class="flex gap-2">
+                    <input
+                      type="text"
+                      name="code"
+                      placeholder="ENTER CODE"
+                      class="flex-1 bg-white border-slate-200 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest focus:ring-[#FF4C00]"
+                      value={@coupon_code}
+                    />
+                    <button
+                      type="submit"
+                      class="bg-slate-900 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all"
+                    >APPLY</button>
+                  </form>
+
+                  <%= if @applied_coupon do %>
+                    <div class="mt-2 text-[8px] font-black text-emerald-600 uppercase tracking-widest">
+                      CODE {@applied_coupon.code} APPLIED
+                    </div>
+                  <% end %>
+                </div>
+
+                <div class="flex justify-between items-end mb-8 pt-6 border-t border-slate-50">
+                  <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                    FINAL PRICE
+                  </div>
+
+                  <div class="text-4xl font-black text-[#FF4C00] tracking-tighter leading-none">
+                    KSH {@final_price}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  phx-click="pay"
+                  disabled={@loading}
+                  phx-disable-with="PROCESSING..."
+                  class={[
+                    "w-full py-5 rounded-[1.8rem] bg-slate-900 text-white font-black uppercase tracking-widest text-sm transition-all shadow-2xl relative overflow-hidden group",
+                    @loading && "cursor-not-allowed opacity-80"
+                  ]}
+                >
+                  <%= if @loading do %>
+                    <div class="flex items-center justify-center gap-3">
+                      <div class="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin">
+                      </div>
+                      PROCESSING...
+                    </div>
+                  <% else %>
+                    <span class="relative z-10">PAY KSH {@final_price}</span>
+                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000">
+                    </div>
+                  <% end %>
+                </button>
+              </div>
+
+              <div class="flex items-center justify-center gap-2 opacity-30 grayscale">
+                <svg
+                  viewBox="0 0 88 24"
+                  class="h-4 w-auto"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-label="M-Pesa"
+                >
+                  <rect width="88" height="24" rx="6" fill="#D82929" />
+                  <text
+                    x="44"
+                    y="16"
+                    font-size="10"
+                    font-weight="700"
+                    fill="#fff"
+                    text-anchor="middle"
+                    font-family="ui-sans,system-ui,sans-serif"
+                  >
+                    M-PESA
+                  </text>
+                </svg>
+
+                <svg
+                  viewBox="0 0 84 24"
+                  class="h-3 w-auto"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-label="Paystack"
+                >
+                  <rect width="84" height="24" rx="6" fill="#0A0A0A" />
+                  <path d="M60 7 L60 17 L68 12 Z" fill="#6E00AB" />
+                  <text
+                    x="40"
+                    y="16"
+                    font-size="10"
+                    font-weight="700"
+                    fill="#fff"
+                    text-anchor="end"
+                    font-family="ui-sans,system-ui,sans-serif"
+                  >
+                    paystack
+                  </text>
+                </svg>
+
+                <svg
+                  viewBox="0 0 96 24"
+                  class="h-3 w-auto"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-label="Flutterwave"
+                >
+                  <rect width="96" height="24" rx="6" fill="#0A0A0A" />
+                  <path d="M24 6 C30 12 30 18 24 18 C18 18 18 12 24 6 Z" fill="#00C1D4" />
+                  <text
+                    x="70"
+                    y="16"
+                    font-size="10"
+                    font-weight="700"
+                    fill="#fff"
+                    text-anchor="middle"
+                    font-family="ui-sans,system-ui,sans-serif"
+                  >
+                    FLUTTERWAVE
+                  </text>
+                </svg>
+              </div>
+            </aside>
+          </div>
+        </section>
+      <% @step == :ticket -> %>
+        <%!-- Step :ticket (Success) --%>
+        <section class="pt-10 pb-24 px-6 text-center max-w-2xl mx-auto animate-fade-in">
+          <div class="w-24 h-24 rounded-[2.5rem] bg-emerald-50 text-emerald-500 flex items-center justify-center mx-auto mb-10 shadow-lg shadow-emerald-50 relative">
+            <div class="absolute inset-0 rounded-[2.5rem] border-4 border-emerald-500/20 animate-ping">
+            </div>
+            <span class="material-symbols-outlined !text-5xl">check_circle</span>
+          </div>
+
+          <h2 class="text-4xl font-black text-slate-900 mb-4 uppercase tracking-tighter">
+            Booking Successful!
+          </h2>
+
+          <p class="text-slate-500 font-bold mb-12">
+            Your industrial-grade travel pass has been issued and sent to your email.
+          </p>
+
+          <div class="bg-white rounded-[3rem] border border-slate-100 shadow-2xl overflow-hidden relative">
+            <div class="p-10 border-b-2 border-dashed border-slate-100 relative">
+              <div class="absolute -left-4 top-full -translate-y-1/2 w-8 h-8 rounded-full bg-[#f8fafc] border border-slate-50 shadow-inner">
+              </div>
+
+              <div class="absolute -right-4 top-full -translate-y-1/2 w-8 h-8 rounded-full bg-[#f8fafc] border border-slate-50 shadow-inner">
+              </div>
+
+              <div class="flex justify-between items-start gap-8 mb-10">
+                <div class="text-left">
+                  <div class="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1">
+                    TICKET NO.
+                  </div>
+
+                  <div class="text-lg font-black text-slate-900">{@ticket_id || "TKT-B82X9"}</div>
+                </div>
+                <img src="/images/logo_brand.png" alt="Komiuta" class="h-8 opacity-20" />
+              </div>
+
+              <div class="flex flex-col items-center gap-6">
+                <div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 shadow-inner flex items-center justify-center">
+                  <div class="w-48 h-48 bg-white p-4 rounded-xl border border-slate-200 flex flex-col items-center justify-center gap-2">
+                    <span class="material-symbols-outlined !text-6xl text-slate-200">qr_code_2</span>
+                    <span class="text-[8px] font-bold text-slate-300 uppercase tracking-widest">Digital Pass</span>
+                  </div>
+                </div>
+
+                <div class="text-center">
+                  <div class="text-[10px] font-black text-slate-900 uppercase tracking-[0.3em] mb-1">
+                    SCAN AT BOARDING
+                  </div>
+
+                  <div class="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+                    VALID FOR ONE TRIP ONLY
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-10 bg-slate-50/50 grid grid-cols-2 gap-8 text-left">
+              <div>
+                <label class="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">OPERATOR</label>
+                <div class="text-xs font-black text-slate-900">{@selected_bus.company}</div>
+              </div>
+
+              <div>
+                <label class="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">DATE & TIME</label>
+                <div class="text-xs font-black text-slate-900">
+                  {@date} at {@selected_bus.departure}
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">SEATS</label>
+                <div class="text-xs font-black text-[#FF4C00]">
+                  {Enum.join(@selected_seats, ", ")}
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">BOARDING</label>
+                <div class="text-xs font-black text-slate-900">{@pickup_stop}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-12 flex flex-col md:flex-row gap-4 justify-center">
+            <a
+              href={~p"/tickets?ticket_id=#{@ticket_id}"}
+              class="px-10 py-5 rounded-[1.8rem] bg-[#FF4C00] text-white font-black uppercase tracking-widest text-xs hover:bg-[#E64400] transition-all shadow-xl"
+            >VIEW TICKET</a>
+            <button class="px-10 py-5 rounded-[1.8rem] bg-slate-900 text-white font-black uppercase tracking-widest text-xs hover:bg-slate-800 transition-all shadow-xl">DOWNLOAD PDF</button>
+            <a
+              href="/"
+              class="px-10 py-5 rounded-[1.8rem] bg-white text-slate-900 border border-slate-100 font-black uppercase tracking-widest text-xs hover:bg-slate-50 transition-all shadow-sm"
+            >BOOK ANOTHER TRIP</a>
+          </div>
+        </section>
+      <% true -> %>
+        <%!-- Fallback --%>
+        <div class="pt-40 text-center">
+          <p class="text-slate-400 font-bold">Initializing industrial engine...</p>
+        </div>
+    <% end %>
+    <.main_footer footer_tab={@footer_tab} />
+  </div>
+</Layouts.app>
+<%!-- Inline Colocated JS Hooks --%>
+<script :type={Phoenix.LiveView.ColocatedHook} name=".SeatDrawerDismiss">
+  export default {
+    mounted() {
+      this.handleKeydown = e => {
+        if (e.key === "Escape") {
+          this.pushEvent("close_seat_picker", {});
+          this.pushEvent("close_stops_picker", {});
+        }
+      };
+
+      this.el.addEventListener("click", e => {
+        if (e.target === this.el) {
+          this.pushEvent("close_seat_picker", {});
+        }
+      });
+
+      // Close on Escape key
+      document.addEventListener("keydown", this.handleKeydown);
+    },
+    destroyed() {
+      document.removeEventListener("keydown", this.handleKeydown);
+    }
+  }
+</script>
