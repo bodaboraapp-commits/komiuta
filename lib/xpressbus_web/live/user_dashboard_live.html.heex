@@ -583,12 +583,12 @@
                 </div>
               </div>
               <div class="p-4 md:p-5 flex gap-4">
-                <button
-                  phx-click="download_ticket"
+                <a
+                  href={~p"/user/tickets/#{@selected_ticket.ticket_id}/download"}
                   class="flex-1 bg-[#FF4C00] text-white py-4 rounded-2xl font-black shadow-lg shadow-orange-200 hover:bg-[#E64400] transition-all flex items-center justify-center gap-2"
                 >
                   <span class="material-symbols-outlined">download</span> Download PDF
-                </button>
+                </a>
                 <button
                   phx-click="close_ticket"
                   class="px-6 py-4 rounded-2xl font-black text-sm border-2 border-slate-100 hover:border-[#FF4C00] hover:text-[#FF4C00] transition"

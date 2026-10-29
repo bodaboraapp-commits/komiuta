@@ -258,6 +258,53 @@ defmodule XpressbusWeb.UserController do
     end
   end
 
+  defp ticket_owner?(ticket, user) do
+    passenger = phone_digits(ticket.passenger_phone)
+    passenger != "" and passenger == phone_digits(user.phone)
+  end
+
+  defp phone_digits(nil), do: ""
+
+  defp phone_digits(phone) do
+    digits = phone |> to_string() |> String.replace(~r/\D/, "")
+    if String.length(digits) > 9, do: String.slice(digits, -9, 9), else: digits
+  end
+
+  @doc """
+  Downloads a ticket as a PDF. Only the passenger who owns the ticket (same phone
+  number as their account) may download it.
+  """
+  def ticket_download(conn, %{"ticket_id" => ticket_id}) do
+    case signed_in_user(conn) do
+      %Accounts.User{} = user ->
+        case Xpressbus.Tickets.get_ticket(ticket_id) do
+          nil ->
+            conn
+            |> put_flash(:error, "Ticket not found.")
+            |> redirect(to: ~p"/dashboard")
+
+          ticket ->
+            if ticket_owner?(ticket, user) do
+              pdf = Xpressbus.TicketPDF.render(ticket)
+
+              send_download(conn, {:binary, pdf},
+                filename: "#{ticket.ticket_id}.pdf",
+                content_type: "application/pdf"
+              )
+            else
+              conn
+              |> put_flash(:error, "That ticket does not belong to your account.")
+              |> redirect(to: ~p"/dashboard")
+            end
+        end
+
+      _ ->
+        conn
+        |> put_flash(:error, "Please sign in to continue.")
+        |> redirect(to: ~p"/user/login")
+    end
+  end
+
   def logout(conn, _params) do
     conn
     |> clear_session()
