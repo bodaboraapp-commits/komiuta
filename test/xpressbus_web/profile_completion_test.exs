@@ -51,9 +51,13 @@ defmodule Xpressbus.ProfileCompletionTest do
 
     test "returns the existing account for a known Google email" do
       existing = valid_user()
-      {:ok, existing} = Accounts.create_user(%{name: existing.name, phone: existing.phone, email: existing.email})
 
-      assert {:ok, found} = Accounts.find_or_create_google_user(%{name: "Other", email: existing.email})
+      {:ok, existing} =
+        Accounts.create_user(%{name: existing.name, phone: existing.phone, email: existing.email})
+
+      assert {:ok, found} =
+               Accounts.find_or_create_google_user(%{name: "Other", email: existing.email})
+
       assert found.id == existing.id
     end
   end
@@ -101,7 +105,10 @@ defmodule Xpressbus.ProfileCompletionTest do
 
     test "the complete-profile page renders for an incomplete signed-in user" do
       {:ok, user} =
-        Accounts.find_or_create_google_user(%{name: "Incomplete Page", email: email("profilepage")})
+        Accounts.find_or_create_google_user(%{
+          name: "Incomplete Page",
+          email: email("profilepage")
+        })
 
       conn =
         build_conn()

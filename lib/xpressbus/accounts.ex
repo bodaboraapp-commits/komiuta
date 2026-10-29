@@ -35,7 +35,9 @@ defmodule Xpressbus.Accounts do
   """
   def valid_phone?(phone) when is_binary(phone) do
     digits = String.replace(phone, ~r/\D/, "")
-    not String.starts_with?(phone, "G-") and String.length(digits) >= 9 and String.length(digits) <= 15
+
+    not String.starts_with?(phone, "G-") and String.length(digits) >= 9 and
+      String.length(digits) <= 15
   end
 
   def valid_phone?(_), do: false
