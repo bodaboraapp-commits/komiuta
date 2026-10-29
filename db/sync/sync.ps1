@@ -36,7 +36,8 @@
 [CmdletBinding()]
 param(
     [string]$Database  = 'buupasskomiuta_db',
-    [string]$Host      = '127.0.0.1',
+    [Alias('Host')]
+    [string]$Server    = '127.0.0.1',
     [int]   $Port      = 3307,
     [string]$User      = 'root',
     [string]$Password  = $null,
@@ -66,7 +67,7 @@ function Resolve-Tool([string]$explicit, [string]$name) {
 }
 
 function Get-MysqlArgs {
-    $a = @('-h', $Host, '-P', "$Port", '-u', $User, '--default-character-set=utf8mb4')
+    $a = @('-h', $Server, '-P', "$Port", '-u', $User, '--default-character-set=utf8mb4')
     if ($null -ne $Password) {
         if ($Password -eq '') { $a += '--password=' } else { $a += "--password=$Password" }
     }
@@ -90,7 +91,7 @@ if (Test-Path -LiteralPath $work) { Remove-Item -LiteralPath $work -Recurse -For
 New-Item -ItemType Directory -Force -Path $work | Out-Null
 
 Info "Database : $Database"
-Info "Server   : ${Host}:$Port (user $User)"
+Info "Server   : ${Server}:$Port (user $User)"
 Info "mysql    : $mysql"
 Info "Work dir : $work"
 
@@ -134,7 +135,7 @@ if (-not $SkipBackup) {
         $stamp  = Get-Date -Format 'yyyyMMdd-HHmmss'
         $backup = Join-Path $work "backup-$Database-$stamp.sql"
         Info "Backing up database to $backup"
-        $dumpArgs = @('-h', $Host, '-P', "$Port", '-u', $User) + $(if ($null -ne $Password) { if ($Password -eq '') { '--password=' } else { "--password=$Password" } } else { @() }) + @('--single-transaction', '--default-character-set=utf8mb4', '--result-file=' + $backup, $Database)
+        $dumpArgs = @('-h', $Server, '-P', "$Port", '-u', $User) + $(if ($null -ne $Password) { if ($Password -eq '') { '--password=' } else { "--password=$Password" } } else { @() }) + @('--single-transaction', '--default-character-set=utf8mb4', '--result-file=' + $backup, $Database)
         & $mysqldump @dumpArgs
         if ($LASTEXITCODE -ne 0) { throw "Backup failed; aborting before touching the database." }
         Ok "Backup created: $backup"
