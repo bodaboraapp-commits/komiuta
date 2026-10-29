@@ -539,6 +539,9 @@ defmodule Xpressbus.Payments do
     mode = get_in(config.config, ["mode"]) || "sandbox"
     type = get_in(config.config, ["type"]) || "paybill"
     short_code = get_in(config.config, ["business_shortcode"])
+    # Buy Goods (till) accounts have a Store/Party B number that can differ from
+    # the Business Short Code; fall back to the short code for Paybill setups.
+    party_b = get_in(config.config, ["party_b"]) || short_code
     consumer_key = get_in(config.config, ["consumer_key"]) |> to_string() |> String.trim()
     consumer_secret = get_in(config.config, ["consumer_secret"]) |> to_string() |> String.trim()
     pass_key = get_in(config.config, ["passkey"]) |> to_string() |> String.trim()
@@ -621,7 +624,7 @@ defmodule Xpressbus.Payments do
                   if(type == "till", do: "CustomerBuyGoodsOnline", else: "CustomerPayBillOnline"),
                 "Amount" => round(attrs[:amount]),
                 "PartyA" => phone,
-                "PartyB" => short_code,
+                "PartyB" => to_string(party_b),
                 "PhoneNumber" => phone,
                 "CallBackURL" => callback_url,
                 "AccountReference" => attrs[:ticket_id] || attrs[:reference],
