@@ -1,7 +1,7 @@
 defmodule XpressbusWeb.AdminDashboardLive do
   use XpressbusWeb, :live_view
   import XpressbusWeb.AdminComponents
-  alias Xpressbus.{Repo, Tickets, Hotels, HiddenGems, CarHires, Events}
+  alias Xpressbus.{Repo, Tickets, Hotels, HiddenGems, CarHires, Events, Accounts}
   alias Xpressbus.Bookings.Bus
   import Ecto.Query
 
@@ -71,6 +71,7 @@ defmodule XpressbusWeb.AdminDashboardLive do
     gems = HiddenGems.count_hidden_gems()
     cars = CarHires.count_car_hires()
     events = Events.count_events()
+    users = Repo.aggregate(Accounts.User, :count, :id)
 
     total_revenue =
       Repo.all(from(t in Tickets.Ticket, select: t.price))
@@ -84,6 +85,7 @@ defmodule XpressbusWeb.AdminDashboardLive do
       gems: gems,
       cars: cars,
       events: events,
+      users: users,
       revenue: total_revenue,
       revenue_display: format_revenue(total_revenue)
     }
