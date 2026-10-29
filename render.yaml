@@ -1,0 +1,48 @@
+# Render Blueprint for the Komiuta / Xpressbus Phoenix app.
+# Deploy: Render Dashboard -> New -> Blueprint -> select this repo + branch.
+# Secrets marked "sync: false" are entered in the Render dashboard on first deploy.
+services:
+  - type: web
+    name: komiuta
+    runtime: elixir
+    plan: free
+    branch: phoenix-app
+    autoDeploy: true
+    healthCheckPath: /
+    buildCommand: mix local.hex --force && mix local.rebar --force && mix deps.get && mix assets.setup && mix assets.deploy && mix compile
+    startCommand: mix ecto.migrate && mix run priv/repo/render_bootstrap.exs && mix phx.server
+    envVars:
+      - key: MIX_ENV
+        value: prod
+      - key: PHX_HOST
+        value: www.komiuta.com
+      - key: ELIXIR_VERSION
+        value: "1.18.4"
+      - key: SECRET_KEY_BASE
+        generateValue: true
+      - key: POOL_SIZE
+        value: "5"
+      - key: DB_SSL
+        value: "true"
+      - key: ENABLE_BACKGROUND_SYNC
+        value: "false"
+      # --- Fill these in the Render dashboard (from Aiven free MySQL) --------
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_CA_CERT_BASE64
+        sync: false
+      # --- Initial admin account (created once on first boot) ---------------
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_NAME
+        value: Administrator
