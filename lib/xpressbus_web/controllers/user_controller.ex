@@ -105,13 +105,22 @@ defmodule XpressbusWeb.UserController do
       %Accounts.User{} = user ->
         case Accounts.verify_login_code(user.id, to_string(code)) do
           {:ok, user} ->
-            conn
-            |> configure_session(renew: true)
-            |> put_session(:user_id, user.id)
-            |> delete_session(:login_user_id)
-            |> delete_session(:login_identifier)
-            |> put_flash(:success, "Welcome back!")
-            |> redirect(to: ~p"/dashboard")
+            conn =
+              conn
+              |> configure_session(renew: true)
+              |> put_session(:user_id, user.id)
+              |> delete_session(:login_user_id)
+              |> delete_session(:login_identifier)
+
+            if Accounts.profile_complete?(user) do
+              conn
+              |> put_flash(:success, "Welcome back!")
+              |> redirect(to: ~p"/dashboard")
+            else
+              conn
+              |> put_flash(:info, "One last step: add your phone number to finish setting up.")
+              |> redirect(to: ~p"/user/complete-profile")
+            end
 
           {:error, reason} ->
             conn
@@ -165,19 +174,80 @@ defmodule XpressbusWeb.UserController do
   def register(conn, %{"user" => user_params}) do
     case Accounts.register_user(user_params) do
       {:ok, user} ->
-        conn
-        |> configure_session(renew: true)
-        |> put_session(:user_id, user.phone || user.id)
-        |> put_flash(
-          :success,
-          "Registration successful! Welcome to Komiuta."
-        )
-        |> redirect(to: ~p"/dashboard")
+        conn =
+          conn
+          |> configure_session(renew: true)
+          |> put_session(:user_id, user.id)
+          |> put_session(:user_name, user.name)
+
+        if Accounts.profile_complete?(user) do
+          conn
+          |> put_flash(:success, "Registration successful! Welcome to Komiuta.")
+          |> redirect(to: ~p"/dashboard")
+        else
+          conn
+          |> put_flash(:info, "One last step: add your phone number to finish setting up.")
+          |> redirect(to: ~p"/user/complete-profile")
+        end
 
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
         |> put_flash(:error, registration_error_message(changeset))
         |> render(:registration)
+    end
+  end
+
+  @doc """
+  Mandatory contact-details step: every account must have both a phone number
+  and an email before the dashboard is shown.
+  """
+  def complete_profile(conn, _params) do
+    case signed_in_user(conn) do
+      %Accounts.User{} = user ->
+        if Accounts.profile_complete?(user) do
+          redirect(conn, to: ~p"/dashboard")
+        else
+          render(conn, :complete_profile,
+            form: user |> Accounts.change_complete_profile() |> Phoenix.Component.to_form(),
+            user: user
+          )
+        end
+
+      _ ->
+        conn
+        |> put_flash(:error, "Please sign in to continue.")
+        |> redirect(to: ~p"/user/login")
+    end
+  end
+
+  def save_complete_profile(conn, %{"user" => params}) do
+    case signed_in_user(conn) do
+      %Accounts.User{} = user ->
+        case Accounts.complete_profile(user, params) do
+          {:ok, user} ->
+            conn
+            |> put_session(:user_id, user.id)
+            |> put_session(:user_name, user.name)
+            |> put_flash(:success, "You're all set — welcome to Komiuta!")
+            |> redirect(to: ~p"/dashboard")
+
+          {:error, %Ecto.Changeset{} = changeset} ->
+            conn
+            |> put_flash(:error, "Please check the highlighted fields.")
+            |> render(:complete_profile, form: Phoenix.Component.to_form(changeset), user: user)
+        end
+
+      _ ->
+        conn
+        |> put_flash(:error, "Please sign in to continue.")
+        |> redirect(to: ~p"/user/login")
+    end
+  end
+
+  defp signed_in_user(conn) do
+    case get_session(conn, :user_id) do
+      nil -> nil
+      id -> Accounts.get_user(id)
     end
   end
 

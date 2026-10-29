@@ -37,10 +37,11 @@ defmodule XpressbusWeb.UserAuthTest do
     )
   end
 
-  test "login page asks for phone or email", %{conn: conn} do
+  test "login page asks for phone", %{conn: conn} do
     conn = get(conn, ~p"/user/login")
 
-    assert html_response(conn, 200) =~ "Phone or Email"
+    assert html_response(conn, 200) =~ "Phone"
+    assert html_response(conn, 200) =~ "07XX XXX XXX"
     assert html_response(conn, 200) =~ "Send Login Code"
   end
 

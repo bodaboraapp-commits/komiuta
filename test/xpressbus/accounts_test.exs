@@ -30,8 +30,8 @@ defmodule Xpressbus.AccountsTest do
     test "create_user/1 with valid data creates a user" do
       valid_attrs = %{
         name: "some name",
-        phone: "some phone",
-        email: "some email",
+        phone: "0712345678",
+        email: "valid.user@example.com",
         wallet_balance: "120.5",
         avatar_url: "some avatar_url",
         default_payment_method: "some default_payment_method"
@@ -39,8 +39,8 @@ defmodule Xpressbus.AccountsTest do
 
       assert {:ok, %User{} = user} = Accounts.create_user(valid_attrs)
       assert user.name == "some name"
-      assert user.phone == "some phone"
-      assert user.email == "some email"
+      assert user.phone == "0712345678"
+      assert user.email == "valid.user@example.com"
       assert user.wallet_balance == Decimal.new("120.5")
       assert user.avatar_url == "some avatar_url"
       assert user.default_payment_method == "some default_payment_method"
@@ -55,8 +55,8 @@ defmodule Xpressbus.AccountsTest do
 
       update_attrs = %{
         name: "some updated name",
-        phone: "some updated phone",
-        email: "some updated email",
+        phone: "0723456789",
+        email: "updated.user@example.com",
         wallet_balance: "456.7",
         avatar_url: "some updated avatar_url",
         default_payment_method: "some updated default_payment_method"
@@ -64,8 +64,8 @@ defmodule Xpressbus.AccountsTest do
 
       assert {:ok, %User{} = user} = Accounts.update_user(user, update_attrs)
       assert user.name == "some updated name"
-      assert user.phone == "some updated phone"
-      assert user.email == "some updated email"
+      assert user.phone == "0723456789"
+      assert user.email == "updated.user@example.com"
       assert user.wallet_balance == Decimal.new("456.7")
       assert user.avatar_url == "some updated avatar_url"
       assert user.default_payment_method == "some updated default_payment_method"

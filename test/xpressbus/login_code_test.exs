@@ -72,13 +72,18 @@ defmodule Xpressbus.LoginCodeTest do
       assert {:error, :not_found} = Accounts.request_login_code("nobody@example.com")
     end
 
-    test "returns missing_email when the account has no email address" do
+    test "returns missing_email when the account has no usable email address" do
       unique = System.unique_integer([:positive])
 
+      phone = "08" <> (unique |> Integer.to_string() |> String.pad_leading(8, "0"))
+
+      # Legacy/guest accounts carry a synthetic @xpressbus.com address, which
+      # cannot receive a one-time code.
       {:ok, user} =
         Accounts.create_user(%{
           name: "No Email",
-          phone: "08" <> (unique |> Integer.to_string() |> String.pad_leading(8, "0"))
+          phone: phone,
+          email: phone <> "@xpressbus.com"
         })
 
       assert {:error, :missing_email} = Accounts.request_login_code(user.phone)

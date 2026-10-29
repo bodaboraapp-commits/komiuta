@@ -25,26 +25,31 @@ defmodule XpressbusWeb.UserDashboardLive do
         end
 
       if user do
-        tickets = list_user_tickets(user.phone)
-        transactions = Accounts.list_user_transactions(user.id)
+        if Accounts.profile_complete?(user) do
+          tickets = list_user_tickets(user.phone)
+          transactions = Accounts.list_user_transactions(user.id)
 
-        # Gmail users with placeholder phones start with "G-"
-        show_phone_modal = String.starts_with?(user.phone || "", "G-")
-
-        {:ok,
-         socket
-         |> assign(:page_title, "My Dashboard")
-         |> assign(:active_tab, "bus")
-         |> assign(:user, user)
-         |> assign(:current_user, user.phone)
-         |> assign(:tickets, tickets)
-         |> assign(:transactions, transactions)
-         |> assign(:selected_ticket, nil)
-         |> assign(:show_ticket_modal, false)
-         |> assign(:show_phone_modal, show_phone_modal)
-         |> assign(:phone_error, nil)
-         |> assign(:profile_form, Accounts.change_user(user) |> to_form())
-         |> assign(:footer_tab, "about")}
+          {:ok,
+           socket
+           |> assign(:page_title, "My Dashboard")
+           |> assign(:active_tab, "bus")
+           |> assign(:user, user)
+           |> assign(:current_user, user.phone)
+           |> assign(:tickets, tickets)
+           |> assign(:transactions, transactions)
+           |> assign(:selected_ticket, nil)
+           |> assign(:show_ticket_modal, false)
+           |> assign(:show_phone_modal, false)
+           |> assign(:phone_error, nil)
+           |> assign(:profile_form, Accounts.change_user(user) |> to_form())
+           |> assign(:footer_tab, "about")}
+        else
+          # Every account must have both a phone number and an email before the
+          # dashboard (and its personal data) is shown.
+          {:ok,
+           socket
+           |> Phoenix.LiveView.redirect(to: ~p"/user/complete-profile")}
+        end
       else
         {:ok, redirect(socket, to: ~p"/user/login")}
       end

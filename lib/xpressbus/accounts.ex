@@ -17,6 +17,64 @@ defmodule Xpressbus.Accounts do
   end
 
   @doc """
+  Returns true when the value is a real email address (legacy/synthetic
+  placeholder addresses such as `<phone>@xpressbus.com` do not count).
+  """
+  def valid_email?(email) when is_binary(email) do
+    email = email |> String.trim() |> String.downcase()
+
+    email != "" and String.match?(email, ~r/^[^\s@]+@[^\s@]+\.[^\s@]+$/) and
+      not String.ends_with?(email, "@xpressbus.com")
+  end
+
+  def valid_email?(_), do: false
+
+  @doc """
+  Returns true when the value looks like a real phone number (not a Google
+  placeholder such as `G-abcdefgh`).
+  """
+  def valid_phone?(phone) when is_binary(phone) do
+    digits = String.replace(phone, ~r/\D/, "")
+    not String.starts_with?(phone, "G-") and String.length(digits) >= 9 and String.length(digits) <= 15
+  end
+
+  def valid_phone?(_), do: false
+
+  @doc """
+  A user may only reach the dashboard once both identifiers are present and
+  valid: every phone has an email and every email has a phone.
+  """
+  def profile_complete?(%User{} = user) do
+    valid_email?(user.email) and valid_phone?(user.phone)
+  end
+
+  def profile_complete?(_), do: false
+
+  @doc "Changeset for the complete-profile (email + phone) step."
+  def change_complete_profile(%User{} = user, attrs \\ %{}) do
+    # Placeholder/legacy values (Google "G-" phones, synthetic @xpressbus.com
+    # addresses) are not usable: show an empty field so the user supplies a real
+    # one instead of re-submitting the placeholder.
+    user
+    |> maybe_clear_invalid(:phone)
+    |> maybe_clear_invalid(:email)
+    |> User.complete_profile_changeset(attrs)
+  end
+
+  defp maybe_clear_invalid(user, field) do
+    value = Map.get(user, field)
+    valid? = if field == :phone, do: valid_phone?(value), else: valid_email?(value)
+    if valid?, do: user, else: Map.put(user, field, nil)
+  end
+
+  @doc "Saves the complete-profile step for a signed-in user."
+  def complete_profile(%User{} = user, attrs) do
+    user
+    |> User.complete_profile_changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
   Registers a new user, optionally processing a referral code.
   """
   def register_user(attrs) do
@@ -140,20 +198,18 @@ defmodule Xpressbus.Accounts do
 
   @doc """
   Finds or creates a user from Google OAuth info.
+
+  A new Google account starts with only the verified email; the phone number is
+  collected on the complete-profile screen before the dashboard is unlocked.
   """
   def find_or_create_google_user(info) do
-    case Repo.get_by(User, email: info.email) do
+    name = info.name || info[:email] |> to_string() |> String.split("@") |> hd()
+
+    case get_user_by_email(info.email) do
       nil ->
-        # Create new user
-        # Note: We use a placeholder phone or ask user later. For now, email-only.
-        create_user(%{
-          name: info.name,
-          email: info.email,
-          # Temporary unique phone placeholder
-          phone: "G-" <> String.slice(info.email, 0, 8),
-          wallet_balance: 0,
-          referral_code: generate_referral_code()
-        })
+        %User{}
+        |> User.google_changeset(%{name: name, email: info.email})
+        |> Repo.insert()
 
       user ->
         {:ok, user}
@@ -205,8 +261,16 @@ defmodule Xpressbus.Accounts do
   """
   def request_login_code(identifier) when is_binary(identifier) do
     case find_user_for_login(identifier) do
-      nil -> {:error, :not_found}
-      %User{} = user -> send_login_code(user)
+      nil ->
+        {:error, :not_found}
+
+      %User{} = user ->
+        # Every account must have a real email to receive a code.
+        if valid_email?(user.email) do
+          send_login_code(user)
+        else
+          {:error, :missing_email}
+        end
     end
   end
 

@@ -32,11 +32,20 @@ defmodule XpressbusWeb.AuthController do
 
     case Accounts.find_or_create_google_user(user_info) do
       {:ok, user} ->
-        conn
-        |> put_flash(:info, "Successfully authenticated.")
-        |> put_session(:user_id, user.id)
-        |> put_session(:user_name, user.name)
-        |> redirect(to: ~p"/dashboard")
+        conn =
+          conn
+          |> put_session(:user_id, user.id)
+          |> put_session(:user_name, user.name)
+
+        if Accounts.profile_complete?(user) do
+          conn
+          |> put_flash(:info, "Successfully authenticated.")
+          |> redirect(to: ~p"/dashboard")
+        else
+          conn
+          |> put_flash(:info, "One last step: add your phone number to finish setting up.")
+          |> redirect(to: ~p"/user/complete-profile")
+        end
 
       {:error, _reason} ->
         conn

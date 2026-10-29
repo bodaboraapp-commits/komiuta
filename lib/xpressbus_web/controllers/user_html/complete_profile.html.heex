@@ -1,0 +1,77 @@
+<Layouts.app flash={@flash}>
+  <div class="min-h-screen bg-white text-slate-900">
+    <.main_header step={:login} />
+
+    <main class="pt-[80px] md:pt-[100px] pb-12">
+      <div class="mx-auto max-w-7xl px-6">
+        <div class="flex flex-col items-center justify-start min-h-[calc(100vh-140px)] py-8">
+          <div class="w-full max-w-md">
+            <div class="text-center mb-8">
+              <div class="w-16 h-16 bg-[#FF4C00] rounded-2xl flex items-center justify-center text-white text-3xl font-black mx-auto mb-4 shadow-lg shadow-orange-200">
+                <span class="material-symbols-outlined">badge</span>
+              </div>
+              <h1 class="text-3xl font-black text-slate-900 tracking-tight">Complete your profile</h1>
+              <p class="text-xs font-bold text-slate-400 mt-1 tracking-wide">
+                Every Komiuta account needs both a phone number and an email address
+              </p>
+            </div>
+
+            <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+              <p class="text-[11px] font-bold text-slate-400 leading-relaxed mb-6">
+                We use your phone number for booking and travel updates, and your email for login codes
+                and payment receipts. One without the other is not enough.
+              </p>
+
+              <.form
+                for={@form}
+                action={~p"/user/complete-profile"}
+                method="post"
+                id="complete-profile-form"
+                class="space-y-5"
+              >
+                <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
+
+                <.input
+                  field={@form[:name]}
+                  type="text"
+                  label="Full name"
+                  placeholder="Enter your full name"
+                  required
+                />
+
+                <.input
+                  field={@form[:email]}
+                  type="email"
+                  label="Email address"
+                  placeholder="you@example.com"
+                  required
+                />
+
+                <.input
+                  field={@form[:phone]}
+                  type="tel"
+                  label="Phone number"
+                  placeholder="07XX XXX XXX"
+                  required
+                />
+
+                <button
+                  type="submit"
+                  class="w-full bg-[#FF4C00] text-white py-4 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-[#E64400] transition shadow-lg shadow-orange-200"
+                >
+                  Save &amp; continue
+                </button>
+              </.form>
+            </div>
+
+            <div class="mt-8 text-center">
+              <p class="text-[9px] font-black text-slate-300 tracking-[0.3em]">
+                Secure industrial encryption enabled
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</Layouts.app>

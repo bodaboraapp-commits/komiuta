@@ -69,6 +69,8 @@ defmodule XpressbusWeb.Router do
     get "/verify", UserController, :verify
     post "/verify", UserController, :confirm
     post "/verify/resend", UserController, :resend
+    get "/complete-profile", UserController, :complete_profile
+    post "/complete-profile", UserController, :save_complete_profile
     get "/logout", UserController, :logout
   end
 

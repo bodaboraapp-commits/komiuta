@@ -7,12 +7,20 @@ defmodule Xpressbus.AccountsFixtures do
   @doc """
   Generate a unique user email.
   """
-  def unique_user_email, do: "some email#{System.unique_integer([:positive])}"
+  def unique_user_email, do: "user#{System.unique_integer([:positive])}@example.com"
 
   @doc """
   Generate a unique user phone.
   """
-  def unique_user_phone, do: "some phone#{System.unique_integer([:positive])}"
+  def unique_user_phone do
+    suffix =
+      System.unique_integer([:positive])
+      |> rem(10_000_000)
+      |> Integer.to_string()
+      |> String.pad_leading(7, "0")
+
+    "0712" <> suffix
+  end
 
   @doc """
   Generate a user.
