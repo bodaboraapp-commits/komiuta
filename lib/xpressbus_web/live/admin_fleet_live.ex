@@ -2,6 +2,7 @@ defmodule XpressbusWeb.AdminFleetLive do
   use XpressbusWeb, :live_view
   import XpressbusWeb.AdminComponents
   alias Xpressbus.{Buses, BusOperators, Cities}
+  require Logger
 
   def mount(_params, session, socket) do
     admin_id = session["admin_id"]
@@ -90,7 +91,7 @@ defmodule XpressbusWeb.AdminFleetLive do
              |> assign(:total_count, Buses.count_buses())}
 
           {:error, changeset} ->
-            IO.inspect(changeset.errors)
+            Logger.error("Failed to add bus", errors: inspect(changeset.errors))
             {:noreply, assign(socket, :error, "Failed to add bus. Please check all fields.")}
         end
 

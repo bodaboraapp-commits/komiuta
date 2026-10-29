@@ -61,15 +61,22 @@ defmodule XpressbusWeb.UserDashboardLive do
   end
 
   def handle_event("view_ticket", %{"ticket_id" => ticket_id}, socket) do
-    ticket =
-      Tickets.get_ticket!(ticket_id)
-      |> Tickets.deserialize_seats()
-      |> Repo.preload(:bus)
+    user = socket.assigns.user
 
-    {:noreply,
-     socket
-     |> assign(:selected_ticket, ticket)
-     |> assign(:show_ticket_modal, true)}
+    ticket =
+      case Tickets.get_ticket(ticket_id) do
+        nil -> nil
+        ticket -> if ticket_belongs_to_user?(ticket, user), do: ticket, else: nil
+      end
+
+    if ticket do
+      {:noreply,
+       socket
+       |> assign(:selected_ticket, ticket)
+       |> assign(:show_ticket_modal, true)}
+    else
+      {:noreply, put_flash(socket, :error, "Ticket not found on your account.")}
+    end
   end
 
   def handle_event("close_ticket", _params, socket) do
@@ -123,12 +130,47 @@ defmodule XpressbusWeb.UserDashboardLive do
     end
   end
 
-  def handle_event("copy_referral", _, socket) do
-    {:noreply, put_flash(socket, :info, "Referral code copied to clipboard!")}
+  def handle_event("referral_copied", _params, socket) do
+    {:noreply, put_flash(socket, :info, "Referral code copied to clipboard.")}
+  end
+
+  def handle_event("referral_copy_failed", _params, socket) do
+    {:noreply,
+     put_flash(
+       socket,
+       :error,
+       "Could not copy automatically. Long-press the code to copy it."
+     )}
+  end
+
+  def handle_event("wallet_action", %{"action" => action}, socket) do
+    message =
+      case action do
+        "top-up" ->
+          "Wallet top-up is coming soon. For now, pay for each ticket directly at checkout."
+
+        "transfer" ->
+          "Wallet transfers are coming soon."
+
+        "change-payment-method" ->
+          "You can choose a payment method on every booking at checkout."
+
+        _ ->
+          "This feature is coming soon."
+      end
+
+    {:noreply, put_flash(socket, :info, message)}
   end
 
   def handle_event("change_footer_tab", %{"tab" => tab}, socket) do
     {:noreply, assign(socket, :footer_tab, tab)}
+  end
+
+  defp ticket_belongs_to_user?(ticket, user) do
+    identity = user.phone
+
+    is_binary(identity) and identity != "" and
+      (ticket.passenger_phone == identity or ticket.passenger_name == identity)
   end
 
   defp list_user_tickets(phone) do

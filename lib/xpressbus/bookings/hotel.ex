@@ -12,6 +12,7 @@ defmodule Xpressbus.Bookings.Hotel do
     field(:description, :string)
     field(:amenities, {:array, :string}, default: [])
     field(:images, {:array, :string}, default: [])
+    field(:active, :boolean, default: true)
 
     timestamps(type: :utc_datetime)
   end
@@ -25,8 +26,10 @@ defmodule Xpressbus.Bookings.Hotel do
       :location,
       :description,
       :amenities,
-      :images
+      :images,
+      :active
     ])
     |> validate_required([:name, :price_per_night, :location])
+    |> unique_constraint(:name)
   end
 end

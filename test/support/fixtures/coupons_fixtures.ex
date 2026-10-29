@@ -21,13 +21,15 @@ defmodule Xpressbus.CouponsFixtures do
         expiry_date: ~D[2026-09-05],
         max_discount: "120.5",
         min_amount: "120.5",
-        type: "some type",
+        type: "fixed",
         usage_count: 42,
         usage_limit: 42,
         value: "120.5"
       })
       |> Xpressbus.Coupons.create_coupon()
 
-    coupon
+    # Reload so callers compare against the database-normalised values
+    # (decimal columns round-trip with their configured scale).
+    Xpressbus.Repo.reload!(coupon)
   end
 end

@@ -236,6 +236,15 @@ defmodule XpressbusWeb.AdminComponents do
             href="/admin/events"
             collapsed={@collapsed}
           />
+          <.nav_item
+            icon="policy"
+            label="InSURE Plans"
+            id="insurance-plans"
+            active={@active_tab}
+            has_arrow={!@collapsed}
+            href="/admin/insurance-plans"
+            collapsed={@collapsed}
+          />
         </div>
       </div>
       <%!-- Settings Category --%>

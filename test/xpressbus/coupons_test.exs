@@ -34,7 +34,7 @@ defmodule Xpressbus.CouponsTest do
       valid_attrs = %{
         active: true,
         code: "some code",
-        type: "some type",
+        type: "fixed",
         value: "120.5",
         min_amount: "120.5",
         max_discount: "120.5",
@@ -46,7 +46,7 @@ defmodule Xpressbus.CouponsTest do
       assert {:ok, %Coupon{} = coupon} = Coupons.create_coupon(valid_attrs)
       assert coupon.active == true
       assert coupon.code == "some code"
-      assert coupon.type == "some type"
+      assert coupon.type == "fixed"
       assert coupon.value == Decimal.new("120.5")
       assert coupon.min_amount == Decimal.new("120.5")
       assert coupon.max_discount == Decimal.new("120.5")
@@ -65,8 +65,8 @@ defmodule Xpressbus.CouponsTest do
       update_attrs = %{
         active: false,
         code: "some updated code",
-        type: "some updated type",
-        value: "456.7",
+        type: "percentage",
+        value: "15",
         min_amount: "456.7",
         max_discount: "456.7",
         expiry_date: ~D[2026-09-06],
@@ -77,8 +77,8 @@ defmodule Xpressbus.CouponsTest do
       assert {:ok, %Coupon{} = coupon} = Coupons.update_coupon(coupon, update_attrs)
       assert coupon.active == false
       assert coupon.code == "some updated code"
-      assert coupon.type == "some updated type"
-      assert coupon.value == Decimal.new("456.7")
+      assert coupon.type == "percentage"
+      assert coupon.value == Decimal.new("15")
       assert coupon.min_amount == Decimal.new("456.7")
       assert coupon.max_discount == Decimal.new("456.7")
       assert coupon.expiry_date == ~D[2026-09-06]

@@ -17,7 +17,8 @@ defmodule XpressbusWeb do
   those modules here.
   """
 
-  def static_paths, do: ~w(assets fonts images favicon.ico robots.txt manifest.json sw.js)
+  def static_paths,
+    do: ~w(assets fonts images favicon.ico robots.txt manifest.json sw.js offline.html)
 
   def router do
     quote do

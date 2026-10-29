@@ -121,7 +121,17 @@ defmodule XpressbusWeb.BookingLive do
      |> assign(:available_operators, [])
      |> assign(:available_seat_types, [])
      |> assign(:buses_map, %{})
+     |> assign(:pwa_qr, pwa_qr())
      |> stream(:buses, [])}
+  end
+
+  # The app-download section shows a locally generated QR pointing at the
+  # installable web app (PWA). Scanning opens Komiuta in the phone browser,
+  # where the user can install it / add it to the home screen.
+  defp pwa_qr do
+    XpressbusWeb.QRCode.svg(XpressbusWeb.Endpoint.url() <> "/?source=qr_app_section",
+      aria_label: "Scan to open the Komiuta app"
+    )
   end
 
   @impl true
@@ -488,34 +498,40 @@ defmodule XpressbusWeb.BookingLive do
      )}
   end
 
-  def handle_event("change_date_part", %{"part" => part, "value" => value}, socket) do
-    value = String.to_integer(value)
-    new_parts = Map.put(socket.assigns.date_parts, String.to_existing_atom(part), value)
+  def handle_event("change_date_part", %{"part" => part, "value" => value}, socket)
+      when part in ["day", "month", "year"] do
+    with {int_value, ""} <- Integer.parse(to_string(value)) do
+      new_parts = Map.put(socket.assigns.date_parts, String.to_existing_atom(part), int_value)
 
-    case Date.from_iso8601(date_parts_to_string(new_parts)) do
-      {:ok, valid_date} ->
-        if Date.compare(valid_date, Date.utc_today()) != :lt do
-          search_form =
-            to_form(%{
-              "from" => socket.assigns.from,
-              "to" => socket.assigns.to,
-              "date" => date_parts_to_string(new_parts),
-              "return_date" => socket.assigns.return_date
-            })
+      case Date.from_iso8601(date_parts_to_string(new_parts)) do
+        {:ok, valid_date} ->
+          if Date.compare(valid_date, Date.utc_today()) != :lt do
+            search_form =
+              to_form(%{
+                "from" => socket.assigns.from,
+                "to" => socket.assigns.to,
+                "date" => date_parts_to_string(new_parts),
+                "return_date" => socket.assigns.return_date
+              })
 
-          {:noreply,
-           socket
-           |> assign(:date_parts, new_parts)
-           |> assign(:date, date_parts_to_string(new_parts))
-           |> assign(:search_form, search_form)}
-        else
+            {:noreply,
+             socket
+             |> assign(:date_parts, new_parts)
+             |> assign(:date, date_parts_to_string(new_parts))
+             |> assign(:search_form, search_form)}
+          else
+            {:noreply, socket}
+          end
+
+        _ ->
           {:noreply, socket}
-        end
-
-      _ ->
-        {:noreply, socket}
+      end
+    else
+      _ -> {:noreply, socket}
     end
   end
+
+  def handle_event("change_date_part", _params, socket), do: {:noreply, socket}
 
   # --- Event Handlers: Filtering ---
 
@@ -883,6 +899,15 @@ defmodule XpressbusWeb.BookingLive do
     {:noreply, push_navigate(socket, to: ~p"/")}
   end
 
+  def handle_event("app_coming_soon", _params, socket) do
+    {:noreply,
+     put_flash(
+       socket,
+       :info,
+       "The Komiuta app is coming soon. Book here on the web in the meantime."
+     )}
+  end
+
   # --- Async Handlers ---
 
   @impl true
@@ -1053,15 +1078,23 @@ defmodule XpressbusWeb.BookingLive do
   end
 
   defp list_buses(from, to, date) do
-    date_obj = Date.from_iso8601!(date)
+    case Date.from_iso8601(to_string(date)) do
+      {:ok, date_obj} ->
+        Repo.all(
+          from(b in Bus,
+            left_join: operator in assoc(b, :bus_operator),
+            where: b.from == ^from and b.to == ^to and b.travel_date == ^date_obj,
+            # Buses submitted by partners stay hidden until the operator has
+            # been approved (operator.active == true).
+            where: is_nil(operator.id) or operator.active == true,
+            order_by: [asc: b.departure],
+            preload: [:bus_operator]
+          )
+        )
 
-    Repo.all(
-      from(b in Bus,
-        where: b.from == ^from and b.to == ^to and b.travel_date == ^date_obj,
-        order_by: [asc: b.departure],
-        preload: [:bus_operator]
-      )
-    )
+      _ ->
+        []
+    end
   end
 
   defp handle_search_params(socket, from, to, date, return_date) do
@@ -1102,13 +1135,19 @@ defmodule XpressbusWeb.BookingLive do
   end
 
   defp handle_results_params(%{"from" => from, "to" => to, "date" => date}, socket) do
-    handle_search_params(
-      socket,
-      from,
-      to,
-      date,
-      Date.to_string(Date.add(Date.from_iso8601!(date), 28))
-    )
+    case Date.from_iso8601(to_string(date)) do
+      {:ok, valid_date} ->
+        handle_search_params(
+          socket,
+          from,
+          to,
+          Date.to_string(valid_date),
+          Date.to_string(Date.add(valid_date, 28))
+        )
+
+      _ ->
+        {:noreply, assign(socket, :step, :search)}
+    end
   end
 
   defp handle_results_params(%{"route" => [route]}, socket) do

@@ -1,23 +1,60 @@
 {
+  "id": "/",
   "name": "Komiuta - Elevate Your Journey",
   "short_name": "Komiuta",
-  "description": "Premium bus booking and travel management platform for East Africa.",
+  "description": "Premium bus booking and travel management platform for East Africa. Compare fares, pick your seat and pay with M-PESA, card or mobile money.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
   "background_color": "#ffffff",
   "theme_color": "#FF4C00",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["travel", "navigation", "shopping"],
+  "prefer_related_applications": false,
   "icons": [
     {
-      "src": "/images/logo_brand.png",
+      "src": "/images/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "/images/logo_brand.png",
+      "src": "/images/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "/images/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Track my ticket",
+      "short_name": "My ticket",
+      "description": "Open your boarding pass",
+      "url": "/tickets",
+      "icons": [{ "src": "/images/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Book a bus",
+      "short_name": "Book",
+      "description": "Search intercity bus trips",
+      "url": "/",
+      "icons": [{ "src": "/images/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Chyllz stays",
+      "short_name": "Chyllz",
+      "description": "Hotels, gems, cars and events",
+      "url": "/tour-packages",
+      "icons": [{ "src": "/images/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
 }

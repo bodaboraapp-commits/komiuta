@@ -155,7 +155,10 @@ hotels_data = [
 ]
 
 for hotel_attrs <- hotels_data do
-  %Hotel{} |> Hotel.changeset(hotel_attrs) |> Repo.insert!()
+  # Idempotent: hotels have a unique name, re-running seeds must not duplicate cards.
+  unless Repo.get_by(Hotel, name: hotel_attrs.name) do
+    %Hotel{} |> Hotel.changeset(hotel_attrs) |> Repo.insert!()
+  end
 end
 
 # 6. Seed Hidden Gems
@@ -178,7 +181,10 @@ gems_data = [
 ]
 
 for gem_attrs <- gems_data do
-  %HiddenGem{} |> HiddenGem.changeset(gem_attrs) |> Repo.insert!()
+  # Idempotent: hidden gems have a unique title.
+  unless Repo.get_by(HiddenGem, title: gem_attrs.title) do
+    %HiddenGem{} |> HiddenGem.changeset(gem_attrs) |> Repo.insert!()
+  end
 end
 
 # 7. Seed Car Hire
@@ -194,7 +200,13 @@ cars_data = [
 ]
 
 for car_attrs <- cars_data do
-  %CarHire{} |> CarHire.changeset(car_attrs) |> Repo.insert!()
+  # Idempotent: a car is unique per (car_name, location) pair.
+  unless Repo.get_by(CarHire,
+           car_name: car_attrs.car_name,
+           location: car_attrs.location
+         ) do
+    %CarHire{} |> CarHire.changeset(car_attrs) |> Repo.insert!()
+  end
 end
 
 # 8. Seed Events
@@ -214,8 +226,15 @@ events_data = [
 ]
 
 for event_attrs <- events_data do
-  %Event{} |> Event.changeset(event_attrs) |> Repo.insert!()
+  # Idempotent: an event is unique per (title, date) pair.
+  unless Repo.get_by(Event, title: event_attrs.title, date: event_attrs.date) do
+    %Event{} |> Event.changeset(event_attrs) |> Repo.insert!()
+  end
 end
+
+# 8a. Seed the InSURE insurance catalogue (plans + FAQs powering /tour-packages/insurance)
+IO.puts("Seeding InSURE insurance plans and FAQs...")
+Xpressbus.Insurance.ensure_defaults()
 
 # 8b. Seed Routes (from the BuuPass-inspired city-pair seeder)
 Xpressbus.Routes.Seeder.run()

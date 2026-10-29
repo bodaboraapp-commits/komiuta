@@ -87,37 +87,50 @@ defmodule Xpressbus.Payments do
       Repo.get_by(Payment, reference: reference) ||
         Repo.get_by(Payment, ticket_id: reference)
 
-    if payment do
-      Logger.info("Payment record found for update", %{
-        id: payment.id,
-        current_status: payment.status
-      })
+    cond do
+      is_nil(payment) ->
+        Logger.error("Could not find payment record to update", %{reference: reference})
+        {:error, :not_found}
 
-      # Preserve existing raw_response (like booking_context) when updating
-      current_raw = payment.raw_response || %{}
-      # Merge string-keyed maps
-      merged_raw = Map.merge(current_raw, raw_response)
+      # Never let a later webhook/callback downgrade a payment that the
+      # provider already confirmed as paid.
+      payment.status == "success" and status != "success" ->
+        Logger.warning("Ignoring payment status regression", %{
+          reference: reference,
+          current_status: payment.status,
+          attempted_status: status
+        })
 
-      result =
-        payment
-        |> Payment.changeset(%{status: status, raw_response: merged_raw})
-        |> Repo.update()
+        {:ok, payment}
 
-      case result do
-        {:ok, updated} ->
-          Logger.info("Payment status successfully updated in DB", %{id: updated.id})
-          {:ok, updated}
+      true ->
+        Logger.info("Payment record found for update", %{
+          id: payment.id,
+          current_status: payment.status
+        })
 
-        {:error, changeset} ->
-          Logger.error("Failed to update payment status in DB", %{
-            errors: inspect(changeset.errors)
-          })
+        # Preserve existing raw_response (like booking_context) when updating
+        current_raw = payment.raw_response || %{}
+        # Merge string-keyed maps
+        merged_raw = Map.merge(current_raw, raw_response)
 
-          {:error, changeset}
-      end
-    else
-      Logger.error("Could not find payment record to update", %{reference: reference})
-      {:error, :not_found}
+        result =
+          payment
+          |> Payment.changeset(%{status: status, raw_response: merged_raw})
+          |> Repo.update()
+
+        case result do
+          {:ok, updated} ->
+            Logger.info("Payment status successfully updated in DB", %{id: updated.id})
+            {:ok, updated}
+
+          {:error, changeset} ->
+            Logger.error("Failed to update payment status in DB", %{
+              errors: inspect(changeset.errors)
+            })
+
+            {:error, changeset}
+        end
     end
   end
 
@@ -247,6 +260,234 @@ defmodule Xpressbus.Payments do
         end
     end
   end
+
+  # --- Webhook authenticity & callback validation ---------------------------
+
+  @doc """
+  Verifies the `x-paystack-signature` header of a Paystack webhook request.
+
+  Paystack signs the exact raw request body with HMAC-SHA512 using the
+  integration secret key, then hex-encodes the digest.
+  """
+  def verify_paystack_signature(raw_body, signature) do
+    secret_key = provider_config("paystack")["secret_key"]
+    signature = to_string(signature || "")
+
+    cond do
+      is_nil(secret_key) or secret_key == "" ->
+        Logger.error("Paystack webhook received but no secret key is configured")
+        {:error, :not_configured}
+
+      signature == "" ->
+        {:error, :missing_signature}
+
+      not is_binary(raw_body) or raw_body == "" ->
+        {:error, :missing_body}
+
+      true ->
+        expected =
+          :crypto.mac(:hmac, :sha512, secret_key, raw_body)
+          |> Base.encode16(case: :lower)
+
+        if Plug.Crypto.secure_compare(expected, String.downcase(signature)) do
+          :ok
+        else
+          {:error, :invalid_signature}
+        end
+    end
+  end
+
+  @doc """
+  Verifies the `verif-hash` header Flutterwave sends with webhook requests.
+
+  The expected value is the secret hash configured in the Flutterwave
+  dashboard. A missing configuration is treated as a failure: silently
+  accepting unsigned webhooks would let anyone mark a payment as paid.
+  """
+  def verify_flutterwave_signature(signature) do
+    config = provider_config("flutterwave")
+    secret_hash = config["webhook_hash"] || config["secret_hash"]
+    signature = to_string(signature || "")
+
+    cond do
+      is_nil(secret_hash) or secret_hash == "" ->
+        Logger.error("Flutterwave webhook received but no webhook hash is configured")
+        {:error, :not_configured}
+
+      signature == "" ->
+        {:error, :missing_signature}
+
+      Plug.Crypto.secure_compare(to_string(secret_hash), signature) ->
+        :ok
+
+      true ->
+        {:error, :invalid_signature}
+    end
+  end
+
+  @doc """
+  Verifies a Flutterwave transaction with the provider API before treating it
+  as paid. This is the authoritative check used from callbacks/webhooks.
+  """
+  def verify_flutterwave(transaction_id) do
+    secret_key = provider_config("flutterwave")["secret_key"]
+    transaction_id = to_string(transaction_id || "")
+
+    cond do
+      is_nil(secret_key) or secret_key == "" ->
+        {:error, "Missing Flutterwave secret key"}
+
+      transaction_id == "" ->
+        {:error, "Missing Flutterwave transaction id"}
+
+      true ->
+        url = "https://api.flutterwave.com/v3/transactions/#{transaction_id}/verify"
+        headers = %{"Authorization" => "Bearer #{secret_key}"}
+
+        case Req.get(url, headers: headers, receive_timeout: 20_000) do
+          {:ok, %Req.Response{status: 200, body: %{"status" => "success", "data" => data}}}
+          when is_map(data) ->
+            {:ok, data}
+
+          {:ok, %Req.Response{status: status, body: body}} ->
+            Logger.error("Flutterwave verify failed", %{
+              status: status,
+              transaction_id: transaction_id,
+              body: body
+            })
+
+            {:error, "Flutterwave verify (#{status}): #{provider_message(body)}"}
+
+          {:error, reason} ->
+            Logger.error("Flutterwave verify request error", %{
+              transaction_id: transaction_id,
+              reason: inspect(reason)
+            })
+
+            {:error, "Flutterwave connection error: #{inspect(reason)}"}
+        end
+    end
+  end
+
+  @doc """
+  Verifies a Flutterwave transaction and, when the provider confirms a
+  successful payment of the expected amount, completes the payment lifecycle
+  (marking the payment and confirming the ticket).
+  """
+  def complete_flutterwave_payment(reference, transaction_id) do
+    payment = get_payment_by_reference(reference)
+
+    cond do
+      is_nil(payment) ->
+        Logger.error("Flutterwave finalize: payment record NOT FOUND", %{reference: reference})
+        {:error, :not_found}
+
+      is_nil(transaction_id) or to_string(transaction_id) == "" ->
+        {:error, "Missing Flutterwave transaction id"}
+
+      true ->
+        case verify_flutterwave(transaction_id) do
+          {:ok, data} ->
+            status = if data["status"] == "successful", do: "success", else: "failed"
+
+            if status == "success" and not amount_matches?(payment.amount, data["amount"]) do
+              Logger.error("Flutterwave amount mismatch; refusing to complete payment", %{
+                reference: reference,
+                expected: payment.amount,
+                received: data["amount"]
+              })
+
+              update_payment_status(reference, "failed", %{
+                "error" => "amount_mismatch",
+                "provider_data" => data
+              })
+
+              {:error, :amount_mismatch}
+            else
+              complete_payment_lifecycle(reference, status, data)
+            end
+
+          {:error, reason} ->
+            Logger.error("Flutterwave verification failed", %{
+              reference: reference,
+              reason: inspect(reason)
+            })
+
+            {:error, reason}
+        end
+    end
+  end
+
+  @doc """
+  Validates an M-PESA STK callback against the payment record it claims to
+  finish. Successful callbacks must reference a known payment and report the
+  same amount that was requested; otherwise the callback is rejected instead
+  of minting a ticket from an unverified payload.
+  """
+  def validate_mpesa_callback(checkout_request_id, status, metadata \\ %{}) do
+    case get_payment_by_reference(checkout_request_id) do
+      nil ->
+        Logger.error("M-PESA callback for unknown CheckoutRequestID", %{
+          checkout_request_id: checkout_request_id
+        })
+
+        {:error, :not_found}
+
+      %Payment{} = payment ->
+        cond do
+          payment.status == "success" ->
+            {:ok, payment}
+
+          status == "success" ->
+            if amount_matches?(payment.amount, Map.get(metadata, "Amount")) do
+              {:ok, payment}
+            else
+              Logger.error("M-PESA amount mismatch; refusing to complete payment", %{
+                checkout_request_id: checkout_request_id,
+                expected: payment.amount,
+                received: Map.get(metadata, "Amount")
+              })
+
+              {:error, {:amount_mismatch, payment.amount, Map.get(metadata, "Amount")}}
+            end
+
+          true ->
+            {:ok, payment}
+        end
+    end
+  end
+
+  defp provider_config(provider) do
+    case Integrations.get_config_by_provider(provider) do
+      %{config: config} when is_map(config) -> config
+      _ -> %{}
+    end
+  end
+
+  defp provider_message(%{"message" => message}) when is_binary(message), do: message
+  defp provider_message(body) when is_binary(body), do: body
+  defp provider_message(_body), do: "verification failed"
+
+  defp amount_matches?(expected, actual) when is_integer(expected) do
+    case to_amount(actual) do
+      nil -> false
+      amount -> round(amount) == expected
+    end
+  end
+
+  defp amount_matches?(_expected, _actual), do: true
+
+  defp to_amount(value) when is_integer(value), do: value * 1.0
+  defp to_amount(value) when is_float(value), do: value
+
+  defp to_amount(value) when is_binary(value) do
+    case Float.parse(String.replace(value, ",", "")) do
+      {amount, _rest} -> amount
+      :error -> nil
+    end
+  end
+
+  defp to_amount(_value), do: nil
 
   defp maybe_create_user_transaction(%{raw_response: %{"booking_context" => context}}) do
     user_id = Map.get(context, "user_id") || Map.get(context, :user_id)

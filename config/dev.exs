@@ -1,12 +1,13 @@
 import Config
 
-# Configure your database
+# Configure your database. The defaults match the long-standing local XAMPP
+# setup; DB_* environment variables can point development at another server.
 config :xpressbus, Xpressbus.Repo,
-  username: "root",
-  password: "",
-  hostname: "127.0.0.1",
-  port: 3307,
-  database: "buupasskomiuta_db",
+  username: System.get_env("DB_USER", "root"),
+  password: System.get_env("DB_PASSWORD", ""),
+  hostname: System.get_env("DB_HOST", "127.0.0.1"),
+  port: String.to_integer(System.get_env("DB_PORT", "3307")),
+  database: System.get_env("DB_NAME", "buupasskomiuta_db"),
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 30,

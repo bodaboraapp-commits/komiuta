@@ -237,8 +237,18 @@
                   </div>
                 </div>
                 <div class="mt-12 flex gap-4">
-                  <button class="flex-1 bg-[#FF4C00] text-white py-4 rounded-2xl font-black shadow-lg shadow-orange-200 hover:bg-[#E64400] transition-all">Top Up Wallet</button>
-                  <button class="flex-1 bg-white border-2 border-slate-100 text-slate-700 py-4 rounded-2xl font-black hover:border-orange-500 transition-all">Transfer</button>
+                  <button
+                    type="button"
+                    phx-click="wallet_action"
+                    phx-value-action="top-up"
+                    class="flex-1 bg-[#FF4C00] text-white py-4 rounded-2xl font-black shadow-lg shadow-orange-200 hover:bg-[#E64400] transition-all"
+                  >Top Up Wallet</button>
+                  <button
+                    type="button"
+                    phx-click="wallet_action"
+                    phx-value-action="transfer"
+                    class="flex-1 bg-white border-2 border-slate-100 text-slate-700 py-4 rounded-2xl font-black hover:border-orange-500 transition-all"
+                  >Transfer</button>
                 </div>
               </div>
 
@@ -258,7 +268,12 @@
                       <p class="text-sm font-bold text-slate-500">Connected: {@user.phone}</p>
                     </div>
                   </div>
-                  <button class="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white py-4 rounded-2xl font-black hover:bg-white/20 transition-all">Change Method</button>
+                  <button
+                    type="button"
+                    phx-click="wallet_action"
+                    phx-value-action="change-payment-method"
+                    class="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white py-4 rounded-2xl font-black hover:bg-white/20 transition-all"
+                  >Change Method</button>
                 </div>
               </div>
             </div>
@@ -277,7 +292,11 @@
               <div class="flex items-center justify-center gap-3 bg-slate-50 p-6 rounded-[2rem] border-2 border-dashed border-slate-200">
                 <span class="font-mono text-2xl font-black text-slate-900 tracking-widest">{@user.referral_code}</span>
                 <button
-                  phx-click="copy_referral"
+                  id="copy-referral-button"
+                  phx-hook=".CopyReferral"
+                  data-code={@user.referral_code}
+                  type="button"
+                  aria-label="Copy referral code"
                   class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-orange-500 shadow-md hover:scale-110 transition-all"
                 >
                   <span class="material-symbols-outlined !text-lg">content_copy</span>
@@ -326,10 +345,16 @@
                   </div>
                   <div>
                     <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Language Preference</label>
-                    <select class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none appearance-none cursor-pointer">
+                    <select
+                      disabled
+                      aria-disabled="true"
+                      class="w-full p-4 bg-slate-100 border border-slate-200 rounded-xl font-bold text-slate-400 cursor-not-allowed outline-none appearance-none"
+                    >
                       <option>English (US)</option>
-                      <option>Swahili</option>
                     </select>
+                    <p class="text-[9px] font-bold text-slate-400 mt-1">
+                      More languages are coming soon.
+                    </p>
                   </div>
                 </div>
                 <div class="pt-6">
@@ -632,4 +657,24 @@
 
     <.main_footer footer_tab={@footer_tab} />
   </div>
+
+  <script :type={Phoenix.LiveView.ColocatedHook} name=".CopyReferral">
+    export default {
+      mounted() {
+        this.el.addEventListener("click", async () => {
+          const code = this.el.dataset.code
+          try {
+            if (navigator.clipboard) {
+              await navigator.clipboard.writeText(code)
+              this.pushEvent("referral_copied", {})
+            } else {
+              this.pushEvent("referral_copy_failed", {})
+            }
+          } catch (_error) {
+            this.pushEvent("referral_copy_failed", {})
+          }
+        })
+      }
+    }
+  </script>
 </Layouts.app>

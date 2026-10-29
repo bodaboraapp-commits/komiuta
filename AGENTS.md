@@ -48,14 +48,21 @@ The booking page hero section has fixed settings that must not be changed:
 
 ## User Authentication
 
-- User login page is at `/user/login` (GET)
-- User authentication endpoint is `/user/auth` (POST)
+- User login page is at `/user/login` (GET) — accepts a **phone number or email address**
+- `/user/auth` (POST) emails a **6-digit one-time code** to the account's email; it does **not** create a session yet
+- `/user/verify` (GET/POST) is where the code is entered; on success the session is created with `user_id` = user UUID
+- `/user/verify/resend` (POST) re-sends a code (60s cooldown, max 5 codes/hour per account)
+- Codes: 6 digits, 10-minute expiry, single use, max 5 attempts, HMAC-hashed at rest (`login_codes` table)
+- Registration (`/user/signup` → `/user/register`) now **requires a valid email address** — it is the login factor
+- Google OAuth (`/auth/google`) remains available and signs in with the Google-verified email
 - User logout is at `/user/logout` (GET)
 - User dashboard is at `/dashboard`
 - User dashboard tabs: `bus` ("My Bus"), `wallet` ("Wallet & Pay"), `transactions` ("History"), `referral` ("Rewards"), `profile` ("Settings"), `chyllz` ("My Chyllz")
 - Default dashboard tab is `bus`
-- User session uses `user_id` stored in session, set from phone number on login
-- No user password storage - authentication is phone-number based for simplicity
+- User session uses `user_id`; OTP/Google logins store the user UUID. Legacy code paths may still store the phone number — `Accounts.get_user/1` resolves both
+- **Legacy accounts without an email cannot receive codes** — set an email for those users (support/admin) before they need to log in
+- In development, outgoing email is captured by the Swoosh Local adapter and visible at `/dev/mailbox`
+- Production email provider: `RESEND_API_KEY` (recommended) or `MAILGUN_API_KEY` + `MAILGUN_DOMAIN` or `BREVO_API_KEY`, plus `MAILER_FROM`. **Render blocks outbound SMTP**, so mailbox/SMTP credentials cannot be used there — use an HTTP email API. Verify delivery with `mix komiuta.send_test_email --to you@example.com`
 
 ### Header Auth Rules
 
@@ -560,3 +567,153 @@ If the system is completely broken (e.g., application will not start, tests fail
 - Review `UserDashboardLive` for any remaining issues
 - Check for any other `IO.puts` usage in production code that should use `Logger`
 - Verify `SECRET_KEY_BASE` is set in production environment variables
+
+### 2026-10-29 Session — Chyllz & InSURE catalogue moved from demo content to the database
+
+**Objective:** The Chyllz pages and the InSURE page still rendered hard-coded demo content. Make them
+production pages backed by the database, with no visual regression.
+
+**Completed:**
+- Added `Xpressbus.Chyllz` — read-only catalogue queries (hotels, hidden gems, car hires, events) used by
+  the public Chyllz pages. Only `active` rows are returned, duplicates are collapsed by natural key, and
+  every query is bounded by a limit.
+- Rewrote `ChyllzLive`: all five routes (`/tour-packages`, `/tour-packages/hotels`,
+  `/our-packages/hidden-gems`, `/tour-packages/car`, `/tour-packages/events`) render database content,
+  per-page heroes, real server-side search (`?q=`, patched URLs), result counts, empty states and a
+  detail dialog whose CTA links into bus search prefilled with the destination.
+- Added the `insurance_plans` and `insurance_faqs` tables + `Xpressbus.Insurance` context and rewrote
+  `InsuranceLive` to render plans, features, the coverage comparison table, FAQs and the cheapest-price
+  pitch from the database. Default launch content lives in `Xpressbus.Insurance.SeedData` and is inserted
+  idempotently by the migration and by `priv/repo/seeds.exs`.
+- Added `active` flags + unique indexes to `hotels`, `hidden_gems`, `car_hires`, `events`; a data migration
+  removed the duplicate rows created by re-running the old seeder (21→3 hotels, 21→3 gems, 21→3 cars,
+  14→2 events) and `seeds.exs` is now idempotent for these tables.
+- Added the read-only `/admin/insurance-plans` catalogue page and its sidebar entry; the header now keeps
+  the Chyllz tab highlighted on all Chyllz sub-pages.
+- Added 33 tests (catalogue context, insurance context, LiveView coverage of every public page + empty
+  states, search, dialog, plan selection). Full suite: 86/86 passing.
+
+**Important config change:** `config/test.exs` now defaults `DB_NAME` to `buupasskomiuta_test`, not the
+shared development database. 5 pre-existing tests failed whenever the development database had seed data
+because they assert whole-table results; `mix test` now creates and migrates the isolated test database
+automatically. CI can still override `DB_NAME`.
+
+**Content management:** to change what the public pages show, edit the catalogue rows (or
+`Xpressbus.Insurance.SeedData` for launch defaults) — do not hard-code content in the LiveViews again.
+Set a row's `active` to `false` to hide it from the public site.
+
+**Backups (Git is not installed on this machine):**
+- Source: `%TEMP%\xpressbus_src_backup_20261029_192240.zip`
+- Database: `%TEMP%\buupasskomiuta_db_backup_20261029_195042.sql`
+
+**Verification commands:**
+```
+mix precommit        # compile --warnings-as-errors, deps.unlock --unused, format, test (86/86)
+MIX_ENV=dev mix ecto.migrate
+```
+
+### 2026-10-29 Session — Ticket QR codes generated locally (third-party API removed)
+
+**Objective:** The ticket page loaded its boarding QR image from `api.qrserver.com`, leaking ticket IDs
+to a third party and breaking when that service (or the user's connection) is unavailable.
+
+**Completed:**
+- Added `Xpressbus.QR` — a dependency-free QR encoder (byte mode, EC level M, versions 1–10) covering
+  data encoding, Reed–Solomon over GF(256), interleaving, function patterns, mask evaluation, and
+  format/version information. Public API: `QR.encode/2` (matrix), `QR.svg/2` (inline SVG, no external
+  resources). `encode/2` accepts a `:mask` override for tests/diagnostics only.
+- `TicketLive` now encodes the public ticket URL (`Endpoint.url() <> "/tickets?ticket_id=..."`) and
+  renders an inline SVG QR in the boarding pass; falls back to printing the ticket number if encoding
+  fails. No third-party image request remains.
+- Added 6 tests in `test/xpressbus/qr_test.exs`, including an **exact module-for-module comparison**
+  against an independent reference matrix for "helloqr" (EC M, mask 0), version selection boundaries
+  (v1/v2/v3/v4/v6/v8/v10), too-long handling, finder/timing/dark-module invariants, and SVG
+  self-containment.
+- Independently cross-checked version 8 (49×49, multi-block interleaving + version information) against
+  the same reference implementation (matrix diff: 0 modules).
+
+**Verification:**
+```
+DB_PORT=3308 mix test          # 92/92 (86 existing + 6 QR)
+mix compile --warnings-as-errors
+```
+
+### 2026-10-29 Session — Installable PWA (manifest, install UX, offline shell)
+
+**Objective:** Turn the web app into a proper installable PWA instead of a bare manifest + minimal
+service worker.
+
+**Completed:**
+- Enriched `priv/static/manifest.json`: app `id`, display override, portrait lock, maskable icons,
+  app shortcuts (Track ticket / Book / Chyllz), categories.
+- New `priv/static/offline.html` (self-contained, branded) served by the service worker on failed
+  navigations; added to `XpressbusWeb.static_paths/0` so `Plug.Static` serves it.
+- Rewrote `priv/static/sw.js` (`komiuta-v3`): precached offline shell + icons, stale-while-revalidate for
+  digested static assets, cache-first Google Fonts, network-first navigations, `SKIP_WAITING` message
+  support, and **no HTML caching** (avoids stale/personal data). Range requests and LiveView long-poll
+  are bypassed.
+- `assets/js/app.js`: captures `beforeinstallprompt` for the in-app install buttons, handles
+  `appinstalled`, and reloads once when a new service worker takes control.
+- Header (`brand_components.ex`): the existing "Download App" links (desktop + mobile) are now the PWA
+  install action via a colocated `.InstallApp` hook — native install sheet where supported, "Add to Home
+  Screen" hint on iOS, and the original `#app-section` download area as fallback (that section is kept
+  for the future Play Store / App Store links). The links hide in standalone mode
+  (`pwa-hide-installed`).
+- Root layout: `mobile-web-app-capable`, `apple-mobile-web-app-title`, `application-name`, default iOS
+  status bar, manifest/icons already wired.
+- `assets/css/app.css`: `[hidden]` display guard (beats Tailwind utilities) and standalone
+  `overscroll-behavior`/hide-installed rules.
+- New `XpressbusWeb.QRCode` helper (`components/qr_code.ex`) renders safe inline SVG QR codes; the
+  ticket page and the app-download section now share it.
+- App-download section (`booking_live.html.heex`): the decorative QR placeholder was replaced with a
+  real, locally generated QR (assigned in `BookingLive.mount/3`) that encodes the PWA URL
+  (`/?source=qr_app_section`). Scanning it opens the installable web app; a caption explains that
+  "Download App" then installs it. The store badges and the section are otherwise unchanged.
+- 5 PWA tests in `test/xpressbus_web/pwa_test.exs`: manifest validity + icon existence + shortcuts,
+  service-worker offline strategy, offline page self-containment, root-layout PWA metadata, install
+  prompt wiring, and the app-download QR. Also validated `sw.js` syntax with `node --check`.
+- Rebuilt Tailwind/esbuild bundles and `mix phx.digest` (offline.html included in the manifest).
+
+**Verification:**
+```
+DB_PORT=3308 mix test   # 99/99 (92 + 5 PWA + 2 QR/QRCode additions)
+```
+
+### 2026-10-29 Session — Email OTP login (phone-only login blocker removed)
+
+**Objective:** Login previously trusted a phone number with no verification, so anyone who knew a
+customer's number could access that account. Replace it with email one-time codes.
+
+**Completed:**
+- New `login_codes` table (`20261029213000_create_login_codes.exs`) + `Xpressbus.Accounts.LoginCode`.
+  Only an HMAC-SHA256 digest keyed with `secret_key_base` is stored; 10-minute expiry, single use,
+  5 attempts, 60s resend cooldown, 5 codes/hour/account; new codes invalidate old ones.
+- `Xpressbus.Accounts`: `request_login_code/1`, `resend_login_code/1`, `verify_login_code/2`,
+  `get_user_by_email/1`, `find_user_for_login/1` (phone or email). `get_user/1` now resolves UUIDs
+  (OTP/Google sessions) **and** legacy phone session keys.
+- New `Xpressbus.LoginEmail` (branded text + HTML, code not in subject) sent through Swoosh; dev mailbox
+  at `/dev/mailbox`, tests use the Swoosh Test adapter.
+- `UserController`: `/user/auth` now emails a code and stores only `login_user_id`;
+  new `/user/verify` (GET/POST) and `/user/verify/resend` (POST); session renewed on success
+  (`configure_session(renew: true)`); user-friendly errors for expiry/lockout/cooldown/delivery failure.
+- Registration now requires a valid, normalised email (`User.registration_changeset/2`), because email is
+  the login factor. Login form accepts phone **or** email and links to the new verification page.
+- Production mailer config: Mailgun (`MAILGUN_API_KEY` + `MAILGUN_DOMAIN`) or Resend (`RESEND_API_KEY`),
+  plus `MAILER_FROM`; warns at boot when no provider is configured.
+- 22 new tests (`login_code_test.exs`, `user_auth_test.exs`): delivery, expiry, single-use, attempt
+  lockout, cooldown/rate limit, registration validation/normalisation, and full request→verify→session
+  controller flows.
+
+**Notes / follow-ups:**
+- Legacy accounts without an email address (including synthetic `phone@xpressbus.com` guest accounts)
+  cannot receive codes; an email must be set for them before they can log in.
+- IP-level throttling on `/user/auth` and `/user/verify` is still recommended (per-account limits exist).
+
+**Verification:**
+```
+DB_PORT=3308 mix precommit   # 121/121 tests
+mix ecto.migrate             # applies the login_codes migration
+```
+
+
+

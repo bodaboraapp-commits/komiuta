@@ -5,10 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
     <meta name="theme-color" content="#FF4C00" />
+    <meta
+      name="description"
+      content={
+        assigns[:page_description] ||
+          "Book intercity bus tickets across Kenya, Uganda and Tanzania with Komiuta. Compare fares, pick your seat and pay with M-PESA, card or mobile money."
+      }
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Komiuta" />
+    <meta property="og:title" content={assigns[:page_title] || "Komiuta · Bus Booking"} />
+    <meta
+      property="og:description"
+      content={
+        assigns[:page_description] ||
+          "Book intercity bus tickets across Kenya, Uganda and Tanzania with Komiuta."
+      }
+    />
+    <meta property="og:image" content={XpressbusWeb.Endpoint.url() <> "/images/logo_brand.png"} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Komiuta" />
+    <meta name="application-name" content="Komiuta" />
     <link phx-track-static rel="manifest" href="/manifest.json" />
-    <link rel="apple-touch-icon" href="/images/logo_brand.png" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" href="/images/favicon-32.png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preload" as="font" type="font/otf" crossorigin href="/fonts/Lufga-Bold.otf" />
@@ -20,8 +44,19 @@
       href="https://fonts.gstatic.com/s/materialsymbolsoutlined/v11/jqf739ctgflHeNYzTalE8nI2LzeeZ0dqR5TgD9B7G.woff2"
     />
 
-    <link rel="preload" as="image" href="/images/hero_bg.png" fetchpriority="high" />
-    <link rel="preload" as="video" href="/images/hero_video.mp4" fetchpriority="low" />
+    <%= if assigns[:step] in [
+      :search,
+      :results,
+      :passenger_info,
+      :review_and_pay,
+      :chyllz,
+      :hotels,
+      :gems,
+      :car,
+      :events
+    ] do %>
+      <link rel="preload" as="image" href="/images/hero_bg.png" fetchpriority="high" />
+    <% end %>
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"

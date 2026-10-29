@@ -48,6 +48,42 @@ offer managed MySQL, and its free Postgres is Postgres-only + expires in 30 days
 
 `SECRET_KEY_BASE` is generated automatically by Render.
 
+### Email provider (required for user login OTP)
+
+User login now requires a one-time code sent by email, so production **must** have an email
+provider configured. **Render blocks outbound SMTP** (ports 25/465/587), so cPanel/Hostinger
+mailbox username+password credentials cannot be used from Render — the app uses an HTTP email API
+instead.
+
+Recommended: **Resend** (free tier, 3,000 emails/month)
+
+1. Sign up at <https://resend.com> with the Komiuta email account.
+2. **Domains → Add Domain → `komiuta.com`**. Resend shows DNS records to add.
+3. In **Cloudflare DNS**, add the records Resend lists (SPF `TXT`, DKIM `TXT`/`CNAME`; leave the
+   existing MX records for `komiuta.com` unchanged so the mailboxes keep working).
+4. Wait for Resend to show the domain as **Verified**.
+5. **API Keys → Create API key** (sending only) and copy it.
+6. In Render → your web service → **Environment**, add:
+   - `RESEND_API_KEY` = the key
+   - `MAILER_FROM` = `no-reply@komiuta.com` (already set in `render.yaml`)
+7. Verify delivery before relying on it:
+
+   ```powershell
+   $env:MIX_ENV="prod"; $env:RESEND_API_KEY="re_..."; $env:MAILER_FROM="no-reply@komiuta.com"
+   mix komiuta.send_test_email --to your-own-address@example.com
+   ```
+
+   (Do not commit the API key. In development the Local adapter captures mail — open
+   `/dev/mailbox`.)
+
+Alternatives supported by the app: Mailgun (`MAILGUN_API_KEY` + `MAILGUN_DOMAIN`, optional
+`MAILGUN_BASE_URL`) or Brevo (`BREVO_API_KEY`).
+
+> Mailbox SMTP credentials (`no-reply@komiuta.com` + password) are **not usable** for this
+> deployment: Render blocks the SMTP ports, and the domain's `mail.komiuta.com` hostname does not
+> resolve in DNS (the MX hosts only accept inbound mail on port 25 and do not offer authenticated
+> submission). Rotate any password shared in plain text.
+
 Generate the base64 CA value on Windows:
 
 ```powershell

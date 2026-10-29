@@ -35,6 +35,8 @@ defmodule XpressbusWeb.Router do
     live "/dashboard", UserDashboardLive, :index
     live "/payment-processing/:ticket_id", PaymentProcessingLive, :index
     live "/partner/add-fleet", PartnerRegistrationLive, :index
+    live "/terms", LegalLive, :terms
+    live "/privacy", LegalLive, :privacy
   end
 
   # Webhooks and Callbacks (Outside of browser pipeline to bypass CSRF)
@@ -64,6 +66,9 @@ defmodule XpressbusWeb.Router do
     get "/signup", UserController, :registration
     post "/register", UserController, :register
     post "/auth", UserController, :authenticate
+    get "/verify", UserController, :verify
+    post "/verify", UserController, :confirm
+    post "/verify/resend", UserController, :resend
     get "/logout", UserController, :logout
   end
 
@@ -92,6 +97,7 @@ defmodule XpressbusWeb.Router do
     live "/hidden-gems", AdminHiddenGemLive, :index
     live "/car-hires", AdminCarHireLive, :index
     live "/events", AdminEventLive, :index
+    live "/insurance-plans", AdminInsuranceLive, :index
     live "/integration", AdminIntegrationLive, :index
     live "/coupons", AdminCouponLive, :index
   end

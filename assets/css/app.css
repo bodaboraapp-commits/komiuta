@@ -762,3 +762,42 @@ body { font-family: "Lufga", "Trebuchet MS", "Segoe UI", sans-serif; font-weight
 		.bus-route strong { font-size: 16px; }
 		.bus-pricing { padding-left: 12px; padding-right: 12px; }
 	}
+
+/* ------------------------------------------------------------------
+   Print styles: print only the ticket pass itself.
+   ------------------------------------------------------------------ */
+@media print {
+  html {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  header, footer, .no-print, [data-print-hide] {
+    display: none !important;
+  }
+  body {
+    background: #ffffff !important;
+  }
+  .live-content {
+    padding: 0 !important;
+  }
+  @page {
+    margin: 10mm;
+  }
+}
+
+/* ------------------------------------------------------------------
+   PWA / standalone app refinements
+   ------------------------------------------------------------------ */
+[hidden] {
+  display: none !important;
+}
+
+@media (display-mode: standalone) {
+  html,
+  body {
+    overscroll-behavior-y: contain;
+  }
+  .pwa-hide-installed {
+    display: none !important;
+  }
+}

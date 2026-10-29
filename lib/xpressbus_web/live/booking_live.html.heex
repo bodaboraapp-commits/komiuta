@@ -1,4 +1,4 @@
-﻿<Layouts.app flash={@flash} current_scope={@current_user}>
+<Layouts.app flash={@flash} current_scope={@current_user}>
   <div class="min-h-screen bg-[#f8fafc] font-sans pt-20">
     <.main_header step={@step} current_user={@current_user} />
     <%= cond do %>
@@ -306,7 +306,12 @@
                   <div class="flex flex-col items-center relative flex-1">
                     <div class="absolute bottom-[calc(100%+16px)]">
                       <div class="w-16 h-16 rounded-2xl bg-white shadow-xl border border-slate-50 flex items-center justify-center p-2">
-                        <img src="/images/logo_brand.png" class="w-10 grayscale opacity-40" />
+                        <img
+                          src="/images/logo_brand.png"
+                          alt="Komiuta"
+                          loading="lazy"
+                          class="w-10 grayscale opacity-40"
+                        />
                       </div>
                     </div>
 
@@ -554,49 +559,59 @@
 
             <%!-- Middle: App Stores --%>
             <div class="flex flex-col sm:flex-row md:flex-col gap-4 shrink-0 w-full md:w-auto items-center">
-              <a
-                href="#"
-                class="hover:scale-105 transition-all shadow-xl shadow-black/10 rounded-xl group w-full max-w-[200px] md:max-w-none"
+              <button
+                type="button"
+                phx-click="app_coming_soon"
+                aria-label="Download Komiuta on the App Store"
+                class="hover:scale-105 transition-all shadow-xl shadow-black/10 rounded-xl group w-full max-w-[200px] md:max-w-none cursor-pointer"
               >
                 <img
                   src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg"
-                  alt="App Store"
+                  alt="Download on the App Store"
                   class="h-[52px] w-auto mx-auto"
+                  loading="lazy"
                 />
-              </a>
+              </button>
 
-              <a
-                href="#"
-                class="hover:scale-105 transition-all shadow-xl shadow-black/10 rounded-xl group w-full max-w-[200px] md:max-w-none"
+              <button
+                type="button"
+                phx-click="app_coming_soon"
+                aria-label="Get Komiuta on Google Play"
+                class="hover:scale-105 transition-all shadow-xl shadow-black/10 rounded-xl group w-full max-w-[200px] md:max-w-none cursor-pointer"
               >
                 <img
                   src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
-                  alt="Google Play"
+                  alt="Get it on Google Play"
                   class="h-[52px] w-auto mx-auto"
+                  loading="lazy"
                 />
-              </a>
+              </button>
             </div>
 
-            <%!-- Right: QR Code --%>
+            <%!-- Right: local QR that opens the installable PWA --%>
             <div class="flex items-center gap-8 pl-12 border-l border-white/10 hidden lg:flex shrink-0">
               <div class="text-right">
-                <p class="text-[10px] font-black uppercase tracking-[0.2em] mb-1">Scan the</p>
-                <p class="text-xl font-black uppercase tracking-widest leading-none">QR Code</p>
-                <div class="flex justify-end mt-4">
-                  <span class="material-symbols-outlined !text-4xl text-white rotate-[-135deg] animate-pulse">trending_flat</span>
-                </div>
+                <p class="text-[10px] font-black uppercase tracking-[0.2em] mb-1">Scan to open</p>
+                <p class="text-xl font-black uppercase tracking-widest leading-none">The app</p>
+                <p class="text-[9px] font-bold uppercase tracking-[0.2em] mt-3 opacity-70 max-w-[140px]">
+                  Then tap Download App to install
+                </p>
               </div>
 
-              <div class="bg-white p-5 rounded-[2.5rem] shadow-2xl shrink-0 group hover:scale-110 transition-transform duration-500">
-                <div class="w-32 h-32 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-center relative overflow-hidden">
-                  <span class="material-symbols-outlined !text-6xl text-[#FF4C00] opacity-10">qr_code_2</span>
-                  <%!-- Industrial QR Decorative Pattern --%>
-                  <div
-                    class="absolute inset-0 opacity-5"
-                    style="background-image: radial-gradient(#FF4C00 1px, transparent 0); background-size: 8px 8px;"
+              <div class="bg-white p-3 rounded-[2rem] shadow-2xl shrink-0 group hover:scale-105 transition-transform duration-500">
+                <%= if @pwa_qr do %>
+                  <a
+                    href="/?source=qr_app_section"
+                    aria-label="Open the Komiuta app"
+                    class="block w-40 h-40 rounded-2xl overflow-hidden bg-white"
                   >
+                    {@pwa_qr}
+                  </a>
+                <% else %>
+                  <div class="w-40 h-40 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-center">
+                    <span class="material-symbols-outlined !text-6xl text-[#FF4C00] opacity-10">qr_code_2</span>
                   </div>
-                </div>
+                <% end %>
               </div>
             </div>
           </div>
@@ -1413,7 +1428,7 @@
                       </p>
 
                       <a
-                        href="#"
+                        href="/terms"
                         class="text-[9px] font-black text-[#FF4C00] underline decoration-1 underline-offset-4"
                       >T&Cs applied</a>
                     </div>
@@ -1433,7 +1448,9 @@
                         />
                         <span class="text-[10px] font-bold text-slate-500 group-hover:text-slate-900 transition-all">
                           By continuing, you agree to the <a
-                            href="#"
+                            href="/terms"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             class="text-[#FF4C00] underline decoration-1 underline-offset-4 font-black"
                           >Terms and Conditions</a>.
                         </span>

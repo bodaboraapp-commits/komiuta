@@ -10,13 +10,15 @@ defmodule Xpressbus.Bookings.Event do
     field(:location, :string)
     field(:description, :string)
     field(:images, {:array, :string}, default: [])
+    field(:active, :boolean, default: true)
 
     timestamps(type: :utc_datetime)
   end
 
   def changeset(event, attrs) do
     event
-    |> cast(attrs, [:title, :date, :location, :description, :images])
+    |> cast(attrs, [:title, :date, :location, :description, :images, :active])
     |> validate_required([:title, :date, :location])
+    |> unique_constraint(:title, name: :events_title_date_index)
   end
 end

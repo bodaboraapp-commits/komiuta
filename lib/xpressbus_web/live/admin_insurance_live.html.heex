@@ -1,0 +1,158 @@
+<Layouts.app flash={@flash}>
+  <div class="flex min-h-screen bg-[#f8fafc]">
+    <%!-- Sidebar Component --%>
+    <.sidebar
+      active_tab={@active_tab}
+      bus_expanded={@bus_expanded}
+      chyllz_expanded={@chyllz_expanded}
+      settings_expanded={@settings_expanded}
+      collapsed={@sidebar_collapsed}
+    />
+
+    <%!-- Main Content Area --%>
+    <div class={[
+      "flex-1 transition-all duration-300",
+      if(@sidebar_collapsed, do: "lg:pl-20", else: "lg:pl-72")
+    ]}>
+      <%!-- Top Bar --%>
+      <header class="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-8 sticky top-0 z-30">
+        <h2 class="text-xl font-black text-slate-900 tracking-tight">InSURE Plans</h2>
+
+        <div class="flex items-center gap-6">
+          <div class="flex items-center gap-3 border-l border-slate-100 pl-6">
+            <div class="text-right hidden sm:block">
+              <p class="text-[11px] font-black text-slate-900 leading-none">Admin User</p>
+              <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">Super Admin</p>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-[#FF4C00] font-black text-xs border-2 border-white shadow-sm">
+              AD
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <%!-- Main Scrollable Content --%>
+      <main class="p-8 md:p-12 pt-10 md:pt-16 space-y-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-8 flex items-center gap-5">
+            <div class="w-14 h-14 rounded-2xl bg-orange-50 text-[#FF4C00] flex items-center justify-center">
+              <span class="material-symbols-outlined !text-2xl">policy</span>
+            </div>
+            <div>
+              <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                Cover plans
+              </p>
+              <p id="insurance-plan-count" class="text-3xl font-black text-slate-900">
+                {@plan_count}
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-8 flex items-center gap-5">
+            <div class="w-14 h-14 rounded-2xl bg-slate-50 text-slate-500 flex items-center justify-center">
+              <span class="material-symbols-outlined !text-2xl">help</span>
+            </div>
+            <div>
+              <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                Published FAQs
+              </p>
+              <p id="insurance-faq-count" class="text-3xl font-black text-slate-900">
+                {@faq_count}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+          <div class="p-8 border-b border-slate-50">
+            <h3 class="text-sm font-black uppercase tracking-widest text-slate-400">
+              Insurance catalogue
+            </h3>
+            <p class="text-xs font-bold text-slate-400 mt-2">
+              These rows power <span class="text-slate-600">/tour-packages/insurance</span>.
+              Set a plan to inactive to hide it from the public page.
+            </p>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead>
+                <tr class="border-b border-slate-50 bg-white">
+                  <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-[#FF4C00]">
+                    Plan
+                  </th>
+                  <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    Price
+                  </th>
+                  <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    Period
+                  </th>
+                  <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    Benefits
+                  </th>
+                  <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    Highlight
+                  </th>
+                  <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-50">
+                <%= if Enum.empty?(@plans) do %>
+                  <tr>
+                    <td colspan="6" class="px-8 py-12 text-center">
+                      <span class="material-symbols-outlined text-4xl text-slate-200 mb-4">policy</span>
+                      <p class="text-sm font-bold text-slate-400">No insurance plans found.</p>
+                    </td>
+                  </tr>
+                <% else %>
+                  <%= for plan <- @plans do %>
+                    <tr
+                      id={"admin-plan-#{plan.id}"}
+                      class="hover:bg-slate-50/50 transition-colors"
+                    >
+                      <td class="px-8 py-6 text-sm font-black text-slate-900">
+                        {plan.name}
+                        <p :if={plan.tagline} class="text-[11px] font-bold text-slate-400 mt-1">
+                          {plan.tagline}
+                        </p>
+                      </td>
+                      <td class="px-8 py-6 text-sm font-black text-[#FF4C00]">
+                        Ksh {money(plan.price)}
+                      </td>
+                      <td class="px-8 py-6 text-sm font-bold text-slate-500">{plan.period}</td>
+                      <td class="px-8 py-6 text-sm font-bold text-slate-500">
+                        {length(plan.features || [])}
+                      </td>
+                      <td class="px-8 py-6">
+                        <%= if plan.popular do %>
+                          <span class="px-3 py-1 rounded-full bg-orange-100 text-[#FF4C00] text-[10px] font-black uppercase tracking-widest">
+                            Most popular
+                          </span>
+                        <% else %>
+                          <span class="text-slate-300 text-sm font-bold">—</span>
+                        <% end %>
+                      </td>
+                      <td class="px-8 py-6">
+                        <%= if plan.active do %>
+                          <span class="px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest">
+                            Live
+                          </span>
+                        <% else %>
+                          <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-400 text-[10px] font-black uppercase tracking-widest">
+                            Hidden
+                          </span>
+                        <% end %>
+                      </td>
+                    </tr>
+                  <% end %>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</Layouts.app>

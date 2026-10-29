@@ -31,7 +31,12 @@ defmodule XpressbusWeb.ConnCase do
     end
   end
 
-  setup _tags do
+  setup tags do
+    # LiveView tests render the page on the server, so they touch the database.
+    # Starting a sandbox owner here keeps every connection test isolated.
+    pid = Ecto.Adapters.SQL.Sandbox.start_owner!(Xpressbus.Repo, shared: not tags[:async])
+    on_exit(fn -> Ecto.Adapters.SQL.Sandbox.stop_owner(pid) end)
+
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
 end

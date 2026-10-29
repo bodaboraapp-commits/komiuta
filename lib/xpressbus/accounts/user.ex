@@ -38,4 +38,25 @@ defmodule Xpressbus.Accounts.User do
     |> unique_constraint(:phone)
     |> unique_constraint(:referral_code)
   end
+
+  @doc """
+  Changeset for public registration.
+
+  Email is required (and format-validated) because email OTP is the login
+  factor. Existing accounts are updated through `changeset/2`, so users without
+  an email are not blocked from editing their profile.
+  """
+  def registration_changeset(user, attrs) do
+    user
+    |> changeset(attrs)
+    |> update_change(:email, &normalize_email/1)
+    |> validate_required([:email])
+    |> validate_format(:email, ~r/^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+      message: "must be a valid email address"
+    )
+  end
+
+  defp normalize_email(email) when is_binary(email) do
+    email |> String.trim() |> String.downcase()
+  end
 end

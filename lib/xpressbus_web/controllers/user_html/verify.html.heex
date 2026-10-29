@@ -1,0 +1,89 @@
+<Layouts.app flash={@flash}>
+  <div class="min-h-screen bg-white text-slate-900">
+    <.main_header step={:login} />
+
+    <main class="pt-[80px] md:pt-[100px] pb-12">
+      <div class="mx-auto max-w-7xl px-6">
+        <div class="flex flex-col items-center justify-start min-h-[calc(100vh-140px)] py-8">
+          <div class="w-full max-w-sm">
+            <div class="text-center mb-8">
+              <div class="w-16 h-16 bg-[#FF4C00] rounded-2xl flex items-center justify-center text-white text-3xl font-black mx-auto mb-4 shadow-lg shadow-orange-200">
+                <span class="material-symbols-outlined">mark_email_read</span>
+              </div>
+              <h1 class="text-3xl font-black text-slate-900 tracking-tight">
+                Enter your login code
+              </h1>
+              <p class="text-xs font-bold text-slate-400 mt-2 tracking-wide">
+                We sent a 6-digit code to <span class="text-slate-600">{@masked_email}</span>.
+              </p>
+              <p class="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">
+                Expires in {@ttl_minutes} minutes
+              </p>
+            </div>
+
+            <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+              <form action={~p"/user/verify"} method="post" class="space-y-5">
+                <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
+                <div>
+                  <label
+                    for="login-code"
+                    class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest"
+                  >
+                    Login code
+                  </label>
+                  <input
+                    id="login-code"
+                    type="text"
+                    name="user[code]"
+                    inputmode="numeric"
+                    autocomplete="one-time-code"
+                    pattern="[0-9]{6}"
+                    maxlength="6"
+                    placeholder="000000"
+                    required
+                    autofocus
+                    class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-black text-center text-2xl tracking-[0.4em] focus:bg-white focus:border-[#FF4C00] transition outline-none"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  class="w-full bg-[#FF4C00] text-white py-4 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-[#E64400] transition shadow-lg shadow-orange-200"
+                >
+                  Verify &amp; Sign In
+                </button>
+              </form>
+
+              <div class="relative my-6">
+                <div class="absolute inset-0 flex items-center">
+                  <div class="w-full border-t border-slate-100"></div>
+                </div>
+                <div class="relative flex justify-center text-[9px] uppercase font-black tracking-widest">
+                  <span class="bg-white px-4 text-slate-400">didn't get it?</span>
+                </div>
+              </div>
+
+              <form action={~p"/user/verify/resend"} method="post">
+                <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
+                <button
+                  type="submit"
+                  class="w-full bg-white border-2 border-slate-100 text-slate-700 py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:border-[#FF4C00] hover:text-[#FF4C00] transition"
+                >
+                  Resend code
+                </button>
+              </form>
+              <p class="text-center text-[9px] font-bold text-slate-400 mt-3 leading-relaxed">
+                You can request a new code after {@resend_seconds} seconds. Check your spam folder if it
+                doesn't arrive.
+              </p>
+            </div>
+
+            <p class="text-center mt-6 text-sm font-bold text-slate-400">
+              Wrong account?
+              <a href={~p"/user/login"} class="text-[#FF4C00] hover:underline">Start over</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</Layouts.app>

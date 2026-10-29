@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Something went wrong · Komiuta</title>
+    <link rel="stylesheet" href={~p"/assets/css/app.css"} />
+  </head>
+  <body class="min-h-screen bg-[#f8fafc] font-sans text-slate-900 antialiased">
+    <main class="min-h-screen flex items-center justify-center px-6 py-16">
+      <div class="w-full max-w-2xl text-center">
+        <a href="/" class="inline-flex items-center justify-center mb-10">
+          <img src="/images/logo_brand.png" alt="Komiuta" class="h-12 w-auto" />
+        </a>
+
+        <p class="text-[11px] font-black uppercase tracking-[0.4em] text-[#FF4C00] mb-4">
+          Error 500
+        </p>
+        <h1 class="text-4xl md:text-6xl font-black tracking-tighter leading-none mb-4">
+          We hit a temporary snag.
+        </h1>
+        <p class="text-sm md:text-base font-bold text-slate-500 leading-relaxed mb-4">
+          Something went wrong on our side and the page could not be loaded. Your booking and
+          payment records are safe. Please try again in a moment.
+        </p>
+        <p class="text-xs font-bold text-slate-400 mb-10">
+          If you were paying, check “Track my ticket” before paying again to avoid a duplicate charge.
+        </p>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <a
+            href="/"
+            class="w-full sm:w-auto px-8 py-4 rounded-full bg-[#FF4C00] text-white text-[11px] font-black uppercase tracking-widest hover:bg-[#E64400] transition shadow-lg shadow-orange-200"
+          >
+            Back to home
+          </a>
+          <a
+            href="/tickets"
+            class="w-full sm:w-auto px-8 py-4 rounded-full bg-white border border-slate-200 text-slate-700 text-[11px] font-black uppercase tracking-widest hover:border-[#FF4C00] hover:text-[#FF4C00] transition"
+          >
+            Track my ticket
+          </a>
+        </div>
+
+        <p class="mt-12 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
+          Still stuck?
+          <a class="text-[#FF4C00] underline underline-offset-4" href="mailto:hello@komiuta.com">hello@komiuta.com</a>
+        </p>
+      </div>
+    </main>
+  </body>
+</html>

@@ -41,20 +41,30 @@
               <form action={~p"/user/auth"} method="post" class="space-y-5">
                 <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
                 <div>
-                  <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Phone Number</label>
+                  <label
+                    for="login-identifier"
+                    class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest"
+                  >
+                    Phone or Email
+                  </label>
                   <input
-                    type="tel"
-                    name="user[phone]"
-                    placeholder="07XX XXX XXX"
+                    id="login-identifier"
+                    type="text"
+                    name="user[identifier]"
+                    autocomplete="username"
+                    placeholder="07XX XXX XXX or you@example.com"
                     class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:border-[#FF4C00] transition outline-none"
                     required
                   />
+                  <p class="text-[10px] font-bold text-slate-400 mt-2 leading-relaxed">
+                    We'll email you a 6-digit login code. No password needed.
+                  </p>
                 </div>
                 <button
                   type="submit"
                   class="w-full bg-[#FF4C00] text-white py-4 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-[#E64400] transition shadow-lg shadow-orange-200"
                 >
-                  Sign In
+                  Send Login Code
                 </button>
               </form>
             </div>

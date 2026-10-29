@@ -187,21 +187,71 @@ if config_env() == :prod do
   #
   # Check `Plug.SSL` for all available options in `force_ssl`.
 
-  # ## Configuring the mailer
+  # ## Configuring the mailer (email OTP login)
   #
-  # In production you need to configure the mailer to use a different adapter.
-  # Here is an example configuration for Mailgun:
+  # Login codes are delivered by email, so production needs a real provider.
+  # Swoosh's HTTP adapters use the Req API client configured in prod.exs.
   #
-  #     config :xpressbus, Xpressbus.Mailer,
-  #       adapter: Swoosh.Adapters.Mailgun,
-  #       api_key: System.get_env("MAILGUN_API_KEY"),
-  #       domain: System.get_env("MAILGUN_DOMAIN")
+  # IMPORTANT: the production deployment (Render) blocks outbound SMTP ports
+  # (25/465/587), so mailbox username/password SMTP credentials cannot be used
+  # there. Use an HTTP email API instead.
   #
-  # Most non-SMTP adapters require an API client. Swoosh supports Req, Hackney,
-  # and Finch out-of-the-box. This configuration is typically done at
-  # compile-time in your config/prod.exs:
-  #
-  #     config :swoosh, :api_client, Swoosh.ApiClient.Req
-  #
-  # See https://swoosh.hexdocs.pm/Swoosh.html#module-installation for details.
+  # Supported environment variables (first match wins):
+  #   RESEND_API_KEY                                  (recommended on Render)
+  #   MAILGUN_API_KEY + MAILGUN_DOMAIN                (optional MAILGUN_BASE_URL)
+  #   BREVO_API_KEY
+  #   MAILER_FROM                                     (default no-reply@komiuta.com)
+  env = fn name ->
+    case System.get_env(name) do
+      value when is_binary(value) -> String.trim(value)
+      _ -> ""
+    end
+  end
+
+  mailer_from =
+    case env.("MAILER_FROM") do
+      "" -> "no-reply@komiuta.com"
+      value -> value
+    end
+
+  config :xpressbus, :mailer_from, mailer_from
+
+  resend_key = env.("RESEND_API_KEY")
+  mailgun_key = env.("MAILGUN_API_KEY")
+  mailgun_domain = env.("MAILGUN_DOMAIN")
+  brevo_key = env.("BREVO_API_KEY")
+
+  mailgun_base_url =
+    case env.("MAILGUN_BASE_URL") do
+      "" -> "https://api.mailgun.net/v3"
+      value -> value
+    end
+
+  cond do
+    resend_key != "" ->
+      config :xpressbus, Xpressbus.Mailer,
+        adapter: Swoosh.Adapters.Resend,
+        api_key: resend_key
+
+    mailgun_key != "" and mailgun_domain != "" ->
+      config :xpressbus, Xpressbus.Mailer,
+        adapter: Swoosh.Adapters.Mailgun,
+        api_key: mailgun_key,
+        domain: mailgun_domain,
+        base_url: mailgun_base_url
+
+    brevo_key != "" ->
+      config :xpressbus, Xpressbus.Mailer,
+        adapter: Swoosh.Adapters.Brevo,
+        api_key: brevo_key
+
+    true ->
+      IO.warn("""
+      No transactional email provider is configured.
+      Email OTP login will not deliver messages until RESEND_API_KEY (or
+      MAILGUN_API_KEY + MAILGUN_DOMAIN, or BREVO_API_KEY) is set in the
+      production environment. Outbound SMTP is blocked on Render, so mailbox
+      SMTP credentials cannot be used there.
+      """)
+  end
 end

@@ -30,6 +30,10 @@ config :phoenix_live_view,
 # at the `config/runtime.exs`.
 config :xpressbus, Xpressbus.Mailer, adapter: Swoosh.Adapters.Local
 
+# From-address used for transactional email (login codes). Override in
+# production with the MAILER_FROM environment variable.
+config :xpressbus, :mailer_from, "no-reply@komiuta.com"
+
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.25.4",

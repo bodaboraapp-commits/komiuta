@@ -1,85 +1,104 @@
 defmodule XpressbusWeb.PaymentController do
   @moduledoc """
-  Handles payment callbacks from providers.
+  Handles payment provider callbacks and webhooks.
+
+  Every endpoint in this module authenticates the request before it can change
+  a payment or issue a ticket:
+
+    * Paystack webhooks are authenticated with the `x-paystack-signature` HMAC
+      computed over the raw request body.
+    * Flutterwave webhooks are authenticated with the `verif-hash` header.
+    * M-PESA STK callbacks are matched against the stored payment record and
+      the requested amount before the lifecycle is completed.
+    * Browser redirects are finalised through the provider verification API,
+      so a forged redirect cannot mark a payment as paid.
   """
 
   use XpressbusWeb, :controller
   require Logger
 
   alias Xpressbus.Payments
+  alias XpressbusWeb.RawBodyReader
 
   @doc """
-  MPESA callback endpoint.
+  M-PESA STK callback endpoint.
   """
   def mpesa_callback(conn, params) do
-    # INDUSTRIAL LOGGING: Capture the raw payload for audit
-    Logger.info("M-PESA Callback Received", %{
-      params: params,
-      checkout_id: get_in(params, ["Body", "stkCallback", "CheckoutRequestID"])
-    })
-
-    body = Map.get(params, "Body", %{})
-    stk_callback = Map.get(body, "stkCallback", %{}) || Map.get(body, "STKCallback", %{})
-
+    stk_callback = mpesa_stk_callback(params)
     checkout_request_id = Map.get(stk_callback, "CheckoutRequestID")
     result_code = Map.get(stk_callback, "ResultCode")
+    metadata = mpesa_metadata(stk_callback)
+    status = if result_code in [0, "0"], do: "success", else: "failed"
 
-    # Industrial Result Code Check: Handle both integer and string "0"
-    status =
-      case result_code do
-        0 -> "success"
-        "0" -> "success"
-        _ -> "failed"
-      end
+    Logger.info("M-PESA callback received", %{
+      checkout_request_id: checkout_request_id,
+      status: status,
+      result_code: result_code,
+      result_desc: Map.get(stk_callback, "ResultDesc")
+    })
 
     if checkout_request_id do
-      Logger.info("M-PESA: Executing lifecycle for #{checkout_request_id}", %{status: status})
+      case Payments.validate_mpesa_callback(checkout_request_id, status, metadata) do
+        {:ok, payment} when payment.status in ["success", "failed", "cancelled"] ->
+          Logger.info("M-PESA callback already applied; ignoring duplicate", %{
+            checkout_request_id: checkout_request_id,
+            status: payment.status
+          })
 
-      # Complete the lifecycle (Update Payment + Create/Confirm Ticket)
-      # We pass the entire stk_callback as the raw response update
-      case Payments.complete_payment_lifecycle(checkout_request_id, status, stk_callback) do
-        {:ok, _} ->
-          Logger.info("M-PESA: Lifecycle SUCCESS for #{checkout_request_id}")
+        {:ok, _payment} ->
+          case Payments.complete_payment_lifecycle(checkout_request_id, status, stk_callback) do
+            {:ok, _} ->
+              Logger.info("M-PESA lifecycle completed", %{
+                checkout_request_id: checkout_request_id,
+                status: status
+              })
+
+            {:error, reason} ->
+              Logger.error("M-PESA lifecycle failed", %{
+                checkout_request_id: checkout_request_id,
+                reason: inspect(reason)
+              })
+          end
 
         {:error, reason} ->
-          Logger.error("M-PESA: Lifecycle FAILED", %{
-            id: checkout_request_id,
+          Logger.error("Rejected M-PESA callback", %{
+            checkout_request_id: checkout_request_id,
             reason: inspect(reason)
           })
       end
 
-      # Safaricom strictly requires this specific JSON acknowledgment
-      conn
-      |> put_resp_content_type("application/json")
-      |> send_resp(
-        200,
-        Jason.encode!(%{
-          "ResponseCode" => "00000000",
-          "ResponseDesc" => "Success"
-        })
-      )
+      mpesa_ack(conn)
     else
-      Logger.warning("M-PESA: Callback arrived with missing identifiers", %{params: params})
+      Logger.warning("M-PESA callback arrived with missing identifiers", %{
+        result_code: result_code
+      })
+
       conn |> put_status(400) |> json(%{error: "Invalid payload"})
     end
   end
 
   @doc """
-  Flutterwave callback endpoint.
+  Flutterwave browser redirect endpoint.
+
+  The redirect parameters are not trusted directly: the transaction is
+  verified with the Flutterwave API before the payment is finalised.
   """
   def flutterwave_callback(conn, params) do
-    status = if Map.get(params, "status") == "successful", do: "success", else: "failed"
     tx_ref = Map.get(params, "tx_ref")
+    transaction_id = Map.get(params, "transaction_id") || Map.get(params, "id")
 
     if tx_ref do
-      response = %{
-        "status" => Map.get(params, "status"),
-        "tx_ref" => tx_ref,
-        "transaction_id" => Map.get(params, "transaction_id"),
-        "amount" => Map.get(params, "amount")
-      }
+      case Payments.complete_flutterwave_payment(tx_ref, transaction_id) do
+        {:ok, _result} ->
+          Logger.info("Flutterwave callback finalised", %{reference: tx_ref})
 
-      Payments.update_payment_status(tx_ref, status, response)
+        {:error, reason} ->
+          Logger.error("Flutterwave callback finalisation failed", %{
+            reference: tx_ref,
+            reason: inspect(reason)
+          })
+      end
+
       redirect(conn, to: "/payment-processing/#{tx_ref}?method=flutterwave")
     else
       redirect(conn, to: ~p"/")
@@ -90,97 +109,158 @@ defmodule XpressbusWeb.PaymentController do
   Flutterwave webhook endpoint.
   """
   def flutterwave_webhook(conn, params) do
-    status = if Map.get(params, "status") == "successful", do: "success", else: "failed"
-    tx_ref = Map.get(params, "tx_ref")
+    signature = conn |> get_req_header("verif-hash") |> List.first()
 
-    response = %{
-      "event" => Map.get(params, "event"),
-      "status" => Map.get(params, "status"),
-      "tx_ref" => tx_ref,
-      "transaction_id" => Map.get(params, "transaction_id")
-    }
+    case Payments.verify_flutterwave_signature(signature) do
+      :ok ->
+        data = Map.get(params, "data") || params
+        tx_ref = Map.get(data, "tx_ref")
+        transaction_id = Map.get(data, "id") || Map.get(data, "transaction_id")
+        event = Map.get(params, "event") || Map.get(data, "event")
 
-    {:ok, _} = Payments.update_payment_status(tx_ref, status, response)
+        Logger.info("Flutterwave webhook received", %{
+          event: event,
+          reference: tx_ref,
+          transaction_id: transaction_id
+        })
 
-    json(conn, %{status: "ok"})
+        case Payments.complete_flutterwave_payment(tx_ref, transaction_id) do
+          {:ok, _result} ->
+            json(conn, %{status: "ok"})
+
+          {:error, :not_found} ->
+            Logger.error("Flutterwave webhook for unknown reference", reference: tx_ref)
+            json(conn, %{status: "ok"})
+
+          {:error, reason} ->
+            Logger.error("Flutterwave webhook finalisation failed", %{
+              reference: tx_ref,
+              reason: inspect(reason)
+            })
+
+            conn |> put_status(500) |> json(%{status: "error"})
+        end
+
+      {:error, reason} ->
+        Logger.error("Rejected Flutterwave webhook", %{reason: inspect(reason)})
+        conn |> put_status(401) |> json(%{error: "invalid signature"})
+    end
   end
 
   @doc """
-  Paystack callback endpoint.
+  Paystack browser redirect endpoint.
+
+  The reference is always verified against the Paystack API before the payment
+  is finalised.
   """
   def paystack_callback(conn, params) do
-    Logger.info("Paystack callback hit", %{
-      params: params,
-      query_params: conn.query_params,
-      body_params: conn.body_params,
-      method: conn.method
-    })
-
-    reference =
-      params["reference"] ||
-        params["data"]["reference"] ||
-        conn.query_params["reference"] ||
-        conn.body_params["reference"] ||
-        conn.body_params["data"]["reference"]
+    reference = paystack_reference(conn, params)
 
     if reference do
       case Payments.complete_paystack_payment(reference) do
-        {:ok, _ticket} ->
-          Logger.info("Paystack payment verified and ticket created",
-            reference: reference,
-            status: "success"
-          )
+        {:ok, _result} ->
+          Logger.info("Paystack payment verified and finalised", reference: reference)
 
         {:error, reason} ->
-          Logger.error("Paystack payment finalization failed",
+          Logger.error("Paystack payment finalisation failed", %{
             reference: reference,
             reason: inspect(reason)
-          )
+          })
       end
 
-      Phoenix.Controller.redirect(conn, to: "/payment-processing/#{reference}?method=paystack")
+      redirect(conn, to: "/payment-processing/#{reference}?method=paystack")
     else
-      Logger.error("Paystack callback missing reference", %{
-        params: params,
-        query_params: conn.query_params,
-        body_params: conn.body_params
-      })
+      Logger.error("Paystack callback missing reference")
 
-      Phoenix.Controller.redirect(conn, to: "/payment-processing/unknown?method=paystack")
+      redirect(conn, to: "/payment-processing/unknown?method=paystack")
     end
   end
 
   @doc """
   Paystack webhook endpoint.
+
+  The webhook signature authenticates the delivery; the charge itself is then
+  re-verified with Paystack before it can mark a payment as paid.
   """
   def paystack_webhook(conn, params) do
-    event = Map.get(params, "event")
-    data = Map.get(params, "data", %{})
-    reference = Map.get(data, "reference")
+    raw_body = RawBodyReader.raw_body(conn)
+    signature = conn |> get_req_header("x-paystack-signature") |> List.first()
 
-    response = %{
-      "event" => event,
-      "reference" => reference,
-      "status" => Map.get(data, "status"),
-      "gateway_response" => Map.get(data, "gateway_response")
-    }
+    case Payments.verify_paystack_signature(raw_body, signature) do
+      :ok ->
+        event = Map.get(params, "event")
+        data = Map.get(params, "data", %{})
+        reference = Map.get(data, "reference")
 
-    if reference do
-      case event do
-        "charge.success" ->
-          Payments.complete_paystack_payment(reference)
-          Payments.update_payment_status(reference, "success", response)
+        handle_paystack_event(event, reference)
+        json(conn, %{status: "ok"})
 
-        "charge.failed" ->
-          Payments.update_payment_status(reference, "failed", response)
-
-        _ ->
-          Payments.update_payment_status(reference, "pending", response)
-      end
-    else
-      Logger.error("Paystack webhook missing reference", params: params)
+      {:error, reason} ->
+        Logger.error("Rejected Paystack webhook", %{reason: inspect(reason)})
+        conn |> put_status(401) |> json(%{error: "invalid signature"})
     end
+  end
 
-    json(conn, %{status: "ok"})
+  defp handle_paystack_event("charge.success", reference) when is_binary(reference) do
+    case Payments.complete_paystack_payment(reference) do
+      {:ok, _result} ->
+        :ok
+
+      {:error, reason} ->
+        Logger.error("Paystack webhook could not finalise payment", %{
+          reference: reference,
+          reason: inspect(reason)
+        })
+    end
+  end
+
+  defp handle_paystack_event("charge.failed", reference) when is_binary(reference) do
+    Payments.update_payment_status(reference, "failed", %{"event" => "charge.failed"})
+    :ok
+  end
+
+  defp handle_paystack_event(event, _reference) do
+    # Never let unrelated events rewrite the status of a payment.
+    Logger.info("Ignoring Paystack webhook event", %{event: event})
+    :ok
+  end
+
+  defp paystack_reference(conn, params) do
+    params["reference"] ||
+      get_in(params, ["data", "reference"]) ||
+      conn.query_params["reference"] ||
+      conn.body_params["reference"] ||
+      get_in(conn.body_params, ["data", "reference"])
+  end
+
+  defp mpesa_stk_callback(params) do
+    body = Map.get(params, "Body", %{})
+    Map.get(body, "stkCallback", %{}) || Map.get(body, "STKCallback", %{})
+  end
+
+  defp mpesa_metadata(stk_callback) do
+    stk_callback
+    |> Map.get("CallbackMetadata", %{})
+    |> Map.get("Item", [])
+    |> Enum.reduce(%{}, fn
+      %{"Name" => name, "Value" => value}, acc when is_binary(name) ->
+        Map.put(acc, name, value)
+
+      _other, acc ->
+        acc
+    end)
+  end
+
+  # Safaricom expects this exact acknowledgement for accepted callbacks.
+  defp mpesa_ack(conn) do
+    conn
+    |> put_resp_content_type("application/json")
+    |> send_resp(
+      200,
+      Jason.encode!(%{
+        "ResponseCode" => "00000000",
+        "ResponseDesc" => "Success"
+      })
+    )
   end
 end

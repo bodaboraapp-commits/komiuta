@@ -27,11 +27,19 @@ config :phoenix_live_view,
 config :phoenix,
   sort_verified_routes_query_params: true
 
-# Configure test database
+# Configure test database. The defaults match the long-standing local XAMPP
+# setup, but every value can be overridden so the suite can run against a
+# disposable database (CI, review environments, etc.).
+#
+# The default database name is deliberately *different* from the development
+# database. Points of the suite assert on whole-table results (for example
+# `assert Coupons.list_coupons() == [coupon]`), so sharing `buupasskomiuta_db`
+# with development data made the suite fail depending on what was seeded
+# locally. `mix test` creates and migrates this database automatically.
 config :xpressbus, Xpressbus.Repo,
-  username: "root",
-  password: "",
-  database: "buupasskomiuta_db",
-  hostname: "127.0.0.1",
-  port: 3307,
+  username: System.get_env("DB_USER", "root"),
+  password: System.get_env("DB_PASSWORD", ""),
+  database: System.get_env("DB_NAME", "buupasskomiuta_test"),
+  hostname: System.get_env("DB_HOST", "127.0.0.1"),
+  port: String.to_integer(System.get_env("DB_PORT", "3307")),
   pool: Ecto.Adapters.SQL.Sandbox

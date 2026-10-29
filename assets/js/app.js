@@ -55,12 +55,38 @@ liveSocket.connect()
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket
 
-// Register Service Worker for PWA
+// --- PWA: install prompt ---------------------------------------------------
+// The browser fires `beforeinstallprompt` when the app is installable. Store
+// it so the in-app "Install app" buttons can trigger it later.
+window.__komiutaInstallPrompt = null
+
+window.addEventListener('beforeinstallprompt', event => {
+  event.preventDefault()
+  window.__komiutaInstallPrompt = event
+  window.dispatchEvent(new CustomEvent('komiuta:pwa-installable'))
+})
+
+window.addEventListener('appinstalled', () => {
+  window.__komiutaInstallPrompt = null
+  window.dispatchEvent(new CustomEvent('komiuta:pwa-installed'))
+})
+
+// --- PWA: service worker + update handling ---------------------------------
 if ('serviceWorker' in navigator) {
+  const hadController = !!navigator.serviceWorker.controller
+  let refreshing = false
+
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    // Reload once when a new service worker takes over, but not on first install.
+    if (!hadController || refreshing) return
+    refreshing = true
+    window.location.reload()
+  })
+
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(reg => console.log('Komiuta Service Worker registered:', reg.scope))
-      .catch(err => console.log('Komiuta Service Worker registration failed:', err))
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      // Offline support is a progressive enhancement; ignore failures silently.
+    })
   })
 }
 

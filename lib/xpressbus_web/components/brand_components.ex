@@ -44,7 +44,7 @@ defmodule XpressbusWeb.BrandComponents do
             <a href="/tour-packages" class="flex flex-col items-center gap-1 group relative">
               <div class={[
                 "w-7 h-7 flex items-center justify-center transition-colors",
-                if(@step == :chyllz,
+                if(@step in [:chyllz, :hotels, :gems, :car, :events],
                   do: "text-[#FF4C00]",
                   else: "text-slate-400 group-hover:text-[#FF4C00]"
                 )
@@ -71,12 +71,12 @@ defmodule XpressbusWeb.BrandComponents do
 
               <span class={[
                 "text-[11px] font-black uppercase tracking-widest",
-                if(@step == :chyllz,
+                if(@step in [:chyllz, :hotels, :gems, :car, :events],
                   do: "text-slate-900",
                   else: "text-slate-400 group-hover:text-slate-900"
                 )
               ]}>Chyllz</span>
-              <%= if @step == :chyllz do %>
+              <%= if @step in [:chyllz, :hotels, :gems, :car, :events] do %>
                 <div class="absolute -bottom-[22px] left-0 right-0 h-1 bg-[#FF4C00] rounded-t-full">
                 </div>
               <% end %>
@@ -117,8 +117,10 @@ defmodule XpressbusWeb.BrandComponents do
           </a>
 
           <a
+            id="pwa-download-desktop"
             href="#app-section"
-            class="flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-[#FF4C00] transition"
+            phx-hook=".InstallApp"
+            class="pwa-hide-installed flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-[#FF4C00] transition"
           >
             <span class="material-symbols-outlined" aria-hidden="true">download</span> Download App
           </a>
@@ -222,14 +224,77 @@ defmodule XpressbusWeb.BrandComponents do
             <span class="material-symbols-outlined text-slate-500">shield</span> InSURE
           </a>
           <a
+            id="pwa-download-mobile"
             href="#app-section"
-            class="flex items-center gap-3 px-3 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 rounded-xl transition"
+            phx-hook=".InstallApp"
+            class="pwa-hide-installed flex items-center gap-3 px-3 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 rounded-xl transition"
           >
             <span class="material-symbols-outlined text-slate-500">download</span> Download App
           </a>
         </div>
       </div>
     </header>
+
+    <script :type={Phoenix.LiveView.ColocatedHook} name=".InstallApp">
+      // The existing "Download App" link doubles as the PWA install action:
+      //   * installable browser  -> open the native install prompt
+      //   * iOS Safari           -> show "Add to Home Screen" instructions
+      //   * otherwise            -> fall back to the #app-section download area
+      //                              (reserved for the future Play Store /
+      //                              App Store links), or navigate home to it.
+      export default {
+        mounted() {
+          this.hintId = "pwa-install-hint"
+          this.isIOS = () => /iphone|ipad|ipod/i.test(window.navigator.userAgent)
+
+          this.el.addEventListener("click", async event => {
+            const prompt = window.__komiutaInstallPrompt
+
+            if (prompt) {
+              event.preventDefault()
+              prompt.prompt()
+              try {
+                await prompt.userChoice
+              } catch (_error) {
+                // The user dismissed the install sheet.
+              }
+              window.__komiutaInstallPrompt = null
+              return
+            }
+
+            if (this.isIOS()) {
+              event.preventDefault()
+              this.showHint()
+              return
+            }
+
+            // No install prompt available: keep the original behaviour, but make
+            // it work from pages that do not render the download section.
+            if (!document.getElementById("app-section")) {
+              event.preventDefault()
+              window.location.assign("/#app-section")
+            }
+          })
+        },
+        showHint() {
+          const existing = document.getElementById(this.hintId)
+          if (existing) {
+            existing.hidden = false
+            return
+          }
+          const hint = document.createElement("div")
+          hint.id = this.hintId
+          hint.className =
+            "fixed left-1/2 bottom-6 z-[100] -translate-x-1/2 w-[calc(100%-2rem)] max-w-md rounded-2xl bg-slate-900 px-5 py-4 text-white shadow-2xl cursor-pointer"
+          hint.innerHTML =
+            '<p class="text-[10px] font-black uppercase tracking-widest text-orange-400 mb-1">Install Komiuta</p>' +
+            '<p class="text-sm font-bold leading-snug">Open the browser menu (or Share on iPhone) and choose <span class="text-[#FF4C00]">Add to Home Screen</span> to install the app.</p>'
+          hint.addEventListener("click", () => hint.remove())
+          document.body.appendChild(hint)
+          setTimeout(() => hint.remove(), 9000)
+        }
+      }
+    </script>
     """
   end
 
@@ -243,6 +308,8 @@ defmodule XpressbusWeb.BrandComponents do
       <div class="mb-20 bg-slate-50/50 rounded-[3rem] p-8 md:p-12 border border-slate-100">
         <div class="flex flex-wrap justify-center gap-4 md:gap-10 mb-12 border-b border-slate-200 pb-6">
           <button
+            type="button"
+            aria-pressed={@footer_tab == "about"}
             phx-click="change_footer_tab"
             phx-value-tab="about"
             class={[
@@ -252,6 +319,8 @@ defmodule XpressbusWeb.BrandComponents do
             ]}
           >About us</button>
           <button
+            type="button"
+            aria-pressed={@footer_tab == "how"}
             phx-click="change_footer_tab"
             phx-value-tab="how"
             class={[
@@ -261,6 +330,8 @@ defmodule XpressbusWeb.BrandComponents do
             ]}
           >How to book</button>
           <button
+            type="button"
+            aria-pressed={@footer_tab == "track"}
             phx-click="change_footer_tab"
             phx-value-tab="track"
             class={[
@@ -270,6 +341,8 @@ defmodule XpressbusWeb.BrandComponents do
             ]}
           >Track Ticket</button>
           <button
+            type="button"
+            aria-pressed={@footer_tab == "carbon"}
             phx-click="change_footer_tab"
             phx-value-tab="carbon"
             class={[
@@ -279,6 +352,8 @@ defmodule XpressbusWeb.BrandComponents do
             ]}
           >Carbon-neutral ride</button>
           <button
+            type="button"
+            aria-pressed={@footer_tab == "routes"}
             phx-click="change_footer_tab"
             phx-value-tab="routes"
             class={[
@@ -288,6 +363,8 @@ defmodule XpressbusWeb.BrandComponents do
             ]}
           >Top routes</button>
           <button
+            type="button"
+            aria-pressed={@footer_tab == "destinations"}
             phx-click="change_footer_tab"
             phx-value-tab="destinations"
             class={[
@@ -345,7 +422,9 @@ defmodule XpressbusWeb.BrandComponents do
               <p class="text-sm md:text-base font-bold text-slate-500 leading-relaxed">
                 Komiuta is committed to the future of sustainable transport. We are currently pioneering
                 <span class="text-[#00AC4E]">Carbon-Neutral Travel</span>
-                initiatives in East Africa, including the phased rollout of our first intercity **EV (Electric Vehicle) fleet** by 2025. By choosing Komiuta, you're supporting optimized route planning that reduces fuel waste and helps preserve the beautiful landscapes of our region for future generations.
+                initiatives in East Africa, including the phased rollout of our first intercity
+                <strong class="font-black text-slate-900">EV (Electric Vehicle) fleet</strong>
+                by 2025. By choosing Komiuta, you're supporting optimized route planning that reduces fuel waste and helps preserve the beautiful landscapes of our region for future generations.
               </p>
             <% "routes" -> %>
               <div class="flex flex-wrap justify-center gap-3">
@@ -361,10 +440,13 @@ defmodule XpressbusWeb.BrandComponents do
               </div>
           <% end %>
 
-          <button class="mt-8 text-[#FF4C00] font-black text-xs uppercase tracking-widest hover:underline flex items-center justify-center gap-2 mx-auto transition-all hover:scale-105">
-            Explore more on our App
-            <span class="material-symbols-outlined !text-sm">open_in_new</span>
-          </button>
+          <a
+            href="/tour-packages"
+            class="mt-8 text-[#FF4C00] font-black text-xs uppercase tracking-widest hover:underline flex items-center justify-center gap-2 mx-auto transition-all hover:scale-105 w-fit"
+          >
+            Explore Chyllz packages
+            <span class="material-symbols-outlined !text-sm">arrow_forward</span>
+          </a>
         </div>
       </div>
 
@@ -379,7 +461,13 @@ defmodule XpressbusWeb.BrandComponents do
         Kenya</span>
       </div>
 
-      <div class="mt-16 pt-10 border-t border-slate-100 text-center">
+      <div class="mt-10 flex flex-wrap justify-center gap-6 text-[10px] font-black uppercase tracking-widest text-slate-400">
+        <a href="/tickets" class="hover:text-[#FF4C00] transition">Track ticket</a>
+        <a href="/terms" class="hover:text-[#FF4C00] transition">Terms &amp; Conditions</a>
+        <a href="/privacy" class="hover:text-[#FF4C00] transition">Privacy Policy</a>
+      </div>
+
+      <div class="mt-10 pt-10 border-t border-slate-100 text-center">
         <p class="text-[10px] font-black uppercase tracking-[0.5em] text-slate-300">
           © {DateTime.utc_now().year} Komiuta WanCom Engineering Sol. All rights reserved.
         </p>
@@ -396,6 +484,7 @@ defmodule XpressbusWeb.BrandComponents do
   def user_tab_link(assigns) do
     ~H"""
     <button
+      type="button"
       phx-click="switch_tab"
       phx-value-tab={@id}
       class={[

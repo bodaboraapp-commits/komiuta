@@ -30,6 +30,8 @@ defmodule Xpressbus.AccountsFixtures do
       })
       |> Xpressbus.Accounts.create_user()
 
-    user
+    # Reload so callers compare against the database-normalised values
+    # (decimal columns round-trip with their configured scale).
+    Xpressbus.Repo.reload!(user)
   end
 end
