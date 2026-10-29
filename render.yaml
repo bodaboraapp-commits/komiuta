@@ -9,7 +9,7 @@ services:
     branch: phoenix-app
     autoDeploy: true
     healthCheckPath: /
-    buildCommand: mix local.hex --force && mix local.rebar --force && mix deps.get && mix assets.setup && mix assets.deploy && mix compile
+    buildCommand: mix local.hex --force && mix local.rebar --force && mix deps.get && mix compile && mix assets.setup && mix assets.deploy
     startCommand: mix ecto.migrate && mix run priv/repo/render_bootstrap.exs && mix phx.server
     envVars:
       - key: MIX_ENV

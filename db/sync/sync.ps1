@@ -41,6 +41,8 @@ param(
     [int]   $Port      = 3307,
     [string]$User      = 'root',
     [string]$Password  = $null,
+    [string]$SslMode   = '',
+    [string]$SslCa     = '',
     [string]$MysqlExe  = '',
     [string]$SqlUrl    = 'https://raw.githubusercontent.com/bodaboraapp-commits/komiuta/phoenix-app/db/sync/data_sync.sql.zip',
     [string]$SchemaUrl = 'https://raw.githubusercontent.com/bodaboraapp-commits/komiuta/phoenix-app/db/sync/schema.sql',
@@ -71,6 +73,8 @@ function Get-MysqlArgs {
     if ($null -ne $Password) {
         if ($Password -eq '') { $a += '--password=' } else { $a += "--password=$Password" }
     }
+    if ($SslMode) { $a += "--ssl-mode=$SslMode" }
+    if ($SslCa) { $a += "--ssl-ca=$SslCa" }
     return $a
 }
 
@@ -135,7 +139,10 @@ if (-not $SkipBackup) {
         $stamp  = Get-Date -Format 'yyyyMMdd-HHmmss'
         $backup = Join-Path $work "backup-$Database-$stamp.sql"
         Info "Backing up database to $backup"
-        $dumpArgs = @('-h', $Server, '-P', "$Port", '-u', $User) + $(if ($null -ne $Password) { if ($Password -eq '') { '--password=' } else { "--password=$Password" } } else { @() }) + @('--single-transaction', '--default-character-set=utf8mb4', '--result-file=' + $backup, $Database)
+        $tlsArgs = @()
+        if ($SslMode) { $tlsArgs += "--ssl-mode=$SslMode" }
+        if ($SslCa) { $tlsArgs += "--ssl-ca=$SslCa" }
+        $dumpArgs = @('-h', $Server, '-P', "$Port", '-u', $User) + $(if ($null -ne $Password) { if ($Password -eq '') { '--password=' } else { "--password=$Password" } } else { @() }) + $tlsArgs + @('--single-transaction', '--default-character-set=utf8mb4', '--result-file=' + $backup, $Database)
         & $mysqldump @dumpArgs
         if ($LASTEXITCODE -ne 0) { throw "Backup failed; aborting before touching the database." }
         Ok "Backup created: $backup"
