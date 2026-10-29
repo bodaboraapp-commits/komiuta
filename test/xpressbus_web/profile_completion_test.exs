@@ -103,7 +103,7 @@ defmodule Xpressbus.ProfileCompletionTest do
       assert {:error, {:redirect, %{to: "/user/complete-profile"}}} = live(conn, ~p"/dashboard")
     end
 
-    test "the complete-profile page renders for an incomplete signed-in user" do
+    test "the phone-only completion page renders for an incomplete signed-in user" do
       {:ok, user} =
         Accounts.find_or_create_google_user(%{
           name: "Incomplete Page",
@@ -115,8 +115,28 @@ defmodule Xpressbus.ProfileCompletionTest do
         |> Plug.Test.init_test_session(%{user_id: user.id})
         |> get(~p"/user/complete-profile")
 
-      assert html_response(conn, 200) =~ "Complete your profile"
-      assert html_response(conn, 200) =~ "Phone number"
+      html = html_response(conn, 200)
+      assert html =~ "Add your phone number"
+      assert html =~ "Phone number"
+      # Google already supplied the email, so only the phone is requested.
+      refute html =~ "Email address"
+    end
+
+    test "the completion page asks for an email when the stored one is unusable" do
+      legacy_phone = phone()
+      legacy_email = legacy_phone <> "@xpressbus.com"
+
+      {:ok, user} =
+        Accounts.create_user(%{name: "Legacy", phone: legacy_phone, email: legacy_email})
+
+      conn =
+        build_conn()
+        |> Plug.Test.init_test_session(%{user_id: user.id})
+        |> get(~p"/user/complete-profile")
+
+      html = html_response(conn, 200)
+      assert html =~ "Add your phone number"
+      assert html =~ "Email address"
     end
 
     test "guests are redirected to login" do

@@ -209,7 +209,8 @@ defmodule XpressbusWeb.UserController do
         else
           render(conn, :complete_profile,
             form: user |> Accounts.change_complete_profile() |> Phoenix.Component.to_form(),
-            user: user
+            user: user,
+            show_email_field: not Accounts.valid_email?(user.email)
           )
         end
 
@@ -232,9 +233,15 @@ defmodule XpressbusWeb.UserController do
             |> redirect(to: ~p"/dashboard")
 
           {:error, %Ecto.Changeset{} = changeset} ->
+            email = Ecto.Changeset.get_field(changeset, :email)
+
             conn
             |> put_flash(:error, "Please check the highlighted fields.")
-            |> render(:complete_profile, form: Phoenix.Component.to_form(changeset), user: user)
+            |> render(:complete_profile,
+              form: Phoenix.Component.to_form(changeset),
+              user: user,
+              show_email_field: not Accounts.valid_email?(email)
+            )
         end
 
       _ ->
