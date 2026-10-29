@@ -121,3 +121,37 @@ integration secrets.
 | LiveView not interactive | `check_origin` (set to `:conn`), Cloudflare WebSockets (proxied is fine) |
 | Migrations | `mix ecto.migrate` runs at every start; check Render logs |
 | Health check fails | `/` must return 200; check DB connectivity first |
+
+---
+
+## 6. Keeping the free instance awake (optional workaround)
+
+Render spins a Free web service down after **15 minutes without inbound traffic**.
+A request every ~10 minutes counts as traffic and keeps it running.
+
+> This is a workaround against the free tier's design (intended for testing):
+> an always-on Free service consumes nearly all of the **750 monthly free hours**
+> (~744 h), it does not remove cold starts after deploys/restarts, and Render may
+> change this behaviour. For real customers, upgrade the web service plan instead.
+
+The homepage `/` reads cities/routes/operators from MySQL, so pinging it also
+keeps a free **Aiven MySQL** instance active (Aiven may power off idle services).
+Use `/robots.txt` for a lighter ping that does not touch the database.
+
+Options, most reliable first:
+
+1. **External uptime monitor (simplest — nothing to host)**
+   `cron-job.org` or `UptimeRobot` (free tiers): add a monitor for
+   `https://<service>.onrender.com/` with a **10-minute** interval.
+2. **Cloudflare Worker cron** (you already use Cloudflare for DNS)
+   Deploy [`scripts/cloudflare-keepalive/worker.js`](../scripts/cloudflare-keepalive/worker.js):
+   Cloudflare Dashboard → Workers & Pages → Create → paste the code → add
+   `RENDER_URL` variable → Settings → Trigger Events → Cron `*/10 * * * *`.
+3. **Windows Scheduled Task on the PC that is always on**
+   `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\keepalive.ps1 -Url https://<service>.onrender.com`
+   (use `-Path /robots.txt` for a DB-free ping, `-Once` to test).
+4. **GitHub Actions** ([`.github/workflows/keepalive.yml`](../.github/workflows/keepalive.yml))
+   Set the repository secret `RENDER_URL`. Note: scheduled workflows only run
+   from the repository's **default branch** (`main`), and GitHub delays schedules
+   by several minutes, so this is the least reliable option.
+

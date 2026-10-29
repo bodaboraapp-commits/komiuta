@@ -1,0 +1,17 @@
+# Example wrangler config for the keep-alive Worker (scripts/cloudflare-keepalive/worker.js).
+#
+# Deploy with:
+#   npx wrangler deploy scripts/cloudflare-keepalive/wrangler.toml
+#
+# Or skip wrangler entirely and paste worker.js into the Cloudflare dashboard
+# (Workers & Pages -> Create -> Worker -> Settings -> Cron Triggers).
+name = "komiuta-keepalive"
+main = "worker.js"
+compatibility_date = "2026-10-29"
+
+[vars]
+RENDER_URL = "https://komiuta-xxxx.onrender.com"
+PING_PATH = "/"
+
+[triggers]
+crons = ["*/10 * * * *"]

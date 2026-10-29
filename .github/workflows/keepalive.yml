@@ -1,0 +1,49 @@
+name: Render keepalive
+
+# Pings the Render app so a Free web service does not spin down.
+#
+# IMPORTANT: GitHub only runs *scheduled* workflows from the repository's
+# DEFAULT branch. While this project lives on the `phoenix-app` branch you must
+# either merge it into `main` first or use one of the other options in
+# DEPLOY_RENDER.md (Cloudflare Worker cron or an external uptime monitor).
+# Manual runs via workflow_dispatch work on any branch.
+#
+# SETUP
+#   1. Repo Settings -> Secrets and variables -> Actions -> New repository secret
+#      Name: RENDER_URL   Value: https://komiuta-xxxx.onrender.com
+#   2. Enable Actions if they are disabled for the repository.
+#
+# NOTE: GitHub scheduled workflows are best-effort and can be delayed by many
+# minutes. A missed cycle longer than Render's 15-minute idle window still
+# causes a spin-down; an external monitor is more reliable.
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping the app
+        env:
+          RENDER_URL: ${{ secrets.RENDER_URL }}
+        run: |
+          if [ -z "$RENDER_URL" ]; then
+            echo "RENDER_URL secret is not set - skipping"
+            exit 0
+          fi
+          URL="${RENDER_URL%/}/?ts=$(date +%s)"
+          for attempt in 1 2 3; do
+            echo "Attempt $attempt: $URL"
+            if curl -fsS --max-time 120 -o /dev/null -w "HTTP %{http_code} in %{time_total}s\n" "$URL"; then
+              exit 0
+            fi
+            sleep 20
+          done
+          echo "App did not answer (cold start can take ~1 minute)"
+          exit 1
