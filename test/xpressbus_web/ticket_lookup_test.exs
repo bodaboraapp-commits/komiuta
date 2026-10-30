@@ -29,21 +29,21 @@ defmodule XpressbusWeb.TicketLookupTest do
     Repo.insert!(struct(Ticket, Map.merge(defaults, attrs)))
   end
 
-  test "unauthenticated lookup requires the full passenger phone number", %{conn: conn} do
+  test "unauthenticated lookup requires the ticket ID and full passenger phone", %{conn: conn} do
     ticket = ticket_fixture()
 
     {:ok, view, _html} = live(conn, ~p"/tickets")
 
-    # Ticket ID alone must not reveal the booking.
+    # Ticket ID alone is rejected before any lookup happens.
     html =
       view
       |> form("#ticket-search-form", %{"query" => ticket.ticket_id, "phone" => ""})
       |> render_submit()
 
     refute html =~ "Private Passenger"
-    assert html =~ "No ticket matches"
+    assert html =~ "Enter the ticket ID"
 
-    # A partial phone number must not work either.
+    # A partial phone number is rejected too.
     html =
       view
       |> form("#ticket-search-form", %{"query" => ticket.ticket_id, "phone" => "5678"})
@@ -58,6 +58,7 @@ defmodule XpressbusWeb.TicketLookupTest do
       |> render_submit()
 
     refute html =~ "Private Passenger"
+    assert html =~ "No ticket matches"
 
     # The correct full number reveals the ticket.
     html =

@@ -26,6 +26,7 @@ defmodule XpressbusWeb.TicketLive do
      |> assign(:share_url, nil)
      |> assign(:search_results, [])
      |> assign(:searched, false)
+     |> assign(:search_ready?, false)
      |> assign(:lookup_error, nil)
      |> assign(:search_form, to_form(%{"query" => "", "phone" => ""}))}
   end
@@ -47,11 +48,33 @@ defmodule XpressbusWeb.TicketLive do
   end
 
   @impl true
+  def handle_event("validate_search", params, socket) do
+    query = params |> Map.get("query", "") |> to_string()
+    phone = params |> Map.get("phone", "") |> to_string()
+
+    {:noreply,
+     socket
+     |> assign(:search_form, to_form(%{"query" => query, "phone" => phone}))
+     |> assign(:search_ready?, search_ready?(query, phone, socket.assigns.signed_in_user))
+     |> assign(:lookup_error, nil)}
+  end
+
   def handle_event("search", params, socket) do
     query = params["query"] || (params["search"] && params["search"]["query"]) || ""
     phone = params["phone"] || (params["search"] && params["search"]["phone"]) || ""
 
-    {:noreply, perform_search(query, phone, nil, socket)}
+    if search_ready?(query, phone, socket.assigns.signed_in_user) do
+      {:noreply, perform_search(query, phone, nil, socket)}
+    else
+      {:noreply,
+       socket
+       |> assign(:search_form, to_form(%{"query" => query, "phone" => phone}))
+       |> assign(:search_ready?, false)
+       |> assign(
+         :lookup_error,
+         "Enter the ticket ID and the passenger's full phone number to search."
+       )}
+    end
   end
 
   def handle_event("clear_search", _params, socket) do
@@ -64,6 +87,7 @@ defmodule XpressbusWeb.TicketLive do
      |> assign(:share_url, nil)
      |> assign(:search_results, [])
      |> assign(:searched, false)
+     |> assign(:search_ready?, false)
      |> assign(:lookup_error, nil)
      |> assign(:search_form, to_form(%{"query" => "", "phone" => ""}))}
   end
@@ -95,6 +119,7 @@ defmodule XpressbusWeb.TicketLive do
         |> assign(:ticket_qr, nil)
         |> assign(:share_url, nil)
         |> assign(:searched, true)
+        |> assign(:search_ready?, true)
         |> assign(
           :lookup_error,
           "Too many ticket lookups. Please wait #{retry_after} seconds and try again."
@@ -134,6 +159,7 @@ defmodule XpressbusWeb.TicketLive do
         |> assign(:ticket_qr, build_qr(ticket))
         |> assign(:share_url, if(ticket, do: TicketAccess.path(ticket), else: nil))
         |> assign(:searched, true)
+        |> assign(:search_ready?, true)
         |> assign(:lookup_error, nil)
         |> assign(:search_form, to_form(%{"query" => query, "phone" => phone}))
     end
@@ -160,6 +186,14 @@ defmodule XpressbusWeb.TicketLive do
 
   defp signed_in_user(nil), do: nil
   defp signed_in_user(user_id), do: Accounts.get_user(user_id)
+
+  defp search_ready?(query, phone, signed_in_user) do
+    query = query |> to_string() |> String.trim()
+    phone_digits = TicketAccess.normalize(phone)
+
+    String.length(query) >= 3 and
+      (String.length(phone_digits) >= 9 or not is_nil(signed_in_user))
+  end
 
   defp client_ip(socket) do
     if connected?(socket) do

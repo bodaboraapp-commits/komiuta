@@ -11,42 +11,77 @@
         </p>
       </div>
 
-      <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-100">
+      <div class="bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 shadow-[0_24px_70px_-30px_rgba(15,23,42,0.25)] border border-slate-100">
+        <div class="flex items-start gap-3 mb-6">
+          <div class="w-12 h-12 shrink-0 rounded-2xl bg-orange-50 border border-orange-100 flex items-center justify-center text-[#FF4C00]">
+            <span class="material-symbols-outlined !text-2xl">confirmation_number</span>
+          </div>
+          <div>
+            <h2 class="text-lg font-black text-slate-900 tracking-tight leading-tight">
+              Find your boarding pass
+            </h2>
+            <p class="text-[11px] font-bold text-slate-400 mt-0.5">
+              Ticket ID plus the passenger's phone number — takes seconds.
+            </p>
+          </div>
+        </div>
+
         <.form
           for={@search_form}
           phx-submit="search"
+          phx-change="validate_search"
           id="ticket-search-form"
-          class="flex flex-col sm:flex-row gap-3"
+          class="space-y-3"
         >
-          <.input
-            field={@search_form[:query]}
-            type="text"
-            placeholder="Ticket ID (e.g. TKT-ABC123)"
-            class="flex-1 !rounded-2xl !border-slate-200 !bg-slate-50 focus:!bg-white focus:!border-[#FF4C00]"
-          />
-          <.input
-            field={@search_form[:phone]}
-            type="tel"
-            inputmode="tel"
-            autocomplete="tel"
-            placeholder="Phone number"
-            class="sm:w-48 !rounded-2xl !border-slate-200 !bg-slate-50 focus:!bg-white focus:!border-[#FF4C00]"
-          />
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-3">
+            <.input
+              field={@search_form[:query]}
+              type="text"
+              label="Ticket ID"
+              placeholder="e.g. TKT-ABC123"
+              autocomplete="off"
+              spellcheck="false"
+              autocapitalize="characters"
+              phx-hook=".TicketIdInput"
+              class="!w-full !rounded-2xl !border-2 !border-slate-100 !bg-slate-50 focus:!bg-white focus:!border-[#FF4C00] !py-3.5 !px-4 !font-black !text-slate-900 !placeholder:font-bold !placeholder:text-slate-300 !transition-all"
+            />
+            <.input
+              field={@search_form[:phone]}
+              type="tel"
+              label="Passenger phone"
+              inputmode="tel"
+              autocomplete="tel"
+              placeholder="07XX XXX XXX"
+              phx-hook=".PhoneInput"
+              class="!w-full !rounded-2xl !border-2 !border-slate-100 !bg-slate-50 focus:!bg-white focus:!border-[#FF4C00] !py-3.5 !px-4 !font-black !text-slate-900 !placeholder:font-bold !placeholder:text-slate-300 !transition-all"
+            />
+          </div>
+
           <button
             type="submit"
-            class="bg-[#FF4C00] text-white px-8 py-3 rounded-2xl font-black text-sm hover:bg-[#E64400] transition shadow-lg shadow-orange-200"
+            disabled={!@search_ready?}
+            class="w-full inline-flex items-center justify-center gap-2 bg-[#FF4C00] text-white px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-orange-200 transition-all hover:bg-[#E64400] active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:active:scale-100"
           >
-            Search
+            <span class="material-symbols-outlined !text-lg">search</span> Search ticket
           </button>
         </.form>
-        <p class="mt-3 text-[10px] font-bold text-slate-400">
-          For your security, the passenger's full phone number is required. Signed in as the
-          passenger? You can leave it blank.
-        </p>
+
+        <div class="mt-4 flex flex-wrap items-center justify-between gap-2 text-[10px] font-bold text-slate-400">
+          <span class="inline-flex items-center gap-1">
+            <span class="material-symbols-outlined !text-sm text-emerald-500">verified_user</span>
+            Phone number required for privacy
+          </span>
+          <span class="inline-flex items-center gap-1">
+            <span class="material-symbols-outlined !text-sm text-slate-300">person</span>
+            Signed in as the passenger? Phone optional
+          </span>
+        </div>
+
         <%= if @lookup_error do %>
-          <p class="mt-3 text-[11px] font-bold text-red-500 flex items-center gap-1">
-            <span class="material-symbols-outlined !text-sm">error</span> {@lookup_error}
-          </p>
+          <div class="mt-4 flex items-start gap-2 rounded-2xl bg-red-50 border border-red-100 px-4 py-3">
+            <span class="material-symbols-outlined !text-base text-red-500">error</span>
+            <p class="text-[11px] font-bold text-red-600 leading-relaxed">{@lookup_error}</p>
+          </div>
         <% end %>
       </div>
     </div>
@@ -296,6 +331,44 @@
       </a>
     </div>
   </div>
+
+  <script :type={Phoenix.LiveView.ColocatedHook} name=".TicketIdInput">
+    export default {
+      mounted() {
+        this.el.addEventListener("input", () => {
+          const upper = this.el.value.toUpperCase().replace(/[^A-Z0-9-]/g, "")
+          if (upper !== this.el.value) {
+            const position = this.el.selectionStart
+            this.el.value = upper
+            this.el.setSelectionRange(position, position)
+          }
+        })
+      }
+    }
+  </script>
+
+  <script :type={Phoenix.LiveView.ColocatedHook} name=".PhoneInput">
+    export default {
+      mounted() {
+        this.el.addEventListener("input", () => {
+          const digits = this.el.value.replace(/\D/g, "").slice(0, 12)
+          let formatted = digits
+          if (digits.startsWith("254")) {
+            formatted = digits.replace(/^254(\d{3})(\d{3})(\d{3})$/, "254 $1 $2 $3")
+          } else if (digits.length === 10) {
+            formatted = `${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7, 10)}`
+          } else if (digits.length === 9) {
+            formatted = `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6, 9)}`
+          }
+          if (formatted !== this.el.value) {
+            const position = formatted.length
+            this.el.value = formatted
+            this.el.setSelectionRange(position, position)
+          }
+        })
+      }
+    }
+  </script>
 
   <script :type={Phoenix.LiveView.ColocatedHook} name=".PrintTicket">
     export default {
