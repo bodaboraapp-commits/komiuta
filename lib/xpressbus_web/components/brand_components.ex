@@ -108,7 +108,7 @@ defmodule XpressbusWeb.BrandComponents do
           </nav>
         </div>
 
-        <div class="hidden md:flex items-center gap-2.5 xl:gap-6 whitespace-nowrap">
+        <div class="hidden lg:flex items-center gap-2.5 xl:gap-6 whitespace-nowrap">
           <a
             href="/partner/add-fleet"
             target="_blank"
@@ -181,7 +181,7 @@ defmodule XpressbusWeb.BrandComponents do
           <% end %>
         </div>
 
-        <div class="flex md:hidden">
+        <div class="flex lg:hidden">
           <button
             id="mobile-menu-button"
             phx-click={JS.toggle(to: "#mobile-menu-panel")}
@@ -196,7 +196,7 @@ defmodule XpressbusWeb.BrandComponents do
 
       <div
         id="mobile-menu-panel"
-        class="hidden md:hidden border-t border-slate-100 bg-white shadow-lg"
+        class="hidden lg:hidden border-t border-slate-100 bg-white shadow-lg"
       >
         <div class="px-4 py-3 space-y-1">
           <%= if @current_user do %>
