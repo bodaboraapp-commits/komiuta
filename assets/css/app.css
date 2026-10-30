@@ -836,3 +836,14 @@ body { font-family: "Lufga", "Trebuchet MS", "Segoe UI", sans-serif; font-weight
     display: none !important;
   }
 }
+
+/* ---- Header track-ticket pill ---- */
+.track-pill-label {
+  display: none;
+}
+
+@media (min-width: 80rem) {
+  .track-pill-label {
+    display: inline;
+  }
+}

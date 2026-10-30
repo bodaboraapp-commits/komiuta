@@ -9,33 +9,35 @@ defmodule XpressbusWeb.BrandComponents do
   def main_header(assigns) do
     ~H"""
     <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-orange-500/50 shadow-sm transition-all duration-300 font-sans font-bold">
-      <div class="max-w-[1350px] mx-auto px-6 py-4 flex items-center justify-between">
-        <div class="flex items-center gap-12">
+      <div class="max-w-[1350px] mx-auto px-4 xl:px-6 py-4 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-6 xl:gap-12">
           <a href="/" class="flex-shrink-0">
             <img
               src="/images/logo_brand.png"
               alt="Komiuta"
+              width="190"
+              height="52"
               class="h-10 md:h-12 w-auto object-contain"
             />
           </a>
 
-          <nav class="hidden lg:flex items-center gap-8">
+          <nav class="hidden lg:flex items-center gap-4 xl:gap-8 whitespace-nowrap">
             <a href="/" class="flex flex-col items-center gap-1 group relative">
               <span class={[
                 "material-symbols-outlined transition-colors !text-2xl",
-                if(@step in [:search, :results, :passenger_info, :review_and_pay, :ticket],
+                if(@step in [:search, :results, :passenger_info, :review_and_pay],
                   do: "text-[#FF4C00]",
                   else: "text-slate-400 group-hover:text-[#FF4C00]"
                 )
               ]}>directions_bus</span>
               <span class={[
                 "text-[11px] font-black uppercase tracking-widest",
-                if(@step in [:search, :results, :passenger_info, :review_and_pay, :ticket],
+                if(@step in [:search, :results, :passenger_info, :review_and_pay],
                   do: "text-slate-900",
                   else: "text-slate-400 group-hover:text-slate-900"
                 )
               ]}>Bus Tickets</span>
-              <%= if @step in [:search, :results, :passenger_info, :review_and_pay, :ticket] do %>
+              <%= if @step in [:search, :results, :passenger_info, :review_and_pay] do %>
                 <div class="absolute -bottom-[22px] left-0 right-0 h-1 bg-[#FF4C00] rounded-t-full">
                 </div>
               <% end %>
@@ -106,7 +108,7 @@ defmodule XpressbusWeb.BrandComponents do
           </nav>
         </div>
 
-        <div class="hidden md:flex items-center gap-8">
+        <div class="hidden md:flex items-center gap-2.5 xl:gap-6 whitespace-nowrap">
           <a
             href="/partner/add-fleet"
             target="_blank"
@@ -123,6 +125,25 @@ defmodule XpressbusWeb.BrandComponents do
             class="pwa-hide-installed flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-[#FF4C00] transition"
           >
             <span class="material-symbols-outlined" aria-hidden="true">download</span> Download App
+          </a>
+
+          <a
+            id="header-track-ticket"
+            href="/tickets"
+            title="Track your ticket"
+            aria-label="Track your ticket"
+            aria-current={if(@step == :ticket, do: "page", else: nil)}
+            class={[
+              "hidden lg:flex items-center gap-2 text-sm font-black px-3 xl:px-5 py-2.5 rounded-full border transition-all shadow-sm",
+              if(@step == :ticket,
+                do: "bg-[#FF4C00] text-white border-[#FF4C00] shadow-orange-200",
+                else:
+                  "bg-white text-[#FF4C00] border-orange-100 hover:bg-[#FF4C00] hover:text-white hover:border-[#FF4C00] hover:shadow-orange-200"
+              )
+            ]}
+          >
+            <span class="material-symbols-outlined !text-lg" aria-hidden="true">confirmation_number</span>
+            <span class="track-pill-label">Track Ticket</span>
           </a>
 
           <%= if @current_user do %>
@@ -231,6 +252,20 @@ defmodule XpressbusWeb.BrandComponents do
           >
             <span class="material-symbols-outlined text-slate-500">download</span> Download App
           </a>
+          <a
+            id="mobile-track-ticket"
+            href="/tickets"
+            aria-current={if(@step == :ticket, do: "page", else: nil)}
+            class={[
+              "flex items-center gap-3 px-3 py-3 text-sm font-black rounded-xl border transition",
+              if(@step == :ticket,
+                do: "bg-[#FF4C00] text-white border-[#FF4C00]",
+                else: "bg-white text-[#FF4C00] border-orange-200 hover:bg-orange-50"
+              )
+            ]}
+          >
+            <span class="material-symbols-outlined">confirmation_number</span> Track Ticket
+          </a>
         </div>
       </div>
     </header>
@@ -302,7 +337,15 @@ defmodule XpressbusWeb.BrandComponents do
     ~H"""
     <footer class="mx-auto mt-12 max-w-[1350px] pb-16 px-6 font-sans font-bold">
       <div class="flex justify-center mb-16">
-        <img src="/images/logo_brand.png" alt="Komiuta" class="h-12 w-auto opacity-90" />
+        <img
+          src="/images/logo_brand.png"
+          alt="Komiuta"
+          width="190"
+          height="52"
+          loading="lazy"
+          decoding="async"
+          class="h-12 w-auto opacity-90"
+        />
       </div>
 
       <div class="mb-20 bg-slate-50/50 rounded-[3rem] p-8 md:p-12 border border-slate-100">
