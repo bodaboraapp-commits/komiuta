@@ -59,8 +59,7 @@
 
           <button
             type="submit"
-            disabled={!@search_ready?}
-            class="w-full inline-flex items-center justify-center gap-2 bg-[#FF4C00] text-white px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-orange-200 transition-all hover:bg-[#E64400] active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:active:scale-100"
+            class="w-full inline-flex items-center justify-center gap-2 bg-[#FF4C00] text-white px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-orange-200 transition-all hover:bg-[#E64400] active:scale-[0.99]"
           >
             <span class="material-symbols-outlined !text-lg">search</span> Search ticket
           </button>
@@ -221,7 +220,7 @@
 
               <%!-- Right Section: locally generated QR & Branding --%>
               <div class="flex flex-col items-center justify-between lg:border-l lg:border-slate-200 lg:pl-12 shrink-0">
-                <div class="w-40 h-40 bg-white p-4 rounded-3xl shadow-xl border-4 border-slate-900 mb-8 overflow-hidden flex items-center justify-center">
+                <div class="w-48 h-48 bg-white p-4 rounded-3xl shadow-xl border-4 border-slate-900 mb-8 overflow-hidden flex items-center justify-center">
                   <%= if @ticket_qr do %>
                     {@ticket_qr}
                   <% else %>
@@ -242,6 +241,28 @@
                     Ticket no. {@ticket.ticket_id}
                   </p>
                 </div>
+              </div>
+            </div>
+
+            <%!-- Standard Code 128 barcode strip --%>
+            <div class="px-8 pb-10 bg-[#f1f5f9]">
+              <div class="bg-white rounded-2xl border-2 border-slate-900 px-6 py-4 flex flex-col md:flex-row items-center justify-center gap-5">
+                <div class="text-center md:text-left shrink-0">
+                  <p class="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400">
+                    Ticket barcode
+                  </p>
+                  <p class="text-sm font-black uppercase tracking-widest text-slate-900">
+                    {@ticket.ticket_id}
+                  </p>
+                  <p class="text-[8px] font-bold uppercase tracking-[0.2em] text-slate-300">
+                    Code 128
+                  </p>
+                </div>
+                <%= if @ticket_barcode do %>
+                  <div class="min-w-0 max-w-full overflow-hidden">
+                    {@ticket_barcode}
+                  </div>
+                <% end %>
               </div>
             </div>
           </div>

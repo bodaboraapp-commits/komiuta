@@ -63,7 +63,8 @@ defmodule Xpressbus.Tickets do
   Gets a single ticket by ticket_id, returns nil if not found.
   """
   def get_ticket(ticket_id) do
-    Repo.get_by(Ticket, ticket_id: ticket_id)
+    from(t in Ticket, where: fragment("LOWER(?) = LOWER(?)", t.ticket_id, ^ticket_id))
+    |> Repo.one()
     |> Repo.preload(bus: [:bus_operator])
     |> deserialize_seats()
   end

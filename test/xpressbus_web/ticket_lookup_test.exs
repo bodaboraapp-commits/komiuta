@@ -109,6 +109,8 @@ defmodule XpressbusWeb.TicketLookupTest do
 
     assert html =~ "Token Passenger"
     assert html =~ ticket.ticket_id
+    assert html =~ "Boarding QR code"
+    assert html =~ "Ticket barcode #{ticket.ticket_id}"
   end
 
   test "a tampered token does not open the ticket", %{conn: conn} do

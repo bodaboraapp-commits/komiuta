@@ -23,6 +23,7 @@ defmodule XpressbusWeb.TicketLive do
      |> assign(:phone, "")
      |> assign(:ticket, nil)
      |> assign(:ticket_qr, nil)
+     |> assign(:ticket_barcode, nil)
      |> assign(:share_url, nil)
      |> assign(:search_results, [])
      |> assign(:searched, false)
@@ -84,6 +85,7 @@ defmodule XpressbusWeb.TicketLive do
      |> assign(:phone, "")
      |> assign(:ticket, nil)
      |> assign(:ticket_qr, nil)
+     |> assign(:ticket_barcode, nil)
      |> assign(:share_url, nil)
      |> assign(:search_results, [])
      |> assign(:searched, false)
@@ -117,6 +119,7 @@ defmodule XpressbusWeb.TicketLive do
         |> assign(:search_results, [])
         |> assign(:ticket, nil)
         |> assign(:ticket_qr, nil)
+        |> assign(:ticket_barcode, nil)
         |> assign(:share_url, nil)
         |> assign(:searched, true)
         |> assign(:search_ready?, true)
@@ -157,6 +160,7 @@ defmodule XpressbusWeb.TicketLive do
         |> assign(:search_results, results)
         |> assign(:ticket, ticket)
         |> assign(:ticket_qr, build_qr(ticket))
+        |> assign(:ticket_barcode, build_barcode(ticket))
         |> assign(:share_url, if(ticket, do: TicketAccess.path(ticket), else: nil))
         |> assign(:searched, true)
         |> assign(:search_ready?, true)
@@ -214,5 +218,20 @@ defmodule XpressbusWeb.TicketLive do
 
   defp build_qr(ticket) do
     XpressbusWeb.QRCode.svg(TicketAccess.url(ticket), aria_label: "Boarding QR code")
+  end
+
+  # ISO/IEC 15417 Code 128B barcode for the ticket number so gate staff can use
+  # a standard linear scanner in addition to the QR code.
+  defp build_barcode(nil), do: nil
+
+  defp build_barcode(ticket) do
+    case Xpressbus.Barcode.svg(ticket.ticket_id,
+           aria_label: "Ticket barcode #{ticket.ticket_id}",
+           module_width: 2,
+           height: 64
+         ) do
+      {:ok, svg} -> Phoenix.HTML.raw(svg)
+      _ -> nil
+    end
   end
 end
