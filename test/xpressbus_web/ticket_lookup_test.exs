@@ -5,6 +5,7 @@ defmodule XpressbusWeb.TicketLookupTest do
   import Xpressbus.AccountsFixtures
 
   alias Xpressbus.Repo
+  alias Xpressbus.TicketAccess
   alias Xpressbus.Tickets.Ticket
 
   defp ticket_fixture(attrs \\ %{}) do
@@ -28,7 +29,7 @@ defmodule XpressbusWeb.TicketLookupTest do
     Repo.insert!(struct(Ticket, Map.merge(defaults, attrs)))
   end
 
-  test "unauthenticated lookup requires the phone last 4 digits", %{conn: conn} do
+  test "unauthenticated lookup requires the full passenger phone number", %{conn: conn} do
     ticket = ticket_fixture()
 
     {:ok, view, _html} = live(conn, ~p"/tickets")
@@ -36,31 +37,54 @@ defmodule XpressbusWeb.TicketLookupTest do
     # Ticket ID alone must not reveal the booking.
     html =
       view
-      |> form("#ticket-search-form", %{"query" => ticket.ticket_id, "last4" => ""})
+      |> form("#ticket-search-form", %{"query" => ticket.ticket_id, "phone" => ""})
       |> render_submit()
 
     refute html =~ "Private Passenger"
     assert html =~ "No ticket matches"
 
-    # Wrong digits also reveal nothing.
+    # A partial phone number must not work either.
     html =
       view
-      |> form("#ticket-search-form", %{"query" => ticket.ticket_id, "last4" => "0000"})
+      |> form("#ticket-search-form", %{"query" => ticket.ticket_id, "phone" => "5678"})
       |> render_submit()
 
     refute html =~ "Private Passenger"
 
-    # Correct digits reveal the ticket.
+    # Wrong full number reveals nothing.
     html =
       view
-      |> form("#ticket-search-form", %{"query" => ticket.ticket_id, "last4" => "5678"})
+      |> form("#ticket-search-form", %{"query" => ticket.ticket_id, "phone" => "0700000000"})
+      |> render_submit()
+
+    refute html =~ "Private Passenger"
+
+    # The correct full number reveals the ticket.
+    html =
+      view
+      |> form("#ticket-search-form", %{"query" => ticket.ticket_id, "phone" => "0712345678"})
       |> render_submit()
 
     assert html =~ "Private Passenger"
     assert html =~ ticket.ticket_id
   end
 
-  test "a signed-in passenger can view their own ticket without re-entering digits", %{conn: conn} do
+  test "the full number works across common Kenyan formats", %{conn: conn} do
+    ticket = ticket_fixture(%{passenger_phone: "+254712345678"})
+
+    for phone <- ["0712345678", "254712345678", "+254 712 345 678", "712345678"] do
+      {:ok, view, _html} = live(conn, ~p"/tickets")
+
+      html =
+        view
+        |> form("#ticket-search-form", %{"query" => ticket.ticket_id, "phone" => phone})
+        |> render_submit()
+
+      assert html =~ "Private Passenger", "expected #{phone} to match"
+    end
+  end
+
+  test "a signed-in passenger can view their own ticket without entering a phone", %{conn: conn} do
     user = user_fixture(%{phone: "0712345678"})
     ticket = ticket_fixture(%{passenger_name: user.name, passenger_phone: user.phone})
 
@@ -69,10 +93,30 @@ defmodule XpressbusWeb.TicketLookupTest do
 
     html =
       view
-      |> form("#ticket-search-form", %{"query" => ticket.ticket_id, "last4" => ""})
+      |> form("#ticket-search-form", %{"query" => ticket.ticket_id, "phone" => ""})
       |> render_submit()
 
     assert html =~ user.name
     assert html =~ ticket.ticket_id
+  end
+
+  test "a signed share/payment link token opens the ticket without the phone", %{conn: conn} do
+    ticket = ticket_fixture(%{passenger_name: "Token Passenger"})
+    path = TicketAccess.path(ticket)
+
+    {:ok, _view, html} = live(conn, path)
+
+    assert html =~ "Token Passenger"
+    assert html =~ ticket.ticket_id
+  end
+
+  test "a tampered token does not open the ticket", %{conn: conn} do
+    ticket = ticket_fixture(%{passenger_name: "Token Passenger"})
+
+    {:ok, _view, html} =
+      live(conn, ~p"/tickets?ticket_id=#{ticket.ticket_id}&token=not-a-real-token")
+
+    refute html =~ "Token Passenger"
+    assert html =~ "No ticket matches"
   end
 end

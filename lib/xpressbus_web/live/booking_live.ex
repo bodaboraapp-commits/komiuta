@@ -10,6 +10,7 @@ defmodule XpressbusWeb.BookingLive do
   alias Xpressbus.Accounts
   alias Xpressbus.Integrations
   alias Xpressbus.Payments
+  alias Xpressbus.TicketAccess
   import Ecto.Query
   require Logger
 
@@ -53,7 +54,7 @@ defmodule XpressbusWeb.BookingLive do
      |> assign(:page_title, "Komiuta Bus Booking")
      |> assign(:step, :search)
      |> assign(:current_user, current_user)
-     |> assign(:ticket_last4, nil)
+     |> assign(:ticket_url, nil)
      |> assign(:cities, cities)
      |> assign(:city_names, city_names)
      |> assign(:cities_map, cities_map)
@@ -871,7 +872,13 @@ defmodule XpressbusWeb.BookingLive do
          socket
          |> assign(:loading, true)
          |> assign(:ticket_id, ticket_id)
-         |> assign(:ticket_last4, phone_last4(booking_context.passenger_phone))
+         |> assign(
+           :ticket_url,
+           TicketAccess.path(%Tickets.Ticket{
+             ticket_id: ticket_id,
+             passenger_phone: booking_context.passenger_phone
+           })
+         )
          |> assign(:payment_method, payment_method)
          |> start_async(:payment, fn ->
            Logger.info("Async task started for :payment")
@@ -973,7 +980,7 @@ defmodule XpressbusWeb.BookingLive do
            socket
            |> assign(:loading, false)
            |> assign(:ticket_id, ticket.ticket_id)
-           |> assign(:ticket_last4, phone_last4(ticket.passenger_phone))
+           |> assign(:ticket_url, TicketAccess.path(ticket))
            |> redirect(external: auth_url)}
         else
           Logger.info("Push payment/direct processing required - Navigating to processing page")
@@ -982,7 +989,7 @@ defmodule XpressbusWeb.BookingLive do
            socket
            |> assign(:loading, false)
            |> assign(:ticket_id, ticket.ticket_id)
-           |> assign(:ticket_last4, phone_last4(ticket.passenger_phone))
+           |> assign(:ticket_url, TicketAccess.path(ticket))
            |> push_navigate(
              to:
                ~p"/payment-processing/#{ticket.ticket_id}?method=#{socket.assigns.payment_method}"
@@ -1855,12 +1862,5 @@ defmodule XpressbusWeb.BookingLive do
       {@seat.id}
     </button>
     """
-  end
-
-  defp phone_last4(nil), do: ""
-
-  defp phone_last4(phone) do
-    digits = phone |> to_string() |> String.replace(~r/[^0-9]/, "")
-    if byte_size(digits) >= 4, do: String.slice(digits, -4, 4), else: ""
   end
 end

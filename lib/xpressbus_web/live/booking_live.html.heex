@@ -1963,7 +1963,7 @@
 
           <div class="mt-12 flex flex-col md:flex-row gap-4 justify-center">
             <a
-              href={"/tickets?ticket_id=#{@ticket_id}&last4=#{@ticket_last4 || ""}"}
+              href={@ticket_url || "/tickets"}
               class="px-10 py-5 rounded-[1.8rem] bg-[#FF4C00] text-white font-black uppercase tracking-widest text-xs hover:bg-[#E64400] transition-all shadow-xl"
             >VIEW TICKET</a>
             <button class="px-10 py-5 rounded-[1.8rem] bg-slate-900 text-white font-black uppercase tracking-widest text-xs hover:bg-slate-800 transition-all shadow-xl">DOWNLOAD PDF</button>
