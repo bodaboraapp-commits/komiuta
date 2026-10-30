@@ -3,11 +3,11 @@ account_balance_wallet
 add
 add_circle
 airline_seat_recline_extra
+alternate_email
 analytics
 arrow_forward
 arrow_outward
 arrow_right_alt
-badge
 bed
 bolt
 calendar_month
@@ -16,6 +16,7 @@ campaign
 card_membership
 category
 chat
+check
 check_circle
 chevron_left
 chevron_right
@@ -61,11 +62,13 @@ local_activity
 local_drink
 local_hotel
 location_on
+lock
 login
 logout
 luggage
 mail
 mark_email_read
+mark_email_unread
 menu
 more_horiz
 my_location
@@ -98,6 +101,7 @@ support_agent
 sync_alt
 travel_explore
 tv
+verified_user
 visibility
 warning
 wc
