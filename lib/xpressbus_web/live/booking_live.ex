@@ -1251,7 +1251,9 @@ defmodule XpressbusWeb.BookingLive do
         end)
         |> Enum.sum()
 
-      discount_amount = if coupon, do: calculate_discount(coupon, total_price), else: 0
+      discount_amount =
+        if coupon, do: Xpressbus.Coupons.calculate_discount(coupon, total_price), else: 0
+
       final_price = max(0, total_price - discount_amount)
 
       socket
@@ -1309,26 +1311,6 @@ defmodule XpressbusWeb.BookingLive do
     end
   end
 
-  defp calculate_discount(coupon, total) do
-    case coupon.type do
-      "fixed" ->
-        Decimal.round(coupon.value, 0) |> Decimal.to_integer()
-
-      "percentage" ->
-        val = total * (Decimal.to_float(coupon.value) / 100.0)
-        max_discount = Decimal.to_float(coupon.max_discount)
-
-        if max_discount > 0 && val > max_discount do
-          coupon.max_discount |> Decimal.round(0) |> Decimal.to_integer()
-        else
-          round(val)
-        end
-
-      _ ->
-        0
-    end
-  end
-
   defp parse_unit_price(bus) do
     case Map.get(bus, :price, "1500") do
       price when is_binary(price) ->
@@ -1359,38 +1341,30 @@ defmodule XpressbusWeb.BookingLive do
       end)
       |> Enum.sum()
 
-    case Xpressbus.Coupons.get_coupon_by_code(code) do
-      nil ->
-        reset_coupon(socket, "Invalid or expired coupon code.")
+    case Xpressbus.Coupons.apply_coupon(code, total_base) do
+      {:ok, coupon, discount} ->
+        {:noreply,
+         socket
+         |> assign(:applied_coupon, coupon)
+         |> assign(:discount_amount, discount)
+         |> assign(:coupon_code, code)
+         |> update_pricing()
+         |> put_flash(:info, "Coupon applied! You saved Ksh #{discount}")}
 
-      coupon ->
-        cond do
-          not coupon.active ->
-            reset_coupon(socket, "This coupon is currently inactive.")
+      {:error, reason} ->
+        reset_coupon(socket, coupon_error(reason))
+    end
+  end
 
-          expired?(coupon) ->
-            reset_coupon(socket, "This coupon has expired.")
-
-          usage_limit_reached?(coupon) ->
-            reset_coupon(socket, "Coupon usage limit reached.")
-
-          total_base < Decimal.to_float(coupon.min_amount || 0) ->
-            reset_coupon(
-              socket,
-              "Minimum amount for this coupon is Ksh #{coupon.min_amount}"
-            )
-
-          true ->
-            discount = calculate_discount(coupon, total_base)
-
-            {:noreply,
-             socket
-             |> assign(:applied_coupon, coupon)
-             |> assign(:discount_amount, discount)
-             |> assign(:coupon_code, code)
-             |> update_pricing()
-             |> put_flash(:info, "Coupon applied! You saved Ksh #{discount}")}
-        end
+  defp coupon_error(reason) do
+    case reason do
+      :not_found -> "Invalid coupon code. Please check and try again."
+      :inactive -> "This coupon is currently inactive."
+      :expired -> "This coupon has expired."
+      :usage_limit -> "Coupon usage limit reached."
+      :no_discount -> "This coupon does not apply to this booking."
+      {:min_amount, minimum} -> "Minimum amount for this coupon is Ksh #{minimum}"
+      _ -> "This coupon could not be applied."
     end
   end
 
@@ -1401,20 +1375,6 @@ defmodule XpressbusWeb.BookingLive do
      |> assign(:discount_amount, 0)
      |> update_pricing()
      |> put_flash(:error, message)}
-  end
-
-  defp expired?(coupon) do
-    case coupon.expiry_date do
-      %Date{} = date -> Date.compare(date, Date.utc_today()) == :lt
-      nil -> false
-    end
-  end
-
-  defp usage_limit_reached?(coupon) do
-    case coupon.usage_limit do
-      nil -> false
-      limit -> (coupon.usage_count || 0) >= limit
-    end
   end
 
   # Helper logic for payments

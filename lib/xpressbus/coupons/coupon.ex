@@ -33,8 +33,13 @@ defmodule Xpressbus.Coupons.Coupon do
       :active
     ])
     |> validate_required([:code, :type, :value, :active])
+    |> update_change(:code, &normalise_code/1)
     |> validate_inclusion(:type, ["percentage", "fixed"])
     |> validate_number(:value, greater_than: 0)
     |> unique_constraint(:code)
+  end
+
+  defp normalise_code(code) do
+    code |> to_string() |> String.trim() |> String.upcase()
   end
 end
