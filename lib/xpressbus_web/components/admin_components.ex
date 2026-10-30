@@ -355,6 +355,7 @@ defmodule XpressbusWeb.AdminComponents do
             icon="group"
             label="User/Agent List"
             id="users"
+            href="/admin/users"
             active={@active_tab}
             has_arrow={!@collapsed}
             collapsed={@collapsed}

@@ -103,6 +103,7 @@ defmodule XpressbusWeb.Router do
     live "/insurance-plans", AdminInsuranceLive, :index
     live "/integration", AdminIntegrationLive, :index
     live "/coupons", AdminCouponLive, :index
+    live "/users", AdminUsersLive, :index
   end
 
   scope "/api", XpressbusWeb do

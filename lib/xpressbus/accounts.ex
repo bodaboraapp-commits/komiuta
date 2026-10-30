@@ -170,6 +170,43 @@ defmodule Xpressbus.Accounts do
   def get_user!(id), do: Repo.get!(User, id)
 
   @doc """
+  Paginated user list for the admin user table, with an optional search over
+  name, phone and email.
+
+  Returns `{users, total_count}`.
+  """
+  def paginate_users(page, page_size, search \\ "") do
+    query = filter_users(User, search)
+    total = Repo.aggregate(query, :count, :id)
+
+    users =
+      query
+      |> order_by([u], desc: u.inserted_at)
+      |> limit(^page_size)
+      |> offset(^((page - 1) * page_size))
+      |> Repo.all()
+
+    {users, total}
+  end
+
+  @doc "Counts users, optionally filtered by the same search as paginate_users/3."
+  def count_users(search \\ ""), do: Repo.aggregate(filter_users(User, search), :count, :id)
+
+  defp filter_users(query, search) do
+    case search |> to_string() |> String.trim() do
+      "" ->
+        query
+
+      term ->
+        pattern = "%#{term}%"
+
+        from(u in query,
+          where: like(u.name, ^pattern) or like(u.phone, ^pattern) or like(u.email, ^pattern)
+        )
+    end
+  end
+
+  @doc """
   Fetches a user by primary key. For backwards compatibility, a phone number is
   also accepted (legacy sessions and registrations store the phone number).
   """

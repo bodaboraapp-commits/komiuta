@@ -28,6 +28,26 @@ defmodule Xpressbus.Tickets do
   end
 
   @doc """
+  Counts tickets per passenger phone for the given phone numbers.
+  Returns a map of `%{phone => count}`.
+  """
+  def counts_by_passenger_phones(phones) when is_list(phones) do
+    phones = phones |> Enum.reject(&is_nil/1) |> Enum.uniq()
+
+    if phones == [] do
+      %{}
+    else
+      from(t in Ticket,
+        where: t.passenger_phone in ^phones,
+        group_by: t.passenger_phone,
+        select: {t.passenger_phone, count(t.id)}
+      )
+      |> Repo.all()
+      |> Map.new()
+    end
+  end
+
+  @doc """
   Counts total tickets.
   """
   def count_tickets do
