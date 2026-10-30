@@ -1,78 +1,249 @@
 <Layouts.app flash={@flash}>
-  <div class="min-h-screen bg-white text-slate-900">
+  <div class="min-h-screen bg-[#f8fafc] text-slate-900">
     <.main_header step={:login} />
 
-    <main class="pt-[80px] md:pt-[100px] pb-12">
-      <div class="mx-auto max-w-7xl px-6">
-        <div class="flex flex-col items-center justify-start min-h-[calc(100vh-140px)] py-8">
-          <div class="w-full max-w-md">
-            <div class="text-center mb-8">
-              <div class="w-16 h-16 bg-[#FF4C00] rounded-2xl flex items-center justify-center text-white text-3xl font-black mx-auto mb-4 shadow-lg shadow-orange-200">
-                <span class="material-symbols-outlined">call</span>
-              </div>
-              <h1 class="text-3xl font-black text-slate-900 tracking-tight">
-                Add your phone number
-              </h1>
-              <p class="text-xs font-bold text-slate-400 mt-1 tracking-wide">
-                One quick step to finish setting up your Komiuta account
-              </p>
+    <main class="pt-[80px] md:pt-[100px] pb-16">
+      <div class="mx-auto max-w-6xl px-5 md:px-6">
+        <%!-- Mobile brand banner --%>
+        <div class="lg:hidden relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-[#FF4C00] via-[#FF5E00] to-[#E64400] p-6 text-white shadow-xl shadow-orange-200 mb-6">
+          <div class="absolute -right-10 -top-12 w-40 h-40 rounded-full bg-white/10"></div>
+          <div class="absolute -left-8 -bottom-10 w-32 h-32 rounded-full bg-white/10"></div>
+          <div class="relative flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center">
+              <span class="material-symbols-outlined !text-xl">directions_bus</span>
             </div>
-
-            <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
-              <p class="text-[11px] font-bold text-slate-400 leading-relaxed mb-6">
-                <%= if @show_email_field do %>
-                  We use your phone number for booking and travel updates. Please also confirm your
-                  email address for login codes and payment receipts.
-                <% else %>
-                  We use your phone number for booking and travel updates. Your account is already
-                  linked to <span class="text-slate-600 font-black">{@user.email}</span>
-                  for login codes and payment receipts.
-                <% end %>
-              </p>
-
-              <.form
-                for={@form}
-                action={~p"/user/complete-profile"}
-                method="post"
-                id="complete-profile-form"
-                class="space-y-5"
-              >
-                <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
-
-                <%= if @show_email_field do %>
-                  <.input
-                    field={@form[:email]}
-                    type="email"
-                    label="Email address"
-                    placeholder="you@example.com"
-                    required
-                  />
-                <% end %>
-
-                <.input
-                  field={@form[:phone]}
-                  type="tel"
-                  label="Phone number"
-                  placeholder="07XX XXX XXX"
-                  autofocus
-                  required
-                />
-
-                <button
-                  type="submit"
-                  class="w-full bg-[#FF4C00] text-white py-4 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-[#E64400] transition shadow-lg shadow-orange-200"
-                >
-                  Save &amp; continue
-                </button>
-              </.form>
-            </div>
-
-            <div class="mt-8 text-center">
-              <p class="text-[9px] font-black text-slate-300 tracking-[0.3em]">
-                Secure industrial encryption enabled
-              </p>
-            </div>
+            <span class="text-base font-black tracking-tight">Komiuta</span>
           </div>
+          <p class="relative mt-5 text-[9px] font-black uppercase tracking-[0.35em] text-white/70">
+            Step 2 of 2
+          </p>
+          <h2 class="relative mt-2 text-2xl font-black tracking-tighter leading-tight">
+            One last step to your dashboard
+          </h2>
+          <p class="relative mt-2 text-xs font-bold text-white/80 leading-relaxed">
+            Add your phone number so booking updates and ticket links reach you.
+          </p>
+        </div>
+
+        <div class="mt-2 lg:mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-stretch">
+          <%!-- Desktop brand panel --%>
+          <aside class="hidden lg:flex relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#FF4C00] via-[#FF5E00] to-[#E64400] p-10 text-white shadow-2xl shadow-orange-200 flex-col justify-between">
+            <div class="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-white/10"></div>
+            <div class="absolute -left-20 -bottom-24 w-72 h-72 rounded-full bg-white/10"></div>
+            <div class="absolute right-10 bottom-24 w-24 h-24 rounded-full bg-white/10"></div>
+
+            <div class="relative">
+              <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center shadow-inner">
+                  <span class="material-symbols-outlined !text-2xl">directions_bus</span>
+                </div>
+                <span class="text-lg font-black tracking-tight">Komiuta</span>
+              </div>
+
+              <div class="mt-14">
+                <p class="text-[10px] font-black uppercase tracking-[0.35em] text-white/70">
+                  Step 2 of 2
+                </p>
+                <h2 class="mt-3 text-4xl xl:text-[2.75rem] font-black tracking-tighter leading-[1.05]">
+                  One last step to your dashboard
+                </h2>
+                <p class="mt-4 max-w-sm text-sm font-bold text-white/85 leading-relaxed">
+                  Your account is verified. Add your phone number so we can confirm bookings and deliver
+                  your tickets instantly.
+                </p>
+              </div>
+
+              <ul class="mt-10 space-y-5">
+                <li class="flex items-start gap-4">
+                  <span class="w-10 h-10 shrink-0 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center">
+                    <span class="material-symbols-outlined !text-xl">notifications_active</span>
+                  </span>
+                  <div>
+                    <p class="text-sm font-black">Booking &amp; bus updates</p>
+                    <p class="text-xs font-bold text-white/70 mt-0.5">
+                      Departure changes and ticket links sent by SMS.
+                    </p>
+                  </div>
+                </li>
+                <li class="flex items-start gap-4">
+                  <span class="w-10 h-10 shrink-0 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center">
+                    <span class="material-symbols-outlined !text-xl">bolt</span>
+                  </span>
+                  <div>
+                    <p class="text-sm font-black">Faster checkout</p>
+                    <p class="text-xs font-bold text-white/70 mt-0.5">
+                      Your number is remembered for quicker M-PESA payments.
+                    </p>
+                  </div>
+                </li>
+                <li class="flex items-start gap-4">
+                  <span class="w-10 h-10 shrink-0 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center">
+                    <span class="material-symbols-outlined !text-xl">verified_user</span>
+                  </span>
+                  <div>
+                    <p class="text-sm font-black">Private by design</p>
+                    <p class="text-xs font-bold text-white/70 mt-0.5">
+                      Used for Komiuta updates only — never sold or shared.
+                    </p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="relative mt-10 flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.3em] text-white/60">
+              <span class="material-symbols-outlined !text-sm">lock</span> Secured by Komiuta
+            </div>
+          </aside>
+
+          <%!-- Form card --%>
+          <section class="rounded-[2rem] bg-white border border-slate-100 shadow-xl shadow-slate-200/60 p-6 sm:p-8 md:p-10 flex flex-col">
+            <%!-- Progress steps --%>
+            <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[9px] font-black uppercase tracking-[0.16em]">
+              <span class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
+                <span class="material-symbols-outlined !text-[13px]">check</span> Account
+              </span>
+              <span class="material-symbols-outlined text-slate-300 !text-sm hidden sm:inline">
+                chevron_right
+              </span>
+              <span class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-orange-50 text-[#FF4C00] border border-orange-100">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#FF4C00]"></span> Phone
+              </span>
+              <span class="material-symbols-outlined text-slate-300 !text-sm hidden sm:inline">
+                chevron_right
+              </span>
+              <span class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-slate-50 text-slate-400 border border-slate-100">
+                <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span> Dashboard
+              </span>
+            </div>
+
+            <div class="mt-7 flex items-start gap-4">
+              <div class="w-14 h-14 shrink-0 rounded-2xl bg-[#FF4C00] flex items-center justify-center text-white shadow-lg shadow-orange-200">
+                <span class="material-symbols-outlined !text-3xl">call</span>
+              </div>
+              <div>
+                <h1 class="text-2xl sm:text-3xl font-black tracking-tighter text-slate-900 leading-none">
+                  Add your phone number
+                </h1>
+                <p class="mt-2 text-xs font-bold text-slate-400 leading-relaxed">
+                  One quick step to finish setting up your Komiuta account.
+                </p>
+              </div>
+            </div>
+
+            <%!-- Identity / context --%>
+            <%= if @show_email_field do %>
+              <div class="mt-6 flex items-start gap-3 rounded-2xl bg-amber-50 border border-amber-100 px-4 py-3.5">
+                <span class="material-symbols-outlined !text-xl text-amber-600">alternate_email</span>
+                <div>
+                  <p class="text-[9px] font-black uppercase tracking-[0.2em] text-amber-700">
+                    Email needed
+                  </p>
+                  <p class="text-xs font-bold text-amber-700/80 mt-0.5">
+                    This account has no usable email yet, so log in codes and receipts can't reach you.
+                    Please add one below.
+                  </p>
+                </div>
+              </div>
+            <% else %>
+              <div class="mt-6 flex items-center gap-3 rounded-2xl bg-slate-50 border border-slate-100 px-4 py-3.5">
+                <div class="w-9 h-9 shrink-0 rounded-full bg-white border border-slate-100 flex items-center justify-center text-[#FF4C00]">
+                  <span class="material-symbols-outlined !text-lg">mark_email_read</span>
+                </div>
+                <div class="min-w-0">
+                  <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    Signed in as
+                  </p>
+                  <p class="text-sm font-black text-slate-700 truncate">{@user.email}</p>
+                </div>
+              </div>
+            <% end %>
+
+            <.form
+              for={@form}
+              action={~p"/user/complete-profile"}
+              method="post"
+              id="complete-profile-form"
+              class="mt-6 flex flex-1 flex-col"
+            >
+              <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
+
+              <%= if @show_email_field do %>
+                <div>
+                  <label
+                    for="complete-email"
+                    class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500"
+                  >
+                    Email address
+                  </label>
+                  <div class="relative mt-2">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined !text-xl text-slate-300">
+                      mail
+                    </span>
+                    <input
+                      id="complete-email"
+                      type="email"
+                      name="user[email]"
+                      value={@form[:email].value}
+                      autocomplete="email"
+                      placeholder="you@example.com"
+                      required
+                      class="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-base font-black text-slate-900 placeholder:text-slate-300 placeholder:font-bold focus:bg-white focus:border-[#FF4C00] outline-none transition-all"
+                    />
+                  </div>
+                  <%= for {msg, _opts} <- @form[:email].errors do %>
+                    <p class="mt-2 text-[11px] font-bold text-red-500">{msg}</p>
+                  <% end %>
+                </div>
+              <% end %>
+
+              <div class={if @show_email_field, do: "mt-5", else: ""}>
+                <label
+                  for="complete-phone"
+                  class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500"
+                >
+                  Phone number
+                </label>
+                <div class="relative mt-2">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined !text-xl text-slate-300">
+                    call
+                  </span>
+                  <input
+                    id="complete-phone"
+                    type="tel"
+                    inputmode="tel"
+                    autocomplete="tel"
+                    name="user[phone]"
+                    value={@form[:phone].value}
+                    placeholder="07XX XXX XXX"
+                    autofocus
+                    required
+                    class="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-base font-black text-slate-900 placeholder:text-slate-300 placeholder:font-bold focus:bg-white focus:border-[#FF4C00] outline-none transition-all"
+                  />
+                </div>
+                <p class="mt-2 text-[10px] font-bold text-slate-400">
+                  We'll use it for booking confirmations and ticket delivery.
+                </p>
+                <%= for {msg, _opts} <- @form[:phone].errors do %>
+                  <p class="mt-2 text-[11px] font-bold text-red-500">{msg}</p>
+                <% end %>
+              </div>
+
+              <button
+                type="submit"
+                class="group mt-auto w-full inline-flex items-center justify-center gap-3 rounded-2xl bg-[#FF4C00] px-6 py-4 text-sm font-black uppercase tracking-[0.2em] text-white shadow-xl shadow-orange-200 transition-all hover:bg-[#E64400] active:scale-[0.99]"
+              >
+                Save &amp; continue
+                <span class="material-symbols-outlined !text-xl transition-transform group-hover:translate-x-1">
+                  arrow_forward
+                </span>
+              </button>
+
+              <div class="mt-4 flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-slate-300">
+                <span class="material-symbols-outlined !text-sm">lock</span>
+                Your number is used for Komiuta updates only
+              </div>
+            </.form>
+          </section>
         </div>
       </div>
     </main>
