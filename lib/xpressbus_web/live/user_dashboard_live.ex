@@ -42,6 +42,11 @@ defmodule XpressbusWeb.UserDashboardLive do
            |> assign(:show_phone_modal, false)
            |> assign(:phone_error, nil)
            |> assign(:profile_form, Accounts.change_user(user) |> to_form())
+           |> assign(:show_email_change_modal, false)
+           |> assign(:email_change_step, :email)
+           |> assign(:email_change_form, to_form(%{"new_email" => ""}))
+           |> assign(:email_change_error, nil)
+           |> assign(:pending_new_email, nil)
            |> assign(:footer_tab, "about")}
         else
           # Every account must have both a phone number and an email before the
@@ -92,6 +97,10 @@ defmodule XpressbusWeb.UserDashboardLive do
   end
 
   def handle_event("update_profile", %{"user" => user_params}, socket) do
+    # The email address is deliberately not editable here: changing it requires
+    # a code sent to the new address (see request_email_change below).
+    user_params = Map.drop(user_params, ["email"])
+
     case Accounts.update_user(socket.assigns.user, user_params) do
       {:ok, user} ->
         {:noreply,
@@ -102,6 +111,61 @@ defmodule XpressbusWeb.UserDashboardLive do
 
       {:error, changeset} ->
         {:noreply, assign(socket, :profile_form, to_form(changeset))}
+    end
+  end
+
+  def handle_event("open_email_change", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:show_email_change_modal, true)
+     |> assign(:email_change_step, :email)
+     |> assign(:email_change_form, to_form(%{"new_email" => ""}))
+     |> assign(:email_change_error, nil)
+     |> assign(:pending_new_email, nil)}
+  end
+
+  def handle_event("close_email_change", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:show_email_change_modal, false)
+     |> assign(:email_change_step, :email)
+     |> assign(:email_change_form, to_form(%{"new_email" => ""}))
+     |> assign(:email_change_error, nil)
+     |> assign(:pending_new_email, nil)}
+  end
+
+  def handle_event("request_email_change", %{"email_change" => params}, socket) do
+    new_email = params |> Map.get("new_email", "") |> to_string()
+
+    case Accounts.request_email_change(socket.assigns.user, new_email) do
+      {:ok, %{new_email: pending}} ->
+        {:noreply,
+         socket
+         |> assign(:email_change_step, :code)
+         |> assign(:pending_new_email, pending)
+         |> assign(:email_change_error, nil)
+         |> put_flash(:info, "We emailed a 6-digit code to #{pending}.")}
+
+      {:error, reason} ->
+        {:noreply, assign(socket, :email_change_error, email_change_error(reason))}
+    end
+  end
+
+  def handle_event("confirm_email_change", %{"code" => code}, socket) do
+    case Accounts.verify_email_change(socket.assigns.user, to_string(code)) do
+      {:ok, user} ->
+        {:noreply,
+         socket
+         |> assign(:user, user)
+         |> assign(:profile_form, Accounts.change_user(user) |> to_form())
+         |> assign(:show_email_change_modal, false)
+         |> assign(:email_change_step, :email)
+         |> assign(:pending_new_email, nil)
+         |> assign(:email_change_error, nil)
+         |> put_flash(:info, "Email address updated successfully.")}
+
+      {:error, reason} ->
+        {:noreply, assign(socket, :email_change_error, email_change_error(reason))}
     end
   end
 
@@ -205,6 +269,46 @@ defmodule XpressbusWeb.UserDashboardLive do
     case Jason.decode(seats) do
       {:ok, decoded_list} when is_list(decoded_list) -> Enum.join(decoded_list, ", ")
       _ -> seats
+    end
+  end
+
+  defp email_change_error(reason) do
+    case reason do
+      :invalid_email ->
+        "Enter a valid email address."
+
+      :same_email ->
+        "That is already your account email."
+
+      :taken ->
+        "That email is already linked to another account."
+
+      :delivery_failed ->
+        "We could not send the verification email. Please try again."
+
+      :no_code ->
+        "Request a new verification code."
+
+      :expired ->
+        "That code has expired. Request a new one."
+
+      :too_many_attempts ->
+        "Too many incorrect attempts. Request a new code."
+
+      :invalid ->
+        "That code is not correct. Check the new email address and try again."
+
+      :failed ->
+        "We could not update your email. Please try again."
+
+      {:cooldown, _user} ->
+        "A code was just sent. Please wait #{Accounts.email_change_resend_seconds()} seconds before requesting another."
+
+      {:rate_limited, _user} ->
+        "Too many email-change requests. Please try again later."
+
+      _reason ->
+        "Something went wrong. Please try again."
     end
   end
 end

@@ -18,6 +18,15 @@ defmodule XpressbusWeb.Router do
     plug XpressbusWeb.Plugs.GoogleAuthConfig
   end
 
+  # Per-IP abuse protection for the login-code endpoints.
+  pipeline :throttle_auth do
+    plug XpressbusWeb.Plugs.IpThrottle, bucket: :auth, limit: 10, window: 600
+  end
+
+  pipeline :throttle_verify do
+    plug XpressbusWeb.Plugs.IpThrottle, bucket: :verify, limit: 20, window: 600
+  end
+
   scope "/", XpressbusWeb do
     pipe_through [:browser]
 
@@ -65,14 +74,24 @@ defmodule XpressbusWeb.Router do
     get "/login", UserController, :login
     get "/signup", UserController, :registration
     post "/register", UserController, :register
-    post "/auth", UserController, :authenticate
     get "/verify", UserController, :verify
-    post "/verify", UserController, :confirm
-    post "/verify/resend", UserController, :resend
     get "/complete-profile", UserController, :complete_profile
     post "/complete-profile", UserController, :save_complete_profile
     get "/tickets/:ticket_id/download", UserController, :ticket_download
     get "/logout", UserController, :logout
+  end
+
+  scope "/user", XpressbusWeb do
+    pipe_through [:browser, :throttle_auth]
+
+    post "/auth", UserController, :authenticate
+  end
+
+  scope "/user", XpressbusWeb do
+    pipe_through [:browser, :throttle_verify]
+
+    post "/verify", UserController, :confirm
+    post "/verify/resend", UserController, :resend
   end
 
   scope "/admin", XpressbusWeb do

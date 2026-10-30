@@ -43,7 +43,10 @@ defmodule XpressbusWeb.PaymentProcessingLive do
   def handle_event("close_modal", _params, socket) do
     if socket.assigns.ticket do
       {:noreply,
-       push_navigate(socket, to: ~p"/tickets?ticket_id=#{socket.assigns.ticket.ticket_id}")}
+       push_navigate(socket,
+         to:
+           "/tickets?ticket_id=#{socket.assigns.ticket.ticket_id}&last4=#{last4(socket.assigns.ticket.passenger_phone)}"
+       )}
     else
       {:noreply, push_navigate(socket, to: ~p"/")}
     end
@@ -98,10 +101,20 @@ defmodule XpressbusWeb.PaymentProcessingLive do
   def handle_info(:auto_navigate, socket) do
     if socket.assigns.ticket do
       {:noreply,
-       push_navigate(socket, to: ~p"/tickets?ticket_id=#{socket.assigns.ticket.ticket_id}")}
+       push_navigate(socket,
+         to:
+           "/tickets?ticket_id=#{socket.assigns.ticket.ticket_id}&last4=#{last4(socket.assigns.ticket.passenger_phone)}"
+       )}
     else
       {:noreply, socket}
     end
+  end
+
+  defp last4(nil), do: ""
+
+  defp last4(phone) do
+    digits = String.replace(to_string(phone), ~r/[^0-9]/, "")
+    if byte_size(digits) >= 4, do: String.slice(digits, -4, 4), else: ""
   end
 
   defp handle_success(socket, ticket) do

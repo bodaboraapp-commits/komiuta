@@ -6,7 +6,7 @@ defmodule Xpressbus.Accounts do
   import Ecto.Query, warn: false
   alias Xpressbus.Repo
 
-  alias Xpressbus.Accounts.{LoginCode, User, Subscriber, Transaction}
+  alias Xpressbus.Accounts.{LoginCode, EmailChangeCode, User, Subscriber, Transaction}
   alias Xpressbus.LoginEmail
 
   @doc """
@@ -365,6 +365,187 @@ defmodule Xpressbus.Accounts do
 
   def verify_login_code(_user_id, _code), do: {:error, :invalid}
 
+  # --- Verified email change -------------------------------------------------
+
+  @email_change_ttl_seconds 10 * 60
+  @email_change_resend_seconds 60
+  @email_change_max_attempts 5
+  @email_change_max_per_hour 5
+
+  @doc "How long an email-change code stays valid, in minutes."
+  def email_change_ttl_minutes, do: div(@email_change_ttl_seconds, 60)
+
+  @doc "Minimum seconds between email-change code emails."
+  def email_change_resend_seconds, do: @email_change_resend_seconds
+
+  @doc """
+  Starts an email change: validates the new address, stores a single-use code
+  and emails it to the *new* address (plus a security notice to the old one).
+
+  Returns `{:ok, %{new_email: email}}` or one of
+  `{:error, :invalid_email | :same_email | :taken | :delivery_failed}` and
+  `{:error, {:cooldown, user} | {:rate_limited, user}}`.
+  """
+  def request_email_change(%User{} = user, new_email) do
+    new_email = new_email |> to_string() |> String.trim() |> String.downcase()
+
+    cond do
+      not String.match?(new_email, ~r/^[^\s@]+@[^\s@]+\.[^\s@]+$/) ->
+        {:error, :invalid_email}
+
+      new_email == String.downcase(user.email || "") ->
+        {:error, :same_email}
+
+      get_user_by_email(new_email) ->
+        {:error, :taken}
+
+      true ->
+        build_and_send_email_change_code(user, new_email)
+    end
+  end
+
+  def request_email_change(_user, _new_email), do: {:error, :invalid_email}
+
+  defp build_and_send_email_change_code(user, new_email) do
+    now = now()
+    cooldown_cutoff = DateTime.add(now, -@email_change_resend_seconds, :second)
+    hour_cutoff = DateTime.add(now, -3_600, :second)
+
+    latest =
+      Repo.one(
+        from(c in EmailChangeCode,
+          where: c.user_id == ^user.id,
+          order_by: [desc: c.inserted_at],
+          limit: 1
+        )
+      )
+
+    recent_count =
+      Repo.aggregate(
+        from(c in EmailChangeCode,
+          where: c.user_id == ^user.id and c.inserted_at >= ^hour_cutoff
+        ),
+        :count,
+        :id
+      )
+
+    cond do
+      latest && DateTime.compare(latest.inserted_at, cooldown_cutoff) == :gt ->
+        {:error, {:cooldown, user}}
+
+      recent_count >= @email_change_max_per_hour ->
+        {:error, {:rate_limited, user}}
+
+      true ->
+        code = generate_login_code()
+
+        {:ok, _record} =
+          Repo.transaction(fn ->
+            # A new request invalidates every previous unconsumed code.
+            Repo.update_all(
+              from(c in EmailChangeCode, where: c.user_id == ^user.id and is_nil(c.consumed_at)),
+              set: [consumed_at: now]
+            )
+
+            %EmailChangeCode{}
+            |> EmailChangeCode.changeset(%{
+              user_id: user.id,
+              new_email: new_email,
+              code_digest: digest_email_change(user.id, new_email, code),
+              expires_at: DateTime.add(now, @email_change_ttl_seconds, :second)
+            })
+            |> Repo.insert!()
+          end)
+
+        case Xpressbus.EmailChangeEmail.deliver_code(
+               user,
+               new_email,
+               code,
+               email_change_ttl_minutes()
+             ) do
+          :ok ->
+            # Best-effort security notice to the current address.
+            _ = Xpressbus.EmailChangeEmail.deliver_notice(user, new_email)
+            {:ok, %{new_email: new_email}}
+
+          {:error, _reason} ->
+            # Make sure a failed delivery does not leave a usable code behind.
+            Repo.delete_all(
+              from(c in EmailChangeCode,
+                where: c.user_id == ^user.id and is_nil(c.consumed_at)
+              )
+            )
+
+            {:error, :delivery_failed}
+        end
+    end
+  end
+
+  @doc """
+  Verifies the code sent to the new address and, on success, updates the
+  account email. The code is single-use and attempt-limited.
+  """
+  def verify_email_change(%User{} = user, code) when is_binary(code) do
+    code = String.trim(code)
+    now = now()
+
+    query =
+      from(c in EmailChangeCode,
+        where: c.user_id == ^user.id and is_nil(c.consumed_at),
+        order_by: [desc: c.inserted_at],
+        limit: 1
+      )
+
+    case Repo.one(query) do
+      nil ->
+        {:error, :no_code}
+
+      %EmailChangeCode{} = record ->
+        cond do
+          DateTime.compare(record.expires_at, now) != :gt ->
+            {:error, :expired}
+
+          record.attempts >= @email_change_max_attempts ->
+            {:error, :too_many_attempts}
+
+          secure_compare(
+            digest_email_change(user.id, record.new_email, code),
+            record.code_digest
+          ) ->
+            consume_email_change(user, record, now)
+
+          true ->
+            record
+            |> EmailChangeCode.changeset(%{attempts: record.attempts + 1})
+            |> Repo.update()
+
+            {:error, :invalid}
+        end
+    end
+  end
+
+  def verify_email_change(_user, _code), do: {:error, :invalid}
+
+  defp consume_email_change(user, record, now) do
+    result =
+      Repo.transaction(fn ->
+        record
+        |> EmailChangeCode.changeset(%{consumed_at: now})
+        |> Repo.update!()
+
+        case user |> User.changeset(%{email: record.new_email}) |> Repo.update() do
+          {:ok, updated} -> updated
+          {:error, changeset} -> Repo.rollback(changeset)
+        end
+      end)
+
+    case result do
+      {:ok, updated} -> {:ok, updated}
+      {:error, %Ecto.Changeset{}} -> {:error, :taken}
+      {:error, _} -> {:error, :failed}
+    end
+  end
+
   defp consume_login_code(login_code, now) do
     with {:ok, _login_code} <-
            login_code
@@ -457,6 +638,16 @@ defmodule Xpressbus.Accounts do
 
   defp digest_login_code(user_id, code) do
     :crypto.mac(:hmac, :sha256, login_code_secret(), "#{user_id}:#{code}")
+    |> Base.encode16(case: :lower)
+  end
+
+  defp digest_email_change(user_id, new_email, code) do
+    :crypto.mac(
+      :hmac,
+      :sha256,
+      login_code_secret(),
+      "email-change:#{user_id}:#{new_email}:#{code}"
+    )
     |> Base.encode16(case: :lower)
   end
 

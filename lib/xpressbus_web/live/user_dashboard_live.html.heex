@@ -311,7 +311,12 @@
               <h2 class="text-xl font-black text-slate-900 uppercase tracking-widest border-b pb-4 mb-10">
                 Account Settings
               </h2>
-              <.form for={@profile_form} phx-submit="update_profile" class="space-y-6">
+              <.form
+                for={@profile_form}
+                id="profile-form"
+                phx-submit="update_profile"
+                class="space-y-6"
+              >
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Full Name</label>
@@ -324,12 +329,21 @@
                   </div>
                   <div>
                     <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Email Address</label>
-                    <input
-                      type="email"
-                      name="user[email]"
-                      value={@profile_form[:email].value}
-                      class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:border-orange-500 outline-none transition"
-                    />
+                    <div class="flex items-center gap-2">
+                      <div class="flex-1 min-w-0 p-4 bg-slate-100 border border-slate-200 rounded-xl font-bold text-slate-500 break-all">
+                        {@user.email}
+                      </div>
+                      <button
+                        type="button"
+                        phx-click="open_email_change"
+                        class="shrink-0 px-4 py-4 rounded-xl bg-orange-50 text-[#FF4C00] text-[10px] font-black uppercase tracking-widest border border-orange-100 hover:bg-orange-100 transition-all"
+                      >
+                        Change
+                      </button>
+                    </div>
+                    <p class="text-[9px] font-bold text-slate-400 mt-1">
+                      Changing your email requires a verification code sent to the new address.
+                    </p>
                   </div>
                   <div>
                     <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Phone Number</label>
@@ -597,6 +611,120 @@
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      <% end %>
+
+      <%!-- Email Change Modal --%>
+      <%= if @show_email_change_modal do %>
+        <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+          <div class="bg-white rounded-[2.5rem] max-w-md w-full p-10 shadow-2xl animate-fade-in-up border border-slate-100">
+            <div class="text-center mb-8">
+              <div class="w-20 h-20 bg-orange-50 rounded-3xl flex items-center justify-center text-[#FF4C00] mx-auto mb-6 shadow-sm border border-orange-100">
+                <span class="material-symbols-outlined !text-4xl">mark_email_unread</span>
+              </div>
+              <h2 class="text-3xl font-black text-slate-900 tracking-tighter mb-2">
+                Change email
+              </h2>
+              <p class="text-sm font-bold text-slate-400">
+                <%= if @email_change_step == :email do %>
+                  We'll send a verification code to the new address before changing your account.
+                <% else %>
+                  Enter the 6-digit code we sent to your new address.
+                <% end %>
+              </p>
+            </div>
+
+            <%= if @email_change_step == :email do %>
+              <form
+                id="email-change-request-form"
+                phx-submit="request_email_change"
+                class="space-y-5"
+              >
+                <div>
+                  <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">New Email Address</label>
+                  <input
+                    type="email"
+                    name="email_change[new_email]"
+                    value={@email_change_form[:new_email].value}
+                    placeholder="you@example.com"
+                    autocomplete="email"
+                    class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-slate-900 placeholder:text-slate-300 focus:bg-white focus:border-[#FF4C00] outline-none transition-all shadow-sm"
+                    required
+                  />
+                  <p class="text-[10px] font-bold text-slate-400 mt-2">
+                    Current: <span class="text-slate-600">{@user.email}</span>
+                  </p>
+                </div>
+
+                <%= if @email_change_error do %>
+                  <p class="text-[11px] font-bold text-red-500 flex items-center gap-1">
+                    <span class="material-symbols-outlined !text-xs">error</span> {@email_change_error}
+                  </p>
+                <% end %>
+
+                <button
+                  type="submit"
+                  class="w-full bg-[#FF4C00] text-white py-5 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-orange-500/20 hover:bg-[#E64400] transition-all transform active:scale-95 flex items-center justify-center gap-2"
+                >
+                  Send verification code
+                  <span class="material-symbols-outlined">arrow_forward</span>
+                </button>
+              </form>
+            <% else %>
+              <form
+                id="email-change-confirm-form"
+                phx-submit="confirm_email_change"
+                class="space-y-5"
+              >
+                <div>
+                  <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Verification Code</label>
+                  <input
+                    type="text"
+                    name="code"
+                    inputmode="numeric"
+                    pattern="[0-9]{6}"
+                    maxlength="6"
+                    placeholder="000000"
+                    autocomplete="one-time-code"
+                    class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-slate-900 text-center text-2xl tracking-[0.4em] focus:bg-white focus:border-[#FF4C00] outline-none transition-all shadow-sm"
+                    required
+                  />
+                  <p class="text-[10px] font-bold text-slate-400 mt-2 text-center break-all">
+                    Sent to <span class="text-slate-600">{@pending_new_email}</span>
+                  </p>
+                </div>
+
+                <%= if @email_change_error do %>
+                  <p class="text-[11px] font-bold text-red-500 flex items-center justify-center gap-1">
+                    <span class="material-symbols-outlined !text-xs">error</span> {@email_change_error}
+                  </p>
+                <% end %>
+
+                <button
+                  type="submit"
+                  class="w-full bg-[#FF4C00] text-white py-5 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-orange-500/20 hover:bg-[#E64400] transition-all transform active:scale-95 flex items-center justify-center gap-2"
+                >
+                  Confirm email change <span class="material-symbols-outlined">check_circle</span>
+                </button>
+
+                <button
+                  type="button"
+                  phx-click="open_email_change"
+                  class="w-full text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-[#FF4C00] transition-colors"
+                >
+                  Use a different email
+                </button>
+              </form>
+            <% end %>
+
+            <button
+              type="button"
+              phx-click="close_email_change"
+              class="w-full mt-5 text-[10px] font-black uppercase tracking-widest text-slate-300 hover:text-slate-500 transition-colors"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       <% end %>

@@ -7,17 +7,30 @@
           Track Your Ticket
         </h1>
         <p class="text-sm font-bold text-slate-400">
-          Enter your ticket ID to view booking details
+          Enter your ticket ID and the last 4 digits of the passenger phone
         </p>
       </div>
 
       <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-100">
-        <.form for={@search_form} phx-submit="search" id="ticket-search-form" class="flex gap-3">
+        <.form
+          for={@search_form}
+          phx-submit="search"
+          id="ticket-search-form"
+          class="flex flex-col sm:flex-row gap-3"
+        >
           <.input
             field={@search_form[:query]}
             type="text"
-            placeholder="Enter Ticket ID (e.g. TKT-ABC123)"
+            placeholder="Ticket ID (e.g. TKT-ABC123)"
             class="flex-1 !rounded-2xl !border-slate-200 !bg-slate-50 focus:!bg-white focus:!border-[#FF4C00]"
+          />
+          <.input
+            field={@search_form[:last4]}
+            type="text"
+            inputmode="numeric"
+            maxlength="4"
+            placeholder="Phone last 4"
+            class="sm:w-40 !rounded-2xl !border-slate-200 !bg-slate-50 focus:!bg-white focus:!border-[#FF4C00]"
           />
           <button
             type="submit"
@@ -26,6 +39,15 @@
             Search
           </button>
         </.form>
+        <p class="mt-3 text-[10px] font-bold text-slate-400">
+          Your ticket ID alone is not enough to view a booking — add the last 4 digits of the
+          passenger's phone. Signed in as the passenger? You can leave it blank.
+        </p>
+        <%= if @lookup_error do %>
+          <p class="mt-3 text-[11px] font-bold text-red-500 flex items-center gap-1">
+            <span class="material-symbols-outlined !text-sm">error</span> {@lookup_error}
+          </p>
+        <% end %>
       </div>
     </div>
 
@@ -225,7 +247,8 @@
           <div>
             <h3 class="font-black text-orange-900 mb-1">Ticket Not Found</h3>
             <p class="text-sm font-bold text-orange-700 leading-relaxed">
-              No ticket found with ID "{@search_query}". Please check and try again.
+              No ticket matches that ID and phone ending. Check the ticket ID and the last 4 digits of
+              the passenger phone, then try again.
             </p>
           </div>
         </div>

@@ -12,6 +12,7 @@ defmodule Xpressbus.Application do
       XpressbusWeb.Telemetry,
       {DNSCluster, query: Application.get_env(:xpressbus, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Xpressbus.PubSub},
+      XpressbusWeb.Plugs.IpThrottleStore,
       Xpressbus.Bookings.SyncServer,
       XpressbusWeb.Endpoint
     ]
