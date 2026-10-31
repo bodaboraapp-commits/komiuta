@@ -69,4 +69,52 @@ defmodule XpressbusWeb.TicketDownloadTest do
 
     assert redirected_to(conn) == ~p"/user/login"
   end
+
+  test "the downloaded PDF is a printable boarding pass with boarding codes", %{conn: conn} do
+    user = user_fixture()
+    ticket = create_ticket(user)
+
+    conn =
+      conn
+      |> Plug.Test.init_test_session(%{user_id: user.id})
+      |> get(~p"/user/tickets/#{ticket.ticket_id}/download")
+
+    pdf = response(conn, 200)
+
+    assert pdf =~ "%PDF-1.4"
+    assert pdf =~ "BOARDING CODES"
+    assert pdf =~ "SCAN TO BOARD"
+    assert pdf =~ "CODE 128"
+    assert pdf =~ ticket.ticket_id
+    assert length(Regex.scan(~r/\d+ \d+ \d+ \d+ re\n/, pdf)) > 300
+  end
+
+  test "the signed ticket token downloads the PDF without signing in", %{conn: conn} do
+    ticket = create_ticket(user_fixture())
+
+    conn = get(conn, Xpressbus.TicketAccess.download_path(ticket))
+
+    pdf = response(conn, 200)
+    assert get_resp_header(conn, "content-type") |> hd() =~ "application/pdf"
+    assert get_resp_header(conn, "content-disposition") |> hd() =~ ticket.ticket_id
+    assert pdf =~ "SCAN TO BOARD"
+  end
+
+  test "a tampered token cannot download the ticket", %{conn: conn} do
+    ticket = create_ticket(user_fixture())
+
+    conn = get(conn, Xpressbus.TicketAccess.download_path(ticket) <> "tampered")
+
+    assert redirected_to(conn) == ~p"/user/login"
+    refute conn.resp_body =~ "%PDF-1.4"
+  end
+
+  test "guests without a token cannot use the public download path", %{conn: conn} do
+    ticket = create_ticket(user_fixture())
+
+    conn = get(conn, ~p"/tickets/#{ticket.ticket_id}/download")
+
+    assert redirected_to(conn) == ~p"/user/login"
+    refute conn.resp_body =~ "%PDF-1.4"
+  end
 end

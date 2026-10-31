@@ -34,6 +34,21 @@ config :xpressbus, Xpressbus.Mailer, adapter: Swoosh.Adapters.Local
 # production with the MAILER_FROM environment variable.
 config :xpressbus, :mailer_from, "no-reply@komiuta.com"
 
+# Public contact details and social links, used by the website footer and
+# transactional email. Update the social URLs here when the real handles change.
+config :xpressbus, :brand, %{
+  website: "https://www.komiuta.com",
+  email: "hello@komiuta.com",
+  phone: "0800 211 211",
+  phone_uri: "tel:0800211211",
+  social_links: [
+    %{name: "Facebook", url: "https://www.facebook.com/komiuta"},
+    %{name: "Instagram", url: "https://www.instagram.com/komiuta"},
+    %{name: "X", url: "https://x.com/komiuta"},
+    %{name: "TikTok", url: "https://www.tiktok.com/@komiuta"}
+  ]
+}
+
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.25.4",

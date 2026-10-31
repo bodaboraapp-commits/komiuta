@@ -258,6 +258,8 @@ defmodule XpressbusWeb.UserController do
     end
   end
 
+  defp ticket_owner?(_ticket, nil), do: false
+
   defp ticket_owner?(ticket, user) do
     passenger = phone_digits(ticket.passenger_phone)
     passenger != "" and passenger == phone_digits(user.phone)
@@ -271,38 +273,48 @@ defmodule XpressbusWeb.UserController do
   end
 
   @doc """
-  Downloads a ticket as a PDF. Only the passenger who owns the ticket (same phone
-  number as their account) may download it.
+  Downloads a ticket as a printable PDF boarding pass.
+
+  Access is granted either to the signed-in passenger who owns the ticket
+  (same phone number as their account) or to a request carrying the signed
+  ticket token (`?token=...`, the same HMAC token as the ticket link). The
+  token path supports guests who have just paid but are not signed in, and it
+  never exposes another passenger's ticket.
   """
-  def ticket_download(conn, %{"ticket_id" => ticket_id}) do
-    case signed_in_user(conn) do
-      %Accounts.User{} = user ->
-        case Xpressbus.Tickets.get_ticket(ticket_id) do
-          nil ->
-            conn
-            |> put_flash(:error, "Ticket not found.")
-            |> redirect(to: ~p"/dashboard")
-
-          ticket ->
-            if ticket_owner?(ticket, user) do
-              pdf = Xpressbus.TicketPDF.render(ticket)
-
-              send_download(conn, {:binary, pdf},
-                filename: "#{ticket.ticket_id}.pdf",
-                content_type: "application/pdf"
-              )
-            else
-              conn
-              |> put_flash(:error, "That ticket does not belong to your account.")
-              |> redirect(to: ~p"/dashboard")
-            end
-        end
-
-      _ ->
+  def ticket_download(conn, %{"ticket_id" => ticket_id} = params) do
+    case Xpressbus.Tickets.get_ticket(ticket_id) do
+      nil ->
         conn
-        |> put_flash(:error, "Please sign in to continue.")
-        |> redirect(to: ~p"/user/login")
+        |> put_flash(:error, "Ticket not found.")
+        |> redirect(to: ~p"/tickets")
+
+      ticket ->
+        user = signed_in_user(conn)
+
+        if ticket_owner?(ticket, user) or
+             Xpressbus.TicketAccess.valid?(ticket, params["token"]) do
+          pdf = Xpressbus.TicketPDF.render(ticket)
+
+          send_download(conn, {:binary, pdf},
+            filename: "#{ticket.ticket_id}.pdf",
+            content_type: "application/pdf"
+          )
+        else
+          redirect_for_unauthorised(conn, user)
+        end
     end
+  end
+
+  defp redirect_for_unauthorised(conn, nil) do
+    conn
+    |> put_flash(:error, "Please sign in to download this ticket.")
+    |> redirect(to: ~p"/user/login")
+  end
+
+  defp redirect_for_unauthorised(conn, _user) do
+    conn
+    |> put_flash(:error, "That ticket does not belong to your account.")
+    |> redirect(to: ~p"/dashboard")
   end
 
   def logout(conn, _params) do

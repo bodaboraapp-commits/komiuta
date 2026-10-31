@@ -34,8 +34,8 @@ defmodule Xpressbus.TicketPDFTest do
     assert pdf =~ ~r/xref\n0 \d+/
     assert pdf =~ "startxref"
     assert pdf =~ "TKT-ABC123"
-    assert pdf =~ "Mombasa"
-    assert pdf =~ "Nairobi"
+    assert pdf =~ "MOMBASA"
+    assert pdf =~ "NAIROBI"
     assert pdf =~ "MashPoa"
     assert pdf =~ "6"
   end
@@ -51,5 +51,45 @@ defmodule Xpressbus.TicketPDFTest do
   test "handles missing optional values" do
     pdf = TicketPDF.render(ticket(%{passenger_name: nil, seats: nil, travel_date: nil}))
     assert String.starts_with?(pdf, "%PDF-1.4")
+  end
+
+  test "embeds the boarding QR code and Code 128 barcode as vectors" do
+    pdf = TicketPDF.render(ticket())
+
+    assert pdf =~ "BOARDING CODES"
+    assert pdf =~ "SCAN TO BOARD"
+    assert pdf =~ "CODE 128"
+    # The codes are drawn as filled vector rectangles, so the PDF needs no
+    # embedded images and stays sharp when printed.
+    refute pdf =~ "/Subtype /Image"
+
+    rectangle_count = Regex.scan(~r/\d+ \d+ \d+ \d+ re\n/, pdf) |> length()
+    assert rectangle_count > 300
+  end
+
+  test "xref offsets point at the objects they describe" do
+    pdf = TicketPDF.render(ticket())
+
+    [_, after_marker] = String.split(pdf, "xref\n0 ", parts: 2)
+    {newline_index, 1} = :binary.match(after_marker, "\n")
+    {count_string, rest} = String.split_at(after_marker, newline_index)
+    count = count_string |> String.trim() |> String.to_integer()
+    assert count >= 7
+
+    offsets =
+      rest
+      |> String.split("\n", trim: true)
+      |> Enum.drop(1)
+      |> Enum.take(count - 1)
+      |> Enum.map(fn line -> line |> String.split(" ") |> hd() |> String.to_integer() end)
+
+    assert length(offsets) == count - 1
+
+    offsets
+    |> Enum.with_index(1)
+    |> Enum.each(fn {offset, number} ->
+      object_header = "#{number} 0 obj"
+      assert binary_part(pdf, offset, byte_size(object_header)) == object_header
+    end)
   end
 end

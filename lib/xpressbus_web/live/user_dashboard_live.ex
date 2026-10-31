@@ -3,6 +3,7 @@ defmodule XpressbusWeb.UserDashboardLive do
   import XpressbusWeb.BrandComponents
   alias Xpressbus.{Repo, Tickets, Accounts}
   alias Xpressbus.Tickets.Ticket
+  alias XpressbusWeb.TicketCodes
   import Ecto.Query
 
   def mount(_params, session, socket) do
@@ -39,6 +40,9 @@ defmodule XpressbusWeb.UserDashboardLive do
            |> assign(:transactions, transactions)
            |> assign(:selected_ticket, nil)
            |> assign(:show_ticket_modal, false)
+           |> assign(:ticket_qr, nil)
+           |> assign(:ticket_barcode, nil)
+           |> assign(:download_url, nil)
            |> assign(:show_phone_modal, false)
            |> assign(:phone_error, nil)
            |> assign(:profile_form, Accounts.change_user(user) |> to_form())
@@ -80,10 +84,17 @@ defmodule XpressbusWeb.UserDashboardLive do
       end
 
     if ticket do
+      # The boarding codes are the same locally generated codes used on the
+      # public ticket page: a QR for the signed ticket URL and a Code 128B
+      # barcode for the ticket number. They are only rendered while this
+      # ticket's modal is open.
       {:noreply,
        socket
        |> assign(:selected_ticket, ticket)
-       |> assign(:show_ticket_modal, true)}
+       |> assign(:show_ticket_modal, true)
+       |> assign(:ticket_qr, TicketCodes.qr(ticket))
+       |> assign(:ticket_barcode, TicketCodes.barcode(ticket, responsive: true, height: 56))
+       |> assign(:download_url, TicketCodes.download_url(ticket))}
     else
       {:noreply, put_flash(socket, :error, "Ticket not found on your account.")}
     end
@@ -93,7 +104,10 @@ defmodule XpressbusWeb.UserDashboardLive do
     {:noreply,
      socket
      |> assign(:selected_ticket, nil)
-     |> assign(:show_ticket_modal, false)}
+     |> assign(:show_ticket_modal, false)
+     |> assign(:ticket_qr, nil)
+     |> assign(:ticket_barcode, nil)
+     |> assign(:download_url, nil)}
   end
 
   def handle_event("update_profile", %{"user" => user_params}, socket) do

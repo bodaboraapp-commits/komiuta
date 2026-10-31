@@ -44,6 +44,9 @@ defmodule XpressbusWeb.Router do
     live "/passenger-details/:id", BookingLive, :passenger_details
     live "/review-and-pay/:id", BookingLive, :review_and_pay
     live "/tickets", TicketLive, :index
+    # Printable PDF boarding pass. Authorised either by the signed token in the
+    # query string (guest/post-payment flow) or by the signed-in passenger.
+    get "/tickets/:ticket_id/download", UserController, :ticket_download
     live "/dashboard", UserDashboardLive, :index
     live "/payment-processing/:ticket_id", PaymentProcessingLive, :index
     live "/partner/add-fleet", PartnerRegistrationLive, :index

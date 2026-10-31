@@ -111,6 +111,10 @@ defmodule XpressbusWeb.TicketLookupTest do
     assert html =~ ticket.ticket_id
     assert html =~ "Boarding QR code"
     assert html =~ "Ticket barcode #{ticket.ticket_id}"
+    # The printable PDF is downloadable straight from the ticket page using the
+    # same signed token (no second login step).
+    assert html =~ ~s(id="download-ticket-pdf")
+    assert html =~ "#{ticket.ticket_id}/download?token="
   end
 
   test "a tampered token does not open the ticket", %{conn: conn} do

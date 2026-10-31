@@ -158,8 +158,9 @@ defmodule Xpressbus.Barcode do
   @doc """
   Renders `payload` as an inline SVG Code 128 barcode.
 
-  Options: `:module_width` (px, default 2), `:height` (px, default 64) and
-  `:aria_label`.
+  Options: `:module_width` (px, default 2), `:height` (px, default 64),
+  `:responsive` (when true the SVG fills its container width while keeping the
+  bars proportional, default false) and `:aria_label`.
   """
   @spec svg(String.t(), keyword()) :: {:ok, String.t()} | {:error, term()}
   def svg(payload, opts \\ []) do
@@ -167,9 +168,11 @@ defmodule Xpressbus.Barcode do
       module_width = Keyword.get(opts, :module_width, 2)
       height = Keyword.get(opts, :height, 64)
       aria_label = Keyword.get(opts, :aria_label, "Barcode")
+      responsive = Keyword.get(opts, :responsive, false)
 
       total_modules = byte_size(bits) + @quiet_modules * 2
       width = total_modules * module_width
+      width_attr = if responsive, do: ~s(width="100%"), else: ~s(width="#{width}")
 
       bars =
         bits
@@ -187,7 +190,7 @@ defmodule Xpressbus.Barcode do
         |> Enum.join()
 
       svg = """
-      <svg xmlns="http://www.w3.org/2000/svg" width="#{width}" height="#{height}" viewBox="0 0 #{width} #{height}" role="img" aria-label="#{aria_label}" shape-rendering="crispEdges" preserveAspectRatio="xMidYMid meet">
+      <svg xmlns="http://www.w3.org/2000/svg" #{width_attr} height="#{height}" viewBox="0 0 #{width} #{height}" role="img" aria-label="#{aria_label}" shape-rendering="crispEdges" preserveAspectRatio="xMidYMid meet">
         <rect width="#{width}" height="#{height}" fill="#ffffff"/>
         <g fill="#000000">#{bars}</g>
       </svg>

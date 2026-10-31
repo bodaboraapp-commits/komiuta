@@ -34,11 +34,42 @@ document.addEventListener("click", event => {
   carousel.scrollBy({left: control.hasAttribute("data-carousel-next") ? amount : -amount, behavior: "smooth"})
 })
 
+// Hero video is a desktop-only enhancement: phones download the (small) poster
+// image and never fetch the multi-megabyte video. It also respects Save-Data
+// and reduced-motion settings.
+const HeroVideo = {
+  mounted() {
+    this.tryLoad()
+    this._onResize = () => this.tryLoad()
+    window.addEventListener("resize", this._onResize, {passive: true})
+  },
+  destroyed() {
+    window.removeEventListener("resize", this._onResize)
+  },
+  tryLoad() {
+    if (this.el.dataset.loaded === "true") return
+
+    const connection = navigator.connection || {}
+    if (connection.saveData) return
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    if (!window.matchMedia("(min-width: 768px)").matches) return
+
+    const src = this.el.dataset.src
+    if (!src) return
+
+    this.el.dataset.loaded = "true"
+    this.el.src = src
+    this.el.load()
+    const playing = this.el.play()
+    if (playing && playing.catch) playing.catch(() => {})
+  },
+}
+
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks},
+  hooks: {...colocatedHooks, HeroVideo},
 })
 
 // Show progress bar on live navigation and form submits

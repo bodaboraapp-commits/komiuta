@@ -1,5 +1,7 @@
 # Xpressbus
 
+Production readiness checklist: [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md)
+
 To start your Phoenix server:
 
 * Run `mix setup` to install and setup dependencies

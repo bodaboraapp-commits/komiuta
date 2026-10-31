@@ -60,6 +60,38 @@ defmodule Xpressbus.LoginCodeTest do
       assert DateTime.compare(code.expires_at, DateTime.utc_now()) == :gt
     end
 
+    test "login email includes the Komiuta logo" do
+      user = create_user()
+
+      assert {:ok, _user} = Accounts.request_login_code(user.phone)
+
+      {:email, email} = assert_email_sent()
+
+      logo_url = XpressbusWeb.Endpoint.url() <> "/images/logo_email.png"
+
+      assert email.html_body =~ logo_url
+      assert email.html_body =~ ~s(alt="Komiuta")
+      assert email.html_body =~ ~s(width="146")
+      assert email.html_body =~ "Secure sign-in"
+
+      # Website, support contacts and social links are in the email footer.
+      assert email.html_body =~ "www.komiuta.com"
+      assert email.html_body =~ "hello@komiuta.com"
+      assert email.html_body =~ "0800 211 211"
+      assert email.html_body =~ "facebook.com/komiuta"
+      assert email.html_body =~ "instagram.com/komiuta"
+      assert email.html_body =~ "Follow us:"
+      assert email.html_body =~ "border-top:1px solid #f1f5f9;text-align:center;"
+
+      assert email.text_body =~ "Website: https://www.komiuta.com"
+      assert email.text_body =~ "Email: hello@komiuta.com"
+      assert email.text_body =~ "Follow us:"
+
+      logo_path = Path.expand("../../priv/static/images/logo_email.png", __DIR__)
+      assert File.exists?(logo_path), "missing #{logo_path}"
+      assert File.stat!(logo_path).size > 1_000
+    end
+
     test "accepts an email address as the identifier" do
       user = create_user()
 

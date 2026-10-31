@@ -715,5 +715,172 @@ DB_PORT=3308 mix precommit   # 121/121 tests
 mix ecto.migrate             # applies the login_codes migration
 ```
 
+### 2026-10-29 Session — Mobile loading performance (phone payload)
+
+**Objective:** The phone experience was slow because the landing page loaded a 637 KB hero PNG and the
+Chyllz pages autoplayed a 5.9 MB video; icons came from Google's full Material Symbols font through two
+render-blocking requests (one duplicated by a CSS `@import`).
+
+**Completed:**
+- Responsive hero: `hero_bg.png` is now also available as AVIF/WebP at 640/1024/1573 widths
+  (**17 KB AVIF** at full width vs 637 KB PNG), rendered through `<picture>` with a matching
+  `type="image/avif"` LCP preload, `fetchpriority="high"`, `decoding="async"`, and intrinsic dimensions.
+  The app-download/store QR section etc. unchanged.
+- Hero video is desktop-only: no `autoplay`/`<source>` in the HTML; the new `HeroVideo` hook in
+  `assets/js/app.js` loads it only at `≥768px`, and skips it under Save-Data or reduced motion. Phones
+  download the 16 KB WebP poster only.
+- Material Symbols: removed the Google Fonts stylesheet, the `@import`, and the old preload/fallbacks.
+  `scripts/fetch_icon_font.mjs` extracts the 105 used icons, downloads a **self-hosted 11 KB subset**
+  (`priv/static/fonts/material-symbols-subset.woff2`), and `app.css` defines it with
+  `font-display: block` + a per-glyph remote fallback. **Re-run the script when adding a new icon.**
+- Below-the-fold partner/operator logos, store badges and ticket/footer logos now use
+  `loading="lazy"`/`decoding="async"` with `width`/`height`; hotel room fallbacks are WebP (~16 KB each).
+- Production assets rebuilt: `app.css` 111.7 KB, `app.js` 149.7 KB (minified) + `mix phx.digest`.
+- 7 regression tests: `test/xpressbus_web/mobile_perf_test.exs` (source-level asset/markup guardrails) and
+  `test/xpressbus_web/mobile_render_test.exs` (renders `/` and `/tour-packages` to catch stale compiled
+  templates). These 13 combined mobile/PWA tests pass.
+
+**Not changed / follow-ups:**
+- Desktop still downloads the 5.9 MB hero video; re-encode it (ffmpeg) before relying on it.
+- The biggest remaining phone delay is Render Free's ~1 minute cold start after idle — upgrade the plan
+  or keep the service warm.
+- `mix precommit` could not be re-run after these changes because the environment denied the required
+  build-write escalation; the targeted mobile/PWA tests passed. Run `mix precommit` before deploying.
+
+**Verification:**
+```
+mix assets.deploy            # minified + digested (OK)
+DB_PORT=3308 mix test test/xpressbus_web/mobile_perf_test.exs test/xpressbus_web/mobile_render_test.exs test/xpressbus_web/pwa_test.exs
+# 13 passed
+```
+
+### 2026-10-31 Session — Search-result journey timeline overlap fix
+
+**Objective:** On the bus search results card the orange bus icon overlapped the
+duration/departure label above the journey line on narrow (phone) screens.
+
+**Completed:**
+- Rebuilt the results-card journey timeline (`booking_live.html.heex`): the bus icon is now an inline
+  white chip between two line segments (no `absolute -top-3.5` overlay), the duration label has
+  clearance above the line, and departure/arrival times are `shrink-0 whitespace-nowrap` with
+  `min-w-[8px]` line segments so they cannot collapse into the icon at phone widths.
+- Rebuilt Tailwind/esbuild assets (`mix assets.build`).
+- Added two regression tests: source guardrail (`test/xpressbus_web/search_card_layout_test.exs`) and a
+  **rendered results-page test** (`test/xpressbus_web/search_card_render_test.exs`) that seeds a bus and
+  renders `/buses/nairobi-to-mombasa`.
+
+**Verification:**
+```
+mix assets.build
+DB_PORT=3308 mix test test/xpressbus_web/search_card_layout_test.exs test/xpressbus_web/search_card_render_test.exs
+# 2 passed
+```
+
+### 2026-10-31 Session — Login email branding (Komiuta logo)
+
+**Objective:** The OTP email header was plain text ("Komiuta") on the orange bar; add the Komiuta logo
+to the branded transaction email.
+
+**Completed:**
+- `lib/xpressbus/login_email.ex`: orange header now shows the Komiuta lockup as an image
+  (`137×54` display, 2x asset) with `alt="Komiuta"`, plus a **"SECURE SIGN-IN"** label and a hidden
+  preheader. Logo URL is absolute (`Endpoint.url() <> "/images/logo_email.png"`), with a
+  `:mailer_logo_url` config override used by the local preview helper. Added
+  `color-scheme`/`supported-color-schemes` meta tags for dark-mode clients.
+- `priv/static/images/logo_email.png` (new): the supplied **transparent-background Komiuta logo** (190×52),
+  displayed at 146×40 on a **white email header** with a thin orange brand strip. The white header keeps
+  the black wordmark readable; the earlier white rounded chip was removed.
+- `test/xpressbus/login_code_test.exs`: asserts the email HTML contains the absolute logo URL,
+  `alt="Komiuta"`, "Secure sign-in", and that the logo PNG exists.
+- `docs/komiuta-login-email-preview.png`: mockup rendered from the **actual** `LoginEmail` HTML
+  (Chrome headless), using `scratch/email_preview.exs` with a `file://` logo override.
+
+**Notes:**
+- Deploy the new `logo_email.png` with the app: Gmail fetches it from
+  `https://www.komiuta.com/images/logo_email.png`, so it must be publicly reachable.
+- Marketing/email provider still needs `RESEND_API_KEY` (or Mailgun/Brevo) in production for delivery.
+
+**Verification:**
+```
+mix compile --warnings-as-errors
+DB_PORT=3308 mix test test/xpressbus/login_code_test.exs
+# 15 passed
+```
+
+### 2026-10-31 Session — Dashboard ticket modal: real QR code and Code 128 barcode
+
+**Objective:** The "Congratulations! Booking Confirmed & E-Ticket Ready" modal on the user
+dashboard drew a decorative random-pixel "QR" (`:rand.uniform/1` over a 41×41 grid) and a
+random-width "barcode" (`Enum.random([1, 2])` px divs at 30% opacity). Neither was scannable, the
+codes changed on every render, and the grid added ~1,700 DOM nodes per render.
+
+**Completed:**
+- Added `XpressbusWeb.TicketCodes` — the single source of truth for the boarding pass codes:
+  `qr/1` renders the signed ticket URL (`Xpressbus.TicketAccess.url/1`) through the existing
+  `XpressbusWeb.QRCode`/`Xpressbus.QR`, and `barcode/1,2` renders the ticket number as ISO/IEC
+  15417 Code 128B through the existing `Xpressbus.Barcode`. Both return `{:safe, svg}` or `nil`.
+- `Xpressbus.Barcode.svg/2` gained a `:responsive` option (`width="100%"` + `viewBox` +
+  `preserveAspectRatio`) so a code can fill a fluid container while staying crisp; fixed-size
+  output is unchanged, so the public ticket page is unaffected.
+- `UserDashboardLive` now assigns `:ticket_qr`/`:ticket_barcode` when a ticket modal opens and
+  clears them on close. The modal renders them in a 160×160 white QR panel (2px black border,
+  4-module quiet zone from the encoder, no logo overlay covering modules) and a full-width
+  white barcode strip (responsive, 56px tall, no opacity/filters). Text fallbacks remain if a
+  code cannot be generated.
+- `TicketLive` now uses `XpressbusWeb.TicketCodes` instead of its own duplicate `build_qr`/
+  `build_barcode` helpers, so the ticket page and dashboard cannot drift apart.
+- Fixed a latent crash the modal test exposed: the boarding pass read
+  `@selected_ticket.bus.registration` unguarded, so any ticket without a linked `bus` row (e.g.
+  seeded/legacy tickets) crashed the dashboard render. It is now nil-safe (`N/A`).
+- Added 4 `TicketCodes` unit tests, 2 LiveView tests (real codes rendered in the modal, cleared on
+  close) and a source guardrail test that fails if `:rand`/`Enum.random` fake codes or
+  `opacity-30` return to the template.
+- Visual verification: `scratch/ticket_codes_preview.exs` renders the production
+  `TicketCodes` output next to the modal chrome, screenshotted with headless Chrome into
+  `docs/ticket-modal-codes-preview.png` (real QR matrix + clean Code 128 bars).
+
+**Verification:**
+```
+mix precommit                     # 203/203 tests
+mix assets.deploy                 # rebuilt minified/digested assets
+```
+
+### 2026-10-31 Session — Website + email contact/social details
+
+**Objective:** Add the website, support contact details and social media links to the public footer and
+to the transactional login-code email (the email previously ended with just "Komiuta · Elevate Your
+Journey").
+
+**Completed:**
+- Added `Xpressbus.Brand` (`lib/xpressbus/brand.ex`) as the single source of truth for
+  `website/0`, `website_label/0`, `email/0`, `phone/0`, `phone_uri/0` and `social_links/0`, configured in
+  `config/config.exs` under `config :xpressbus, :brand`.
+- Website footer (`brand_components.ex`): added the website link and a "Follow us" row with
+  **Facebook / Instagram / X / TikTok** links (`target="_blank" rel="noopener noreferrer"`); email and
+  phone now come from `Xpressbus.Brand`.
+- Login-code email (`login_email.ex`): footer now shows
+  `www.komiuta.com · hello@komiuta.com · 0800 211 211` and "Follow us: Facebook · Instagram · X · TikTok";
+  the plain-text alternative carries the same details. Footer text is **center-aligned** in the email.
+- Updated the mockup `docs/komiuta-login-email-preview.png` (rendered from the real email HTML with
+  `scratch/email_preview.exs`) to show the logo, website, contact and social footer.
+- Tests: `test/xpressbus_web/brand_footer_test.exs` (rendered footer + brand config consistency) and
+  expanded `login_code_test.exs` assertions for the email footer.
+
+**Important:** social URLs currently default to the `@komiuta` handles
+(`facebook.com/komiuta`, `instagram.com/komiuta`, `x.com/komiuta`, `tiktok.com/@komiuta`). Confirm/replace
+them in `config/config.exs` (`:brand` → `:social_links`) with the real pages before launch.
+
+**Verification:**
+```
+mix compile --warnings-as-errors
+DB_PORT=3308 mix test test/xpressbus/login_code_test.exs test/xpressbus_web/brand_footer_test.exs
+# 17 passed
+```
+
+
+
+
+
+
 
 

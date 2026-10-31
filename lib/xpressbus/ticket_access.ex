@@ -33,6 +33,18 @@ defmodule Xpressbus.TicketAccess do
     "/tickets?ticket_id=#{URI.encode_www_form(ticket.ticket_id)}&token=#{token(ticket)}"
   end
 
+  @doc """
+  Signed download URL for the printable PDF boarding pass.
+
+  Carries the same HMAC token as the ticket link, so a passenger who is not
+  signed in (e.g. a guest booking opened from the post-payment redirect) can
+  still download their own PDF without the download endpoint leaking tickets.
+  """
+  @spec download_path(Ticket.t()) :: String.t()
+  def download_path(%Ticket{} = ticket) do
+    "/tickets/#{URI.encode_www_form(ticket.ticket_id)}/download?token=#{token(ticket)}"
+  end
+
   @spec url(Ticket.t()) :: String.t()
   def url(%Ticket{} = ticket), do: XpressbusWeb.Endpoint.url() <> path(ticket)
 
