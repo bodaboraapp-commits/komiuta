@@ -3,7 +3,7 @@ defmodule XpressbusWeb.SeoTest do
   Guards the search/AI-search surface: sitemap, robots, llms.txt, canonical
   metadata, route landing schema and utility-page noindex.
   """
-  use XpressbusWeb.ConnCase, async: true
+  use XpressbusWeb.ConnCase, async: false
 
   alias Xpressbus.Bookings.Bus
   alias Xpressbus.Repo
@@ -18,8 +18,8 @@ defmodule XpressbusWeb.SeoTest do
         seats: "28 seats left",
         price: "KSH 1,500",
         registration: "SEO 001A",
-        from: "SeoCity",
-        to: "SeoTown",
+        from: "seocity",
+        to: "seotown",
         travel_date: Date.utc_today(),
         duration: "4h 30m",
         occupied_seats: [],
@@ -39,7 +39,7 @@ defmodule XpressbusWeb.SeoTest do
     assert body =~ "<urlset"
     assert body =~ "https://www.komiuta.com/"
     assert body =~ "/tour-packages/insurance"
-    assert body =~ "/buses/SeoCity-to-SeoTown"
+    assert body =~ "/buses/seocity-to-seotown"
     assert get_resp_header(conn, "content-type") |> hd() =~ "xml"
   end
 
@@ -164,5 +164,30 @@ defmodule XpressbusWeb.SeoTest do
     assert body =~ "/about"
     assert body =~ "/blog"
     assert body =~ "/blog/nairobi-to-kisumu-bus-guide"
+  end
+
+  test "sitemap is cacheable for crawlers", %{conn: conn} do
+    conn = get(conn, "/sitemap.xml")
+
+    assert get_resp_header(conn, "cache-control") |> hd() =~ "public"
+    assert get_resp_header(conn, "cache-control") |> hd() =~ "max-age=3600"
+  end
+
+  test "operator pages and route cross-links form a crawlable mesh", %{conn: conn} do
+    _bus = route_bus_fixture()
+
+    route_body = get(conn, "/buses/seocity-to-seotown").resp_body
+
+    assert route_body =~ "Bus operators on this route"
+    assert route_body =~ ~s(href="/operators/seo-coaches")
+    assert route_body =~ ~s(data-track="select_bus")
+
+    operators_index = get(conn, "/operators").resp_body
+    assert operators_index =~ "Bus operators in Kenya"
+    assert operators_index =~ ~s(href="/operators/seo-coaches")
+
+    operator_body = get(conn, "/operators/seo-coaches").resp_body
+    assert operator_body =~ "SEO Coaches bus tickets"
+    assert operator_body =~ "seocity"
   end
 end

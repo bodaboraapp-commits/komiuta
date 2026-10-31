@@ -19,7 +19,8 @@ defmodule XpressbusWeb.SeoController do
     {"privacy", "0.3", "yearly"},
     {"faqs", "0.7", "monthly"},
     {"about", "0.6", "monthly"},
-    {"blog", "0.7", "weekly"}
+    {"blog", "0.7", "weekly"},
+    {"operators", "0.7", "weekly"}
   ]
 
   @doc "Dynamic XML sitemap for static pages plus the top bus routes."
@@ -56,7 +57,14 @@ defmodule XpressbusWeb.SeoController do
         {SEO.base_url() <> "/blog/" <> slug, "0.6", "monthly"}
       end)
 
-    urls = static_urls ++ city_urls ++ blog_urls ++ route_urls
+    operator_urls =
+      XpressbusWeb.Operators.top(20)
+      |> Enum.map(fn operator ->
+        {SEO.base_url() <> "/operators/" <> XpressbusWeb.Operators.slug(operator.name), "0.7",
+         "weekly"}
+      end)
+
+    urls = static_urls ++ city_urls ++ operator_urls ++ blog_urls ++ route_urls
 
     body = """
     <?xml version="1.0" encoding="UTF-8"?>

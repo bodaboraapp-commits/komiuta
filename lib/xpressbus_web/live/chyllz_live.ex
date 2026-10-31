@@ -49,6 +49,7 @@ defmodule XpressbusWeb.ChyllzLive do
        "Discover handpicked hotels, hidden gems, car hire and events across East Africa with Chyllz by Komiuta. Book stays and experiences alongside your bus ticket."
      )
      |> assign(:page_canonical, XpressbusWeb.Endpoint.url() <> "/tour-packages")
+     |> assign(:page_json_ld, chyllz_json_ld(:chyllz))
      |> assign(:page_title, "Chyllz · Hotels, Hidden Gems, Car Hire & Events")}
   end
 
@@ -64,6 +65,7 @@ defmodule XpressbusWeb.ChyllzLive do
       |> assign(:selected, nil)
       |> assign(:page_title, page_title_for(step))
       |> assign(:page_canonical, canonical_for(step))
+      |> assign(:page_json_ld, chyllz_json_ld(step))
       |> load_step(step, search)
 
     {:noreply, socket}
@@ -181,6 +183,17 @@ defmodule XpressbusWeb.ChyllzLive do
   defp canonical_for(:car), do: XpressbusWeb.Endpoint.url() <> "/tour-packages/car"
   defp canonical_for(:events), do: XpressbusWeb.Endpoint.url() <> "/tour-packages/events"
   defp canonical_for(_step), do: XpressbusWeb.Endpoint.url() <> "/tour-packages"
+
+  defp chyllz_json_ld(step) do
+    [
+      XpressbusWeb.SEO.organization(),
+      XpressbusWeb.SEO.breadcrumb([
+        {"Home", XpressbusWeb.SEO.base_url() <> "/"},
+        {"Chyllz", XpressbusWeb.SEO.base_url() <> "/tour-packages"},
+        {page_title_for(step), canonical_for(step)}
+      ])
+    ]
+  end
 
   defp normalize_search(nil), do: ""
 
@@ -417,7 +430,6 @@ defmodule XpressbusWeb.ChyllzLive do
             </div>
           <% else %>
             <.listing_hero step={@step} search={@search} />
-
             <div class="max-w-[1350px] mx-auto px-6 py-[58px]">
               <%= case @step do %>
                 <% :hotels -> %>
@@ -502,7 +514,6 @@ defmodule XpressbusWeb.ChyllzLive do
         class="absolute inset-0 w-full h-full object-cover opacity-95"
         aria-hidden="true"
       ></video>
-
       <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40">
       </div>
 
@@ -574,11 +585,9 @@ defmodule XpressbusWeb.ChyllzLive do
 
       <div class="max-w-[1350px] mx-auto relative z-10">
         <nav class="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.25em] text-white/50 mb-8 flex-wrap">
-          <.link navigate={~p"/"} class="hover:text-white transition">Home</.link>
-          <span>/</span>
+          <.link navigate={~p"/"} class="hover:text-white transition">Home</.link> <span>/</span>
           <.link navigate={~p"/tour-packages"} class="hover:text-white transition">Chyllz</.link>
-          <span>/</span>
-          <span class="text-[#FF4C00]">{hero_title(@step)}</span>
+          <span>/</span> <span class="text-[#FF4C00]">{hero_title(@step)}</span>
         </nav>
 
         <h1 class="text-4xl md:text-6xl font-black tracking-tighter mb-4 leading-tight">
@@ -617,6 +626,7 @@ defmodule XpressbusWeb.ChyllzLive do
                 Clear
               </button>
             <% end %>
+
             <button
               type="submit"
               class="bg-[#FF4C00] text-white px-8 py-3 rounded-full font-black hover:bg-[#E64400] transition shadow-lg shadow-orange-200"
@@ -653,8 +663,7 @@ defmodule XpressbusWeb.ChyllzLive do
           navigate={@link}
           class="text-[#FF4C00] font-black uppercase text-xs tracking-widest flex items-center gap-2 hover:underline transition-all hover:gap-3"
         >
-          {@link_label}
-          <span class="material-symbols-outlined !text-sm">arrow_forward</span>
+          {@link_label} <span class="material-symbols-outlined !text-sm">arrow_forward</span>
         </.link>
       <% end %>
     </div>
@@ -706,9 +715,9 @@ defmodule XpressbusWeb.ChyllzLive do
 
         <p class="text-sm font-bold text-slate-400 mt-1 flex items-center gap-2 flex-wrap">
           <%= if @hotel.rating do %>
-            <span class="material-symbols-outlined !text-sm text-yellow-500">star</span>
-            {rating(@hotel.rating)}
-            <span>•</span>
+            <span class="material-symbols-outlined !text-sm text-yellow-500">star</span> {rating(
+              @hotel.rating
+            )} <span>•</span>
           <% end %>
           <span>{@hotel.location}</span>
         </p>
@@ -750,6 +759,7 @@ defmodule XpressbusWeb.ChyllzLive do
         <% nil -> %>
           <div class="absolute inset-0 bg-gradient-to-br from-[#FF4C00] via-orange-600 to-slate-950">
           </div>
+
           <span
             class="material-symbols-outlined absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/20 !text-[10rem]"
             aria-hidden="true"
@@ -888,6 +898,7 @@ defmodule XpressbusWeb.ChyllzLive do
           <div id="catalogue-empty-events" class="text-center py-10">
             <span class="material-symbols-outlined text-white/20 !text-5xl mb-4">event_busy</span>
             <p class="text-slate-300 font-bold">{empty_message(:events, @search)}</p>
+
             <%= if @search != "" do %>
               <button
                 type="button"
@@ -943,12 +954,13 @@ defmodule XpressbusWeb.ChyllzLive do
 
         <div class="flex items-center gap-4 mt-2 text-slate-400 font-bold text-sm flex-wrap">
           <span class="flex items-center gap-1">
-            <span class="material-symbols-outlined !text-sm text-[#FF4C00]">location_on</span>
-            {@event.location}
+            <span class="material-symbols-outlined !text-sm text-[#FF4C00]">location_on</span> {@event.location}
           </span>
+
           <span class="flex items-center gap-1">
-            <span class="material-symbols-outlined !text-sm text-[#FF4C00]">calendar_month</span>
-            {short_date(@event.date)}
+            <span class="material-symbols-outlined !text-sm text-[#FF4C00]">calendar_month</span> {short_date(
+              @event.date
+            )}
           </span>
         </div>
 
@@ -976,6 +988,7 @@ defmodule XpressbusWeb.ChyllzLive do
     >
       <span class="material-symbols-outlined text-slate-300 !text-5xl mb-4">travel_explore</span>
       <p class="text-slate-500 font-bold">{@message}</p>
+
       <%= if @search != "" do %>
         <button
           type="button"
@@ -1019,8 +1032,9 @@ defmodule XpressbusWeb.ChyllzLive do
           </button>
 
           <div class="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-[#FF4C00] mb-4">
-            <span class="material-symbols-outlined !text-base">{item_icon(@selected.kind)}</span>
-            {item_kind_label(@selected.kind)}
+            <span class="material-symbols-outlined !text-base">{item_icon(@selected.kind)}</span> {item_kind_label(
+              @selected.kind
+            )}
           </div>
 
           <h2 id="catalogue-modal-title" class="text-3xl font-black tracking-tight pr-12">
@@ -1036,6 +1050,7 @@ defmodule XpressbusWeb.ChyllzLive do
                   <dt class="text-[10px] font-black uppercase tracking-widest text-slate-400">
                     {label}
                   </dt>
+
                   <dd class="text-sm font-black text-slate-900 mt-1">{value}</dd>
                 </div>
               <% end %>

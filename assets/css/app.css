@@ -847,3 +847,9 @@ body { font-family: "Lufga", "Trebuchet MS", "Segoe UI", sans-serif; font-weight
     display: inline;
   }
 }
+
+/* Defer below-the-fold footer link rendering work (does not affect crawlability). */
+footer nav[aria-label="Explore Komiuta"] {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 420px;
+}

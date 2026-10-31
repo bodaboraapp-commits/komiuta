@@ -24,6 +24,7 @@ import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/xpressbus"
 import topbar from "../vendor/topbar"
+import {initAnalytics} from "./analytics"
 
 document.addEventListener("click", event => {
   const control = event.target.closest("[data-carousel-prev], [data-carousel-next]")
@@ -79,6 +80,9 @@ window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
 
 // connect if there are any LiveViews on the page
 liveSocket.connect()
+
+// Campaign attribution + funnel events (UTM aware; GA4 optional).
+initAnalytics()
 
 // expose liveSocket on window for web console debug logs and latency simulation:
 // >> liveSocket.enableDebug()

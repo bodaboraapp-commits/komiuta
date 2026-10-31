@@ -1,0 +1,18 @@
+name: IndexNow
+
+on:
+  push:
+    branches: [phoenix-app]
+  workflow_dispatch:
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Wait for the Render deploy
+        run: sleep 180
+
+      - name: Submit sitemap URLs to IndexNow
+        run: python3 scripts/submit_indexnow.py

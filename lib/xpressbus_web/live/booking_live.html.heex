@@ -29,6 +29,7 @@
                   decoding="async"
                 />
               </picture>
+
               <div class="absolute inset-0 bg-black/20"></div>
             </div>
 
@@ -43,6 +44,7 @@
               </p>
             </div>
           </section>
+
           <div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/4 md:translate-y-1/2 w-full max-w-[1350px] px-6 z-50 font-sans">
             <div class="bg-white rounded-[2rem] md:rounded-full shadow-2xl shadow-slate-200/60 border border-slate-100 p-2.5 md:p-3 transition-transform hover:scale-[1.01] duration-500">
               <.form
@@ -140,6 +142,8 @@
 
                 <button
                   type="submit"
+                  data-track="search"
+                  data-track-label="landing_search"
                   class="shrink-0 w-full md:w-auto h-12 md:h-16 px-8 md:px-14 rounded-full bg-[#FF4C00] text-white font-black uppercase tracking-[0.2em] text-[10px] md:text-xs hover:bg-[#E64400] transition-all shadow-xl shadow-orange-500/20 active:scale-95 whitespace-nowrap flex items-center justify-center gap-2 md:gap-3"
                 >
                   <span>Search Bus</span>
@@ -565,6 +569,7 @@
           <%!-- Background Accent --%>
           <div class="absolute right-0 top-0 bottom-0 w-1/4 bg-black/5 hidden md:block skew-x-[-20deg] translate-x-20">
           </div>
+
           <div class="absolute left-0 top-0 bottom-0 w-1/6 bg-white/5 hidden md:block skew-x-[-20deg] -translate-x-10">
           </div>
 
@@ -574,13 +579,13 @@
               <h2 class="text-3xl md:text-4xl lg:text-6xl font-black leading-tight tracking-tighter uppercase mb-2">
                 Download the app now
               </h2>
+
               <p class="text-xl md:text-2xl font-black tracking-tight opacity-90 uppercase">
                 & get up to
                 <span class="bg-white text-[#FF4C00] px-4 py-1 rounded-full mx-1 shadow-lg inline-block align-middle">KSH 500</span>
                 OFF on your first booking
               </p>
             </div>
-
             <%!-- Middle: App Stores --%>
             <div class="flex flex-col sm:flex-row md:flex-col gap-4 shrink-0 w-full md:w-auto items-center">
               <button
@@ -617,12 +622,13 @@
                 />
               </button>
             </div>
-
             <%!-- Right: local QR that opens the installable PWA --%>
             <div class="flex items-center gap-8 pl-12 border-l border-white/10 hidden lg:flex shrink-0">
               <div class="text-right">
                 <p class="text-[10px] font-black uppercase tracking-[0.2em] mb-1">Scan to open</p>
+
                 <p class="text-xl font-black uppercase tracking-widest leading-none">The app</p>
+
                 <p class="text-[9px] font-bold uppercase tracking-[0.2em] mt-3 opacity-70 max-w-[140px]">
                   Then tap Download App to install
                 </p>
@@ -720,15 +726,18 @@
                 <p class="text-[10px] font-black text-[#FF4C00] uppercase tracking-widest mb-1">
                   Popular routes
                 </p>
+
                 <h2 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter">
                   Kenya's most-booked bus routes
                 </h2>
               </div>
+
               <a
                 href="/"
                 class="text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-[#FF4C00] transition-colors"
               >Search all routes</a>
             </div>
+
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
               <%= for {from, to} <- @popular_routes do %>
                 <a
@@ -746,8 +755,7 @@
         <%!-- Step :results (Bus Listing) --%>
         <section class="pt-4 pb-10 px-6">
           <div class="max-w-[1350px] mx-auto">
-            <.booking_progress step={@step} />
-            <%!-- Top Search Summary --%>
+            <.booking_progress step={@step} /> <%!-- Top Search Summary --%>
             <div class="bg-white rounded-2xl border border-slate-100 p-1 mb-6 flex flex-wrap items-center gap-1.5 shadow-sm">
               <div class="flex-1 flex items-center px-4 py-2 border-r border-slate-50 gap-2 min-w-[120px]">
                 <span class="material-symbols-outlined text-slate-300 !text-lg">location_on</span>
@@ -825,7 +833,6 @@
                 <span class="material-symbols-outlined !text-lg">chevron_right</span>
               </button>
             </div>
-
             <%!-- Sort chips (decision support) --%>
             <div class="flex items-center justify-start md:justify-center gap-2 mb-4 overflow-x-auto no-scrollbar">
               <span class="text-[9px] font-black uppercase tracking-widest text-slate-300 mr-1">Sort</span>
@@ -1075,6 +1082,7 @@
                                   Cheapest
                                 </span>
                               <% end %>
+
                               <%= if bus_is_fastest?(bus, @buses) do %>
                                 <span class="px-2 py-0.5 rounded-full bg-orange-50 text-[#FF4C00] border border-orange-100 text-[8px] font-black uppercase tracking-wider">
                                   Fastest
@@ -1100,6 +1108,7 @@
                               <span class="text-[10px] font-black text-slate-400 uppercase mb-1.5 whitespace-nowrap">
                                 {bus.duration}
                               </span>
+
                               <div class="w-full flex items-center gap-1.5">
                                 <div class="w-1.5 h-1.5 rounded-full bg-slate-900 shrink-0"></div>
 
@@ -1181,6 +1190,8 @@
                           <button
                             phx-click="select_bus"
                             phx-value-id={bus.id}
+                            data-track="select_bus"
+                            data-track-label={bus.company}
                             phx-disable-with="Opening..."
                             class="w-full py-2.5 rounded-xl bg-gradient-to-br from-[#d52263] via-[#ff4c00] to-[#ff4c00] text-white font-black uppercase tracking-widest text-[10px] hover:shadow-lg hover:shadow-orange-200 transition-all active:scale-[0.98]"
                           >
@@ -1255,27 +1266,38 @@
                 <div class="mb-6 flex flex-wrap gap-x-6 gap-y-4 justify-center items-center">
                   <div class="flex items-center gap-2">
                     <div class="w-5 h-5 rounded-md bg-white border-2 border-amber-400"></div>
+
                     <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">First</span>
                   </div>
+
                   <div class="flex items-center gap-2">
                     <div class="w-5 h-5 rounded-md bg-white border-2 border-orange-300"></div>
+
                     <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">VIP</span>
                   </div>
+
                   <div class="flex items-center gap-2">
                     <div class="w-5 h-5 rounded-md bg-white border-2 border-indigo-300"></div>
+
                     <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Business</span>
                   </div>
+
                   <div class="flex items-center gap-2">
                     <div class="w-5 h-5 rounded-md bg-white border-2 border-slate-100"></div>
+
                     <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Normal</span>
                   </div>
+
                   <div class="flex items-center gap-2 border-l border-slate-100 pl-6 ml-2">
                     <div class="w-5 h-5 rounded-md bg-[#FF4C00] shadow-lg shadow-orange-100">
                     </div>
+
                     <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Selected</span>
                   </div>
+
                   <div class="flex items-center gap-2">
                     <div class="w-5 h-5 rounded-md bg-slate-900"></div>
+
                     <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Taken</span>
                   </div>
                 </div>
@@ -1330,6 +1352,7 @@
                 <button
                   type="button"
                   phx-click="confirm_seats"
+                  data-track="confirm_seats"
                   disabled={Enum.empty?(@selected_seats)}
                   class={[
                     "w-full py-5 rounded-[1.8rem] font-black uppercase tracking-widest text-sm transition-all shadow-xl",
@@ -1345,6 +1368,7 @@
             </div>
           </div>
         <% end %>
+
         <%!-- SEO / AI-search route guide: server-rendered content for Google and answer engines --%>
         <section id="route-guide" class="pb-16 px-6 scroll-mt-24">
           <div class="max-w-[1350px] mx-auto">
@@ -1354,9 +1378,11 @@
                   <p class="text-[10px] font-black uppercase tracking-widest text-[#FF4C00] mb-2">
                     Route guide
                   </p>
+
                   <h2 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter mb-3">
                     {@from} to {@to} bus tickets — fares, schedule &amp; booking
                   </h2>
+
                   <p class="text-sm font-semibold text-slate-600 leading-relaxed">
                     Buses from <b>{@from}</b>
                     to <b>{@to}</b>
@@ -1366,48 +1392,89 @@
                       ", "
                     )}, pick your seat and pay with M-PESA, card or mobile money. Tickets arrive instantly by SMS and email.
                   </p>
+
                   <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mt-6">
                     <div class="rounded-xl bg-slate-50 p-4 border border-slate-100">
                       <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
                         Fares from
                       </div>
+
                       <div class="text-lg font-black text-slate-900">KES {@seo_min_price}</div>
                     </div>
+
                     <div class="rounded-xl bg-slate-50 p-4 border border-slate-100">
                       <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
                         Operators
                       </div>
+
                       <div class="text-lg font-black text-slate-900">
                         {length(@seo_operators)}
                       </div>
                     </div>
+
                     <div class="rounded-xl bg-slate-50 p-4 border border-slate-100">
                       <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
                         Payment
                       </div>
+
                       <div class="text-sm font-black text-slate-900">M-PESA · Card</div>
                     </div>
                   </div>
+
+                  <%= if @seo_city_links != [] do %>
+                    <div class="mt-4 flex flex-wrap items-center gap-2">
+                      <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">City pages</span>
+                      <%= for city_link <- @seo_city_links do %>
+                        <a
+                          href={"/cities/" <> city_link.slug}
+                          class="rounded-full border border-slate-100 bg-slate-50 px-3 py-1.5 text-[10px] font-black text-slate-700 transition-colors hover:border-[#FF4C00]/40 hover:text-[#FF4C00]"
+                        >
+                          Buses from {city_link.name}
+                        </a>
+                      <% end %>
+                    </div>
+                  <% end %>
+
+                  <%= if @seo_operator_links != [] do %>
+                    <h3 class="text-lg font-black text-slate-900 tracking-tight mt-6 mb-2">
+                      Bus operators on this route
+                    </h3>
+
+                    <div class="flex flex-wrap gap-2">
+                      <%= for operator <- @seo_operator_links do %>
+                        <a
+                          href={"/operators/" <> operator.slug}
+                          class="rounded-full border border-slate-100 bg-slate-50 px-3 py-1.5 text-[10px] font-black text-slate-700 transition-colors hover:border-[#FF4C00]/40 hover:text-[#FF4C00]"
+                        >
+                          {operator.name} bus tickets
+                        </a>
+                      <% end %>
+                    </div>
+                  <% end %>
+
                   <h3 class="text-lg font-black text-slate-900 tracking-tight mt-8 mb-2">
                     Frequently asked questions
                   </h3>
+
                   <%= for faq <- @seo_faqs do %>
                     <details class="group border-b border-slate-100 py-3">
                       <summary class="flex cursor-pointer items-center justify-between gap-3 text-xs font-black text-slate-900">
-                        {faq.question}
-                        <span class="text-[#FF4C00]">+</span>
+                        {faq.question} <span class="text-[#FF4C00]">+</span>
                       </summary>
+
                       <p class="mt-2 text-xs font-semibold text-slate-500 leading-relaxed">
                         {faq.answer}
                       </p>
                     </details>
                   <% end %>
                 </div>
+
                 <aside class="space-y-4">
                   <div class="rounded-2xl bg-slate-50 border border-slate-100 p-5">
                     <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">
                       Popular routes
                     </h3>
+
                     <div class="grid grid-cols-1 gap-1.5">
                       <%= for {from, to} <- @popular_routes do %>
                         <a
@@ -1420,14 +1487,19 @@
                       <% end %>
                     </div>
                   </div>
+
                   <div class="rounded-2xl bg-orange-50/60 border border-orange-100 p-5">
                     <h3 class="text-[10px] font-black uppercase tracking-widest text-orange-500 mb-2">
                       Book with confidence
                     </h3>
+
                     <ul class="space-y-1.5 text-[11px] font-bold text-slate-600">
                       <li>Secure M-PESA &amp; card payment</li>
+
                       <li>Live seat availability</li>
+
                       <li>Free cancellation on eligible tickets</li>
+
                       <li>Instant SMS + email ticket</li>
                     </ul>
                   </div>
@@ -1446,8 +1518,7 @@
             <span class="text-slate-900 font-black">Passenger Details</span>
             <span class="text-slate-300">›</span> <span>Payment</span>
           </nav>
-          <.booking_progress step={@step} />
-          <%!-- Dynamic Page Title --%>
+          <.booking_progress step={@step} /> <%!-- Dynamic Page Title --%>
           <h1 class="text-2xl md:text-4xl font-black text-slate-900 mb-4 tracking-tighter">
             {@from} <span class="text-[#FF4C00] opacity-50">→</span> {@to}
             <%= if @return_date && !String.match?(@return_date, ~r/^null$/) do %>
@@ -1531,6 +1602,7 @@
                           <summary class="cursor-pointer text-[10px] font-black text-slate-500 uppercase tracking-widest">
                             + Add ID / nationality (optional)
                           </summary>
+
                           <div class="grid grid-cols-2 gap-x-4 gap-y-3 mt-3">
                             <div class="space-y-1.5">
                               <label class="text-xs font-black text-slate-900">ID number or Passport</label>
@@ -1690,6 +1762,7 @@
 
                       <button
                         type="submit"
+                        data-track="begin_checkout"
                         phx-disable-with="PROCESSING..."
                         class={[
                           "w-full py-5 rounded-[1.5rem] font-black uppercase tracking-widest text-[11px] transition-all shadow-xl",
@@ -1708,7 +1781,6 @@
               </aside>
             </div>
           </.form>
-
           <%!-- Sticky mobile checkout CTA --%>
           <div
             id="sticky-details-cta"
@@ -1719,10 +1791,12 @@
               <button
                 type="submit"
                 form="passenger-form"
+                data-track="begin_checkout"
                 class="w-full bg-[#FF4C00] text-white py-4 rounded-xl font-black uppercase tracking-widest text-[11px] shadow-lg shadow-orange-200 active:scale-[0.99] transition-all"
               >
                 Continue to payment · KSH {@final_price}
               </button>
+
               <p class="text-center text-[8px] font-bold text-slate-400 mt-1.5">
                 No payment yet · seats held while you finish
               </p>
@@ -1733,7 +1807,6 @@
         <%!-- Step :review_and_pay --%>
         <section class="pt-4 pb-32 md:pb-24 px-6 max-w-[1350px] mx-auto">
           <.booking_progress step={@step} />
-
           <div class="flex flex-col lg:flex-row gap-6 items-start">
             <div class="flex-1 space-y-8 min-w-0">
               <h2 class="text-2xl md:text-3xl font-black text-slate-900 uppercase tracking-tighter mb-4">
@@ -1836,8 +1909,7 @@
 
                         <div class="text-sm font-black text-slate-900">
                           <% firstname =
-                            Map.get(passenger, "firstname") || Map.get(passenger, :firstname) %>
-                          <% lastname =
+                            Map.get(passenger, "firstname") || Map.get(passenger, :firstname) %> <% lastname =
                             Map.get(passenger, "lastname") || Map.get(passenger, :lastname) %>
                           <%= if firstname && firstname != "" do %>
                             {firstname} {lastname}
@@ -1856,7 +1928,6 @@
                 </div>
               </div>
             </div>
-
             <%!-- Sidebar Payment Summary --%>
             <aside class="w-full lg:w-[400px] lg:shrink-0 sticky top-24 space-y-4">
               <%!-- Payment Method Selection --%>
@@ -1978,11 +2049,13 @@
                     <div class="text-4xl font-black text-[#FF4C00] tracking-tighter leading-none">
                       KSH {@final_price}
                     </div>
+
                     <%= if @discount_amount > 0 do %>
                       <div class="mt-1 flex items-center justify-end gap-2">
                         <span class="text-[10px] font-bold text-slate-400 line-through">
                           KSH {@total_price}
                         </span>
+
                         <span class="text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
                           You save KSH {@discount_amount}
                         </span>
@@ -2004,6 +2077,7 @@
                 <button
                   type="button"
                   phx-click="pay"
+                  data-track="begin_payment"
                   disabled={@loading}
                   phx-disable-with="PROCESSING..."
                   class={[
@@ -2029,10 +2103,12 @@
                     <span class="material-symbols-outlined !text-sm text-emerald-500">lock</span>
                     Secure payment
                   </span>
+
                   <span class="inline-flex items-center gap-1">
                     <span class="material-symbols-outlined !text-sm text-emerald-500">verified_user</span>
                     M-PESA verified
                   </span>
+
                   <span class="inline-flex items-center gap-1">
                     <span class="material-symbols-outlined !text-sm text-emerald-500">event_available</span>
                     Free cancellation up to 2h before
@@ -2112,7 +2188,6 @@
               </div>
             </aside>
           </div>
-
           <%!-- Sticky mobile pay CTA (outside the sidebar so it never fights the footer) --%>
           <div
             id="sticky-pay-cta"
@@ -2122,6 +2197,7 @@
             <button
               type="button"
               phx-click="pay"
+              data-track="begin_payment"
               disabled={@loading}
               class="w-full bg-[#FF4C00] text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-2xl shadow-orange-500/30 active:scale-[0.99] transition-all disabled:opacity-60"
             >
@@ -2165,6 +2241,7 @@
 
                   <div class="text-lg font-black text-slate-900">{@ticket_id || "TKT-B82X9"}</div>
                 </div>
+
                 <img
                   src="/images/logo_brand.png"
                   alt="Komiuta"

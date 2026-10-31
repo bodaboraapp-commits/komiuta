@@ -14,6 +14,7 @@ defmodule XpressbusWeb.CityLive do
   alias Xpressbus.Bookings.Bus
   alias Xpressbus.Repo
   alias XpressbusWeb.Cities
+  alias XpressbusWeb.Operators
   alias XpressbusWeb.SEO
 
   @impl true
@@ -25,6 +26,7 @@ defmodule XpressbusWeb.CityLive do
      |> assign(:current_user, session["user_id"])
      |> assign(:city, nil)
      |> assign(:routes, [])
+     |> assign(:operators, [])
      |> assign(:faqs, [])
      |> assign(:page_title, "Bus tickets in Kenya")
      |> assign(
@@ -46,12 +48,20 @@ defmodule XpressbusWeb.CityLive do
         routes = routes_from_city(city.name)
         faqs = city_faqs(city.name)
 
+        operators =
+          routes
+          |> Enum.flat_map(& &1.operators)
+          |> Enum.uniq()
+          |> Enum.map(fn name -> %{name: name, slug: Operators.slug(name)} end)
+          |> Enum.take(6)
+
         {:noreply,
          socket
          |> assign(:city, city)
          |> assign(:routes, routes)
+         |> assign(:operators, operators)
          |> assign(:faqs, faqs)
-         |> assign(:page_title, "Buses from #{city.name} — Bus Tickets, Fares & Booking")
+         |> assign(:page_title, "Buses from #{city.name} - Bus Tickets, Fares & Booking")
          |> assign(
            :page_description,
            "Book bus tickets from #{city.name}, Kenya. Compare live fares, operators and departure times from #{city.name} with M-PESA payment and instant SMS tickets."

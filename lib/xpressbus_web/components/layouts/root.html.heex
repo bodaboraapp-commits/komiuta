@@ -11,14 +11,19 @@
         assigns[:page_description] ||
           "Book intercity bus tickets across Kenya, Uganda and Tanzania with Komiuta. Compare fares, pick your seat and pay with M-PESA, card or mobile money."
       }
-    />
-    <meta name="robots" content={assigns[:page_robots] || "index,follow"} />
+    /> <meta name="robots" content={assigns[:page_robots] || "index,follow"} />
     <%= if System.get_env("GOOGLE_SITE_VERIFICATION") do %>
       <meta name="google-site-verification" content={System.get_env("GOOGLE_SITE_VERIFICATION")} />
     <% end %>
+
+    <%= if System.get_env("GA_MEASUREMENT_ID") do %>
+      <meta name="ga-measurement-id" content={System.get_env("GA_MEASUREMENT_ID")} />
+    <% end %>
+
     <%= if System.get_env("BING_SITE_VERIFICATION") do %>
       <meta name="msvalidate.01" content={System.get_env("BING_SITE_VERIFICATION")} />
     <% end %>
+
     <%= if assigns[:page_canonical] do %>
       <link rel="canonical" href={assigns[:page_canonical]} />
     <% end %>
@@ -27,6 +32,7 @@
     <%= if assigns[:page_canonical] do %>
       <meta property="og:url" content={assigns[:page_canonical]} />
     <% end %>
+
     <meta
       property="og:title"
       content={assigns[:page_title] || "Komiuta — Bus Tickets, Chyllz & Travel"}
@@ -43,8 +49,7 @@
       content={
         assigns[:page_og_image] || XpressbusWeb.Endpoint.url() <> "/images/hero_bg-1024.avif"
       }
-    />
-    <meta name="twitter:card" content="summary_large_image" />
+    /> <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:title"
       content={assigns[:page_title] || "Komiuta — Bus Tickets, Chyllz & Travel"}
@@ -82,7 +87,6 @@
       crossorigin
       href="/fonts/material-symbols-subset.woff2"
     />
-
     <%= if assigns[:step] in [
       :search,
       :results,
@@ -99,6 +103,7 @@
         fetchpriority="high"
       />
     <% end %>
+
     <%= if assigns[:step] in [:chyllz, :hotels, :gems, :car, :events] do %>
       <%!-- Chyllz hub pages show the video poster, not the hero <picture>. --%>
       <link
@@ -109,12 +114,14 @@
         fetchpriority="high"
       />
     <% end %>
+
     <style>
       html { visibility: visible; opacity: 1; }
       [data-phx-session][data-phx-waiting-for-live-view] .phx-loading { opacity: 1; }
       .phx-loading { opacity: 0; transition: opacity .15s ease-out; }
       .phx-connected { opacity: 1; transition: opacity .2s ease-in; }
     </style>
+
     <script>
       (() => {
         const theme = localStorage.getItem("phx:theme") || "system"
@@ -132,10 +139,12 @@
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>
+
     <script>
       document.addEventListener("phx:disconnected", () => document.body.classList.add("phx-reconnecting"))
       document.addEventListener("phx:connected", () => document.body.classList.remove("phx-reconnecting"))
     </script>
+
     <script>
       (() => {
         const systemTheme = () => matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
@@ -165,6 +174,7 @@
       })();
     </script>
   </head>
+
   <body>
     {@inner_content}
   </body>

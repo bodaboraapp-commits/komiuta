@@ -11,6 +11,7 @@ defmodule XpressbusWeb.BookingLive do
   alias Xpressbus.Integrations
   alias Xpressbus.Payments
   alias Xpressbus.TicketAccess
+  alias XpressbusWeb.Operators
   alias XpressbusWeb.SEO
   import Ecto.Query
   require Logger
@@ -1147,6 +1148,13 @@ defmodule XpressbusWeb.BookingLive do
       |> assign(:page_robots, "index,follow")
       |> assign(:seo_min_price, seo_min_price(buses_from_db))
       |> assign(:seo_operators, seo_operator_names(buses_from_db))
+      |> assign(
+        :seo_operator_links,
+        Enum.map(seo_operator_names(buses_from_db), fn name ->
+          %{name: name, slug: Operators.slug(name)}
+        end)
+      )
+      |> assign(:seo_city_links, seo_city_links(from, to))
       |> assign(:seo_faqs, SEO.route_faqs(from, to, seo_min_price(buses_from_db)))
       |> assign(
         :page_json_ld,
@@ -1607,6 +1615,17 @@ defmodule XpressbusWeb.BookingLive do
     |> Enum.reject(&is_nil/1)
     |> Enum.uniq()
     |> Enum.take(4)
+  end
+
+  defp seo_city_links(from, to) do
+    [from, to]
+    |> Enum.uniq()
+    |> Enum.flat_map(fn name ->
+      case XpressbusWeb.Cities.get(String.downcase(name)) do
+        nil -> []
+        city -> [%{name: city.name, slug: String.downcase(city.name)}]
+      end
+    end)
   end
 
   defp seo_route_description(from, to, buses) do

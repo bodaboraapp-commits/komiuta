@@ -40,6 +40,8 @@ defmodule XpressbusWeb.Router do
     live "/tour-packages/events", ChyllzLive, :events
     live "/buses/*route", BookingLive, :results
     live "/cities/:slug", CityLive, :show
+    live "/operators", OperatorLive, :index
+    live "/operators/:slug", OperatorLive, :show
     live "/faqs", FaqLive, :index
     live "/about", AboutLive, :index
     live "/blog", BlogLive, :index

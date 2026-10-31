@@ -175,6 +175,25 @@
                 </div>
               </div>
 
+              <%= if @operators != [] do %>
+                <div class="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+                  <h2 class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">
+                    Bus operators here
+                  </h2>
+                  <div class="grid grid-cols-1 gap-1.5">
+                    <%= for operator <- @operators do %>
+                      <a
+                        href={"/operators/" <> operator.slug}
+                        class="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-[11px] font-black text-slate-700 hover:bg-slate-50 hover:text-[#FF4C00] transition-colors"
+                      >
+                        <span>{operator.name}</span>
+                        <span class="material-symbols-outlined !text-sm text-slate-300">arrow_forward</span>
+                      </a>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+
               <a
                 href="/"
                 class="block rounded-2xl bg-[#FF4C00] p-5 text-center text-[11px] font-black uppercase tracking-widest text-white shadow-lg shadow-orange-200 hover:bg-[#E64400] transition-colors"
