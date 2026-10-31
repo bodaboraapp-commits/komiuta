@@ -1313,7 +1313,7 @@
         <% end %>
       <% @step == :passenger_info -> %>
         <%!-- Step :passenger_info (Industrial Reference Match) --%>
-        <section class="pt-10 pb-24 px-6 max-w-[1350px] mx-auto font-sans">
+        <section class="pt-10 pb-36 md:pb-24 px-6 max-w-[1350px] mx-auto font-sans">
           <%!-- Industrial Breadcrumbs --%>
           <nav class="flex items-center gap-2 mb-8 text-[11px] font-bold text-slate-400">
             <span>Home</span> <span class="text-slate-300">›</span> <span>Booking</span>
@@ -1359,7 +1359,7 @@
 
                   <div class="space-y-12 mt-8">
                     <.inputs_for :let={p} field={@passenger_form[:passengers]}>
-                      <% seat_id = p.index %> <% display_index =
+                      <% seat_id = Enum.at(@selected_seats, p.index) || p.index + 1 %> <% display_index =
                         Enum.find_index(@selected_seats, &(&1 == to_string(seat_id)))
                         |> then(&((&1 || 0) + 1)) %>
                       <div class="space-y-6">
@@ -1595,7 +1595,7 @@
         </section>
       <% @step == :review_and_pay -> %>
         <%!-- Step :review_and_pay --%>
-        <section class="pt-10 pb-24 px-6 max-w-[1350px] mx-auto">
+        <section class="pt-10 pb-40 md:pb-24 px-6 max-w-[1350px] mx-auto">
           <.booking_progress step={@step} />
 
           <div class="flex flex-col lg:flex-row gap-12 items-start">
@@ -1909,7 +1909,7 @@
               </div>
 
               <%!-- Sticky mobile pay CTA --%>
-              <div class="fixed bottom-4 left-4 right-4 z-40 lg:hidden">
+              <div class="fixed bottom-4 left-4 right-4 z-[70] lg:hidden">
                 <button
                   type="button"
                   phx-click="pay"
