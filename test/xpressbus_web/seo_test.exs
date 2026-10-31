@@ -87,4 +87,34 @@ defmodule XpressbusWeb.SeoTest do
 
     assert body =~ "name=\"robots\" content=\"noindex,follow\""
   end
+
+  test "footer exposes crawlable route, city and help links", %{conn: conn} do
+    body = get(conn, "/").resp_body
+
+    assert body =~ "href=\"/buses/Nairobi-to-Kisumu\""
+    assert body =~ "href=\"/cities/nairobi\""
+    assert body =~ "href=\"/faqs\""
+    assert body =~ "Popular bus routes"
+    assert body =~ "Popular cities"
+    assert body =~ "Help &amp; company"
+  end
+
+  test "FAQs page has FAQPage schema and canonical metadata", %{conn: conn} do
+    body = get(conn, "/faqs").resp_body
+
+    assert body =~ "Bus booking FAQs"
+    assert body =~ "rel=\"canonical\" href=\"https://www.komiuta.com/faqs\""
+    assert body =~ "\"@type\":\"FAQPage\""
+    assert body =~ "How do I book a bus ticket on Komiuta?"
+  end
+
+  test "city landing page has routes, ItemList and FAQ schema", %{conn: conn} do
+    body = get(conn, "/cities/nairobi").resp_body
+
+    assert body =~ "Buses from Nairobi"
+    assert body =~ "rel=\"canonical\" href=\"https://www.komiuta.com/cities/nairobi\""
+    assert body =~ "\"@type\":\"ItemList\""
+    assert body =~ "\"@type\":\"FAQPage\""
+    assert body =~ "Popular routes from Nairobi"
+  end
 end

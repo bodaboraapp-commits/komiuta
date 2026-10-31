@@ -1,0 +1,101 @@
+<Layouts.app flash={@flash}>
+  <div class="min-h-screen bg-slate-50 text-slate-900">
+    <.main_header step={@step} current_user={@current_user} />
+
+    <main class="pt-[72px] md:pt-[80px]">
+      <section class="bg-slate-950 text-white pt-12 pb-14 px-6">
+        <div class="max-w-[1100px] mx-auto">
+          <nav
+            class="mb-5 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500"
+            aria-label="Breadcrumb"
+          >
+            <a href="/" class="hover:text-white transition-colors">Home</a>
+            <span>/</span>
+            <span class="text-slate-300">FAQs</span>
+          </nav>
+          <p class="mb-3 text-[10px] font-black uppercase tracking-[0.4em] text-[#FF4C00]">
+            Help centre
+          </p>
+          <h1 class="text-4xl md:text-6xl font-black tracking-tighter leading-none mb-4">
+            Bus booking FAQs
+          </h1>
+          <p class="max-w-2xl text-sm md:text-base font-bold leading-relaxed text-slate-400">
+            Straight answers about booking, fares, M-PESA payment, seats, ticket delivery and cancellations. Can't find your answer? Email <a
+              href="mailto:hello@komiuta.com"
+              class="text-[#FF4C00] hover:underline"
+            >hello@komiuta.com</a>.
+          </p>
+        </div>
+      </section>
+
+      <section class="px-6 py-10 md:py-14">
+        <div class="max-w-[1100px] mx-auto grid gap-8 lg:grid-cols-[1fr_320px] items-start">
+          <div class="rounded-[2rem] border border-slate-100 bg-white p-6 md:p-9 shadow-sm">
+            <h2 class="text-xl md:text-2xl font-black tracking-tight mb-2">Common questions</h2>
+            <p class="text-[11px] font-bold text-slate-400 mb-5">
+              Updated {Calendar.strftime(Date.utc_today(), "%B %d, %Y")}
+            </p>
+
+            <div class="divide-y divide-slate-100">
+              <%= for faq <- @faqs do %>
+                <details class="group py-4">
+                  <summary class="flex cursor-pointer items-center justify-between gap-3 text-sm font-black text-slate-900">
+                    {faq.question}
+                    <span class="text-[#FF4C00] text-lg leading-none transition-transform group-open:rotate-45">+</span>
+                  </summary>
+                  <p class="mt-2 text-xs font-semibold leading-relaxed text-slate-500">
+                    {faq.answer}
+                  </p>
+                </details>
+              <% end %>
+            </div>
+          </div>
+
+          <aside class="space-y-4">
+            <div class="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+              <h2 class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">
+                Popular routes
+              </h2>
+              <div class="grid grid-cols-1 gap-1.5">
+                <%= for {from, to} <- [{"Nairobi", "Kisumu"}, {"Nairobi", "Mombasa"}, {"Mombasa", "Nairobi"}, {"Nairobi", "Eldoret"}, {"Nairobi", "Nakuru"}, {"Kisumu", "Nairobi"}] do %>
+                  <a
+                    href={XpressbusWeb.SEO.route_path(from, to)}
+                    class="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-[11px] font-black text-slate-700 hover:bg-slate-50 hover:text-[#FF4C00] transition-colors"
+                  >
+                    <span>{from} → {to}</span>
+                    <span class="material-symbols-outlined !text-sm text-slate-300">arrow_forward</span>
+                  </a>
+                <% end %>
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-orange-100 bg-orange-50/60 p-5">
+              <h2 class="text-[10px] font-black uppercase tracking-widest text-orange-500 mb-2">
+                Still stuck?
+              </h2>
+              <p class="text-[11px] font-bold leading-relaxed text-slate-600 mb-3">
+                Our support team is available 8:00 AM – 10:00 PM daily.
+              </p>
+              <a
+                href="mailto:hello@komiuta.com"
+                class="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#FF4C00] hover:underline"
+              >
+                Email support
+                <span class="material-symbols-outlined !text-sm">arrow_forward</span>
+              </a>
+            </div>
+
+            <a
+              href="/"
+              class="block rounded-2xl bg-[#FF4C00] p-5 text-center text-[11px] font-black uppercase tracking-widest text-white shadow-lg shadow-orange-200 hover:bg-[#E64400] transition-colors"
+            >
+              Search buses
+            </a>
+          </aside>
+        </div>
+      </section>
+
+      <.main_footer footer_tab={@footer_tab} />
+    </main>
+  </div>
+</Layouts.app>

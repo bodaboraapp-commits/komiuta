@@ -333,7 +333,33 @@ defmodule XpressbusWeb.BrandComponents do
     """
   end
 
+  @footer_routes [
+    {"Nairobi", "Kisumu"},
+    {"Nairobi", "Mombasa"},
+    {"Mombasa", "Nairobi"},
+    {"Nairobi", "Eldoret"},
+    {"Eldoret", "Nairobi"},
+    {"Nairobi", "Nakuru"},
+    {"Kisumu", "Nairobi"},
+    {"Nairobi", "Kericho"}
+  ]
+
+  @footer_cities [
+    {"nairobi", "Nairobi"},
+    {"mombasa", "Mombasa"},
+    {"kisumu", "Kisumu"},
+    {"eldoret", "Eldoret"},
+    {"nakuru", "Nakuru"},
+    {"kericho", "Kericho"}
+  ]
+
   def main_footer(assigns) do
+    assigns =
+      Phoenix.Component.assign(assigns,
+        footer_routes: @footer_routes,
+        footer_cities: @footer_cities
+      )
+
     ~H"""
     <footer class="mx-auto mt-12 max-w-[1350px] pb-16 px-6 font-sans font-bold">
       <div class="flex justify-center mb-16">
@@ -347,6 +373,87 @@ defmodule XpressbusWeb.BrandComponents do
           class="h-12 w-auto opacity-90"
         />
       </div>
+
+      <%= unless assigns[:step] in [:passenger_info, :review_and_pay, :ticket] do %>
+        <nav
+          class="mb-10 grid grid-cols-2 md:grid-cols-3 gap-8 rounded-[2rem] border border-slate-100 bg-white p-6 md:p-8"
+          aria-label="Explore Komiuta"
+        >
+          <div>
+            <h2 class="mb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">
+              Popular bus routes
+            </h2>
+            <ul class="space-y-2">
+              <%= for {from, to} <- @footer_routes do %>
+                <li>
+                  <a
+                    href={XpressbusWeb.SEO.route_path(from, to)}
+                    class="whitespace-nowrap text-[11px] font-bold text-slate-600 hover:text-[#FF4C00] transition-colors"
+                  >
+                    {from} to {to} bus tickets
+                  </a>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+
+          <div>
+            <h2 class="mb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">
+              Popular cities
+            </h2>
+            <ul class="space-y-2">
+              <%= for {slug, name} <- @footer_cities do %>
+                <li>
+                  <a
+                    href={"/cities/" <> slug}
+                    class="whitespace-nowrap text-[11px] font-bold text-slate-600 hover:text-[#FF4C00] transition-colors"
+                  >
+                    Buses from {name}
+                  </a>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+
+          <div class="col-span-2 md:col-span-1">
+            <h2 class="mb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">
+              Help &amp; company
+            </h2>
+            <ul class="grid grid-cols-2 md:grid-cols-1 gap-2">
+              <li>
+                <a
+                  href="/tickets"
+                  class="whitespace-nowrap text-[11px] font-bold text-slate-600 hover:text-[#FF4C00] transition-colors"
+                >Track ticket</a>
+              </li>
+              <li>
+                <a
+                  href="/faqs"
+                  class="whitespace-nowrap text-[11px] font-bold text-slate-600 hover:text-[#FF4C00] transition-colors"
+                >FAQs</a>
+              </li>
+              <li>
+                <a
+                  href="/tour-packages"
+                  class="whitespace-nowrap text-[11px] font-bold text-slate-600 hover:text-[#FF4C00] transition-colors"
+                >Chyllz packages</a>
+              </li>
+              <li>
+                <a
+                  href="/tour-packages/insurance"
+                  class="whitespace-nowrap text-[11px] font-bold text-slate-600 hover:text-[#FF4C00] transition-colors"
+                >Travel insurance</a>
+              </li>
+              <li>
+                <a
+                  href="mailto:hello@komiuta.com"
+                  class="whitespace-nowrap text-[11px] font-bold text-slate-600 hover:text-[#FF4C00] transition-colors"
+                >Contact support</a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+      <% end %>
 
       <div class="mb-20 bg-slate-50/50 rounded-[3rem] p-8 md:p-12 border border-slate-100">
         <div class="flex flex-wrap justify-center gap-4 md:gap-10 mb-12 border-b border-slate-200 pb-6">
@@ -394,28 +501,6 @@ defmodule XpressbusWeb.BrandComponents do
               @footer_tab != "carbon" && "text-slate-400 hover:text-slate-600"
             ]}
           >Carbon-neutral ride</button>
-          <button
-            type="button"
-            aria-pressed={@footer_tab == "routes"}
-            phx-click="change_footer_tab"
-            phx-value-tab="routes"
-            class={[
-              "text-xs font-black uppercase tracking-widest pb-2 transition-all",
-              @footer_tab == "routes" && "text-[#FF4C00] border-b-2 border-[#FF4C00]",
-              @footer_tab != "routes" && "text-slate-400 hover:text-slate-600"
-            ]}
-          >Top routes</button>
-          <button
-            type="button"
-            aria-pressed={@footer_tab == "destinations"}
-            phx-click="change_footer_tab"
-            phx-value-tab="destinations"
-            class={[
-              "text-xs font-black uppercase tracking-widest pb-2 transition-all",
-              @footer_tab == "destinations" && "text-[#FF4C00] border-b-2 border-[#FF4C00]",
-              @footer_tab != "destinations" && "text-slate-400 hover:text-slate-600"
-            ]}
-          >Popular destinations</button>
         </div>
 
         <div class="max-w-5xl mx-auto text-center animate-fade-in">
@@ -469,18 +554,6 @@ defmodule XpressbusWeb.BrandComponents do
                 <strong class="font-black text-slate-900">EV (Electric Vehicle) fleet</strong>
                 by 2025. By choosing Komiuta, you're supporting optimized route planning that reduces fuel waste and helps preserve the beautiful landscapes of our region for future generations.
               </p>
-            <% "routes" -> %>
-              <div class="flex flex-wrap justify-center gap-3">
-                <%= for r <- ["Nairobi to Mombasa", "Mombasa to Nairobi", "Nairobi to Kisumu", "Eldoret to Nairobi", "Nakuru to Nairobi", "Thika to Garissa"] do %>
-                  <span class="px-4 py-2 bg-white border border-slate-100 rounded-full text-[10px] font-black uppercase text-slate-600 shadow-sm">#{r}</span>
-                <% end %>
-              </div>
-            <% "destinations" -> %>
-              <div class="flex flex-wrap justify-center gap-3">
-                <%= for d <- ["Nairobi", "Mombasa", "Kisumu", "Eldoret", "Nakuru", "Malindi", "Ukunda", "Diani", "Kampala", "Arusha"] do %>
-                  <span class="px-4 py-2 bg-white border border-slate-100 rounded-full text-[10px] font-black uppercase text-slate-900 shadow-sm">#{d}</span>
-                <% end %>
-              </div>
           <% end %>
 
           <a
@@ -493,15 +566,40 @@ defmodule XpressbusWeb.BrandComponents do
         </div>
       </div>
 
-      <div class="flex flex-col md:flex-row justify-center items-center gap-10 md:gap-20 text-slate-500 font-bold">
+      <div class="flex flex-col md:flex-row justify-center items-center gap-10 md:gap-12 text-slate-500 font-bold">
         <a
-          href="mailto:hello@komiuta.com"
+          href={Xpressbus.Brand.website()}
+          target="_blank"
+          rel="noopener noreferrer"
           class="hover:text-[#FF4C00] transition flex items-center gap-3"
-        ><span class="material-symbols-outlined !text-[#FF4C00]">mail</span> hello@komiuta.com</a>
-        <a href="tel:0800211211" class="hover:text-[#FF4C00] transition flex items-center gap-3"><span class="material-symbols-outlined !text-[#FF4C00]">call</span>
-        0800 211 211</a>
+        ><span class="material-symbols-outlined !text-[#FF4C00]">language</span>
+        {Xpressbus.Brand.website_label()}</a>
+        <a
+          href={"mailto:" <> Xpressbus.Brand.email()}
+          class="hover:text-[#FF4C00] transition flex items-center gap-3"
+        ><span class="material-symbols-outlined !text-[#FF4C00]">mail</span>
+        {Xpressbus.Brand.email()}</a>
+        <a
+          href={Xpressbus.Brand.phone_uri()}
+          class="hover:text-[#FF4C00] transition flex items-center gap-3"
+        ><span class="material-symbols-outlined !text-[#FF4C00]">call</span>
+        {Xpressbus.Brand.phone()}</a>
         <span class="flex items-center gap-3"><span class="material-symbols-outlined !text-[#FF4C00]">location_on</span>
         Kenya</span>
+      </div>
+
+      <div class="mt-8 flex flex-wrap justify-center items-center gap-x-6 gap-y-3 text-[10px] font-black uppercase tracking-widest text-slate-400">
+        <span class="text-slate-300">Follow us</span>
+        <%= for link <- Xpressbus.Brand.social_links() do %>
+          <a
+            href={link.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hover:text-[#FF4C00] transition"
+          >
+            {link.name}
+          </a>
+        <% end %>
       </div>
 
       <div class="mt-10 flex flex-wrap justify-center gap-6 text-[10px] font-black uppercase tracking-widest text-slate-400">
