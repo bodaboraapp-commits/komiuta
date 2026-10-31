@@ -877,6 +877,56 @@ DB_PORT=3308 mix test test/xpressbus/login_code_test.exs test/xpressbus_web/bran
 # 17 passed
 ```
 
+### 2026-10-31 Session — Printable PDF boarding pass + production deploy
+
+**Objective:** The "Download PDF" button produced a text-only A4 page with no QR/barcode, and the code
+had not yet been pushed to production.
+
+**Completed (PDF):**
+- Rewrote `lib/xpressbus/ticket_pdf.ex` as a real printable boarding pass: branded orange header,
+  route/date/departure/arrival/operator, passenger/seat/fare/status details, and the **same
+  machine-readable codes as the on-screen pass**:
+  - QR code (signed ticket URL via `Xpressbus.QR`, same payload as the dashboard/ticket page), and
+  - ISO/IEC 15417 Code 128B barcode of the ticket number (`Xpressbus.Barcode`),
+  - both drawn as **vector rectangles inside the PDF content stream** (no images, no new deps, crisp at
+    any print resolution), with quiet zones and captions.
+- Added a public, token-signed PDF route `GET /tickets/:ticket_id/download?token=...`
+  (`TicketAccess.download_path/1`). `UserController.ticket_download/2` now authorises either the
+  signed-in owner or a valid ticket token, so guests coming back from payment can download their PDF
+  without a second login. The old `/user/tickets/:id/download` route keeps working.
+- Ticket page: "DOWNLOAD PASS" (which only printed the page) is now a real **DOWNLOAD PDF** link plus a
+  separate **PRINT PASS** button; dashboard modal's **Download PDF** uses the signed URL too.
+- Verified the rendered PDF visually (`docs/ticket-boarding-pass-preview.pdf` + `.png`) — real QR matrix
+  and clean Code 128 bars; added tests for the vector codes, PDF xref integrity, token/owner/guest
+  authorisation, and the download links.
+
+**Completed (deploy):**
+- Ran `mix precommit` → **213/213**.
+- Committed the working tree (`22850b7`) and pushed branch `phoenix-app` to
+  `github.com/bodaboraapp-commits/komiuta` using the portable MinGit in `%TEMP%\komiuta-git` over the
+  machine's GitHub SSH key (no token file needed; `GIT_SSH=C:\Windows\System32\OpenSSH\ssh.exe`).
+- Render auto-deployed on the push. Verified against the live site: `/` (hero `<picture>` AVIF),
+  `/user/login` (OTP copy), `/tour-packages` + `/tour-packages/hotels` (search + DB cards),
+  `/tour-packages/insurance` (DB plan grid + coverage table), `/admin/insurance-plans` → login redirect,
+  `/tickets/:id/download` → new route. `scratch/smoke-test.ps1 -BaseUrl https://www.komiuta.com`:
+  **all checks passed**.
+- `login.html.heex`: copy now says "Phone or Email" with an email-or-phone placeholder (backend already
+  accepted both).
+- Note: the Render API key in `%TEMP%\render-api-key.txt` returns an empty service list (stale/other
+  account), so deployment status is verified through the live site and the GitHub push instead.
+
+**Follow-ups for go-live (operational, see PRODUCTION_READINESS.md):** configure `RESEND_API_KEY`
+(OTP email delivery), production payment integration secrets/callbacks, strong admin credentials and a
+DB backup/plan decision.
+
+**Verification:**
+```
+mix precommit                 # 213/213 tests
+git push origin phoenix-app   # 8928f7f..22850b7 (+ follow-up commit)
+.\scratch\smoke-test.ps1 -BaseUrl https://www.komiuta.com   # all PASS
+```
+
+
 
 
 

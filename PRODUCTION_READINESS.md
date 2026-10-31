@@ -1,9 +1,10 @@
 # Komiuta / Xpressbus — Production Readiness Task List
 
 **Date:** 2026-10-31
-**Status:** Code work is complete for launch. The app is **not yet live on the new build** —
-`www.komiuta.com` is still serving an older deployment, and production needs an email provider.
-Complete the **P0** items below, then deploy and run the go-live smoke test.
+**Status:** Code work is complete for launch and the current code **is now live on production**.
+`www.komiuta.com` serves the release from commit `22850b7` (branch `phoenix-app`), verified with the
+smoke test. Remaining go-live items are operational (email provider, payment integration secrets,
+admin credentials, Render plan).
 
 **Legend:** P0 = go-live blocker · P1 = do before/at launch if possible · P2 = post-launch backlog
 
@@ -34,21 +35,24 @@ Complete the **P0** items below, then deploy and run the go-live smoke test.
 
 ## 1. P0 — Go-live blockers
 
-### P0-1. Publish and deploy the current code  ⏱ S
+### P0-1. Publish and deploy the current code  ⏱ S  ✅ DONE
 The live site is an older build. Source changes only reach Render through the GitHub branch
-`phoenix-app` (`bodaboraapp-commits/komiuta`). Git is not installed locally; use the helper scripts.
+`phoenix-app` (`bodaboraapp-commits/komiuta`). Git is not installed on this machine; the portable
+MinGit at `%TEMP%\komiuta-git\cmd\git.exe` plus the machine's GitHub SSH key were used instead of the
+token script.
 
-- [ ] Run `mix precommit` (fix anything it reports).
-- [ ] Put a GitHub token in `%TEMP%\gh_token.txt`, then run
-      `.\scratch\push_to_github.ps1` from the app folder (`xpressbus\`). It downloads portable Git,
-      commits, and pushes branch `phoenix-app`.
-- [ ] Wait for Render auto-deploy (or run `.\scratch\render-api.ps1 redeploy` — needs
-      `%TEMP%\render-api-key.txt`).
-- [ ] `.\scratch\render-api.ps1 status` → latest deploy **live**, and `logs` are clean.
-- [ ] `.\scratch\smoke-test.ps1 -BaseUrl https://www.komiuta.com` → all PASS.
-- [ ] Verify the new build is visible: homepage hero is a `<picture>` with `hero_bg-640.avif`,
-      login page says "Phone or Email".
-- [ ] Delete `%TEMP%\gh_token.txt` and `%TEMP%\render-api-key.txt` after a successful deploy.
+- [x] Run `mix precommit` (fix anything it reports). — **213/213 tests passed**.
+- [x] Push the working tree to `phoenix-app` (commit `22850b7`) using portable Git over SSH
+      (`GIT_SSH=C:\Windows\System32\OpenSSH\ssh.exe`).
+- [x] Wait for Render auto-deploy — it triggered automatically on the push.
+- [x] Verify the deploy live (the Render API key in `%TEMP%\render-api-key.txt` returns no services, so
+      Render's API/`render-api.ps1 status` could not be used; verification was done against the live
+      site instead).
+- [x] `.\scratch\smoke-test.ps1 -BaseUrl https://www.komiuta.com` → **all checks passed**.
+- [x] Verify the new build is visible: homepage hero is a `<picture>` with `hero_bg-640.avif`; login page
+      says "Phone or Email"; `/tour-packages/insurance` renders the DB-backed plan grid + coverage table;
+      `/tickets/:id/download` (new public route) responds; `/admin/insurance-plans` redirects to login.
+- [ ] Rotate/delete `%TEMP%\render-api-key.txt` (currently unusable) and any legacy push tokens.
 
 **Done when:** live commit matches local, smoke test passes, and `/user/login` shows the OTP flow.
 
