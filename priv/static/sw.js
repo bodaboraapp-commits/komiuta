@@ -7,7 +7,7 @@
 //     responses are intentionally NOT cached (avoids stale/personal data)
 //   * Google Fonts are cached separately for offline styling
 //   * anything else (LiveView long-poll, form posts, APIs) is untouched
-const VERSION = 'komiuta-v3';
+const VERSION = 'komiuta-v4';
 const SHELL_CACHE = `${VERSION}-shell`;
 const ASSET_CACHE = `${VERSION}-assets`;
 const FONT_CACHE = `${VERSION}-fonts`;
