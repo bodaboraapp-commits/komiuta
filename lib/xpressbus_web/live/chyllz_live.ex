@@ -26,7 +26,7 @@ defmodule XpressbusWeb.ChyllzLive do
   alias Xpressbus.Chyllz
 
   @listing_limit 60
-  @room_images ["/images/room_1.jpg", "/images/room_2.jpg", "/images/room_3.jpg"]
+  @room_images ["/images/room_1.webp", "/images/room_2.webp", "/images/room_3.webp"]
 
   @impl true
   def mount(_params, session, socket) do
@@ -44,6 +44,11 @@ defmodule XpressbusWeb.ChyllzLive do
      |> assign(:past_events, [])
      |> assign(:events_are_past, false)
      |> assign(:counts, %{hotels: 0, hidden_gems: 0, car_hires: 0, events: 0})
+     |> assign(
+       :page_description,
+       "Discover handpicked hotels, hidden gems, car hire and events across East Africa with Chyllz by Komiuta. Book stays and experiences alongside your bus ticket."
+     )
+     |> assign(:page_canonical, XpressbusWeb.Endpoint.url() <> "/tour-packages")
      |> assign(:page_title, "Chyllz · Hotels, Hidden Gems, Car Hire & Events")}
   end
 
@@ -58,6 +63,7 @@ defmodule XpressbusWeb.ChyllzLive do
       |> assign(:search, search)
       |> assign(:selected, nil)
       |> assign(:page_title, page_title_for(step))
+      |> assign(:page_canonical, canonical_for(step))
       |> load_step(step, search)
 
     {:noreply, socket}
@@ -169,6 +175,12 @@ defmodule XpressbusWeb.ChyllzLive do
   defp page_title_for(:car), do: "Premium Car Hire · Chyllz"
   defp page_title_for(:events), do: "Upcoming Events · Chyllz"
   defp page_title_for(_step), do: "Chyllz · Hotels, Hidden Gems, Car Hire & Events"
+
+  defp canonical_for(:hotels), do: XpressbusWeb.Endpoint.url() <> "/tour-packages/hotels"
+  defp canonical_for(:gems), do: XpressbusWeb.Endpoint.url() <> "/our-packages/hidden-gems"
+  defp canonical_for(:car), do: XpressbusWeb.Endpoint.url() <> "/tour-packages/car"
+  defp canonical_for(:events), do: XpressbusWeb.Endpoint.url() <> "/tour-packages/events"
+  defp canonical_for(_step), do: XpressbusWeb.Endpoint.url() <> "/tour-packages"
 
   defp normalize_search(nil), do: ""
 
@@ -479,17 +491,17 @@ defmodule XpressbusWeb.ChyllzLive do
     ~H"""
     <section class="relative pt-20 pb-[200px] px-6 rounded-b-[4rem] md:rounded-b-[8rem] overflow-hidden bg-slate-950 text-white">
       <video
-        autoplay
+        id="chyllz-hero-video"
+        phx-hook="HeroVideo"
+        data-src="/images/hero_video.mp4"
         muted
         loop
         playsinline
         preload="none"
-        poster="/images/hero_bg.png"
+        poster="/images/hero_bg-1024.webp"
         class="absolute inset-0 w-full h-full object-cover opacity-95"
         aria-hidden="true"
-      >
-        <source src="/images/hero_video.mp4" type="video/mp4" />
-      </video>
+      ></video>
 
       <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40">
       </div>

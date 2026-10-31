@@ -12,9 +12,19 @@
           "Book intercity bus tickets across Kenya, Uganda and Tanzania with Komiuta. Compare fares, pick your seat and pay with M-PESA, card or mobile money."
       }
     />
+    <meta name="robots" content={assigns[:page_robots] || "index,follow"} />
+    <%= if assigns[:page_canonical] do %>
+      <link rel="canonical" href={assigns[:page_canonical]} />
+    <% end %>
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Komiuta" />
-    <meta property="og:title" content={assigns[:page_title] || "Komiuta · Bus Booking"} />
+    <%= if assigns[:page_canonical] do %>
+      <meta property="og:url" content={assigns[:page_canonical]} />
+    <% end %>
+    <meta
+      property="og:title"
+      content={assigns[:page_title] || "Komiuta — Bus Tickets, Chyllz & Travel"}
+    />
     <meta
       property="og:description"
       content={
@@ -22,8 +32,33 @@
           "Book intercity bus tickets across Kenya, Uganda and Tanzania with Komiuta."
       }
     />
-    <meta property="og:image" content={XpressbusWeb.Endpoint.url() <> "/images/logo_brand.png"} />
-    <meta name="twitter:card" content="summary" />
+    <meta
+      property="og:image"
+      content={
+        assigns[:page_og_image] || XpressbusWeb.Endpoint.url() <> "/images/hero_bg-1024.avif"
+      }
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content={assigns[:page_title] || "Komiuta — Bus Tickets, Chyllz & Travel"}
+    />
+    <meta
+      name="twitter:description"
+      content={
+        assigns[:page_description] ||
+          "Book intercity bus tickets across Kenya, Uganda and Tanzania with Komiuta."
+      }
+    />
+    <meta
+      name="twitter:image"
+      content={XpressbusWeb.Endpoint.url() <> "/images/hero_bg-1024.avif"}
+    />
+    <%= if assigns[:page_json_ld] do %>
+      <script type="application/ld+json">
+        <%= Phoenix.HTML.raw(Jason.encode!(assigns[:page_json_ld])) %>
+      </script>
+    <% end %>
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -83,7 +118,11 @@
         document.documentElement.setAttribute("data-theme-source", theme === "system" ? "system" : "user")
       })();
     </script>
-    <.live_title default="Komiuta" suffix=" · Bus Booking" phx-no-format>{assigns[:page_title]}</.live_title>
+    <.live_title
+      default="Komiuta — Bus Tickets, Chyllz & Travel"
+      suffix=" | Komiuta"
+      phx-no-format
+    >{assigns[:page_title]}</.live_title>
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>

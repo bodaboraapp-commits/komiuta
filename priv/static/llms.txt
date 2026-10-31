@@ -1,0 +1,27 @@
+# Komiuta — bus ticket booking for Kenya, Uganda and Tanzania.
+
+> Komiuta is an East African bus booking platform. Travellers compare intercity
+> bus fares, pick seats, and pay with M-PESA, card or mobile money. Tickets are
+> delivered instantly by SMS and email.
+
+Key facts:
+- Fares are shown in KES and include all fees.
+- Payment methods: M-PESA, Airtel Money, card (Flutterwave / Paystack).
+- Seat selection, live seat availability, free cancellation on eligible tickets
+  up to 2 hours before departure.
+- Tickets are delivered by SMS and email; support: hello@komiuta.com, 0800 211 211.
+
+Key pages:
+- https://www.komiuta.com/ — bus search and booking
+- https://www.komiuta.com/tour-packages — Chyllz hotels, hidden gems, car hire, events
+- https://www.komiuta.com/tour-packages/insurance — travel insurance
+- https://www.komiuta.com/tickets — track an existing ticket
+
+Popular routes:
+- https://www.komiuta.com/buses/Nairobi-to-Kisumu
+- https://www.komiuta.com/buses/Nairobi-to-Mombasa
+- https://www.komiuta.com/buses/Mombasa-to-Nairobi
+- https://www.komiuta.com/buses/Nairobi-to-Eldoret
+- https://www.komiuta.com/buses/Nairobi-to-Nakuru
+
+Last updated: 2026-10-31

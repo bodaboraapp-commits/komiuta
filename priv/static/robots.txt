@@ -1,5 +1,46 @@
-# See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
-#
-# To ban all spiders from the entire site uncomment the next two lines:
-# User-agent: *
-# Disallow: /
+# Komiuta robots.txt
+# Search engines and AI answer engines are welcome to crawl public pages.
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /user/
+Disallow: /payment-processing/
+Disallow: /passenger-details/
+Disallow: /review-and-pay/
+Disallow: /partner/
+Disallow: /dev/
+
+# AI search / answer engines (citations welcome)
+User-agent: GPTBot
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://www.komiuta.com/sitemap.xml

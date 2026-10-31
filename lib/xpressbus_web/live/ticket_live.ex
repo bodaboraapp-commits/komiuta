@@ -13,7 +13,13 @@ defmodule XpressbusWeb.TicketLive do
   def mount(_params, session, socket) do
     {:ok,
      socket
-     |> assign(:page_title, "Track Ticket")
+     |> assign(:page_title, "Track Your Bus Ticket")
+     |> assign(
+       :page_description,
+       "Track your Komiuta bus ticket securely. Enter your ticket number and the phone number used at booking to view your seat, QR boarding pass and payment status."
+     )
+     |> assign(:page_canonical, XpressbusWeb.Endpoint.url() <> "/tickets")
+     |> assign(:page_robots, "noindex,follow")
      |> assign(:step, :ticket)
      |> assign(:current_user, session["user_id"])
      |> assign(:signed_in_user, signed_in_user(session["user_id"]))

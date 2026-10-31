@@ -11,6 +11,7 @@ defmodule XpressbusWeb.BookingLive do
   alias Xpressbus.Integrations
   alias Xpressbus.Payments
   alias Xpressbus.TicketAccess
+  alias XpressbusWeb.SEO
   import Ecto.Query
   require Logger
 
@@ -51,7 +52,15 @@ defmodule XpressbusWeb.BookingLive do
 
     {:ok,
      socket
-     |> assign(:page_title, "Komiuta Bus Booking")
+     |> assign(:page_title, "Bus Tickets, Chyllz & Travel")
+     |> assign(
+       :page_description,
+       "Book intercity bus tickets across Kenya, Uganda and Tanzania with Komiuta. Compare fares from top operators, pick your seat, pay with M-PESA or card, and get instant SMS + email tickets."
+     )
+     |> assign(:page_canonical, XpressbusWeb.Endpoint.url() <> "/")
+     |> assign(:page_robots, "index,follow")
+     |> assign(:page_json_ld, [SEO.organization(), SEO.website()])
+     |> assign(:popular_routes, popular_routes())
      |> assign(:step, :search)
      |> assign(:current_user, current_user)
      |> assign(:ticket_url, nil)
@@ -1129,6 +1138,20 @@ defmodule XpressbusWeb.BookingLive do
       |> assign(:seat_drawer_open, false)
       |> assign(:loading, true)
       |> assign(:date_range, generate_date_range(date))
+      |> assign(:page_title, seo_route_title(from, to))
+      |> assign(
+        :page_description,
+        seo_route_description(from, to, buses_from_db)
+      )
+      |> assign(:page_canonical, SEO.route_url(from, to))
+      |> assign(:page_robots, "index,follow")
+      |> assign(:seo_min_price, seo_min_price(buses_from_db))
+      |> assign(:seo_operators, seo_operator_names(buses_from_db))
+      |> assign(:seo_faqs, SEO.route_faqs(from, to, seo_min_price(buses_from_db)))
+      |> assign(
+        :page_json_ld,
+        seo_route_json_ld(from, to, buses_from_db)
+      )
       |> stream(:buses, sort_buses(buses_from_db, "recommended"), reset: true)
 
     start_async(socket, :bus_search, fn -> Scraper.search(from, to, date) end)
@@ -1547,6 +1570,66 @@ defmodule XpressbusWeb.BookingLive do
   end
 
   defp current_user_id(_), do: nil
+
+  # --- SEO helpers (programmatic route pages) ------------------------------
+
+  defp popular_routes do
+    [
+      {"Nairobi", "Kisumu"},
+      {"Nairobi", "Mombasa"},
+      {"Mombasa", "Nairobi"},
+      {"Nairobi", "Eldoret"},
+      {"Eldoret", "Nairobi"},
+      {"Nairobi", "Nakuru"},
+      {"Kisumu", "Nairobi"},
+      {"Nairobi", "Kericho"},
+      {"Nairobi", "Kakamega"},
+      {"Nairobi", "Busia"},
+      {"Kisumu", "Mombasa"},
+      {"Nairobi", "Kitale"}
+    ]
+  end
+
+  defp seo_route_title(from, to), do: "#{from} to #{to} Bus Tickets — Fares & Schedules"
+
+  defp seo_min_price([]), do: 1200
+
+  defp seo_min_price(buses) do
+    buses
+    |> Enum.map(&(Map.get(&1, :numeric_price) || parse_unit_price(&1)))
+    |> Enum.reject(&(&1 <= 0))
+    |> Enum.min(fn -> 1200 end)
+  end
+
+  defp seo_operator_names(buses) do
+    buses
+    |> Enum.map(&Map.get(&1, :company))
+    |> Enum.reject(&is_nil/1)
+    |> Enum.uniq()
+    |> Enum.take(4)
+  end
+
+  defp seo_route_description(from, to, buses) do
+    price = seo_min_price(buses)
+    operators = length(seo_operator_names(buses))
+
+    "Book #{from} to #{to} bus tickets from KES #{price}. Compare #{max(operators, 1)} bus operators, live seats and departure times, then pay securely with M-PESA, card or mobile money. Instant SMS + email tickets."
+  end
+
+  defp seo_route_json_ld(from, to, buses) do
+    price = seo_min_price(buses)
+    operator = List.first(seo_operator_names(buses))
+
+    [
+      SEO.breadcrumb([
+        {"Home", SEO.base_url() <> "/"},
+        {"Bus tickets", SEO.base_url() <> "/"},
+        {"#{from} to #{to}", SEO.route_url(from, to)}
+      ]),
+      SEO.bus_trip(from, to, price, operator),
+      SEO.faq_page(SEO.route_faqs(from, to, price))
+    ]
+  end
 
   # --- Sort, badges and duration helpers (results page) -------------------
 

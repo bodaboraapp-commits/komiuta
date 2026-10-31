@@ -30,6 +30,25 @@ defmodule XpressbusWeb.InsuranceLive do
      |> assign(:faqs, Insurance.list_active_faqs())
      |> assign(:starting_price, Insurance.starting_price(plans))
      |> assign(:selected_plan, nil)
+     |> assign(
+       :page_description,
+       "Compare travel insurance plans from InSURE by Komiuta. Cover for medical emergencies, trip cancellation, baggage and delays across Kenya, Uganda and Tanzania."
+     )
+     |> assign(:page_canonical, XpressbusWeb.Endpoint.url() <> "/tour-packages/insurance")
+     |> assign(
+       :page_json_ld,
+       [
+         XpressbusWeb.SEO.organization(),
+         XpressbusWeb.SEO.faq_page(
+           Enum.map(Insurance.list_active_faqs(), fn faq ->
+             %{
+               question: Map.get(faq, :question, "Travel insurance FAQ"),
+               answer: Map.get(faq, :answer, "")
+             }
+           end)
+         )
+       ]
+     )
      |> assign(:page_title, "Travel Insurance · InSURE")}
   end
 

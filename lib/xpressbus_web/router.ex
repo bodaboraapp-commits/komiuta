@@ -30,6 +30,7 @@ defmodule XpressbusWeb.Router do
   scope "/", XpressbusWeb do
     pipe_through [:browser]
 
+    get "/sitemap.xml", SeoController, :sitemap
     live "/", BookingLive, :index
     live "/tour-packages", ChyllzLive, :index
     live "/tour-packages/insurance", InsuranceLive, :index
