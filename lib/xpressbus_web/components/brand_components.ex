@@ -361,8 +361,8 @@ defmodule XpressbusWeb.BrandComponents do
       )
 
     ~H"""
-    <footer class="mx-auto mt-12 max-w-[1350px] pb-16 px-6 font-sans font-bold">
-      <div class="flex justify-center mb-16">
+    <footer class="mx-auto mt-8 max-w-[1350px] pb-12 px-6 font-sans font-bold">
+      <div class="flex justify-center mb-8 md:mb-10">
         <img
           src="/images/logo_brand.png"
           alt="Komiuta"
@@ -376,7 +376,7 @@ defmodule XpressbusWeb.BrandComponents do
 
       <%= unless assigns[:step] in [:passenger_info, :review_and_pay, :ticket] do %>
         <nav
-          class="mb-10 grid grid-cols-2 md:grid-cols-3 gap-8 rounded-[2rem] border border-slate-100 bg-white p-6 md:p-8"
+          class="mb-6 grid grid-cols-2 md:grid-cols-3 gap-8 rounded-[2rem] border border-slate-100 bg-white p-6 md:p-8"
           aria-label="Explore Komiuta"
         >
           <div>
@@ -467,8 +467,8 @@ defmodule XpressbusWeb.BrandComponents do
         </nav>
       <% end %>
 
-      <div class="mb-20 bg-slate-50/50 rounded-[3rem] p-8 md:p-12 border border-slate-100">
-        <div class="flex flex-wrap justify-center gap-4 md:gap-10 mb-12 border-b border-slate-200 pb-6">
+      <div class="mb-10 md:mb-12 bg-slate-50/50 rounded-[3rem] p-6 md:p-10 border border-slate-100">
+        <div class="flex flex-wrap justify-center gap-4 md:gap-10 mb-8 border-b border-slate-200 pb-6">
           <button
             type="button"
             aria-pressed={@footer_tab == "about"}
@@ -614,13 +614,13 @@ defmodule XpressbusWeb.BrandComponents do
         <% end %>
       </div>
 
-      <div class="mt-10 flex flex-wrap justify-center gap-6 text-[10px] font-black uppercase tracking-widest text-slate-400">
+      <div class="mt-8 flex flex-wrap justify-center gap-6 text-[10px] font-black uppercase tracking-widest text-slate-400">
         <a href="/tickets" class="hover:text-[#FF4C00] transition">Track ticket</a>
         <a href="/terms" class="hover:text-[#FF4C00] transition">Terms &amp; Conditions</a>
         <a href="/privacy" class="hover:text-[#FF4C00] transition">Privacy Policy</a>
       </div>
 
-      <div class="mt-10 pt-10 border-t border-slate-100 text-center">
+      <div class="mt-8 pt-8 border-t border-slate-100 text-center">
         <p class="text-[10px] font-black uppercase tracking-[0.5em] text-slate-300">
           © {DateTime.utc_now().year} Komiuta WanCom Engineering Sol. All rights reserved.
         </p>
