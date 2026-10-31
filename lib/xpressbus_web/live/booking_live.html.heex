@@ -714,12 +714,12 @@
         </section>
       <% @step == :results -> %>
         <%!-- Step :results (Bus Listing) --%>
-        <section class="pt-6 pb-16 px-6">
+        <section class="pt-4 pb-10 px-6">
           <div class="max-w-[1350px] mx-auto">
             <.booking_progress step={@step} />
             <%!-- Top Search Summary --%>
-            <div class="bg-white rounded-2xl border border-slate-100 p-1.5 mb-10 flex flex-wrap items-center gap-2 shadow-sm">
-              <div class="flex-1 flex items-center px-5 py-2.5 border-r border-slate-50 gap-3 min-w-[140px]">
+            <div class="bg-white rounded-2xl border border-slate-100 p-1 mb-6 flex flex-wrap items-center gap-1.5 shadow-sm">
+              <div class="flex-1 flex items-center px-4 py-2 border-r border-slate-50 gap-2 min-w-[120px]">
                 <span class="material-symbols-outlined text-slate-300 !text-lg">location_on</span>
                 <div class="text-sm font-bold text-slate-900 uppercase tracking-tight truncate">
                   {@from}
@@ -733,33 +733,33 @@
                 <span class="material-symbols-outlined !text-lg">sync_alt</span>
               </button>
 
-              <div class="flex-1 flex items-center px-5 py-2.5 border-r border-slate-50 gap-3 min-w-[140px]">
+              <div class="flex-1 flex items-center px-4 py-2 border-r border-slate-50 gap-2 min-w-[120px]">
                 <span class="material-symbols-outlined text-slate-300 !text-lg">location_on</span>
                 <div class="text-sm font-bold text-slate-900 uppercase tracking-tight truncate">
                   {@to}
                 </div>
               </div>
 
-              <div class="flex-1 flex items-center px-5 py-2.5 border-r border-slate-50 gap-3 min-w-[140px]">
+              <div class="flex-1 flex items-center px-4 py-2 border-r border-slate-50 gap-2 min-w-[120px]">
                 <span class="material-symbols-outlined text-slate-300 !text-lg">calendar_month</span>
                 <div class="text-sm font-bold text-slate-900">{@date}</div>
               </div>
 
               <button
                 phx-click="back_to_search"
-                class="px-8 h-11 rounded-xl bg-[#d52263] text-white font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] transition-all active:scale-95 shadow-lg shadow-pink-500/20 shrink-0"
+                class="px-5 h-10 rounded-xl bg-[#d52263] text-white font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] transition-all active:scale-95 shadow-lg shadow-pink-500/20 shrink-0"
               >
                 MODIFY
               </button>
             </div>
             <%!-- Route Title --%>
-            <div class="text-center mb-10">
-              <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter">
+            <div class="hidden md:block text-center mb-4">
+              <h1 class="text-2xl md:text-4xl font-black text-slate-900 tracking-tighter">
                 {@from} <span class="text-[#FF4C00] text-2xl mx-2">→</span> {@to}
               </h1>
             </div>
             <%!-- Date Navigator --%>
-            <div class="flex items-center justify-center gap-2 mb-10">
+            <div class="flex items-center justify-center gap-2 mb-5">
               <button
                 phx-click="shift_date"
                 phx-value-days="-1"
@@ -774,7 +774,7 @@
                     phx-click="change_date"
                     phx-value-date={d.date}
                     class={[
-                      "px-5 py-3 rounded-xl transition-all text-xs font-black tracking-tight whitespace-nowrap",
+                      "px-4 py-2 rounded-xl transition-all text-xs font-black tracking-tight whitespace-nowrap",
                       d.is_selected && "bg-[#FF4C00] text-white shadow-md shadow-orange-100",
                       !d.is_selected && !d.is_past && "text-slate-500 hover:text-slate-900",
                       d.is_past && "text-slate-200 cursor-not-allowed"
@@ -797,7 +797,7 @@
             </div>
 
             <%!-- Sort chips (decision support) --%>
-            <div class="flex items-center justify-center gap-2 mb-8 flex-wrap">
+            <div class="flex items-center justify-start md:justify-center gap-2 mb-4 overflow-x-auto no-scrollbar">
               <span class="text-[9px] font-black uppercase tracking-widest text-slate-300 mr-1">Sort</span>
               <%= for {label, value} <- [
                     {"Recommended", "recommended"},
@@ -810,7 +810,7 @@
                   phx-click="sort_buses"
                   phx-value-sort={value}
                   class={[
-                    "px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all",
+                    "px-3.5 py-1.5 shrink-0 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all",
                     @sort_by == value &&
                       "bg-slate-900 text-white border-slate-900 shadow-sm",
                     @sort_by != value &&
@@ -822,9 +822,9 @@
               <% end %>
             </div>
 
-            <div class="flex flex-col-reverse md:flex-row gap-6">
+            <div class="flex flex-col-reverse md:flex-row gap-5">
               <%!-- Filters Sidebar --%>
-              <aside class="space-y-5 md:w-80 md:shrink-0 filter-sidebar">
+              <aside class="space-y-4 md:w-80 md:shrink-0 filter-sidebar">
                 <div class="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm">
                   <div class="flex items-center gap-2.5 mb-6 pb-4 border-b border-slate-50">
                     <span class="material-symbols-outlined text-[#FF4C00] !text-xl">filter_alt</span>
@@ -1313,9 +1313,9 @@
         <% end %>
       <% @step == :passenger_info -> %>
         <%!-- Step :passenger_info (Industrial Reference Match) --%>
-        <section class="pt-10 pb-36 md:pb-24 px-6 max-w-[1350px] mx-auto font-sans">
+        <section class="pt-4 pb-32 md:pb-24 px-6 max-w-[1350px] mx-auto font-sans">
           <%!-- Industrial Breadcrumbs --%>
-          <nav class="flex items-center gap-2 mb-8 text-[11px] font-bold text-slate-400">
+          <nav class="flex items-center gap-2 mb-3 text-[11px] font-bold text-slate-400">
             <span>Home</span> <span class="text-slate-300">›</span> <span>Booking</span>
             <span class="text-slate-300">›</span>
             <span class="text-slate-900 font-black">Passenger Details</span>
@@ -1323,7 +1323,7 @@
           </nav>
           <.booking_progress step={@step} />
           <%!-- Dynamic Page Title --%>
-          <h1 class="text-4xl font-black text-slate-900 mb-12 tracking-tighter">
+          <h1 class="text-2xl md:text-4xl font-black text-slate-900 mb-4 tracking-tighter">
             {@from} <span class="text-[#FF4C00] opacity-50">→</span> {@to}
             <%= if @return_date && !String.match?(@return_date, ~r/^null$/) do %>
               round trip
@@ -1332,7 +1332,7 @@
             <% end %>
           </h1>
 
-          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-100 text-[9px] font-black text-amber-700 uppercase tracking-widest mb-8">
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-100 text-[9px] font-black text-amber-700 uppercase tracking-widest mb-4">
             <span class="material-symbols-outlined !text-sm">timer</span>
             Seats held for
             <span
@@ -1348,16 +1348,16 @@
             phx-change="validate_passengers"
             phx-submit="save_passenger"
           >
-            <div class="grid lg:grid-cols-[1fr_420px] gap-12 items-start">
+            <div class="grid lg:grid-cols-[1fr_420px] gap-6 items-start">
               <%!-- Left Column (Form interaction hub) --%>
               <div class="space-y-10">
                 <%!-- Section: Passenger Details --%>
-                <div class="bg-white rounded-[2rem] border border-slate-100 p-8 shadow-sm">
+                <div class="bg-white rounded-[2rem] border border-slate-100 p-5 md:p-8 shadow-sm">
                   <h2 class="text-xl font-black text-slate-900 mb-2 uppercase tracking-tight">
                     Passenger Details
                   </h2>
 
-                  <div class="space-y-12 mt-8">
+                  <div class="space-y-5 mt-3">
                     <.inputs_for :let={p} field={@passenger_form[:passengers]}>
                       <% seat_id = Enum.at(@selected_seats, p.index) || p.index + 1 %> <% display_index =
                         Enum.find_index(@selected_seats, &(&1 == to_string(seat_id)))
@@ -1367,7 +1367,7 @@
                           <span class="text-xs font-bold text-slate-400">Passenger {display_index} details Seat {seat_id} 🚩</span>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-x-8 gap-y-6">
+                        <div class="grid grid-cols-2 gap-x-4 gap-y-3 [&_.fieldset]:mb-0">
                           <div class="space-y-1.5">
                             <label class="text-xs font-black text-slate-900">Firstname</label>
                             <.input
@@ -1375,7 +1375,7 @@
                               type="text"
                               placeholder="First Name"
                               phx-debounce="500"
-                              class="w-full rounded-xl border-slate-200 p-3.5 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
+                              class="w-full rounded-xl border-slate-200 p-3 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
                             />
                           </div>
 
@@ -1386,7 +1386,7 @@
                               type="text"
                               placeholder="Last Name"
                               phx-debounce="500"
-                              class="w-full rounded-xl border-slate-200 p-3.5 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
+                              class="w-full rounded-xl border-slate-200 p-3 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
                             />
                           </div>
 
@@ -1397,42 +1397,49 @@
                               type="tel"
                               placeholder="e.g 0722..."
                               phx-debounce="500"
-                              class="w-full rounded-xl border-slate-200 p-3.5 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
-                            />
-                          </div>
-
-                          <div class="space-y-1.5">
-                            <label class="text-xs font-black text-slate-900">ID number or Passport</label>
-                            <.input
-                              field={p[:id_number]}
-                              type="text"
-                              placeholder="ID/Passport"
-                              phx-debounce="500"
-                              class="w-full rounded-xl border-slate-200 p-3.5 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
-                            />
-                          </div>
-
-                          <div class="space-y-1.5">
-                            <label class="text-xs font-black text-slate-900">Nationality</label>
-                            <.input
-                              field={p[:nationality]}
-                              type="select"
-                              options={["Kenyan", "Ugandan", "Tanzanian", "Other"]}
-                              class="w-full rounded-xl border-slate-200 p-3.5 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
+                              class="w-full rounded-xl border-slate-200 p-3 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
                             />
                           </div>
                         </div>
+
+                        <details class="mt-3 rounded-xl border border-slate-100 bg-slate-50/60 px-4 py-3">
+                          <summary class="cursor-pointer text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                            + Add ID / nationality (optional)
+                          </summary>
+                          <div class="grid grid-cols-2 gap-x-4 gap-y-3 mt-3">
+                            <div class="space-y-1.5">
+                              <label class="text-xs font-black text-slate-900">ID number or Passport</label>
+                              <.input
+                                field={p[:id_number]}
+                                type="text"
+                                placeholder="ID/Passport"
+                                phx-debounce="500"
+                                class="w-full rounded-xl border-slate-200 p-3 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
+                              />
+                            </div>
+
+                            <div class="space-y-1.5">
+                              <label class="text-xs font-black text-slate-900">Nationality</label>
+                              <.input
+                                field={p[:nationality]}
+                                type="select"
+                                options={["Kenyan", "Ugandan", "Tanzanian", "Other"]}
+                                class="w-full rounded-xl border-slate-200 p-3 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
+                              />
+                            </div>
+                          </div>
+                        </details>
                       </div>
                     </.inputs_for>
                   </div>
                 </div>
                 <%!-- Section: Payment Details --%>
-                <div class="bg-white rounded-[2rem] border border-slate-100 p-8 shadow-sm mt-10">
+                <div class="bg-white rounded-[2rem] border border-slate-100 p-5 md:p-8 shadow-sm mt-6">
                   <h2 class="text-xl font-black text-slate-900 mb-8 uppercase tracking-tight">
                     Payment Details
                   </h2>
 
-                  <div class="space-y-8">
+                  <div class="space-y-4">
                     <div class="space-y-1.5">
                       <label class="text-xs font-black text-slate-900">Email address (ticket + receipt)</label>
                       <.input
@@ -1441,11 +1448,11 @@
                         placeholder="john@example.com"
                         required
                         phx-debounce="500"
-                        class="w-full rounded-xl border-slate-200 p-3.5 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
+                        class="w-full rounded-xl border-slate-200 p-3 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
                       />
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 [&_.fieldset]:mb-0">
                       <div class="space-y-1.5">
                         <label class="text-xs font-black text-slate-900">Full name</label>
                         <.input
@@ -1453,7 +1460,7 @@
                           type="text"
                           placeholder="Full Name"
                           phx-debounce="500"
-                          class="w-full rounded-xl border-slate-200 p-3.5 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
+                          class="w-full rounded-xl border-slate-200 p-3 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
                         />
                       </div>
 
@@ -1464,7 +1471,7 @@
                           type="tel"
                           placeholder="0712..."
                           phx-debounce="500"
-                          class="w-full rounded-xl border-slate-200 p-3.5 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
+                          class="w-full rounded-xl border-slate-200 p-3 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
                         />
                       </div>
                     </div>
@@ -1472,13 +1479,13 @@
                 </div>
               </div>
               <%!-- Right Column (Summary Card - Exact Image Match) --%>
-              <aside class="sticky top-32">
-                <div class="bg-white rounded-[2.5rem] border border-slate-100 p-10 shadow-2xl shadow-slate-200/50">
+              <aside class="sticky top-24">
+                <div class="bg-white rounded-[2.5rem] border border-slate-100 p-6 md:p-10 shadow-2xl shadow-slate-200/50">
                   <h3 class="text-[10px] font-black text-slate-900 mb-8 uppercase tracking-[0.2em] border-b border-slate-50 pb-6">
                     ONE-WAY TICKET
                   </h3>
 
-                  <div class="grid grid-cols-2 gap-8 mb-10">
+                  <div class="grid grid-cols-2 gap-5 mb-6">
                     <div class="space-y-2">
                       <label class="text-[9px] font-black uppercase text-orange-500 tracking-widest">DEPARTURE</label>
                       <div class="text-sm font-black text-slate-900">{@from}</div>
@@ -1578,7 +1585,11 @@
           </.form>
 
           <%!-- Sticky mobile checkout CTA --%>
-          <div class="fixed bottom-4 left-4 right-4 z-40 md:hidden">
+          <div
+            id="sticky-details-cta"
+            phx-hook=".StickyCta"
+            class="fixed bottom-4 left-4 right-4 z-40 md:hidden transition-all duration-300"
+          >
             <div class="bg-white/95 backdrop-blur-md border border-slate-100 rounded-2xl p-3 shadow-2xl shadow-slate-900/10">
               <button
                 type="submit"
@@ -1595,17 +1606,17 @@
         </section>
       <% @step == :review_and_pay -> %>
         <%!-- Step :review_and_pay --%>
-        <section class="pt-10 pb-40 md:pb-24 px-6 max-w-[1350px] mx-auto">
+        <section class="pt-4 pb-32 md:pb-24 px-6 max-w-[1350px] mx-auto">
           <.booking_progress step={@step} />
 
-          <div class="flex flex-col lg:flex-row gap-12 items-start">
+          <div class="flex flex-col lg:flex-row gap-6 items-start">
             <div class="flex-1 space-y-8 min-w-0">
-              <h2 class="text-3xl font-black text-slate-900 uppercase tracking-tighter">
+              <h2 class="text-2xl md:text-3xl font-black text-slate-900 uppercase tracking-tighter mb-4">
                 Review Booking
               </h2>
               <%!-- Trip Summary Card --%>
-              <div class="bg-white rounded-[2.5rem] border border-slate-100 p-10 shadow-sm">
-                <div class="flex items-center justify-between mb-10 border-b border-slate-50 pb-8">
+              <div class="bg-white rounded-[2.5rem] border border-slate-100 p-5 md:p-10 shadow-sm">
+                <div class="flex items-center justify-between mb-6 border-b border-slate-50 pb-5">
                   <div class="flex items-center gap-4">
                     <div class="w-16 h-16 rounded-2xl bg-orange-50 flex items-center justify-center text-[#FF4C00]">
                       <span class="material-symbols-outlined !text-3xl">directions_bus</span>
@@ -1673,7 +1684,7 @@
                 </div>
               </div>
               <%!-- Passenger Summary Card --%>
-              <div class="bg-white rounded-[2.5rem] border border-slate-100 p-10 shadow-sm">
+              <div class="bg-white rounded-[2.5rem] border border-slate-100 p-5 md:p-10 shadow-sm">
                 <div class="flex items-center justify-between mb-8 border-b border-slate-50 pb-6">
                   <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest">
                     PASSENGERS
@@ -1722,9 +1733,9 @@
             </div>
 
             <%!-- Sidebar Payment Summary --%>
-            <aside class="w-full lg:w-[400px] lg:shrink-0 sticky top-32 space-y-6">
+            <aside class="w-full lg:w-[400px] lg:shrink-0 sticky top-24 space-y-4">
               <%!-- Payment Method Selection --%>
-              <div class="bg-white rounded-[2.5rem] border border-slate-100 p-8 shadow-sm">
+              <div class="bg-white rounded-[2.5rem] border border-slate-100 p-5 md:p-8 shadow-sm">
                 <h3 class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-8">
                   SELECT PAYMENT METHOD
                 </h3>
@@ -1786,12 +1797,12 @@
                 </div>
               </div>
 
-              <div class="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm">
+              <div class="bg-white rounded-[2.5rem] p-5 md:p-8 border border-slate-100 shadow-sm">
                 <h3 class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-8">
                   PAYMENT SUMMARY
                 </h3>
 
-                <div class="space-y-4 mb-8">
+                <div class="space-y-3 mb-5">
                   <div class="flex justify-between items-center">
                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">BASE FARE</span>
                     <span class="text-sm font-black text-slate-900">KSH {@total_price}</span>
@@ -1810,7 +1821,7 @@
                   </div>
                 </div>
                 <%!-- Coupon Form --%>
-                <div class="mb-8 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <div class="mb-5 p-4 bg-slate-50 rounded-2xl border border-slate-100">
                   <label class="block text-[8px] font-black uppercase tracking-widest text-slate-400 mb-2">PROMO CODE</label>
                   <form phx-submit="apply_coupon" class="flex gap-2">
                     <input
@@ -1833,7 +1844,7 @@
                   <% end %>
                 </div>
 
-                <div class="flex justify-between items-end mb-8 pt-6 border-t border-slate-50">
+                <div class="flex justify-between items-end mb-5 pt-5 border-t border-slate-50">
                   <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
                     FINAL PRICE
                   </div>
@@ -1871,7 +1882,7 @@
                   disabled={@loading}
                   phx-disable-with="PROCESSING..."
                   class={[
-                    "w-full py-5 rounded-[1.8rem] bg-slate-900 text-white font-black uppercase tracking-widest text-sm transition-all shadow-2xl relative overflow-hidden group",
+                    "w-full py-4 rounded-[1.8rem] bg-slate-900 text-white font-black uppercase tracking-widest text-sm transition-all shadow-2xl relative overflow-hidden group",
                     @loading && "cursor-not-allowed opacity-80"
                   ]}
                 >
@@ -1906,21 +1917,6 @@
                 <p class="mt-3 text-center text-[9px] font-bold text-slate-400 leading-relaxed">
                   Instant ticket by SMS + email · Support available if anything goes wrong
                 </p>
-              </div>
-
-              <%!-- Sticky mobile pay CTA --%>
-              <div class="fixed bottom-4 left-4 right-4 z-[70] lg:hidden">
-                <button
-                  type="button"
-                  phx-click="pay"
-                  disabled={@loading}
-                  class="w-full bg-[#FF4C00] text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-2xl shadow-orange-500/30 active:scale-[0.99] transition-all disabled:opacity-60"
-                >
-                  <span class="inline-flex items-center gap-2">
-                    <span class="material-symbols-outlined !text-lg">lock</span>
-                    Pay KSH {@final_price} securely
-                  </span>
-                </button>
               </div>
 
               <div class="flex items-center justify-center gap-2 opacity-30 grayscale">
@@ -1990,6 +1986,25 @@
                 </svg>
               </div>
             </aside>
+          </div>
+
+          <%!-- Sticky mobile pay CTA (outside the sidebar so it never fights the footer) --%>
+          <div
+            id="sticky-pay-cta"
+            phx-hook=".StickyCta"
+            class="fixed bottom-4 left-4 right-4 z-[9999] lg:hidden transition-all duration-300"
+          >
+            <button
+              type="button"
+              phx-click="pay"
+              disabled={@loading}
+              class="w-full bg-[#FF4C00] text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-2xl shadow-orange-500/30 active:scale-[0.99] transition-all disabled:opacity-60"
+            >
+              <span class="inline-flex items-center gap-2">
+                <span class="material-symbols-outlined !text-lg">lock</span>
+                Pay KSH {@final_price} securely
+              </span>
+            </button>
           </div>
         </section>
       <% @step == :ticket -> %>
@@ -2154,6 +2169,29 @@
       const minutes = String(Math.floor(total / 60)).padStart(2, "0")
       const seconds = String(total % 60).padStart(2, "0")
       this.el.textContent = `${minutes}:${seconds}`
+    }
+  }
+</script>
+
+<script :type={Phoenix.LiveView.ColocatedHook} name=".StickyCta">
+  export default {
+    mounted() {
+      const footer = document.querySelector("footer")
+      if (!footer) return
+      this.el.style.transform = "translateY(0)"
+      this.observer = new IntersectionObserver(
+        (entries) => {
+          const visible = entries[0] && entries[0].isIntersecting
+          this.el.style.transform = visible ? "translateY(140%)" : "translateY(0)"
+          this.el.style.opacity = visible ? "0" : "1"
+          this.el.style.pointerEvents = visible ? "none" : "auto"
+        },
+        { rootMargin: "0px 0px -80px 0px", threshold: 0 }
+      )
+      this.observer.observe(footer)
+    },
+    destroyed() {
+      if (this.observer) this.observer.disconnect()
     }
   }
 </script>

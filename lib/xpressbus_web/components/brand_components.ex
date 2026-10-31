@@ -558,7 +558,7 @@ defmodule XpressbusWeb.BrandComponents do
     assigns = assign(assigns, current: current, steps: ~w(Search Seats Details Pay))
 
     ~H"""
-    <div class="max-w-2xl mx-auto mb-6 px-2">
+    <div class="max-w-2xl mx-auto mb-4 px-2">
       <div class="flex items-center">
         <%= for {label, index} <- Enum.with_index(@steps) do %>
           <div class="flex items-center gap-1.5 shrink-0">

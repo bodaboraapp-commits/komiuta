@@ -26,6 +26,10 @@ const AXES = "opsz,wght,FILL,GRAD@24,400,0,0";
 // Icons produced dynamically (component props / helper functions) that a plain
 // source scan cannot resolve to a literal.
 const EXTRA = [
+  "wb_sunny",
+  "light_mode",
+  "dark_mode",
+  "more_time",
   "account_balance_wallet",
   "chevron_right",
   "credit_card",

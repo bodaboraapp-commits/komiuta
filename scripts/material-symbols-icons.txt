@@ -25,6 +25,7 @@ confirmation_number
 content_copy
 corporate_fare
 credit_card
+dark_mode
 dashboard
 delete
 description
@@ -57,6 +58,7 @@ image
 inbox
 language
 library_books
+light_mode
 lightbulb
 link
 local_activity
@@ -72,6 +74,7 @@ mark_email_read
 mark_email_unread
 menu
 more_horiz
+more_time
 my_location
 notifications
 notifications_active
@@ -106,6 +109,7 @@ tv
 verified_user
 visibility
 warning
+wb_sunny
 wc
 webhook
 wifi
