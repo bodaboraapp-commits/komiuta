@@ -46,21 +46,21 @@ Legend: `[x]` shipped and verified live · `[ ]` open · `[!]` blocked / needs a
 - [x] **77 sitemap URLs submitted to IndexNow** — accepted (HTTP 200).
 - [x] Automated regression coverage for sitemap, robots, llms, canonical, schema, blog, About and IndexNow key (`test/xpressbus_web/seo_test.exs`).
 
-**Verification snapshot:** `mix precommit` — **218/218 tests**.
+**Verification snapshot:** `mix precommit` — **220/220 tests**; `mix komiuta.validate_schema` — **PASS on 86 live pages**; IndexNow GitHub Action **active and successful**.
 
 ---
 
 ## P1 — Next (high impact)
 
-- [ ] **Operator landing pages** — top 20 operators (`/operators/:slug`) with routes, fleet, ratings, policies and `Organization`/`ItemList` schema.
+- [x] **Operator landing pages** — top 20 operators (`/operators/:slug`) with routes, fleet, ratings, policies and `Organization`/`ItemList` schema.
 - [ ] **Expand route coverage** beyond the current 55 (top 150) with genuinely unique fare/terminal/schedule content per route.
 - [ ] **Operator logos/ratings consistency** across route pages and operator pages.
 - [ ] **More blog guides** — at least 2 per week, each linked to the relevant route/city page and with `BlogPosting` + FAQs.
-- [ ] **Cross-link mesh** — add route → city → operator links and related-route blocks on every route page.
-- [ ] **Schema validation pass** — Google Rich Results Test + Schema Markup Validator for a sample of route, city, FAQ, blog and About pages.
-- [ ] **IndexNow automation on content releases** — run `mix komiuta.indexnow` after each content deploy (or wire it into the release step).
-- [ ] **Organic conversion tracking** — UTM params on content links and booking events so route pages can be measured against revenue.
-- [ ] **Core Web Vitals** — TTFB is currently ~0.8–1.4s on Render free; improve caching, reduce JS/CSS, consider paid instance for TTFB/LCP.
+- [x] **Cross-link mesh** — add route → city → operator links and related-route blocks on every route page.
+- [x] **Schema validation pass** — Google Rich Results Test + Schema Markup Validator for a sample of route, city, FAQ, blog and About pages.
+- [x] **IndexNow automation on content releases** — run `mix komiuta.indexnow` after each content deploy (or wire it into the release step).
+- [x] **Organic conversion tracking** — UTM params on content links and booking events so route pages can be measured against revenue.
+- [x] **Core Web Vitals** — public cache headers for sitemap/robots/llms + deferred footer rendering shipped. TTFB remains Render-free-bound (home ~0.82s, route ~1.7s); a paid instance or CDN caching is the next lever.
 - [ ] **Review/AggregateRating schema** — only once real, displayable traveller reviews exist.
 - [ ] **Trust details** — About/Contact business details (address, registration, support hours) and policy links for E-E-A-T.
 - [ ] **Image SEO** — add descriptive `og:image` / article images and alt text for blog articles (currently uses the hero image).
@@ -79,6 +79,7 @@ Legend: `[x]` shipped and verified live · `[ ]` open · `[!]` blocked / needs a
 - [!] **Google Search Console** — verify `https://www.komiuta.com`, set `GOOGLE_SITE_VERIFICATION` in Render, submit `sitemap.xml`.
 - [!] **Bing Webmaster Tools** — verify via import or `BING_SITE_VERIFICATION`, submit the same sitemap.
 - [!] **Content cadence/ownership** — decide who writes and approves the next batch of guides and whether operator/city pages are auto-generated from the DB or curated.
+- [!] **GA4 measurement ID** — set `GA_MEASUREMENT_ID` in Render to send the already-implemented analytics events to GA4; events fall back to `dataLayer`/custom DOM events until then.
 
 ## Weekly monitoring
 
