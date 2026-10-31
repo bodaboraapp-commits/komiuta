@@ -36,6 +36,7 @@ edit
 edit_square
 error
 event
+event_available
 event_busy
 event_seat
 expand_more
@@ -99,6 +100,7 @@ sparkle
 star
 support_agent
 sync_alt
+timer
 travel_explore
 tv
 verified_user

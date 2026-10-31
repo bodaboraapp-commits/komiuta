@@ -77,6 +77,8 @@ defmodule XpressbusWeb.BookingLive do
        })
      )
      |> assign(:buses, [])
+     |> assign(:sort_by, "recommended")
+     |> assign(:hold_until, nil)
      |> assign(:selected_bus, nil)
      |> assign(:seat_drawer_open, false)
      |> assign(:stops_drawer_open, false)
@@ -237,6 +239,10 @@ defmodule XpressbusWeb.BookingLive do
            |> assign(:seat_layout, generate_seat_layout(Map.get(bus, :occupied_seats, [])))
            |> assign(:selected_seats, selected_seats)
            |> assign(:step, :passenger_info)
+           |> assign(
+             :hold_until,
+             socket.assigns[:hold_until] || DateTime.add(DateTime.utc_now(), 600, :second)
+           )
            |> assign(:from, Map.get(params, "from", socket.assigns.from))
            |> assign(:to, Map.get(params, "to", socket.assigns.to))
            |> update_pricing()}
@@ -299,6 +305,10 @@ defmodule XpressbusWeb.BookingLive do
              |> assign(:seat_layout, generate_seat_layout(Map.get(bus, :occupied_seats, [])))
              |> assign(:selected_seats, selected_seats)
              |> assign(:step, :review_and_pay)
+             |> assign(
+               :hold_until,
+               socket.assigns[:hold_until] || DateTime.add(DateTime.utc_now(), 600, :second)
+             )
              |> assign(:from, Map.get(params, "from", socket.assigns.from))
              |> assign(:to, Map.get(params, "to", socket.assigns.to))
              |> update_pricing()}
@@ -535,6 +545,42 @@ defmodule XpressbusWeb.BookingLive do
 
   def handle_event("change_date_part", _params, socket), do: {:noreply, socket}
 
+  def handle_event("shift_date", %{"days" => days}, socket) do
+    days = days |> to_string() |> Integer.parse() |> elem(0)
+
+    current =
+      case Date.from_iso8601(to_string(socket.assigns.date)) do
+        {:ok, date} -> date
+        _ -> Date.utc_today()
+      end
+
+    new_date = Date.add(current, days)
+
+    if Date.compare(new_date, Date.utc_today()) == :lt do
+      {:noreply, socket}
+    else
+      handle_event("change_date", %{"date" => Date.to_string(new_date)}, socket)
+    end
+  end
+
+  def handle_event("sort_buses", %{"sort" => sort}, socket)
+      when sort in ~w(recommended cheapest earliest fastest) do
+    buses =
+      filter_buses(
+        socket.assigns.buses,
+        socket.assigns.selected_operators,
+        socket.assigns.selected_departures,
+        socket.assigns.selected_seat_types,
+        socket.assigns.selected_amenities
+      )
+      |> sort_buses(sort)
+
+    {:noreply,
+     socket
+     |> assign(:sort_by, sort)
+     |> stream(:buses, sort_buses(buses, socket.assigns.sort_by), reset: true)}
+  end
+
   # --- Event Handlers: Filtering ---
 
   def handle_event("toggle_operator", %{"operator" => operator}, socket) do
@@ -559,7 +605,7 @@ defmodule XpressbusWeb.BookingLive do
     {:noreply,
      socket
      |> assign(:selected_operators, selected_operators)
-     |> stream(:buses, buses, reset: true)}
+     |> stream(:buses, sort_buses(buses, socket.assigns.sort_by), reset: true)}
   end
 
   def handle_event("toggle_departure", %{"period" => period}, socket) do
@@ -577,7 +623,7 @@ defmodule XpressbusWeb.BookingLive do
     {:noreply,
      socket
      |> assign(:selected_departures, selected_departures)
-     |> stream(:buses, buses, reset: true)}
+     |> stream(:buses, sort_buses(buses, socket.assigns.sort_by), reset: true)}
   end
 
   def handle_event("toggle_seat_type", %{"seat_type" => seat_type}, socket) do
@@ -595,7 +641,7 @@ defmodule XpressbusWeb.BookingLive do
     {:noreply,
      socket
      |> assign(:selected_seat_types, selected_seat_types)
-     |> stream(:buses, buses, reset: true)}
+     |> stream(:buses, sort_buses(buses, socket.assigns.sort_by), reset: true)}
   end
 
   def handle_event("toggle_amenity", %{"amenity" => amenity}, socket) do
@@ -613,7 +659,7 @@ defmodule XpressbusWeb.BookingLive do
     {:noreply,
      socket
      |> assign(:selected_amenities, selected_amenities)
-     |> stream(:buses, buses, reset: true)}
+     |> stream(:buses, sort_buses(buses, socket.assigns.sort_by), reset: true)}
   end
 
   def handle_event("reset_filters", _params, socket) do
@@ -625,7 +671,7 @@ defmodule XpressbusWeb.BookingLive do
      |> assign(:selected_departures, [])
      |> assign(:selected_seat_types, [])
      |> assign(:selected_amenities, [])
-     |> stream(:buses, buses, reset: true)}
+     |> stream(:buses, sort_buses(buses, socket.assigns.sort_by), reset: true)}
   end
 
   # --- Event Handlers: Selection ---
@@ -943,7 +989,7 @@ defmodule XpressbusWeb.BookingLive do
          |> assign(:available_operators, operators)
          |> assign(:available_seat_types, seat_types)
          |> assign(:loading, false)
-         |> stream(:buses, buses, reset: true)}
+         |> stream(:buses, sort_buses(buses, socket.assigns.sort_by), reset: true)}
 
       {:exit, _reason} ->
         {:noreply, assign(socket, :loading, false)}
@@ -1083,7 +1129,7 @@ defmodule XpressbusWeb.BookingLive do
       |> assign(:seat_drawer_open, false)
       |> assign(:loading, true)
       |> assign(:date_range, generate_date_range(date))
-      |> stream(:buses, buses_from_db, reset: true)
+      |> stream(:buses, sort_buses(buses_from_db, "recommended"), reset: true)
 
     start_async(socket, :bus_search, fn -> Scraper.search(from, to, date) end)
   end
@@ -1502,6 +1548,86 @@ defmodule XpressbusWeb.BookingLive do
 
   defp current_user_id(_), do: nil
 
+  # --- Sort, badges and duration helpers (results page) -------------------
+
+  defp sort_buses(buses, "cheapest"),
+    do: Enum.sort_by(buses, &(Map.get(&1, :numeric_price) || parse_unit_price(&1)))
+
+  defp sort_buses(buses, "earliest"),
+    do: Enum.sort_by(buses, &departure_minutes(Map.get(&1, :departure)))
+
+  defp sort_buses(buses, "fastest"), do: Enum.sort_by(buses, &trip_minutes/1)
+  defp sort_buses(buses, _), do: buses
+
+  def bus_is_cheapest?(_bus, []), do: false
+
+  def bus_is_cheapest?(bus, buses) do
+    cheapest = Enum.min_by(buses, &(Map.get(&1, :numeric_price) || parse_unit_price(&1)))
+    to_string(cheapest.id) == to_string(bus.id)
+  end
+
+  def bus_is_fastest?(_bus, []), do: false
+
+  def bus_is_fastest?(bus, buses) do
+    fastest = Enum.min_by(buses, &trip_minutes/1)
+    to_string(fastest.id) == to_string(bus.id)
+  end
+
+  def bus_duration_label(bus) do
+    minutes = trip_minutes(bus)
+    if minutes > 0, do: "#{div(minutes, 60)}h #{rem(minutes, 60)}m", else: "Direct"
+  end
+
+  def bus_seats_left(bus) do
+    case Map.get(bus, :seats) do
+      count when is_integer(count) ->
+        "#{count} seats left"
+
+      value when is_binary(value) ->
+        if value =~ ~r/seats?/i, do: value, else: "#{value} seats left"
+
+      _ ->
+        "Seats available"
+    end
+  end
+
+  defp departure_minutes(value), do: clock_minutes(value)
+
+  defp trip_minutes(bus) do
+    departure = clock_minutes(Map.get(bus, :departure))
+    arrival = clock_minutes(Map.get(bus, :arrival))
+
+    cond do
+      departure == 0 or arrival == 0 -> 0
+      arrival > departure -> arrival - departure
+      true -> arrival + 24 * 60 - departure
+    end
+  end
+
+  defp clock_minutes(nil), do: 0
+
+  defp clock_minutes(value) do
+    value = to_string(value)
+
+    case Regex.run(~r/(\d{1,2}):(\d{2})\s*(AM|PM)?/i, value) do
+      [_, hour, minute, period] ->
+        hour = String.to_integer(hour)
+        minute = String.to_integer(minute)
+        hour = am_pm_hour(hour, String.upcase(period))
+        hour * 60 + minute
+
+      [_, hour, minute] ->
+        String.to_integer(hour) * 60 + String.to_integer(minute)
+
+      _ ->
+        0
+    end
+  end
+
+  defp am_pm_hour(12, "AM"), do: 0
+  defp am_pm_hour(hour, "PM") when hour < 12, do: hour + 12
+  defp am_pm_hour(hour, _period), do: hour
+
   # Helper logic for filtering
   defp toggle_filter(filters, value) do
     if value in filters, do: List.delete(filters, value), else: [value | filters]
@@ -1619,9 +1745,12 @@ defmodule XpressbusWeb.BookingLive do
 
     case Date.from_iso8601(center_date_str) do
       {:ok, center_date} ->
+        start_date =
+          if Date.compare(center_date, today) == :lt, do: today, else: center_date
+
         0..6
         |> Enum.map(fn offset ->
-          date = Date.add(today, offset)
+          date = Date.add(start_date, offset)
 
           %{
             date: Date.to_string(date),

@@ -540,4 +540,55 @@ defmodule XpressbusWeb.BrandComponents do
     </button>
     """
   end
+
+  attr :step, :atom, default: :search
+
+  @doc """
+  Compact four-step progress indicator for the booking journey.
+  """
+  def booking_progress(assigns) do
+    current =
+      case assigns.step do
+        :results -> 1
+        :passenger_info -> 2
+        :review_and_pay -> 3
+        _ -> 0
+      end
+
+    assigns = assign(assigns, current: current, steps: ~w(Search Seats Details Pay))
+
+    ~H"""
+    <div class="max-w-2xl mx-auto mb-6 px-2">
+      <div class="flex items-center">
+        <%= for {label, index} <- Enum.with_index(@steps) do %>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <div class={[
+              "w-6 h-6 rounded-full grid place-items-center text-[10px] font-black border-2 transition-colors",
+              index < @current && "bg-[#FF4C00] border-[#FF4C00] text-white",
+              index == @current && "bg-white border-[#FF4C00] text-[#FF4C00]",
+              index > @current && "bg-white border-slate-200 text-slate-300"
+            ]}>
+              {if index < @current, do: "✓", else: index + 1}
+            </div>
+            <span class={[
+              "text-[9px] font-black uppercase tracking-widest hidden sm:inline",
+              index <= @current && "text-slate-900",
+              index > @current && "text-slate-300"
+            ]}>
+              {label}
+            </span>
+          </div>
+          <%= if index < length(@steps) - 1 do %>
+            <div class={[
+              "flex-1 h-0.5 mx-1.5 sm:mx-2 rounded-full",
+              index < @current && "bg-[#FF4C00]",
+              index >= @current && "bg-slate-200"
+            ]}>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+    """
+  end
 end
