@@ -107,13 +107,14 @@ body { font-family: "Lufga", "Trebuchet MS", "Segoe UI", sans-serif; font-weight
 
 /* Material Symbols are self-hosted and subsetted to the icons the app uses
    (see scripts/fetch_icon_font.mjs). Re-run that script when adding an icon.
-   The fallback font is only fetched if a glyph is missing from the subset. */
+   Bump the ?v= query when regenerating so cached browsers/PWAs fetch the new
+   font; the fallback font is only fetched if a glyph is missing. */
 @font-face {
 	font-family: "Material Symbols Outlined";
 	font-style: normal;
 	font-weight: 400;
 	font-display: block;
-	src: url("/fonts/material-symbols-subset.woff2") format("woff2");
+	src: url("/fonts/material-symbols-subset.woff2?v=2") format("woff2");
 }
 
 @font-face {

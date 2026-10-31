@@ -106,6 +106,7 @@ sync_alt
 timer
 travel_explore
 tv
+verified
 verified_user
 visibility
 warning

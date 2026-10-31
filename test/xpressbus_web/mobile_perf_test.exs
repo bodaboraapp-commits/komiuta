@@ -71,6 +71,11 @@ defmodule XpressbusWeb.MobilePerfTest do
     assert File.exists?(font)
     assert File.stat!(font).size > 3_000
     assert File.exists?(icons)
+
+    # The about page uses the `verified` badge icon; make sure it is included in
+    # the subset (a missing glyph falls back to the literal word "verified").
+    icon_names = icons |> File.read!() |> String.split()
+    assert "verified" in icon_names
   end
 
   test "below-the-fold images are lazy loaded with intrinsic dimensions" do
