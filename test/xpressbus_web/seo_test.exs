@@ -117,4 +117,52 @@ defmodule XpressbusWeb.SeoTest do
     assert body =~ "\"@type\":\"FAQPage\""
     assert body =~ "Popular routes from Nairobi"
   end
+
+  test "blog index lists guide articles", %{conn: conn} do
+    body = get(conn, "/blog").resp_body
+
+    assert body =~ "Komiuta travel blog"
+    assert body =~ "rel=\"canonical\" href=\"https://www.komiuta.com/blog\""
+    assert body =~ "\"@type\":\"Blog\""
+    assert body =~ "Nairobi to Kisumu Bus Guide"
+    assert body =~ "how-to-pay-for-bus-ticket-with-mpesa"
+  end
+
+  test "blog article has BlogPosting/FAQ schema and route links", %{conn: conn} do
+    body = get(conn, "/blog/nairobi-to-kisumu-bus-guide").resp_body
+
+    assert body =~ "Nairobi to Kisumu Bus Guide"
+
+    assert body =~
+             "rel=\"canonical\" href=\"https://www.komiuta.com/blog/nairobi-to-kisumu-bus-guide\""
+
+    assert body =~ "\"@type\":\"BlogPosting\""
+    assert body =~ "\"@type\":\"FAQPage\""
+    assert body =~ "Nairobi to Kisumu bus tickets"
+    assert body =~ "How long is the bus from Nairobi to Kisumu?"
+  end
+
+  test "About page has AboutPage/Organization schema", %{conn: conn} do
+    body = get(conn, "/about").resp_body
+
+    assert body =~ "Elevating the journey across East Africa"
+    assert body =~ "rel=\"canonical\" href=\"https://www.komiuta.com/about\""
+    assert body =~ "\"@type\":\"AboutPage\""
+    assert body =~ "\"@type\":\"Organization\""
+    assert body =~ "Buses from Nairobi"
+  end
+
+  test "IndexNow key file is publicly served", %{conn: conn} do
+    body = get(conn, "/9f2c7a4e1b8d6f30c5a9e2b7d4f1a6c3.txt").resp_body
+
+    assert body == "9f2c7a4e1b8d6f30c5a9e2b7d4f1a6c3"
+  end
+
+  test "sitemap includes blog, about and article URLs", %{conn: conn} do
+    body = get(conn, "/sitemap.xml").resp_body
+
+    assert body =~ "/about"
+    assert body =~ "/blog"
+    assert body =~ "/blog/nairobi-to-kisumu-bus-guide"
+  end
 end

@@ -434,6 +434,18 @@ defmodule XpressbusWeb.BrandComponents do
               </li>
               <li>
                 <a
+                  href="/blog"
+                  class="whitespace-nowrap text-[11px] font-bold text-slate-600 hover:text-[#FF4C00] transition-colors"
+                >Travel blog</a>
+              </li>
+              <li>
+                <a
+                  href="/about"
+                  class="whitespace-nowrap text-[11px] font-bold text-slate-600 hover:text-[#FF4C00] transition-colors"
+                >About Komiuta</a>
+              </li>
+              <li>
+                <a
                   href="/tour-packages"
                   class="whitespace-nowrap text-[11px] font-bold text-slate-600 hover:text-[#FF4C00] transition-colors"
                 >Chyllz packages</a>

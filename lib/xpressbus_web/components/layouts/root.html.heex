@@ -13,6 +13,12 @@
       }
     />
     <meta name="robots" content={assigns[:page_robots] || "index,follow"} />
+    <%= if System.get_env("GOOGLE_SITE_VERIFICATION") do %>
+      <meta name="google-site-verification" content={System.get_env("GOOGLE_SITE_VERIFICATION")} />
+    <% end %>
+    <%= if System.get_env("BING_SITE_VERIFICATION") do %>
+      <meta name="msvalidate.01" content={System.get_env("BING_SITE_VERIFICATION")} />
+    <% end %>
     <%= if assigns[:page_canonical] do %>
       <link rel="canonical" href={assigns[:page_canonical]} />
     <% end %>

@@ -1,0 +1,178 @@
+<Layouts.app flash={@flash}>
+  <div class="min-h-screen bg-slate-50 text-slate-900">
+    <.main_header step={@step} current_user={@current_user} />
+
+    <main class="pt-[72px] md:pt-[80px]">
+      <section class="bg-slate-950 text-white pt-12 pb-14 px-6">
+        <div class="max-w-[1100px] mx-auto">
+          <nav
+            class="mb-5 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500"
+            aria-label="Breadcrumb"
+          >
+            <a href="/" class="hover:text-white transition-colors">Home</a>
+            <span>/</span>
+            <span class="text-slate-300">About Komiuta</span>
+          </nav>
+          <p class="mb-3 text-[10px] font-black uppercase tracking-[0.4em] text-[#FF4C00]">
+            Our story
+          </p>
+          <h1 class="text-4xl md:text-6xl font-black tracking-tighter leading-none mb-4">
+            Elevating the journey across East Africa
+          </h1>
+          <p class="max-w-3xl text-sm md:text-base font-bold leading-relaxed text-slate-400">
+            Komiuta is a technology-driven bus booking platform for Kenya, Uganda and Tanzania. We bring intercity operators and travellers onto one secure platform — live fares, real seat selection and instant tickets paid with M-PESA, card or mobile money.
+          </p>
+        </div>
+      </section>
+
+      <section class="px-6 py-10 md:py-14">
+        <div class="max-w-[1100px] mx-auto">
+          <div class="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <%= for {label, value, note} <- [
+              {"Bus operators", "100+", "Premier partners across East Africa"},
+              {"Routes covered", "200+", "Intercity routes and daily departures"},
+              {"Travellers served", "830K+", "Tickets booked since 2019"},
+              {"Support", "8AM–10PM", "Daily phone, chat and email support"}
+            ] do %>
+              <div class="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+                <div class="mb-1 text-[9px] font-black uppercase tracking-widest text-slate-400">
+                  {label}
+                </div>
+                <div class="text-2xl font-black text-[#FF4C00]">{value}</div>
+                <div class="mt-1 text-[10px] font-bold leading-snug text-slate-500">{note}</div>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="grid gap-8 lg:grid-cols-[1fr_320px] items-start">
+            <div class="space-y-6">
+              <div class="rounded-[2rem] border border-slate-100 bg-white p-6 md:p-9 shadow-sm">
+                <h2 class="mb-4 text-2xl font-black tracking-tight text-slate-900">
+                  Why Komiuta exists
+                </h2>
+                <p class="mb-3 text-sm font-semibold leading-relaxed text-slate-600">
+                  Booking an intercity bus in East Africa used to mean visiting a crowded terminal, calling around for fares or relying on word of mouth. Komiuta changes that: search your route, compare real operators and fares, choose your exact seat and pay securely from your phone.
+                </p>
+                <p class="mb-3 text-sm font-semibold leading-relaxed text-slate-600">
+                  We started in 2019 with a simple goal — make bus travel more predictable and more dignified. Today we work with premier operators across Kenya, Uganda and Tanzania, and our platform handles ticketing for hundreds of thousands of travellers every year.
+                </p>
+                <p class="mb-0 text-sm font-semibold leading-relaxed text-slate-600">
+                  Every ticket includes a boarding QR code and barcode, an instant SMS/e-mail copy and a secure link to view it later. If something goes wrong, our support team is available daily from 8 AM to 10 PM.
+                </p>
+              </div>
+
+              <div class="rounded-[2rem] border border-slate-100 bg-white p-6 md:p-9 shadow-sm">
+                <h2 class="mb-4 text-2xl font-black tracking-tight text-slate-900">
+                  What you can do on Komiuta
+                </h2>
+                <div class="grid gap-4 sm:grid-cols-2">
+                  <%= for {title, body} <- [
+                    {"Compare live fares", "See prices for normal, business and VIP seats from multiple operators on the same route."},
+                    {"Pick your seat", "Choose an available seat on the bus map before you pay — no more guessing at the terminal."},
+                    {"Pay your way", "Pay with M-PESA, Airtel Money, card or mobile money through regulated payment partners."},
+                    {"Get instant tickets", "Receive your ticket by SMS and email with QR and barcode codes for boarding."},
+                    {"Track your ticket", "Open your ticket securely with your ticket number and booking phone number."},
+                    {"Chyllz & InSURE", "Add hotels, hidden gems, car hire, events or travel insurance to your trip."}
+                  ] do %>
+                    <div class="rounded-xl border border-slate-100 bg-slate-50/60 p-4">
+                      <h3 class="mb-1 text-sm font-black text-slate-900">{title}</h3>
+                      <p class="text-[11px] font-bold leading-relaxed text-slate-500">{body}</p>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+
+              <div class="rounded-[2rem] border border-slate-100 bg-white p-6 md:p-9 shadow-sm">
+                <h2 class="mb-4 text-2xl font-black tracking-tight text-slate-900">
+                  Where we travel
+                </h2>
+                <p class="mb-4 text-sm font-semibold leading-relaxed text-slate-600">
+                  Komiuta covers major intercity routes across Kenya, Uganda and Tanzania — including Nairobi, Mombasa, Kisumu, Eldoret, Nakuru, Kericho, Kampala and Arusha.
+                </p>
+                <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  <%= for {slug, city} <- XpressbusWeb.Cities.all() do %>
+                    <a
+                      href={"/cities/" <> slug}
+                      class="flex items-center justify-between gap-2 rounded-lg border border-slate-100 px-3 py-2 text-[11px] font-black text-slate-700 transition-colors hover:border-[#FF4C00]/40 hover:text-[#FF4C00]"
+                    >
+                      <span>Buses from {city.name}</span>
+                      <span class="material-symbols-outlined !text-sm text-slate-300">arrow_forward</span>
+                    </a>
+                  <% end %>
+                </div>
+              </div>
+
+              <div class="rounded-[2rem] border border-slate-100 bg-white p-6 md:p-9 shadow-sm">
+                <h2 class="mb-4 text-2xl font-black tracking-tight text-slate-900">
+                  Trust, security and support
+                </h2>
+                <ul class="space-y-2">
+                  <%= for line <- [
+                    "Payments are processed by regulated partners — Komiuta never stores your M-PESA PIN or full card details.",
+                    "Fares and schedules are shown before payment, with cancellation rules visible on eligible tickets.",
+                    "Tickets are delivered instantly and can be tracked securely without exposing your personal data in a URL.",
+                    "Support is available daily from 8 AM to 10 PM at hello@komiuta.com and 0800 211 211."
+                  ] do %>
+                    <li class="flex gap-2 text-xs font-semibold leading-relaxed text-slate-600">
+                      <span class="material-symbols-outlined !text-base text-emerald-500">verified</span>
+                      <span>{line}</span>
+                    </li>
+                  <% end %>
+                </ul>
+              </div>
+            </div>
+
+            <aside class="space-y-4 lg:sticky lg:top-24">
+              <div class="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+                <h2 class="mb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  Popular routes
+                </h2>
+                <div class="grid grid-cols-1 gap-1.5">
+                  <%= for {from, to} <- [{"Nairobi", "Kisumu"}, {"Nairobi", "Mombasa"}, {"Mombasa", "Nairobi"}, {"Nairobi", "Eldoret"}, {"Nairobi", "Nakuru"}] do %>
+                    <a
+                      href={XpressbusWeb.SEO.route_path(from, to)}
+                      class="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-[11px] font-black text-slate-700 transition-colors hover:bg-slate-50 hover:text-[#FF4C00]"
+                    >
+                      <span>{from} → {to}</span>
+                      <span class="material-symbols-outlined !text-sm text-slate-300">arrow_forward</span>
+                    </a>
+                  <% end %>
+                </div>
+              </div>
+
+              <div class="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+                <h2 class="mb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  Help &amp; policies
+                </h2>
+                <div class="grid grid-cols-1 gap-1.5">
+                  <%= for {label, href} <- [
+                    {"FAQs", "/faqs"},
+                    {"Track ticket", "/tickets"},
+                    {"Travel blog", "/blog"},
+                    {"Travel insurance", "/tour-packages/insurance"},
+                    {"Terms & conditions", "/terms"},
+                    {"Privacy policy", "/privacy"}
+                  ] do %>
+                    <a
+                      href={href}
+                      class="rounded-lg px-2 py-1.5 text-[11px] font-black text-slate-700 transition-colors hover:bg-slate-50 hover:text-[#FF4C00]"
+                    >{label}</a>
+                  <% end %>
+                </div>
+              </div>
+
+              <a
+                href="/"
+                class="block rounded-2xl bg-[#FF4C00] p-5 text-center text-[11px] font-black uppercase tracking-widest text-white shadow-lg shadow-orange-200 transition-colors hover:bg-[#E64400]"
+              >
+                Search buses
+              </a>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <.main_footer footer_tab={@footer_tab} />
+    </main>
+  </div>
+</Layouts.app>

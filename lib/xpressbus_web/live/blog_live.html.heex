@@ -1,0 +1,246 @@
+<Layouts.app flash={@flash}>
+  <div class="min-h-screen bg-slate-50 text-slate-900">
+    <.main_header step={@step} current_user={@current_user} />
+
+    <main class="pt-[72px] md:pt-[80px]">
+      <section class="bg-slate-950 text-white pt-12 pb-14 px-6">
+        <div class="max-w-[1100px] mx-auto">
+          <nav
+            class="mb-5 flex flex-wrap items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500"
+            aria-label="Breadcrumb"
+          >
+            <a href="/" class="hover:text-white transition-colors">Home</a>
+            <span>/</span>
+            <%= if @post do %>
+              <a href="/blog" class="hover:text-white transition-colors">Blog</a>
+              <span>/</span>
+              <span class="text-slate-300">{@post.category}</span>
+            <% else %>
+              <span class="text-slate-300">Blog</span>
+            <% end %>
+          </nav>
+
+          <%= if @post do %>
+            <p class="mb-3 text-[10px] font-black uppercase tracking-[0.4em] text-[#FF4C00]">
+              {@post.category} · {Calendar.strftime(@post.date, "%b %d, %Y")} · {@post.read_minutes} min read
+            </p>
+            <h1 class="max-w-4xl text-3xl md:text-6xl font-black tracking-tighter leading-[1.05] mb-4">
+              {@post.title}
+            </h1>
+            <p class="max-w-3xl text-sm md:text-base font-bold leading-relaxed text-slate-400">
+              {@post.excerpt}
+            </p>
+          <% else %>
+            <p class="mb-3 text-[10px] font-black uppercase tracking-[0.4em] text-[#FF4C00]">
+              Travel guides
+            </p>
+            <h1 class="text-4xl md:text-6xl font-black tracking-tighter leading-none mb-4">
+              Komiuta travel blog
+            </h1>
+            <p class="max-w-2xl text-sm md:text-base font-bold leading-relaxed text-slate-400">
+              Practical guides to bus travel in Kenya and East Africa — route fares, terminals, M-PESA payment tips and how to book with confidence.
+            </p>
+          <% end %>
+        </div>
+      </section>
+
+      <%= if @post do %>
+        <section class="px-6 py-10 md:py-14">
+          <div class="max-w-[1100px] mx-auto grid gap-8 lg:grid-cols-[1fr_320px] items-start">
+            <article class="rounded-[2rem] border border-slate-100 bg-white p-6 md:p-10 shadow-sm">
+              <div class="prose-komiuta max-w-none">
+                <%= for section <- @post.sections do %>
+                  <h2 class="mt-8 first:mt-0 mb-3 text-xl md:text-2xl font-black tracking-tight text-slate-900">
+                    {section.heading}
+                  </h2>
+                  <%= for paragraph <- section.paragraphs do %>
+                    <p class="mb-3 text-sm font-semibold leading-relaxed text-slate-600">
+                      {paragraph}
+                    </p>
+                  <% end %>
+                  <%= if Map.get(section, :bullets, []) != [] do %>
+                    <ul class="mb-4 space-y-1.5 pl-5 list-disc marker:text-[#FF4C00]">
+                      <li
+                        :for={bullet <- Map.get(section, :bullets, [])}
+                        class="text-sm font-semibold leading-relaxed text-slate-600"
+                      >
+                        {bullet}
+                      </li>
+                    </ul>
+                  <% end %>
+                <% end %>
+              </div>
+
+              <div class="mt-8 rounded-2xl border border-slate-100 bg-slate-50/70 p-5">
+                <h2 class="mb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  Book this route
+                </h2>
+                <div class="grid gap-2 sm:grid-cols-2">
+                  <%= for {label, href} <- @post.links do %>
+                    <a
+                      href={href}
+                      class="flex items-center justify-between gap-2 rounded-xl border border-slate-100 bg-white px-4 py-3 text-[11px] font-black text-slate-700 transition-colors hover:border-[#FF4C00]/40 hover:text-[#FF4C00]"
+                    >
+                      <span>{label}</span>
+                      <span class="material-symbols-outlined !text-sm text-slate-300">arrow_forward</span>
+                    </a>
+                  <% end %>
+                </div>
+              </div>
+
+              <div class="mt-8 border-t border-slate-100 pt-6">
+                <h2 class="mb-3 text-xl md:text-2xl font-black tracking-tight text-slate-900">
+                  Frequently asked questions
+                </h2>
+                <div class="divide-y divide-slate-100">
+                  <%= for faq <- @post.faqs do %>
+                    <details class="group py-4">
+                      <summary class="flex cursor-pointer items-center justify-between gap-3 text-sm font-black text-slate-900">
+                        {faq.question}
+                        <span class="text-[#FF4C00] text-lg leading-none transition-transform group-open:rotate-45">+</span>
+                      </summary>
+                      <p class="mt-2 text-xs font-semibold leading-relaxed text-slate-500">
+                        {faq.answer}
+                      </p>
+                    </details>
+                  <% end %>
+                </div>
+              </div>
+
+              <div class="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-5 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                <span>By Komiuta · Updated {Calendar.strftime(@post.updated, "%b %d, %Y")}</span>
+                <a href="/blog" class="text-[#FF4C00] hover:underline">← All guides</a>
+              </div>
+            </article>
+
+            <aside class="space-y-4 lg:sticky lg:top-24">
+              <a
+                href="/"
+                class="block rounded-2xl bg-[#FF4C00] p-5 text-center text-[11px] font-black uppercase tracking-widest text-white shadow-lg shadow-orange-200 transition-colors hover:bg-[#E64400]"
+              >
+                Search buses
+              </a>
+
+              <%= if @related_posts != [] do %>
+                <div class="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+                  <h2 class="mb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    More guides
+                  </h2>
+                  <div class="space-y-3">
+                    <%= for post <- @related_posts do %>
+                      <a href={"/blog/" <> post.slug} class="block group">
+                        <span class="text-[9px] font-black uppercase tracking-widest text-[#FF4C00]">{post.category}</span>
+                        <span class="mt-1 block text-xs font-black leading-snug text-slate-800 group-hover:text-[#FF4C00]">{post.title}</span>
+                      </a>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+
+              <div class="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+                <h2 class="mb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  Popular routes
+                </h2>
+                <div class="grid grid-cols-1 gap-1.5">
+                  <%= for {from, to} <- [{"Nairobi", "Kisumu"}, {"Nairobi", "Mombasa"}, {"Mombasa", "Nairobi"}, {"Nairobi", "Eldoret"}] do %>
+                    <a
+                      href={XpressbusWeb.SEO.route_path(from, to)}
+                      class="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-[11px] font-black text-slate-700 transition-colors hover:bg-slate-50 hover:text-[#FF4C00]"
+                    >
+                      <span>{from} → {to}</span>
+                      <span class="material-symbols-outlined !text-sm text-slate-300">arrow_forward</span>
+                    </a>
+                  <% end %>
+                </div>
+              </div>
+
+              <div class="rounded-2xl border border-orange-100 bg-orange-50/60 p-5">
+                <h2 class="mb-2 text-[10px] font-black uppercase tracking-widest text-orange-500">
+                  Need help?
+                </h2>
+                <p class="mb-3 text-[11px] font-bold leading-relaxed text-slate-600">
+                  Read the FAQs or contact our support team before you travel.
+                </p>
+                <a
+                  href="/faqs"
+                  class="text-[10px] font-black uppercase tracking-widest text-[#FF4C00] hover:underline"
+                >
+                  Read FAQs →
+                </a>
+              </div>
+            </aside>
+          </div>
+        </section>
+      <% else %>
+        <section class="px-6 py-10 md:py-14">
+          <div class="max-w-[1100px] mx-auto">
+            <div class="grid gap-4 md:grid-cols-3">
+              <%= for post <- @posts do %>
+                <article class="flex flex-col rounded-[2rem] border border-slate-100 bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-200/60">
+                  <div class="mb-3 flex items-center justify-between gap-2">
+                    <span class="rounded-full bg-orange-50 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-[#FF4C00]">
+                      {post.category}
+                    </span>
+                    <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                      {post.read_minutes} min read
+                    </span>
+                  </div>
+                  <h2 class="mb-2 text-lg font-black leading-snug tracking-tight text-slate-900">
+                    <a href={"/blog/" <> post.slug} class="hover:text-[#FF4C00] transition-colors">{post.title}</a>
+                  </h2>
+                  <p class="mb-4 flex-1 text-xs font-semibold leading-relaxed text-slate-500">
+                    {post.excerpt}
+                  </p>
+                  <div class="flex items-center justify-between border-t border-slate-100 pt-3">
+                    <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                      {Calendar.strftime(post.date, "%b %d, %Y")}
+                    </span>
+                    <a
+                      href={"/blog/" <> post.slug}
+                      class="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-[#FF4C00] hover:underline"
+                    >
+                      Read <span class="material-symbols-outlined !text-sm">arrow_forward</span>
+                    </a>
+                  </div>
+                </article>
+              <% end %>
+            </div>
+
+            <div class="mt-8 grid gap-4 md:grid-cols-2">
+              <div class="rounded-[2rem] border border-slate-100 bg-white p-6 md:p-8">
+                <h2 class="mb-2 text-lg font-black tracking-tight text-slate-900">
+                  Looking for a specific route?
+                </h2>
+                <p class="mb-4 text-xs font-semibold leading-relaxed text-slate-500">
+                  Search live buses and fares for any route in Kenya, Uganda and Tanzania.
+                </p>
+                <a
+                  href="/"
+                  class="inline-flex rounded-full bg-[#FF4C00] px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-white transition-colors hover:bg-[#E64400]"
+                >
+                  Search buses
+                </a>
+              </div>
+              <div class="rounded-[2rem] border border-orange-100 bg-orange-50/60 p-6 md:p-8">
+                <h2 class="mb-2 text-lg font-black tracking-tight text-slate-900">
+                  Questions before you travel?
+                </h2>
+                <p class="mb-4 text-xs font-semibold leading-relaxed text-slate-600">
+                  Booking, payment, ticket delivery and cancellation answers are on our FAQ page.
+                </p>
+                <a
+                  href="/faqs"
+                  class="inline-flex rounded-full border border-[#FF4C00]/30 bg-white px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-[#FF4C00] transition-colors hover:border-[#FF4C00]"
+                >
+                  Read FAQs
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+      <% end %>
+
+      <.main_footer footer_tab={@footer_tab} />
+    </main>
+  </div>
+</Layouts.app>

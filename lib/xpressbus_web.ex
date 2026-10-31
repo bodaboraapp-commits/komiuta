@@ -19,7 +19,7 @@ defmodule XpressbusWeb do
 
   def static_paths,
     do:
-      ~w(assets fonts images favicon.ico robots.txt sitemap.xml llms.txt manifest.json sw.js offline.html)
+      ~w(assets fonts images favicon.ico robots.txt sitemap.xml llms.txt manifest.json sw.js offline.html 9f2c7a4e1b8d6f30c5a9e2b7d4f1a6c3.txt)
 
   def router do
     quote do
