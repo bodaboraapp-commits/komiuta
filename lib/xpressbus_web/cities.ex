@@ -47,6 +47,14 @@ defmodule XpressbusWeb.Cities do
       intro:
         "Find buses from Nakuru to Nairobi, Eldoret, Kisumu and Kericho, compare fares and reserve a seat in minutes."
     },
+    "kitale" => %{
+      name: "Kitale",
+      region: "Kenya",
+      tagline: "Trans Nzoia farming hub with buses to Nairobi, Eldoret and Kisumu.",
+      terminals: "Kitale Main Bus Station",
+      intro:
+        "Book Kitale to Nairobi, Eldoret or Kisumu bus tickets online. Compare operators, departure times and fares before paying securely with M-PESA."
+    },
     "kericho" => %{
       name: "Kericho",
       region: "Kenya",

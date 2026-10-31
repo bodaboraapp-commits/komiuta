@@ -340,8 +340,7 @@ defmodule XpressbusWeb.BrandComponents do
     {"Nairobi", "Eldoret"},
     {"Eldoret", "Nairobi"},
     {"Nairobi", "Nakuru"},
-    {"Kisumu", "Nairobi"},
-    {"Nairobi", "Kericho"}
+    {"Kisumu", "Nairobi"}
   ]
 
   @footer_cities [
@@ -350,7 +349,8 @@ defmodule XpressbusWeb.BrandComponents do
     {"kisumu", "Kisumu"},
     {"eldoret", "Eldoret"},
     {"nakuru", "Nakuru"},
-    {"kericho", "Kericho"}
+    {"kericho", "Kericho"},
+    {"kitale", "Kitale"}
   ]
 
   def main_footer(assigns) do
