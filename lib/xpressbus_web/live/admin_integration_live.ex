@@ -4,6 +4,11 @@ defmodule XpressbusWeb.AdminIntegrationLive do
   alias Xpressbus.Integrations
 
   @providers %{
+    "user_login" => %{
+      label: "User Login",
+      icon: "login",
+      description: "Choose how travellers sign in: email code, SMS code, or both"
+    },
     "mpesa" => %{
       label: "MPESA",
       icon: "account_balance_wallet",
@@ -60,6 +65,36 @@ defmodule XpressbusWeb.AdminIntegrationLive do
 
   def handle_event("switch_provider", %{"provider" => provider}, socket) do
     {:noreply, assign(socket, :current_provider, provider)}
+  end
+
+  def handle_event("save", %{"provider" => "user_login", "config" => config_params}, socket) do
+    method =
+      if config_params["method"] in Xpressbus.Integrations.login_methods() do
+        config_params["method"]
+      else
+        "email"
+      end
+
+    case Integrations.upsert_config_by_provider("user_login", %{
+           active: true,
+           config: %{"method" => method}
+         }) do
+      {:ok, _config} ->
+        message =
+          case method do
+            "email" -> "Travellers will sign in with email login codes."
+            "sms" -> "Travellers will sign in with Firebase SMS codes."
+            "both" -> "Travellers can sign in with either email or SMS codes."
+          end
+
+        {:noreply,
+         socket
+         |> put_flash(:info, message)
+         |> assign(:settings, load_settings())}
+
+      {:error, _changeset} ->
+        {:noreply, put_flash(socket, :error, "Failed to save the login setting")}
+    end
   end
 
   def handle_event("save", %{"provider" => provider, "config" => config_params}, socket) do

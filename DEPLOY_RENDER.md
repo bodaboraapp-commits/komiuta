@@ -100,8 +100,11 @@ server verifies the browser's Firebase ID token through Google's Identity Toolki
 5. Optional Render env overrides (only needed if the project changes): `FIREBASE_API_KEY`,
    `FIREBASE_AUTH_DOMAIN`, `FIREBASE_PROJECT_ID`, `FIREBASE_STORAGE_BUCKET`,
    `FIREBASE_MESSAGING_SENDER_ID`, `FIREBASE_APP_ID`.
-6. The SMS option appears on `/user/login`. Only **existing Komiuta accounts** can use it (the verified
-   phone must match an account phone); new travellers must sign up with an email first.
+6. The SMS option appears on `/user/login` when the admin chooses **SMS** or **Both** under
+   `/admin/integration → User Login`. The default is **Email** (email OTP only). Only **existing
+   Komiuta accounts** can use SMS (the verified phone must match an account phone); new travellers
+   must sign up with an email first. If SMS is selected but Firebase is not configured, the login page
+   automatically falls back to email.
 7. `/admin/integration → Firebase SMS → Check Firebase Configuration` verifies that the project/API key
    is reachable and that Authentication is initialised.
 

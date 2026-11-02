@@ -105,8 +105,11 @@ defmodule Xpressbus.FirebaseTest do
 
       assert live =~ ~s("firebase" =>)
       assert live =~ "Firebase Phone Authentication"
+      assert live =~ ~s("user_login" =>)
+      assert live =~ "User Login"
       assert template =~ "Firebase Phone Authentication"
       assert template =~ "Open Firebase Console"
+      assert template =~ "Traveller login method"
     end
   end
 end

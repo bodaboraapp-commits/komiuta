@@ -4,7 +4,7 @@ defmodule XpressbusWeb.UserAuthTest do
   import Ecto.Query
   import Swoosh.TestAssertions
 
-  alias Xpressbus.{Accounts, Repo}
+  alias Xpressbus.{Accounts, Integrations, Repo}
   alias Xpressbus.Accounts.{LoginCode, User}
 
   defp create_user do
@@ -143,13 +143,41 @@ defmodule XpressbusWeb.UserAuthTest do
   end
 
   describe "Firebase SMS login" do
-    test "login page renders the SMS option", %{conn: conn} do
+    test "login page renders both options when the admin selects both", %{conn: conn} do
+      {:ok, _} =
+        Integrations.upsert_config_by_provider("user_login", %{
+          active: true,
+          config: %{"method" => "both"}
+        })
+
       html = conn |> get(~p"/user/login") |> html_response(200)
 
       assert html =~ "firebase-sms-auth"
       assert html =~ "Send SMS Code"
       assert html =~ "firebase_phone_auth.js"
       assert html =~ "data-api-key"
+      assert html =~ "Send Login Code"
+    end
+
+    test "login page shows only email by default", %{conn: conn} do
+      html = conn |> get(~p"/user/login") |> html_response(200)
+
+      refute html =~ "firebase-sms-auth"
+      assert html =~ "Send Login Code"
+    end
+
+    test "login page shows only SMS when the admin selects SMS", %{conn: conn} do
+      {:ok, _} =
+        Integrations.upsert_config_by_provider("user_login", %{
+          active: true,
+          config: %{"method" => "sms"}
+        })
+
+      html = conn |> get(~p"/user/login") |> html_response(200)
+
+      assert html =~ "firebase-sms-auth"
+      assert html =~ "Send SMS Code"
+      refute html =~ ~s(id="login-identifier")
     end
 
     test "rejects a missing Firebase ID token", %{conn: conn} do

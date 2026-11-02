@@ -70,4 +70,32 @@ defmodule Xpressbus.IntegrationsTest do
       assert %Ecto.Changeset{} = Integrations.change_payment_config(payment_config)
     end
   end
+
+  describe "user login method" do
+    test "defaults to email when nothing is configured" do
+      assert Integrations.login_method() == "email"
+    end
+
+    test "returns the saved email, sms or both method" do
+      for method <- ["email", "sms", "both"] do
+        {:ok, _} =
+          Integrations.upsert_config_by_provider("user_login", %{
+            active: true,
+            config: %{"method" => method}
+          })
+
+        assert Integrations.login_method() == method
+      end
+    end
+
+    test "falls back to email for an unknown method" do
+      {:ok, _} =
+        Integrations.upsert_config_by_provider("user_login", %{
+          active: true,
+          config: %{"method" => "magic-link"}
+        })
+
+      assert Integrations.login_method() == "email"
+    end
+  end
 end

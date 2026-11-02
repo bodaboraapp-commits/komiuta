@@ -59,6 +59,10 @@ The booking page hero section has fixed settings that must not be changed:
   verified phone is matched to an existing account. Config lives in `config/config.exs` under
   `:firebase` (overridable with `FIREBASE_*` env vars); admin status/check is on
   `/admin/integration → Firebase SMS`. Only existing accounts can use SMS login.
+- **Admin login-method choice:** `/admin/integration → User Login` stores `integrations` provider
+  `user_login` with `config.method` = `email` (default), `sms`, or `both`. The login page renders the
+  selected method; if SMS is selected but Firebase is not configured, it falls back to email so users
+  are not locked out. Google sign-in remains available independent of this setting.
 - Codes: 6 digits, 10-minute expiry, single use, max 5 attempts, HMAC-hashed at rest (`login_codes` table)
 - Registration (`/user/signup` → `/user/register`) now **requires a valid email address** — it is the login factor
 - Google OAuth (`/auth/google`) remains available and signs in with the Google-verified email

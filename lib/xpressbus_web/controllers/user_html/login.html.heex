@@ -41,46 +41,50 @@
                 </div>
               </div>
 
-              <form action={~p"/user/auth"} method="post" class="space-y-5">
-                <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
-                <div>
-                  <label
-                    for="login-identifier"
-                    class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest"
+              <%= if @show_email_login do %>
+                <form action={~p"/user/auth"} method="post" class="space-y-5">
+                  <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
+                  <div>
+                    <label
+                      for="login-identifier"
+                      class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest"
+                    >
+                      Phone or Email
+                    </label>
+                    <input
+                      id="login-identifier"
+                      type="text"
+                      inputmode="email"
+                      name="user[identifier]"
+                      autocomplete="username"
+                      placeholder="07XX XXX XXX or you@example.com"
+                      class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:border-[#FF4C00] transition outline-none"
+                      required
+                    />
+                    <p class="text-[10px] font-bold text-slate-400 mt-2 leading-relaxed">
+                      Enter your phone number or email address. We'll email you a 6-digit login code.
+                    </p>
+                  </div>
+                  <button
+                    type="submit"
+                    class="w-full bg-[#FF4C00] text-white py-4 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-[#E64400] transition shadow-lg shadow-orange-200"
                   >
-                    Phone or Email
-                  </label>
-                  <input
-                    id="login-identifier"
-                    type="text"
-                    inputmode="email"
-                    name="user[identifier]"
-                    autocomplete="username"
-                    placeholder="07XX XXX XXX or you@example.com"
-                    class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:border-[#FF4C00] transition outline-none"
-                    required
-                  />
-                  <p class="text-[10px] font-bold text-slate-400 mt-2 leading-relaxed">
-                    Enter your phone number or email address. We'll email you a 6-digit login code.
-                  </p>
-                </div>
-                <button
-                  type="submit"
-                  class="w-full bg-[#FF4C00] text-white py-4 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-[#E64400] transition shadow-lg shadow-orange-200"
-                >
-                  Send Login Code
-                </button>
-              </form>
+                    Send Login Code
+                  </button>
+                </form>
+              <% end %>
 
-              <%= if @firebase_config do %>
-                <div class="relative my-6">
-                  <div class="absolute inset-0 flex items-center">
-                    <div class="w-full border-t border-slate-100"></div>
+              <%= if @show_sms_login do %>
+                <%= if @show_email_login do %>
+                  <div class="relative my-6">
+                    <div class="absolute inset-0 flex items-center">
+                      <div class="w-full border-t border-slate-100"></div>
+                    </div>
+                    <div class="relative flex justify-center text-[9px] uppercase font-black tracking-widest">
+                      <span class="bg-white px-4 text-slate-400">or use SMS</span>
+                    </div>
                   </div>
-                  <div class="relative flex justify-center text-[9px] uppercase font-black tracking-widest">
-                    <span class="bg-white px-4 text-slate-400">or use SMS</span>
-                  </div>
-                </div>
+                <% end %>
 
                 <div
                   id="firebase-sms-auth"

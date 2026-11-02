@@ -12,7 +12,26 @@ defmodule XpressbusWeb.UserController do
   alias Xpressbus.Accounts
 
   def login(conn, _params) do
-    render(conn, :login, firebase_config: Xpressbus.Firebase.client_config())
+    render(conn, :login, login_page_assigns())
+  end
+
+  defp login_page_assigns do
+    method = Xpressbus.Integrations.login_method()
+    firebase_config = Xpressbus.Firebase.client_config()
+
+    show_sms =
+      method in ["sms", "both"] and not is_nil(firebase_config)
+
+    # If SMS was selected but Firebase is not configured yet, fall back to email
+    # so travellers are never locked out.
+    show_email = method in ["email", "both"] or not show_sms
+
+    %{
+      firebase_config: firebase_config,
+      login_method: method,
+      show_email_login: show_email,
+      show_sms_login: show_sms
+    }
   end
 
   @doc """
@@ -97,7 +116,7 @@ defmodule XpressbusWeb.UserController do
     if identifier == "" do
       conn
       |> put_flash(:error, "Enter your phone number or email address.")
-      |> render(:login, firebase_config: Xpressbus.Firebase.client_config())
+      |> render(:login, login_page_assigns())
     else
       case Accounts.request_login_code(identifier) do
         {:ok, user} ->

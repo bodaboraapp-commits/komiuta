@@ -50,6 +50,27 @@ defmodule Xpressbus.Integrations do
     Repo.get_by(PaymentConfig, provider: provider)
   end
 
+  @login_methods ~w(email sms both)
+
+  @doc """
+  The traveller login method selected on the admin Integration page.
+
+  `email` is the safe default (email OTP only). `sms` uses Firebase SMS OTP and
+  `both` shows both options. Falls back to `email` when nothing is configured.
+  """
+  def login_method do
+    case get_config_by_provider("user_login") do
+      %{active: true, config: config} when is_map(config) ->
+        method = config["method"]
+        if method in @login_methods, do: method, else: "email"
+
+      _ ->
+        "email"
+    end
+  end
+
+  def login_methods, do: @login_methods
+
   @doc """
   Upserts a payment config by provider.
   Expects attrs to be a map with :active and :config (the config map).

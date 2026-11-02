@@ -58,6 +58,89 @@
               <% end %>
             </div>
 
+            <%!-- User Login Method --%>
+            <%= if @current_provider == "user_login" do %>
+              <% login_config = provider_config(@settings, "user_login") %>
+              <% selected_method = login_config["method"] || "email" %>
+              <div class="animate-fade-in-up space-y-8">
+                <form phx-submit="save" class="space-y-8">
+                  <input type="hidden" name="provider" value="user_login" />
+
+                  <div>
+                    <h4 class="font-black text-slate-900 text-sm uppercase tracking-widest">
+                      Traveller login method
+                    </h4>
+                    <p class="text-[11px] font-bold text-slate-400 mt-1">
+                      Choose how travellers sign in to their Komiuta accounts. Google sign-in remains available on all options.
+                    </p>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <%= for {value, label, description, icon} <- [
+                      {"email", "Email code", "Sends a 6-digit login code to the account email address.", "mail"},
+                      {"sms", "SMS code", "Sends a one-time code to the account phone via Firebase SMS.", "sms"},
+                      {"both", "Email or SMS", "Travellers can choose either email or SMS at login.", "login"}
+                    ] do %>
+                      <label class={[
+                        "relative cursor-pointer rounded-[1.5rem] border-2 p-5 transition-all",
+                        selected_method == value && "border-[#FF4C00] bg-orange-50/60 shadow-sm",
+                        selected_method != value &&
+                          "border-slate-100 bg-white hover:border-slate-200"
+                      ]}>
+                        <input
+                          type="radio"
+                          name="config[method]"
+                          value={value}
+                          checked={selected_method == value}
+                          class="sr-only"
+                        />
+                        <span class="material-symbols-outlined !text-2xl text-[#FF4C00]">{icon}</span>
+                        <span class="mt-3 block text-sm font-black text-slate-900">{label}</span>
+                        <span class="mt-1 block text-[10px] font-bold text-slate-400 leading-relaxed">{description}</span>
+                        <%= if selected_method == value do %>
+                          <span class="material-symbols-outlined absolute top-4 right-4 !text-lg text-[#FF4C00]">check_circle</span>
+                        <% end %>
+                      </label>
+                    <% end %>
+                  </div>
+
+                  <%= if selected_method in ["sms", "both"] do %>
+                    <%= if @firebase_config do %>
+                      <div class="rounded-[1.5rem] bg-emerald-50 border border-emerald-100 p-5">
+                        <p class="text-[11px] font-bold text-emerald-800">
+                          Firebase SMS is configured for project <strong>{@firebase_config.project_id}</strong>.
+                          Phone sign-in must be enabled and the Blaze billing plan active in the Firebase Console for SMS to send.
+                        </p>
+                      </div>
+                    <% else %>
+                      <div class="rounded-[1.5rem] bg-amber-50 border border-amber-100 p-5">
+                        <p class="text-[11px] font-bold text-amber-800">
+                          Firebase SMS isn't configured yet, so choosing SMS will fall back to email login until it is set up.
+                        </p>
+                      </div>
+                    <% end %>
+                  <% end %>
+
+                  <div class="pt-2 flex flex-wrap gap-4">
+                    <button
+                      type="submit"
+                      class="flex-1 min-w-[220px] bg-[#FF4C00] text-white py-4 rounded-[1.5rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-orange-100 hover:bg-[#E64400] transition-all transform active:scale-95"
+                    >
+                      Save Login Setting
+                    </button>
+                    <button
+                      type="button"
+                      phx-click="switch_provider"
+                      phx-value-provider="firebase"
+                      class="px-8 bg-slate-900 text-white py-4 rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-200 hover:bg-black transition-all"
+                    >
+                      Firebase SMS Settings
+                    </button>
+                  </div>
+                </form>
+              </div>
+            <% end %>
+
             <%!-- MPESA Integration Form --%>
             <%= if @current_provider == "mpesa" do %>
               <% mpesa_config = provider_config(@settings, "mpesa") %>
