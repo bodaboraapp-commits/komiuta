@@ -60,10 +60,14 @@
 
             <%!-- User Login Method --%>
             <%= if @current_provider == "user_login" do %>
-              <% login_config = provider_config(@settings, "user_login") %>
-              <% selected_method = login_config["method"] || "email" %>
+              <% selected_method = @login_method_choice %>
               <div class="animate-fade-in-up space-y-8">
-                <form phx-submit="save" class="space-y-8">
+                <form
+                  id="user-login-method-form"
+                  phx-submit="save"
+                  phx-change="select_login_method"
+                  class="space-y-8"
+                >
                   <input type="hidden" name="provider" value="user_login" />
 
                   <div>

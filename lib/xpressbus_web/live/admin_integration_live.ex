@@ -51,6 +51,7 @@ defmodule XpressbusWeb.AdminIntegrationLive do
        |> assign(:providers, @providers)
        |> assign(:settings, settings)
        |> assign(:firebase_config, Xpressbus.Firebase.client_config())
+       |> assign(:login_method_choice, Integrations.login_method())
        |> assign(:sidebar_collapsed, false)
        |> assign(:bus_expanded, true)
        |> assign(:chyllz_expanded, true)
@@ -66,6 +67,16 @@ defmodule XpressbusWeb.AdminIntegrationLive do
   def handle_event("switch_provider", %{"provider" => provider}, socket) do
     {:noreply, assign(socket, :current_provider, provider)}
   end
+
+  def handle_event("select_login_method", %{"config" => %{"method" => method}}, socket) do
+    if method in Integrations.login_methods() do
+      {:noreply, assign(socket, :login_method_choice, method)}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_event("select_login_method", _params, socket), do: {:noreply, socket}
 
   def handle_event("save", %{"provider" => "user_login", "config" => config_params}, socket) do
     method =
@@ -89,6 +100,7 @@ defmodule XpressbusWeb.AdminIntegrationLive do
 
         {:noreply,
          socket
+         |> assign(:login_method_choice, method)
          |> put_flash(:info, message)
          |> assign(:settings, load_settings())}
 
