@@ -190,6 +190,7 @@ function friendlyError(error) {
 
   const messages = {
     "auth/operation-not-allowed": "Phone sign-in is disabled in Firebase. Enable Authentication → Sign-in method → Phone, then try again.",
+    "auth/billing-not-enabled": "Firebase SMS requires the Blaze billing plan. Upgrade the komiuta project in Firebase Console → Usage and billing, then retry.",
     "auth/invalid-phone-number": "That phone number looks invalid. Use the format +254 7XX XXX XXX.",
     "auth/too-many-requests": "Too many SMS attempts. Please wait a few minutes and try again.",
     "auth/quota-exceeded": "The SMS quota has been reached. Please use the email login code instead.",

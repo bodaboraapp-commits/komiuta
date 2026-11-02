@@ -94,8 +94,9 @@ server verifies the browser's Firebase ID token through Google's Identity Toolki
 2. Enable **Sign-in method → Phone**.
 3. **Authentication → Settings → Authorized domains**: add `www.komiuta.com`, `komiuta.com` and
    `localhost`.
-4. Configure the SMS region policy to allow **Kenya (+254)**. Firebase may require the **Blaze** plan
-   for production SMS volume; add test phone numbers in the console while developing.
+4. Configure the SMS region policy to allow **Kenya (+254)**. Firebase Phone Authentication SMS
+   **requires the Blaze billing plan** (the free Spark plan returns `auth/billing-not-enabled`);
+   add test phone numbers in the console while developing.
 5. Optional Render env overrides (only needed if the project changes): `FIREBASE_API_KEY`,
    `FIREBASE_AUTH_DOMAIN`, `FIREBASE_PROJECT_ID`, `FIREBASE_STORAGE_BUCKET`,
    `FIREBASE_MESSAGING_SENDER_ID`, `FIREBASE_APP_ID`.
