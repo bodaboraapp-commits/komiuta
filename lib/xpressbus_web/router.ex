@@ -96,6 +96,7 @@ defmodule XpressbusWeb.Router do
     pipe_through [:browser, :throttle_auth]
 
     post "/auth", UserController, :authenticate
+    post "/firebase/verify", UserController, :firebase_verify
   end
 
   scope "/user", XpressbusWeb do

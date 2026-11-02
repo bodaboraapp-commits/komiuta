@@ -84,6 +84,28 @@ Alternatives supported by the app: Mailgun (`MAILGUN_API_KEY` + `MAILGUN_DOMAIN`
 > resolve in DNS (the MX hosts only accept inbound mail on port 25 and do not offer authenticated
 > submission). Rotate any password shared in plain text.
 
+### Firebase SMS OTP (optional second login)
+
+SMS one-time codes are sent by **Firebase Phone Authentication**. Email OTP stays available as the
+fallback. The public Firebase web config is committed in `config/config.exs` (project `komiuta`); the
+server verifies the browser's Firebase ID token through Google's Identity Toolkit REST API.
+
+1. **Firebase Console → Authentication → Get started** (the project must be initialised once).
+2. Enable **Sign-in method → Phone**.
+3. **Authentication → Settings → Authorized domains**: add `www.komiuta.com`, `komiuta.com` and
+   `localhost`.
+4. Configure the SMS region policy to allow **Kenya (+254)**. Firebase may require the **Blaze** plan
+   for production SMS volume; add test phone numbers in the console while developing.
+5. Optional Render env overrides (only needed if the project changes): `FIREBASE_API_KEY`,
+   `FIREBASE_AUTH_DOMAIN`, `FIREBASE_PROJECT_ID`, `FIREBASE_STORAGE_BUCKET`,
+   `FIREBASE_MESSAGING_SENDER_ID`, `FIREBASE_APP_ID`.
+6. The SMS option appears on `/user/login`. Only **existing Komiuta accounts** can use it (the verified
+   phone must match an account phone); new travellers must sign up with an email first.
+7. `/admin/integration → Firebase SMS → Check Firebase Configuration` verifies that the project/API key
+   is reachable and that Authentication is initialised.
+
+The admin **Integration** page also shows the configured project ID, auth domain and a masked API key.
+
 Generate the base64 CA value on Windows:
 
 ```powershell

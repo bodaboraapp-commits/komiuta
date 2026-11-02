@@ -23,6 +23,26 @@ end
 config :xpressbus, XpressbusWeb.Endpoint,
   http: [port: String.to_integer(System.get_env("PORT", "4000"))]
 
+# Firebase Phone Auth web config. The defaults live in config/config.exs; any
+# FIREBASE_* env var set on the host overrides just that value if it is
+# non-empty (the Firebase web config is public, not a secret).
+firebase_env =
+  %{
+    api_key: System.get_env("FIREBASE_API_KEY"),
+    auth_domain: System.get_env("FIREBASE_AUTH_DOMAIN"),
+    project_id: System.get_env("FIREBASE_PROJECT_ID"),
+    storage_bucket: System.get_env("FIREBASE_STORAGE_BUCKET"),
+    messaging_sender_id: System.get_env("FIREBASE_MESSAGING_SENDER_ID"),
+    app_id: System.get_env("FIREBASE_APP_ID"),
+    measurement_id: System.get_env("FIREBASE_MEASUREMENT_ID")
+  }
+  |> Enum.reject(fn {_key, value} -> is_nil(value) or String.trim(value) == "" end)
+  |> Map.new()
+
+config :xpressbus,
+       :firebase,
+       Application.get_env(:xpressbus, :firebase, %{}) |> Map.merge(firebase_env)
+
 if config_env() == :dev do
   # Reload browser tabs when matching files change.
   config :xpressbus, XpressbusWeb.Endpoint,

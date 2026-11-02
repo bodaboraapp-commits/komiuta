@@ -52,6 +52,13 @@ The booking page hero section has fixed settings that must not be changed:
 - `/user/auth` (POST) emails a **6-digit one-time code** to the account's email; it does **not** create a session yet
 - `/user/verify` (GET/POST) is where the code is entered; on success the session is created with `user_id` = user UUID
 - `/user/verify/resend` (POST) re-sends a code (60s cooldown, max 5 codes/hour per account)
+- **Firebase SMS OTP (optional second option):** `/user/login` shows a "Sign in with SMS" panel when
+  `Xpressbus.Firebase.client_config/0` is configured. The browser uses the Firebase JS SDK
+  (vendored, `assets/js/firebase_phone_auth.js`) to send/confirm the SMS code; the resulting Firebase ID
+  token is POSTed to `/user/firebase/verify`, checked via Google's Identity Toolkit REST API, and the
+  verified phone is matched to an existing account. Config lives in `config/config.exs` under
+  `:firebase` (overridable with `FIREBASE_*` env vars); admin status/check is on
+  `/admin/integration → Firebase SMS`. Only existing accounts can use SMS login.
 - Codes: 6 digits, 10-minute expiry, single use, max 5 attempts, HMAC-hashed at rest (`login_codes` table)
 - Registration (`/user/signup` → `/user/register`) now **requires a valid email address** — it is the login factor
 - Google OAuth (`/auth/google`) remains available and signs in with the Google-verified email

@@ -141,4 +141,52 @@ defmodule XpressbusWeb.UserAuthTest do
     assert user
     assert user.email == email
   end
+
+  describe "Firebase SMS login" do
+    test "login page renders the SMS option", %{conn: conn} do
+      html = conn |> get(~p"/user/login") |> html_response(200)
+
+      assert html =~ "firebase-sms-auth"
+      assert html =~ "Send SMS Code"
+      assert html =~ "firebase_phone_auth.js"
+      assert html =~ "data-api-key"
+    end
+
+    test "rejects a missing Firebase ID token", %{conn: conn} do
+      conn = post(conn, ~p"/user/firebase/verify", %{})
+
+      assert conn.status == 400
+      assert json_response(conn, 400)["error"] =~ "Missing"
+    end
+
+    test "logs an existing user in after Firebase verifies the phone", %{conn: conn} do
+      user = create_user()
+      e164 = "+254" <> String.trim_leading(user.phone, "0")
+
+      Application.put_env(:xpressbus, :firebase_lookup_fun, fn token ->
+        assert token == "firebase-id-token"
+        {:ok, e164}
+      end)
+
+      on_exit(fn -> Application.delete_env(:xpressbus, :firebase_lookup_fun) end)
+
+      conn = post(conn, ~p"/user/firebase/verify", %{"id_token" => "firebase-id-token"})
+
+      assert %{"ok" => true, "redirect" => "/dashboard"} = json_response(conn, 200)
+      assert get_session(conn, :user_id) == user.id
+    end
+
+    test "returns not_found when the phone has no Komiuta account", %{conn: conn} do
+      Application.put_env(:xpressbus, :firebase_lookup_fun, fn _token ->
+        {:ok, "+254700000001"}
+      end)
+
+      on_exit(fn -> Application.delete_env(:xpressbus, :firebase_lookup_fun) end)
+
+      conn = post(conn, ~p"/user/firebase/verify", %{"id_token" => "firebase-id-token"})
+
+      assert conn.status == 404
+      assert json_response(conn, 404)["error"] =~ "No Komiuta account"
+    end
+  end
 end

@@ -71,6 +71,110 @@
                   Send Login Code
                 </button>
               </form>
+
+              <%= if @firebase_config do %>
+                <div class="relative my-6">
+                  <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-slate-100"></div>
+                  </div>
+                  <div class="relative flex justify-center text-[9px] uppercase font-black tracking-widest">
+                    <span class="bg-white px-4 text-slate-400">or use SMS</span>
+                  </div>
+                </div>
+
+                <div
+                  id="firebase-sms-auth"
+                  data-api-key={@firebase_config.api_key}
+                  data-auth-domain={@firebase_config.auth_domain}
+                  data-project-id={@firebase_config.project_id}
+                  data-storage-bucket={@firebase_config.storage_bucket}
+                  data-messaging-sender-id={@firebase_config.messaging_sender_id}
+                  data-app-id={@firebase_config.app_id}
+                >
+                  <form id="firebase-sms-form" class="space-y-4" novalidate>
+                    <div id="firebase-phone-step">
+                      <label
+                        for="firebase-phone"
+                        class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest"
+                      >
+                        Phone Number (SMS)
+                      </label>
+                      <input
+                        id="firebase-phone"
+                        type="tel"
+                        inputmode="tel"
+                        autocomplete="tel"
+                        placeholder="+254 7XX XXX XXX"
+                        class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:border-[#FF4C00] transition outline-none"
+                        required
+                      />
+                      <p class="text-[10px] font-bold text-slate-400 mt-2 leading-relaxed">
+                        We'll text you a one-time code via Firebase. Standard SMS rates may apply.
+                      </p>
+                    </div>
+
+                    <button
+                      id="firebase-send-code"
+                      type="submit"
+                      class="w-full bg-slate-900 text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-800 transition"
+                    >
+                      Send SMS Code
+                    </button>
+
+                    <div id="firebase-code-step" class="hidden space-y-3">
+                      <div>
+                        <label
+                          for="firebase-code"
+                          class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest"
+                        >
+                          SMS Code
+                        </label>
+                        <input
+                          id="firebase-code"
+                          type="text"
+                          inputmode="numeric"
+                          autocomplete="one-time-code"
+                          pattern="[0-9]{6}"
+                          maxlength="6"
+                          placeholder="000000"
+                          class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl font-black text-center text-xl tracking-[0.4em] focus:bg-white focus:border-[#FF4C00] transition outline-none"
+                        />
+                      </div>
+                      <button
+                        id="firebase-verify-code"
+                        type="submit"
+                        class="w-full bg-[#FF4C00] text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#E64400] transition shadow-lg shadow-orange-200"
+                      >
+                        Verify &amp; Sign In
+                      </button>
+                      <button
+                        id="firebase-change-number"
+                        type="button"
+                        class="w-full text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-[#FF4C00] transition"
+                      >
+                        Use a different number
+                      </button>
+                    </div>
+
+                    <div id="firebase-recaptcha"></div>
+                    <p
+                      id="firebase-status"
+                      class="text-[11px] font-bold text-slate-500 min-h-[16px]"
+                      role="status"
+                      aria-live="polite"
+                    >
+                    </p>
+                  </form>
+                </div>
+
+                <script
+                  defer
+                  phx-track-static
+                  type="text/javascript"
+                  src={~p"/assets/js/firebase_phone_auth.js"}
+                >
+                </script>
+              <% end %>
             </div>
 
             <p class="text-center mt-6 text-sm font-bold text-slate-400">

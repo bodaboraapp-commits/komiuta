@@ -49,12 +49,25 @@ config :xpressbus, :brand, %{
   ]
 }
 
+# Firebase Phone Authentication (SMS OTP). The web config is public — Firebase
+# web API keys are shipped to the browser and restricted by authorized domains.
+# Override any value with the matching FIREBASE_* environment variable.
+config :xpressbus, :firebase, %{
+  api_key: "AIzaSyCf-VjXL9pTY_hnHOUsd4ZX2vBLeW-_jVg",
+  auth_domain: "komiuta.firebaseapp.com",
+  project_id: "komiuta",
+  storage_bucket: "komiuta.firebasestorage.app",
+  messaging_sender_id: "99186909972",
+  app_id: "1:99186909972:web:66971835f4e45163b91801",
+  measurement_id: "G-V9JD71WH4E"
+}
+
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.25.4",
   xpressbus: [
     args:
-      ~w(js/app.js --bundle --target=es2022 --outdir=../priv/static/assets/js --external:/fonts/* --external:/images/* --alias:@=.),
+      ~w(js/app.js js/firebase_phone_auth.js --bundle --target=es2022 --outdir=../priv/static/assets/js --external:/fonts/* --external:/images/* --alias:@=.),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}
   ]

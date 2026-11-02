@@ -23,6 +23,11 @@ defmodule XpressbusWeb.AdminIntegrationLive do
       label: "Google Auth",
       icon: "login",
       description: "Configure Google OAuth 2.0 for traveler sign-in"
+    },
+    "firebase" => %{
+      label: "Firebase SMS",
+      icon: "sms",
+      description: "Firebase Phone Authentication for SMS login codes"
     }
   }
 
@@ -40,6 +45,7 @@ defmodule XpressbusWeb.AdminIntegrationLive do
        |> assign(:current_provider, current_provider)
        |> assign(:providers, @providers)
        |> assign(:settings, settings)
+       |> assign(:firebase_config, Xpressbus.Firebase.client_config())
        |> assign(:sidebar_collapsed, false)
        |> assign(:bus_expanded, true)
        |> assign(:chyllz_expanded, true)
@@ -98,6 +104,9 @@ defmodule XpressbusWeb.AdminIntegrationLive do
 
       "mpesa" ->
         test_mpesa(socket, socket.assigns.settings["mpesa"])
+
+      "firebase" ->
+        test_firebase(socket)
 
       _ ->
         {:noreply, put_flash(socket, :info, "Handshake successful! Payment gateway is active.")}
@@ -217,6 +226,45 @@ defmodule XpressbusWeb.AdminIntegrationLive do
         {:error, reason} ->
           {:noreply, put_flash(socket, :error, "M-PESA connection error: #{inspect(reason)}")}
       end
+    end
+  end
+
+  defp test_firebase(socket) do
+    case Xpressbus.Firebase.check_configuration() do
+      {:ok, :reachable} ->
+        {:noreply,
+         put_flash(
+           socket,
+           :info,
+           "Firebase Phone Auth is reachable. Make sure Phone sign-in is enabled in the Firebase Console."
+         )}
+
+      {:error, :authentication_not_initialized} ->
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           "Firebase Authentication is not initialised for project komiuta. Open Firebase Console → Authentication → Get started, then enable Phone sign-in."
+         )}
+
+      {:error, :invalid_api_key} ->
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           "The Firebase API key is invalid or expired. Check the FIREBASE_API_KEY setting."
+         )}
+
+      {:error, :not_configured} ->
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           "Firebase Phone Auth is not configured. Set the FIREBASE_* environment variables."
+         )}
+
+      {:error, reason} ->
+        {:noreply, put_flash(socket, :error, "Firebase check failed: #{inspect(reason)}")}
     end
   end
 
