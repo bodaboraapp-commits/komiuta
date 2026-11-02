@@ -40,21 +40,19 @@ defmodule XpressbusWeb.MobilePerfTest do
     end
   end
 
-  test "hero video is a desktop-only enhancement (no phone download)" do
+  test "chyllz hero video autoplays with the optimized poster" do
     chyllz = source("lib/xpressbus_web/live/chyllz_live.ex")
     app_js = source("assets/js/app.js")
+    video_file = Path.join(@static, "images/hero_video.mp4")
 
-    refute chyllz =~ ~s(<video\s+autoplay)
-    refute chyllz =~ "<source src=\"/images/hero_video.mp4\""
-    assert chyllz =~ ~s(phx-hook="HeroVideo")
-    assert chyllz =~ ~s(data-src="/images/hero_video.mp4")
-    assert chyllz =~ ~s(preload="none")
+    assert chyllz =~ ~r/<video[^>]*autoplay/s
+    assert chyllz =~ ~s(<source src="/images/hero_video.mp4" type="video/mp4")
     assert chyllz =~ ~s(poster="/images/hero_bg-1024.webp")
+    refute chyllz =~ ~s(phx-hook="HeroVideo")
+    refute app_js =~ "const HeroVideo"
 
-    assert app_js =~ "const HeroVideo"
-    assert app_js =~ "min-width: 768px"
-    assert app_js =~ "saveData"
-    assert app_js =~ "prefers-reduced-motion"
+    assert File.exists?(video_file)
+    assert File.exists?(Path.join(@static, "images/hero_bg-1024.webp"))
   end
 
   test "Material Symbols is a small self-hosted subset" do

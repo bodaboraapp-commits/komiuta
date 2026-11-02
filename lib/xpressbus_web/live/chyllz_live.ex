@@ -504,8 +504,7 @@ defmodule XpressbusWeb.ChyllzLive do
     <section class="relative pt-20 pb-[200px] px-6 rounded-b-[4rem] md:rounded-b-[8rem] overflow-hidden bg-slate-950 text-white">
       <video
         id="chyllz-hero-video"
-        phx-hook="HeroVideo"
-        data-src="/images/hero_video.mp4"
+        autoplay
         muted
         loop
         playsinline
@@ -513,7 +512,9 @@ defmodule XpressbusWeb.ChyllzLive do
         poster="/images/hero_bg-1024.webp"
         class="absolute inset-0 w-full h-full object-cover opacity-95"
         aria-hidden="true"
-      ></video>
+      >
+        <source src="/images/hero_video.mp4" type="video/mp4" />
+      </video>
       <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40">
       </div>
 

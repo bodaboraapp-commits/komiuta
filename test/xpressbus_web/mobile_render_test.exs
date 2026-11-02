@@ -20,13 +20,13 @@ defmodule XpressbusWeb.MobileRenderTest do
     refute html =~ "fonts.gstatic.com"
   end
 
-  test "chyllz hub renders the desktop-only hero video", %{conn: conn} do
+  test "chyllz hub renders the original autoplaying hero video", %{conn: conn} do
     html = conn |> get(~p"/tour-packages") |> html_response(200)
 
-    assert html =~ ~s(phx-hook="HeroVideo")
-    assert html =~ ~s(data-src="/images/hero_video.mp4")
+    assert html =~ ~s(<video)
+    assert html =~ "autoplay"
+    assert html =~ ~s(<source src="/images/hero_video.mp4" type="video/mp4")
     assert html =~ ~s(poster="/images/hero_bg-1024.webp")
-    refute html =~ "autoplay"
-    refute html =~ "<source src=\"/images/hero_video.mp4\""
+    refute html =~ ~s(phx-hook="HeroVideo")
   end
 end
