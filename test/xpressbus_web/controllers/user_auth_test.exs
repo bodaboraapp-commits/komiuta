@@ -156,6 +156,8 @@ defmodule XpressbusWeb.UserAuthTest do
       assert html =~ "Send SMS Code"
       assert html =~ "firebase_phone_auth.js"
       assert html =~ "data-api-key"
+      assert html =~ "firebase-phone-hint"
+      refute html =~ "Standard SMS rates may apply"
       assert html =~ "Send Login Code"
     end
 

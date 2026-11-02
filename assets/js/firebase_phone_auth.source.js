@@ -22,6 +22,7 @@ function initSmsLogin(root) {
   const codeInput = root.querySelector("#firebase-code")
   const changeNumberButton = root.querySelector("#firebase-change-number")
   const statusEl = root.querySelector("#firebase-status")
+  const phoneHint = root.querySelector("#firebase-phone-hint")
 
   const config = {
     apiKey: root.dataset.apiKey,
@@ -40,6 +41,7 @@ function initSmsLogin(root) {
   let auth
   let verifier
   let confirmationResult = null
+  let otpAbortController = null
 
   try {
     const app = initializeApp(config, "komiuta-sms")
@@ -60,12 +62,17 @@ function initSmsLogin(root) {
     }
   })
 
+  phoneInput.addEventListener("input", updatePhoneHint)
+  updatePhoneHint()
+
   changeNumberButton.addEventListener("click", () => {
+    stopSmsOtpListener()
     confirmationResult = null
     codeStep.classList.add("hidden")
     sendButton.classList.remove("hidden")
     phoneInput.removeAttribute("readonly")
     codeInput.value = ""
+    updatePhoneHint()
     setStatus("")
     phoneInput.focus()
   })
@@ -81,6 +88,7 @@ function initSmsLogin(root) {
 
     setBusy(true)
     setStatus("Sending your SMS code…")
+    listenForSmsOtp(phone)
 
     try {
       await resetVerifier()
@@ -89,9 +97,10 @@ function initSmsLogin(root) {
       codeStep.classList.remove("hidden")
       sendButton.classList.add("hidden")
       phoneInput.setAttribute("readonly", "readonly")
-      setStatus("Code sent. Enter the 6-digit code from the SMS.", "success")
+      setStatus(`Code sent to ${displayPhone(phone)}. Enter the 6-digit code from the SMS.`, "success")
       codeInput.focus()
     } catch (error) {
+      stopSmsOtpListener()
       setStatus(friendlyError(error), "error")
       await resetVerifier()
     } finally {
@@ -113,6 +122,7 @@ function initSmsLogin(root) {
 
     try {
       const credential = await confirmationResult.confirm(code)
+      stopSmsOtpListener()
       const idToken = await credential.user.getIdToken()
 
       const response = await fetch("/user/firebase/verify", {
@@ -136,6 +146,65 @@ function initSmsLogin(root) {
       codeInput.focus()
     } finally {
       setBusy(false)
+    }
+  }
+
+  function updatePhoneHint() {
+    if (!phoneHint) return
+
+    const e164 = normalizePhone(phoneInput.value)
+
+    if (/^\+[1-9]\d{7,14}$/.test(e164)) {
+      phoneHint.textContent = `Your one-time code will be sent to ${displayPhone(e164)}.`
+    } else {
+      phoneHint.textContent = "Enter the phone number that should receive your one-time code."
+    }
+  }
+
+  function displayPhone(e164) {
+    const digits = String(e164 || "").replace(/\D/g, "")
+
+    if (digits.startsWith("254") && digits.length === 12) {
+      return `+254 ${digits.slice(3, 6)} ${digits.slice(6, 9)} ${digits.slice(9, 12)}`
+    }
+
+    return e164
+  }
+
+  function listenForSmsOtp(phone) {
+    stopSmsOtpListener()
+
+    if (!("OTPCredential" in window) || !navigator.credentials || !navigator.credentials.get) {
+      return
+    }
+
+    otpAbortController = new AbortController()
+
+    navigator.credentials
+      .get({
+        otp: {transport: ["sms"]},
+        signal: otpAbortController.signal,
+      })
+      .then(otp => {
+        if (!otp || !otp.code) return
+
+        codeInput.value = otp.code
+        codeInput.dispatchEvent(new Event("input", {bubbles: true}))
+        setStatus(`Code received for ${displayPhone(phone)}. Tap Verify & Sign In.`, "success")
+        codeInput.focus()
+      })
+      .catch(error => {
+        // AbortError is normal when the number is changed or the code is already used.
+        if (error && error.name !== "AbortError") {
+          console.warn("SMS OTP autofill unavailable", error)
+        }
+      })
+  }
+
+  function stopSmsOtpListener() {
+    if (otpAbortController) {
+      otpAbortController.abort()
+      otpAbortController = null
     }
   }
 

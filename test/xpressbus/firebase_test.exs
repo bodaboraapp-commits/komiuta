@@ -94,6 +94,23 @@ defmodule Xpressbus.FirebaseTest do
     end
   end
 
+  describe "SMS login client" do
+    test "shows the destination phone and listens for SMS OTP autofill" do
+      root = Path.expand("../..", __DIR__)
+      source = File.read!(Path.join(root, "assets/js/firebase_phone_auth.source.js"))
+
+      template =
+        File.read!(Path.join(root, "lib/xpressbus_web/controllers/user_html/login.html.heex"))
+
+      assert source =~ "OTPCredential"
+      assert source =~ "navigator.credentials"
+      assert source =~ "displayPhone"
+      assert source =~ "firebase-phone-hint"
+      assert template =~ "firebase-phone-hint"
+      refute template =~ "Standard SMS rates may apply"
+    end
+  end
+
   describe "admin integration" do
     test "lists Firebase Phone Authentication" do
       root = Path.expand("../..", __DIR__)
