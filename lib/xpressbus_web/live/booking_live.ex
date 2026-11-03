@@ -53,10 +53,14 @@ defmodule XpressbusWeb.BookingLive do
 
     {:ok,
      socket
-     |> assign(:page_title, "Bus Tickets, Chyllz & Travel")
+     |> assign(
+       :page_title,
+       "Komiuta Bus Booking. #1 Ticketing Platform For Matatu Sacco & Financiers"
+     )
+     |> assign(:page_title_suffix, "")
      |> assign(
        :page_description,
-       "Book intercity bus tickets across Kenya, Uganda and Tanzania with Komiuta. Compare fares from top operators, pick your seat, pay with M-PESA or card, and get instant SMS + email tickets."
+       "Komiuta Bus Booking is a transport technology and booking platform designed for public transit, intercity travel, and matatu/bus fleet management."
      )
      |> assign(:page_canonical, XpressbusWeb.Endpoint.url() <> "/")
      |> assign(:page_robots, "index,follow")

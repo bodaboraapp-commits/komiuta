@@ -9,7 +9,8 @@ Legend: `[x]` shipped and verified live - `[ ]` open - `[!]` blocked / needs acc
 
 ### Technical foundation
 - [x] Unique page titles, meta descriptions, self-canonical URLs, robots meta and OG/Twitter tags.
-- [x] Duplicate "Bus Booking" title suffix removed; titles end with "| Komiuta".
+- [x] Homepage SEO title: “Komiuta Bus Booking. #1 Ticketing Platform For Matatu Sacco & Financiers” (no duplicate suffix); other page titles end with “| Komiuta”.
+- [x] Homepage/meta/schema positioning: “transport technology and booking platform designed for public transit, intercity travel, and matatu/bus fleet management” (also in llms.txt and the PWA manifest).
 - [x] Dynamic sitemap.xml - 86 URLs (routes, cities, operators, blog, FAQ, About, static).
 - [x] robots.txt - sitemap directive, utility paths disallowed, AI crawlers allowed.
 - [x] /llms.txt with company facts, key pages and popular routes.

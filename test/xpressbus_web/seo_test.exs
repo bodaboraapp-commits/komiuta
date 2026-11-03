@@ -56,6 +56,7 @@ defmodule XpressbusWeb.SeoTest do
     body = get(conn, "/llms.txt").resp_body
 
     assert body =~ "Komiuta"
+    assert body =~ "transport technology and booking platform"
     assert body =~ "/buses/Nairobi-to-Kisumu"
     assert body =~ "M-PESA"
   end
@@ -63,7 +64,12 @@ defmodule XpressbusWeb.SeoTest do
   test "homepage has canonical metadata and Organization/WebSite schema", %{conn: conn} do
     body = get(conn, "/").resp_body
 
-    assert body =~ "Bus Tickets, Chyllz &amp; Travel | Komiuta"
+    assert body =~
+             "Komiuta Bus Booking. #1 Ticketing Platform For Matatu Sacco &amp; Financiers"
+
+    assert body =~
+             "transport technology and booking platform designed for public transit, intercity travel, and matatu/bus fleet management"
+
     assert body =~ "rel=\"canonical\""
     assert body =~ "application/ld+json"
     assert body =~ "\"@type\":\"Organization\""

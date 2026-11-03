@@ -2,7 +2,7 @@
   "id": "/",
   "name": "Komiuta - Elevate Your Journey",
   "short_name": "Komiuta",
-  "description": "Premium bus booking and travel management platform for East Africa. Compare fares, pick your seat and pay with M-PESA, card or mobile money.",
+  "description": "Komiuta Bus Booking is a transport technology and booking platform designed for public transit, intercity travel, and matatu/bus fleet management.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

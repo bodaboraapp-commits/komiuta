@@ -20,10 +20,11 @@ defmodule XpressbusWeb.SEO do
       "@context" => "https://schema.org",
       "@type" => "Organization",
       "name" => "Komiuta",
+      "alternateName" => "Komiuta Bus Booking",
       "url" => @base_url,
       "logo" => @base_url <> "/images/logo_brand.png",
       "description" =>
-        "Komiuta is an East African bus booking platform for intercity bus tickets across Kenya, Uganda and Tanzania, with M-PESA, card and mobile money payments.",
+        "Komiuta Bus Booking is a transport technology and booking platform designed for public transit, intercity travel, and matatu/bus fleet management. Book intercity bus tickets across Kenya, Uganda and Tanzania with M-PESA, card or mobile money.",
       "sameAs" => [
         "https://github.com/bodaboraapp-commits/komiuta"
       ],
@@ -44,7 +45,10 @@ defmodule XpressbusWeb.SEO do
       "@context" => "https://schema.org",
       "@type" => "WebSite",
       "name" => "Komiuta",
+      "alternateName" => "Komiuta Bus Booking",
       "url" => @base_url,
+      "description" =>
+        "Komiuta Bus Booking is a transport technology and booking platform designed for public transit, intercity travel, and matatu/bus fleet management.",
       "potentialAction" => %{
         "@type" => "SearchAction",
         "target" => @base_url <> "/?q={search_term_string}",

@@ -9,7 +9,7 @@
       name="description"
       content={
         assigns[:page_description] ||
-          "Book intercity bus tickets across Kenya, Uganda and Tanzania with Komiuta. Compare fares, pick your seat and pay with M-PESA, card or mobile money."
+          "Komiuta Bus Booking is a transport technology and booking platform designed for public transit, intercity travel, and matatu/bus fleet management."
       }
     /> <meta name="robots" content={assigns[:page_robots] || "index,follow"} />
     <%= if System.get_env("GOOGLE_SITE_VERIFICATION") do %>
@@ -35,13 +35,16 @@
 
     <meta
       property="og:title"
-      content={assigns[:page_title] || "Komiuta — Bus Tickets, Chyllz & Travel"}
+      content={
+        assigns[:page_title] ||
+          "Komiuta Bus Booking. #1 Ticketing Platform For Matatu Sacco & Financiers"
+      }
     />
     <meta
       property="og:description"
       content={
         assigns[:page_description] ||
-          "Book intercity bus tickets across Kenya, Uganda and Tanzania with Komiuta."
+          "Komiuta Bus Booking is a transport technology and booking platform designed for public transit, intercity travel, and matatu/bus fleet management."
       }
     />
     <meta
@@ -52,13 +55,16 @@
     /> <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:title"
-      content={assigns[:page_title] || "Komiuta — Bus Tickets, Chyllz & Travel"}
+      content={
+        assigns[:page_title] ||
+          "Komiuta Bus Booking. #1 Ticketing Platform For Matatu Sacco & Financiers"
+      }
     />
     <meta
       name="twitter:description"
       content={
         assigns[:page_description] ||
-          "Book intercity bus tickets across Kenya, Uganda and Tanzania with Komiuta."
+          "Komiuta Bus Booking is a transport technology and booking platform designed for public transit, intercity travel, and matatu/bus fleet management."
       }
     />
     <meta
@@ -132,8 +138,8 @@
       })();
     </script>
     <.live_title
-      default="Komiuta — Bus Tickets, Chyllz & Travel"
-      suffix=" | Komiuta"
+      default="Komiuta Bus Booking. #1 Ticketing Platform For Matatu Sacco & Financiers"
+      suffix={assigns[:page_title_suffix] || " | Komiuta"}
       phx-no-format
     >{assigns[:page_title]}</.live_title>
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
