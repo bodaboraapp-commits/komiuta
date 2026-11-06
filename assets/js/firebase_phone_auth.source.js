@@ -49,7 +49,7 @@ function initSmsLogin(root) {
     const app = initializeApp(config, "komiuta-sms")
     auth = getAuth(app)
     auth.languageCode = "en"
-    verifier = new RecaptchaVerifier(auth, "firebase-recaptcha", {size: "invisible"})
+    verifier = new RecaptchaVerifier(auth, "firebase-recaptcha", {size: "invisible", badge: "bottomright"})
   } catch (_error) {
     setStatus("SMS login could not start. Please use the email code instead.", "error")
     return
@@ -220,7 +220,7 @@ function initSmsLogin(root) {
     const container = document.getElementById("firebase-recaptcha")
     if (container) container.innerHTML = ""
 
-    verifier = new RecaptchaVerifier(auth, "firebase-recaptcha", {size: "invisible"})
+    verifier = new RecaptchaVerifier(auth, "firebase-recaptcha", {size: "invisible", badge: "bottomright"})
   }
 
   function setBusy(busy) {

@@ -868,3 +868,23 @@ footer nav[aria-label="Explore Komiuta"] {
   content-visibility: auto;
   contain-intrinsic-size: auto 420px;
 }
+
+
+/* Firebase phone auth uses an invisible reCAPTCHA. Keep the widget container
+   and Google badge out of the visible checkout/login UI; the challenge still
+   runs automatically and only appears in the rare high-risk case. */
+#firebase-recaptcha {
+  position: fixed !important;
+  left: -9999px !important;
+  bottom: 0 !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+.grecaptcha-badge {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
