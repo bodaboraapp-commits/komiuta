@@ -1820,6 +1820,15 @@
                     </div>
                   <% end %>
 
+                  <%= if @tax_amount > 0 do %>
+                    <div class="flex justify-between items-center py-3 border-t border-slate-50">
+                      <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        Tax ({@tax_rate_label}%)
+                      </span>
+                      <span class="text-sm font-black text-slate-900">KSH {@tax_amount}</span>
+                    </div>
+                  <% end %>
+
                   <div class="flex justify-between items-center py-8 border-y border-slate-50">
                     <span class="text-xl font-black text-slate-900">Total</span>
                     <span class="text-xl font-black text-slate-900">Ksh {@final_price}</span>
@@ -2128,6 +2137,15 @@
                     </span>
                     <span class="text-sm font-black text-slate-900">KSH {@convenience_fee}</span>
                   </div>
+
+                  <%= if @tax_amount > 0 do %>
+                    <div class="flex justify-between items-center">
+                      <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        TAX ({@tax_rate_label}%)
+                      </span>
+                      <span class="text-sm font-black text-slate-900">KSH {@tax_amount}</span>
+                    </div>
+                  <% end %>
                 </div>
                 <%!-- Coupon Form --%>
                 <div class="mb-5 p-4 bg-slate-50 rounded-2xl border border-slate-100">

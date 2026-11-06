@@ -13,25 +13,45 @@ defmodule Xpressbus.Bookings.Pricing do
   def convenience_fee, do: @convenience_fee
 
   @doc """
-  Calculates base fare, discount and final payable amount.
+  Calculates base fare, discount, tax and final payable amount.
 
   Options:
 
-    * `:booking?` - when false (no bus/seats selected) no convenience fee is
-      charged. Defaults to `true`.
+    * `:booking?` - when false (no bus/seats selected) no fees are charged.
+    * `:convenience_fee` - flat fee in KES (defaults to the module default).
+    * `:tax_rate` - percentage charged on the discounted fare (defaults to 0).
+
+  The convenience fee is charged once per booking and is not taxed.
   """
   def calculate(base_fare, discount \\ 0, opts \\ []) do
     base = normalize_money(base_fare)
     discount = discount |> normalize_money() |> min(base)
     booking? = Keyword.get(opts, :booking?, true)
 
-    fee = if booking? and base > 0, do: @convenience_fee, else: 0
+    fee =
+      if booking? and base > 0 do
+        normalize_money(Keyword.get(opts, :convenience_fee, @convenience_fee))
+      else
+        0
+      end
+
+    tax_rate =
+      if booking? do
+        opts |> Keyword.get(:tax_rate, 0.0) |> normalize_rate()
+      else
+        0.0
+      end
+
+    taxable = max(0, base - discount)
+    tax_amount = round(taxable * tax_rate / 100)
 
     %{
       base_fare: base,
       discount: discount,
       convenience_fee: fee,
-      final_price: max(0, base - discount) + fee
+      tax_rate: tax_rate,
+      tax_amount: tax_amount,
+      final_price: taxable + fee + tax_amount
     }
   end
 
@@ -87,4 +107,16 @@ defmodule Xpressbus.Bookings.Pricing do
   defp normalize_money(value) when is_integer(value), do: max(0, value)
   defp normalize_money(value) when is_float(value), do: max(0, round(value))
   defp normalize_money(value), do: value |> parse_price(0) |> max(0)
+
+  defp normalize_rate(value) when is_integer(value), do: value * 1.0
+  defp normalize_rate(value) when is_float(value), do: max(0.0, min(100.0, value))
+
+  defp normalize_rate(value) when is_binary(value) do
+    case Float.parse(value) do
+      {rate, _} -> max(0.0, min(100.0, rate))
+      :error -> 0.0
+    end
+  end
+
+  defp normalize_rate(_value), do: 0.0
 end

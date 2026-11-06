@@ -74,6 +74,7 @@ defmodule XpressbusWeb.CheckoutPricingTest do
 
     assert template =~ "CONVENIENCE FEE"
     assert template =~ "@convenience_fee"
+    assert template =~ "@tax_amount"
     assert template =~ "PAY KSH {@final_price}"
     refute template =~ "TAXES & FEES"
   end

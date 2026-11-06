@@ -21,11 +21,13 @@ defmodule XpressbusWeb.AdminComponents do
               <div class="absolute inset-0 bg-gradient-to-br from-[#FF4C00] to-[#FF8C00]"></div>
               <span class="material-symbols-outlined !text-2xl relative z-10">directions_bus</span>
             </div>
+
             <span
               :if={!@collapsed}
               class="text-lg font-black tracking-tighter text-slate-900 whitespace-nowrap"
             >Komiuta</span>
           </div>
+
           <%= if @collapsed do %>
             <div class="absolute left-full ml-4 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-slate-900 text-white text-xs font-black rounded-lg opacity-0 pointer-events-none group-hover/logo:opacity-100 transition-opacity z-50 whitespace-nowrap shadow-xl">
               Komiuta
@@ -46,6 +48,7 @@ defmodule XpressbusWeb.AdminComponents do
           >
             <span class="material-symbols-outlined">{if @collapsed, do: "chevron_right", else: "menu"}</span>
           </button>
+
           <%= if @collapsed do %>
             <div class="absolute left-full ml-4 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-slate-900 text-white text-xs font-black rounded-lg opacity-0 pointer-events-none group-hover/menu:opacity-100 transition-opacity z-50 whitespace-nowrap shadow-xl">
               Expand Menu
@@ -55,7 +58,6 @@ defmodule XpressbusWeb.AdminComponents do
           <% end %>
         </div>
       </div>
-
       <%!-- Shared Items --%>
       <div class="px-3 pt-2">
         <.nav_item
@@ -169,6 +171,24 @@ defmodule XpressbusWeb.AdminComponents do
             label="Facility"
             id="facility"
             href="/admin/facilities"
+            active={@active_tab}
+            has_arrow={!@collapsed}
+            collapsed={@collapsed}
+          />
+          <.nav_item
+            icon="confirmation_number"
+            label="Tickets"
+            id="tickets"
+            href="/admin/tickets"
+            active={@active_tab}
+            has_arrow={!@collapsed}
+            collapsed={@collapsed}
+          />
+          <.nav_item
+            icon="reply"
+            label="Refunds"
+            id="refunds"
+            href="/admin/refunds"
             active={@active_tab}
             has_arrow={!@collapsed}
             collapsed={@collapsed}
@@ -328,6 +348,15 @@ defmodule XpressbusWeb.AdminComponents do
             collapsed={@collapsed}
           />
           <.nav_item
+            icon="payments"
+            label="Pricing & Fees"
+            id="pricing"
+            active={@active_tab}
+            href="/admin/pricing"
+            has_arrow={!@collapsed}
+            collapsed={@collapsed}
+          />
+          <.nav_item
             icon="route"
             label="Trip Report"
             id="trips"
@@ -365,15 +394,6 @@ defmodule XpressbusWeb.AdminComponents do
             label="Agent List"
             id="agents"
             href="/admin/agent-applications"
-            active={@active_tab}
-            has_arrow={!@collapsed}
-            collapsed={@collapsed}
-          />
-          <.nav_item
-            icon="confirmation_number"
-            label="Tickets & Refunds"
-            id="tickets"
-            href="/admin/tickets"
             active={@active_tab}
             has_arrow={!@collapsed}
             collapsed={@collapsed}

@@ -134,9 +134,11 @@ defmodule XpressbusWeb.Router do
     live "/events", AdminEventLive, :index
     live "/insurance-plans", AdminInsuranceLive, :index
     live "/integration", AdminIntegrationLive, :index
+    live "/pricing", AdminPricingLive, :index
     live "/coupons", AdminCouponLive, :index
     live "/users", AdminUsersLive, :index
     live "/tickets", AdminTicketsLive, :index
+    live "/refunds", AdminRefundsLive, :index
     live "/agent-applications", AdminAgentApplicationsLive, :index
   end
 

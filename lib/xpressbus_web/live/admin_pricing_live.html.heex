@@ -1,0 +1,147 @@
+<Layouts.app flash={@flash}>
+  <div class="flex min-h-screen bg-[#f8fafc]">
+    <.sidebar
+      active_tab="pricing"
+      bus_expanded={@bus_expanded}
+      chyllz_expanded={@chyllz_expanded}
+      settings_expanded={@settings_expanded}
+      collapsed={@sidebar_collapsed}
+    />
+
+    <div class={[
+      "flex-1 transition-all duration-300",
+      if(@sidebar_collapsed, do: "lg:pl-20", else: "lg:pl-72")
+    ]}>
+      <header class="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-8 sticky top-0 z-30">
+        <h2 class="text-xl font-black text-slate-900 tracking-tight uppercase tracking-widest">
+          Pricing & Fees
+        </h2>
+
+        <div class="flex items-center gap-6">
+          <div class="flex items-center gap-3 border-l border-slate-100 pl-6">
+            <div class="text-right hidden sm:block">
+              <p class="text-[11px] font-black text-slate-900 leading-none">Admin User</p>
+              <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">Super Admin</p>
+            </div>
+
+            <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-[#FF4C00] font-black text-xs border-2 border-white shadow-sm">
+              AD
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="p-8 md:p-12 max-w-5xl">
+        <div class="mb-8">
+          <h1 class="text-3xl font-black text-slate-900 tracking-tighter uppercase tracking-widest">
+            Checkout Pricing
+          </h1>
+          <p class="text-sm font-bold text-slate-400 mt-1 tracking-wide">
+            Set the convenience fee and tax applied to every new booking at checkout.
+          </p>
+        </div>
+
+        <div class="grid lg:grid-cols-[1.1fr_0.9fr] gap-6 items-start">
+          <div class="bg-white rounded-[2.5rem] p-7 md:p-10 border border-slate-100 shadow-sm">
+            <.form
+              for={@form}
+              id="pricing-form"
+              phx-change="validate"
+              phx-submit="save"
+              class="space-y-6"
+            >
+              <.input
+                field={@form[:convenience_fee]}
+                type="number"
+                label="Convenience fee (KES)"
+                min="0"
+                max="100000"
+                step="1"
+                class="w-full rounded-xl border-slate-200 p-3 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
+              />
+
+              <.input
+                field={@form[:tax_rate]}
+                type="number"
+                label="Tax rate (%)"
+                min="0"
+                max="100"
+                step="0.01"
+                class="w-full rounded-xl border-slate-200 p-3 focus:ring-0 focus:border-[#FF4C00] font-bold text-slate-900"
+              />
+
+              <div class="rounded-2xl bg-slate-50 border border-slate-100 p-4 text-[11px] font-bold text-slate-500 leading-relaxed">
+                The convenience fee is a flat amount charged once per booking and is not taxed.
+                Tax is calculated on the fare after any promo discount.
+              </div>
+
+              <button
+                type="submit"
+                class="bg-[#FF4C00] text-white px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-orange-100 hover:bg-[#E64400] transition-all transform active:scale-95"
+              >
+                Save Pricing
+              </button>
+            </.form>
+          </div>
+
+          <div class="bg-white rounded-[2.5rem] p-7 md:p-10 border border-slate-100 shadow-sm space-y-6">
+            <div>
+              <h3 class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-4">
+                CURRENT CHECKOUT
+              </h3>
+
+              <dl class="space-y-3 text-sm">
+                <div class="flex justify-between gap-4">
+                  <dt class="font-bold text-slate-400">Convenience fee</dt>
+                  <dd class="font-black text-slate-900">KSH {@settings.convenience_fee}</dd>
+                </div>
+
+                <div class="flex justify-between gap-4">
+                  <dt class="font-bold text-slate-400">Tax rate</dt>
+                  <dd class="font-black text-slate-900">
+                    {if @settings.tax_rate == trunc(@settings.tax_rate),
+                      do: trunc(@settings.tax_rate),
+                      else: @settings.tax_rate}%
+                  </dd>
+                </div>
+              </dl>
+            </div>
+
+            <div class="border-t border-slate-100 pt-5">
+              <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">
+                EXAMPLE · KES 2,000 FARE
+              </p>
+
+              <dl class="space-y-2 text-sm">
+                <div class="flex justify-between gap-4">
+                  <dt class="font-bold text-slate-400">Base fare</dt>
+                  <dd class="font-bold text-slate-900">KSH 2,000</dd>
+                </div>
+
+                <div class="flex justify-between gap-4">
+                  <dt class="font-bold text-slate-400">Convenience fee</dt>
+                  <dd class="font-bold text-slate-900">KSH {@settings.convenience_fee}</dd>
+                </div>
+
+                <div class="flex justify-between gap-4">
+                  <dt class="font-bold text-slate-400">Tax</dt>
+                  <dd class="font-bold text-slate-900">
+                    KSH {round(2_000 * @settings.tax_rate / 100)}
+                  </dd>
+                </div>
+
+                <div class="flex justify-between gap-4 border-t border-slate-100 pt-3">
+                  <dt class="font-black text-slate-900">Customer pays</dt>
+                  <dd class="font-black text-[#FF4C00]">
+                    KSH {2_000 + @settings.convenience_fee +
+                      round(2_000 * @settings.tax_rate / 100)}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</Layouts.app>

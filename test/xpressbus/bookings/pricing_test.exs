@@ -13,6 +13,18 @@ defmodule Xpressbus.Bookings.PricingTest do
              Pricing.calculate(2000, 500)
   end
 
+  test "calculates admin-configured convenience fee and tax on the discounted fare" do
+    assert %{
+             base_fare: 2000,
+             discount: 500,
+             convenience_fee: 75,
+             tax_rate: 16.0,
+             tax_amount: 240,
+             final_price: 1815
+           } =
+             Pricing.calculate(2000, 500, convenience_fee: 75, tax_rate: 16)
+  end
+
   test "does not charge a fee when no booking is active" do
     assert %{base_fare: 0, convenience_fee: 0, final_price: 0} =
              Pricing.calculate(0, 0, booking?: false)

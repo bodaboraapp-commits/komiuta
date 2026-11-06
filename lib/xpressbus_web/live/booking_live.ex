@@ -1,7 +1,7 @@
 defmodule XpressbusWeb.BookingLive do
   use XpressbusWeb, :live_view
   import XpressbusWeb.BrandComponents
-  alias Xpressbus.Bookings.{Bus, DepartureWindow, Pricing, Scraper, Search}
+  alias Xpressbus.Bookings.{Bus, DepartureWindow, Pricing, PricingSettings, Scraper, Search}
   alias Xpressbus.Tickets
   alias Xpressbus.Repo
   alias Xpressbus.Cities
@@ -20,6 +20,7 @@ defmodule XpressbusWeb.BookingLive do
   @impl true
   def mount(_params, session, socket) do
     Logger.info("Mounting BookingLive. Action: #{socket.assigns.live_action}")
+    pricing_settings = PricingSettings.get()
     departure_date = Date.utc_today()
     departure_date_str = Date.to_string(departure_date)
     current_user = session["user_id"]
@@ -136,6 +137,11 @@ defmodule XpressbusWeb.BookingLive do
      |> assign(:applied_coupon, nil)
      |> assign(:discount_amount, 0)
      |> assign(:total_price, 0)
+     |> assign(:convenience_fee, 0)
+     |> assign(:tax_rate, pricing_settings.tax_rate)
+     |> assign(:tax_rate_label, format_tax_rate(pricing_settings.tax_rate))
+     |> assign(:tax_amount, 0)
+     |> assign(:pricing_settings, pricing_settings)
      |> assign(:final_price, 0)
      |> assign(:available_operators, [])
      |> assign(:available_seat_types, [])
@@ -1493,20 +1499,43 @@ defmodule XpressbusWeb.BookingLive do
       discount_amount =
         if coupon, do: Xpressbus.Coupons.calculate_discount(coupon, total_price), else: 0
 
+      settings =
+        Map.get(socket.assigns, :pricing_settings) || PricingSettings.get()
+
       pricing =
-        Pricing.calculate(total_price, discount_amount, booking?: seats != [])
+        Pricing.calculate(total_price, discount_amount,
+          booking?: seats != [],
+          convenience_fee: settings.convenience_fee,
+          tax_rate: settings.tax_rate
+        )
 
       socket
       |> assign(:total_price, pricing.base_fare)
       |> assign(:discount_amount, pricing.discount)
       |> assign(:convenience_fee, pricing.convenience_fee)
+      |> assign(:tax_rate, pricing.tax_rate)
+      |> assign(:tax_rate_label, format_tax_rate(pricing.tax_rate))
+      |> assign(:tax_amount, pricing.tax_amount)
       |> assign(:final_price, pricing.final_price)
     else
       socket
       |> assign(:total_price, 0)
       |> assign(:discount_amount, 0)
       |> assign(:convenience_fee, 0)
+      |> assign(:tax_rate, 0.0)
+      |> assign(:tax_rate_label, "0")
+      |> assign(:tax_amount, 0)
       |> assign(:final_price, 0)
+    end
+  end
+
+  defp format_tax_rate(rate) do
+    rate = rate * 1.0
+
+    if rate == trunc(rate) do
+      Integer.to_string(trunc(rate))
+    else
+      :erlang.float_to_binary(rate, decimals: 2) |> String.trim_trailing("0")
     end
   end
 
