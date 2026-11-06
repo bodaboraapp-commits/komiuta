@@ -128,9 +128,9 @@ defmodule Xpressbus.Bookings.Scraper do
       arrival_label = if format_time(arrival) == "", do: "Direct", else: format_time(arrival)
       seat_types = item["seats_types"] || []
       normal_fare = seat_fare(seat_types, ["normal"]) || min_seat_fare(seat_types) || item["fare"]
-      vip_fare = seat_fare(seat_types, ["vip", "business", "first class", "first"])
+      vip_fare = seat_fare(seat_types, ["vip"])
       business_fare = seat_fare(seat_types, ["business"])
-      first_fare = seat_fare(seat_types, ["first class", "first"])
+      first_fare = seat_fare(seat_types, ["first class", "first_class", "first"])
       seats = item["number_of_available_seats"]
       currency = seat_currency(seat_types) || "KSH"
 

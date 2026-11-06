@@ -226,6 +226,7 @@
                   <span class="text-[10px] md:text-[11px] font-black text-slate-700 uppercase tracking-tight">
                     {pill.from} <span class="text-slate-300">→</span> {pill.to}
                   </span>
+
                   <span class="text-[9px] md:text-[10px] font-bold text-slate-400">{pill.meta}</span>
                 </div>
               <% end %>
@@ -1275,7 +1276,7 @@
                               </div>
                             <% end %>
 
-                            <%= if seat_type_available?(bus, ["first", "first class"]) and Map.get(bus, :first_class_price) not in [nil, "", "N/A"] do %>
+                            <%= if seat_type_available?(bus, ["first", "first class", "first_class"]) and Map.get(bus, :first_class_price) not in [nil, "", "N/A"] do %>
                               <div class="flex items-baseline justify-between gap-2">
                                 <span class="text-[10px] font-bold text-slate-400 uppercase">First</span>
                                 <span class="text-sm font-black text-slate-900">KES {String.replace(

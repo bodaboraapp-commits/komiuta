@@ -55,6 +55,18 @@ defmodule Xpressbus.Bookings.ScraperTest do
     assert bus.price == "KES 1500"
   end
 
+  test "parse_stream maps Mozaico business/first_class/vip fares" do
+    payload = """
+    data: {"provider": "mozaico", "data": [{"operator": {"name": "Mozaico"}, "departure_time": "16:00:00", "arrival_time": "00:00:00", "number_of_available_seats": 16, "fare": 0, "bus_capacity": 44, "seats_types": [{"alias": "business", "fare": 2500, "name": "Business", "currency": "KES"}, {"alias": "first_class", "fare": 2700, "name": "First Class", "currency": "KES"}, {"alias": "vip", "fare": 3500, "name": "VIP", "currency": "KES"}], "trip_id": 77}], "status": false, "completed": false}
+    """
+
+    assert [bus] = Scraper.parse_stream(payload, "Nairobi", "Kisumu", ~D[2026-11-06])
+    assert bus.price == "KES 2500"
+    assert bus.business_price == "KES 2500"
+    assert bus.first_class_price == "KES 2700"
+    assert bus.vip_price == "KES 3500"
+  end
+
   defp bus_fixture(attrs) do
     defaults = %{
       company: "Test Coach",
