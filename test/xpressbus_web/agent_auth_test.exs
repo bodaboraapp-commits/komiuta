@@ -1,13 +1,16 @@
 defmodule XpressbusWeb.AgentAuthTest do
   use XpressbusWeb.ConnCase
 
+  import Ecto.Query
   import Phoenix.LiveViewTest
+  import Swoosh.TestAssertions
 
   alias Xpressbus.Agents
   alias Xpressbus.Agents.AgentApplication
+  alias Xpressbus.Agents.AgentLoginCode
   alias Xpressbus.Repo
 
-  defp signup_attrs(overrides \\ %{}) do
+  defp attrs(overrides \\ %{}) do
     Map.merge(
       %{
         "full_name" => "Jane Agent",
@@ -15,154 +18,135 @@ defmodule XpressbusWeb.AgentAuthTest do
         "email" => "jane.login@example.com",
         "phone" => "0712345678",
         "city" => "Nairobi",
-        "payout_method" => "mpesa",
-        "password" => "agentpass123",
-        "password_confirmation" => "agentpass123"
+        "payout_method" => "mpesa"
       },
       overrides
     )
   end
 
-  defp legacy_application do
-    %AgentApplication{}
-    |> AgentApplication.changeset(%{
-      "reference" => "AGT-LEGACY1",
-      "full_name" => "Legacy Agent",
-      "business_name" => "Legacy Travel",
-      "email" => "legacy.agent@example.com",
-      "phone" => "0722000111",
-      "city" => "Mombasa",
-      "status" => "approved"
-    })
-    |> Repo.insert!()
+  defp create_application(overrides \\ %{}) do
+    {:ok, application} = Agents.create_application(attrs(overrides))
+    application
   end
 
-  test "agent login page is available", %{conn: conn} do
-    html = conn |> get("/agent/login") |> html_response(200)
-
-    assert html =~ "Agent log in"
-    assert html =~ "Email or phone"
-    assert html =~ "Create an agent account"
+  defp code_from_email do
+    {:email, email} = assert_email_sent()
+    [_, code] = Regex.run(~r/\b(\d{6})\b/, email.text_body)
+    code
   end
 
-  test "signup stores a hashed password and the agent can log in", %{conn: conn} do
-    {:ok, view, _html} = live(conn, ~p"/agent")
+  test "agent login page uses the email OTP flow", %{conn: conn} do
+    html = conn |> get(~p"/agent/login") |> html_response(200)
 
-    view
-    |> element("#agent-application-form")
-    |> render_submit(%{"agent_application" => signup_attrs()})
-
-    application = Repo.get_by!(AgentApplication, email: "jane.login@example.com")
-    assert application.password_hash
-    refute application.password_hash == "agentpass123"
-    assert render(view) =~ "Application received"
-
-    login_conn =
-      post(recycle(conn), "/agent/authenticate", %{
-        "agent" => %{"identifier" => "jane.login@example.com", "password" => "agentpass123"}
-      })
-
-    assert redirected_to(login_conn) == "/agent/account"
-    assert get_session(login_conn, :agent_id) == application.id
-
-    account_conn = Plug.Test.init_test_session(build_conn(), %{agent_id: application.id})
-    html = account_conn |> get("/agent/account") |> html_response(200)
-
-    assert html =~ "Jane Travel"
-    assert html =~ application.reference
-    assert html =~ "pending"
+    assert html =~ "Agent sign in"
+    assert html =~ "Send login code"
+    assert html =~ "one-time 6-digit code"
+    refute html =~ ~s(name="agent[password]")
   end
 
-  test "wrong password is rejected", %{conn: conn} do
-    {:ok, _application} = Agents.create_application(signup_attrs())
+  test "requesting a code emails it and redirects to verification", %{conn: conn} do
+    application = create_application()
 
     conn =
-      post(recycle(conn), "/agent/authenticate", %{
-        "agent" => %{"identifier" => "jane.login@example.com", "password" => "wrong-password"}
+      post(conn, ~p"/agent/auth", %{
+        "agent" => %{"identifier" => "jane.login@example.com"}
       })
 
-    assert html_response(conn, 200) =~ "Invalid email/phone or password"
+    assert redirected_to(conn) == "/agent/verify"
+    assert get_session(conn, :agent_login_id) == application.id
+    refute get_session(conn, :agent_id)
+
+    assert_email_sent(fn email ->
+      assert email.subject =~ "KOMIUTA Agent login code"
+      assert email.to == [{"Jane Agent", "jane.login@example.com"}]
+    end)
+  end
+
+  test "the verification page requires a pending login", %{conn: conn} do
+    conn = get(conn, ~p"/agent/verify")
+
+    assert redirected_to(conn) == "/agent/login"
+  end
+
+  test "a wrong code does not start an agent session", %{conn: conn} do
+    _application = create_application()
+    conn = post(conn, ~p"/agent/auth", %{"agent" => %{"identifier" => "jane.login@example.com"}})
+    code = code_from_email()
+    wrong = if code == "000000", do: "111111", else: "000000"
+
+    conn = post(recycle(conn), ~p"/agent/verify", %{"agent" => %{"code" => wrong}})
+
+    assert html_response(conn, 200) =~ "That code is incorrect"
     refute get_session(conn, :agent_id)
   end
 
-  test "account and logout require/clear the session", %{conn: conn} do
-    conn = get(recycle(conn), "/agent/account")
-    assert redirected_to(conn) == "/agent/login"
+  test "the correct code logs the agent in and consumes the code", %{conn: conn} do
+    application = create_application()
+    conn = post(conn, ~p"/agent/auth", %{"agent" => %{"identifier" => "jane.login@example.com"}})
+    code = code_from_email()
 
-    {:ok, application} = Agents.create_application(signup_attrs())
+    conn = post(recycle(conn), ~p"/agent/verify", %{"agent" => %{"code" => code}})
+
+    assert redirected_to(conn) == "/agent/account"
+    assert get_session(conn, :agent_id) == application.id
+    refute get_session(conn, :agent_login_id)
+
+    login_code =
+      Repo.one(
+        from(c in AgentLoginCode,
+          where: c.agent_application_id == ^application.id,
+          order_by: [desc: c.inserted_at],
+          limit: 1
+        )
+      )
+
+    refute is_nil(login_code.consumed_at)
+  end
+
+  test "an unknown agent identifier does not send a code", %{conn: conn} do
+    conn =
+      post(conn, ~p"/agent/auth", %{
+        "agent" => %{"identifier" => "missing.agent@example.com"}
+      })
+
+    assert html_response(conn, 200) =~ "No agent application was found"
+    assert_no_email_sent()
+    refute get_session(conn, :agent_login_id)
+  end
+
+  test "account requires a session and logout clears it", %{conn: conn} do
+    assert conn |> get(~p"/agent/account") |> redirected_to() == "/agent/login"
+
+    application = create_application()
 
     authed = Plug.Test.init_test_session(build_conn(), %{agent_id: application.id})
-    html = authed |> get("/agent/account") |> html_response(200)
+    html = authed |> get(~p"/agent/account") |> html_response(200)
     assert html =~ application.business_name
+    assert html =~ application.reference
 
-    logged_out = authed |> get("/agent/logout")
+    logged_out = authed |> get(~p"/agent/logout")
     assert redirected_to(logged_out) == "/agent/login"
     refute get_session(logged_out, :agent_id)
   end
 
   test "logged-in agents are sent from the signup page to their account" do
-    {:ok, application} = Agents.create_application(signup_attrs())
-
+    application = create_application()
     authed = Plug.Test.init_test_session(build_conn(), %{agent_id: application.id})
 
-    assert {:error, {:redirect, %{to: "/agent/account"}}} = live(authed, "/agent")
+    assert {:error, {:redirect, %{to: "/agent/account"}}} = live(authed, ~p"/agent")
   end
 
-  test "legacy applications can activate a password with their reference", %{conn: conn} do
-    application = legacy_application()
-    refute application.password_hash
-
-    conn =
-      post(recycle(conn), "/agent/set-password", %{
-        "agent" => %{
-          "identifier" => "legacy.agent@example.com",
-          "reference" => "AGT-LEGACY1",
-          "password" => "newagentpass",
-          "password_confirmation" => "newagentpass"
-        }
-      })
-
-    assert redirected_to(conn) == "/agent/login"
-    assert Repo.get!(AgentApplication, application.id).password_hash
-
-    login_conn =
-      post(recycle(conn), "/agent/authenticate", %{
-        "agent" => %{"identifier" => "legacy.agent@example.com", "password" => "newagentpass"}
-      })
-
-    assert redirected_to(login_conn) == "/agent/account"
-    assert get_session(login_conn, :agent_id) == application.id
-  end
-
-  test "activation rejects a wrong reference", %{conn: conn} do
-    _application = legacy_application()
-
-    conn =
-      post(recycle(conn), "/agent/set-password", %{
-        "agent" => %{
-          "identifier" => "legacy.agent@example.com",
-          "reference" => "AGT-WRONG",
-          "password" => "newagentpass",
-          "password_confirmation" => "newagentpass"
-        }
-      })
-
-    assert html_response(conn, 200) =~ "could not match"
-  end
-
-  test "duplicate email signups are rejected and not persisted", %{conn: conn} do
-    {:ok, _application} = Agents.create_application(signup_attrs())
-
+  test "signup persists the application without a password", %{conn: conn} do
     {:ok, view, _html} = live(conn, ~p"/agent")
 
     view
     |> element("#agent-application-form")
-    |> render_submit(%{
-      "agent_application" =>
-        signup_attrs(%{"phone" => "0799999999", "full_name" => "Duplicate Agent"})
-    })
+    |> render_submit(%{"agent_application" => attrs()})
 
-    assert render(view) =~ "Please check the highlighted details"
-    assert length(Agents.list_applications()) == 1
+    assert render(view) =~ "Application received"
+
+    application = Repo.get_by!(AgentApplication, email: "jane.login@example.com")
+    assert application.status == "pending"
+    assert is_nil(application.password_hash)
   end
 end

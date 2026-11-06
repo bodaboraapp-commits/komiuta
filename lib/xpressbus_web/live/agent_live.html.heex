@@ -213,23 +213,6 @@
 
                 <div class="grid gap-4 sm:grid-cols-2">
                   <.input
-                    field={@form[:password]}
-                    label="Create password"
-                    type="password"
-                    autocomplete="new-password"
-                    class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-sm font-bold outline-none transition focus:border-[#FF4C00] focus:bg-white"
-                  />
-                  <.input
-                    field={@form[:password_confirmation]}
-                    label="Confirm password"
-                    type="password"
-                    autocomplete="new-password"
-                    class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-sm font-bold outline-none transition focus:border-[#FF4C00] focus:bg-white"
-                  />
-                </div>
-
-                <div class="grid gap-4 sm:grid-cols-2">
-                  <.input
                     field={@form[:city]}
                     label="Town / county"
                     type="text"

@@ -40,11 +40,12 @@ defmodule XpressbusWeb.Router do
     live "/tour-packages/events", ChyllzLive, :events
     live "/agent", AgentLive, :index
     get "/agent/login", AgentSessionController, :login
-    post "/agent/authenticate", AgentSessionController, :authenticate
+    post "/agent/auth", AgentSessionController, :request_code
+    get "/agent/verify", AgentSessionController, :verify
+    post "/agent/verify", AgentSessionController, :verify_code
+    post "/agent/verify/resend", AgentSessionController, :resend_code
     get "/agent/logout", AgentSessionController, :logout
     get "/agent/account", AgentSessionController, :account
-    get "/agent/set-password", AgentSessionController, :set_password
-    post "/agent/set-password", AgentSessionController, :update_password
     live "/buses/*route", BookingLive, :results
     live "/cities/:slug", CityLive, :show
     live "/operators", OperatorLive, :index

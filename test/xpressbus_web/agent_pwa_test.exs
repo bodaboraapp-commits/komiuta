@@ -59,9 +59,7 @@ defmodule XpressbusWeb.AgentPwaTest do
         "city" => "Nairobi",
         "routes" => "Nairobi - Mombasa",
         "payout_method" => "mpesa",
-        "notes" => "We serve the CBD.",
-        "password" => "agentpass123",
-        "password_confirmation" => "agentpass123"
+        "notes" => "We serve the CBD."
       }
     })
 
@@ -71,8 +69,6 @@ defmodule XpressbusWeb.AgentPwaTest do
     application = Repo.get_by!(Xpressbus.Agents.AgentApplication, email: "jane.agent@example.com")
     assert application.status == "pending"
     assert application.reference =~ "AGT-"
-    assert application.password_hash
-    refute application.password_hash == "agentpass123"
 
     assert_email_sent(fn email ->
       assert email.subject =~ "received your Komiuta Agent application"

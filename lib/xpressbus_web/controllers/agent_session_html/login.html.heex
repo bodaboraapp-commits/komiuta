@@ -31,12 +31,13 @@
           <span class="material-symbols-outlined !text-2xl">login</span>
         </div>
 
-        <h1 class="mt-5 text-2xl font-black tracking-tight">Agent log in</h1>
+        <h1 class="mt-5 text-2xl font-black tracking-tight">Agent sign in</h1>
         <p class="mt-2 text-xs font-bold leading-relaxed text-slate-400">
-          Sign in with the email or phone number on your agent application.
+          Enter the email or phone number on your agent application. We’ll email you a
+          one-time 6-digit code — no password needed.
         </p>
 
-        <form action="/agent/authenticate" method="post" class="mt-7 space-y-4">
+        <form action="/agent/auth" method="post" class="mt-7 space-y-4">
           <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
 
           <div>
@@ -57,39 +58,17 @@
             />
           </div>
 
-          <div>
-            <label
-              for="agent-password"
-              class="mb-1.5 block text-[10px] font-black uppercase tracking-widest text-slate-500"
-            >
-              Password
-            </label>
-            <input
-              id="agent-password"
-              name="agent[password]"
-              type="password"
-              autocomplete="current-password"
-              required
-              class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-sm font-bold outline-none transition focus:border-[#FF4C00] focus:bg-white"
-            />
-          </div>
-
           <button
             type="submit"
             class="w-full rounded-xl bg-[#FF4C00] px-6 py-4 text-xs font-black uppercase tracking-[0.2em] text-white shadow-xl shadow-orange-200 transition hover:bg-[#E64400] active:scale-[0.99]"
           >
-            Log in
+            Send login code
           </button>
         </form>
 
         <p class="mt-5 text-center text-[11px] font-bold text-slate-400">
           Applying for the first time?
           <a href="/agent" class="font-black text-[#FF4C00] hover:underline">Create an agent account</a>
-        </p>
-
-        <p class="mt-2 text-center text-[11px] font-bold text-slate-400">
-          Applied before and need a password?
-          <a href="/agent/set-password" class="font-black text-slate-700 hover:underline">Set your password</a>
         </p>
       </div>
     </main>
