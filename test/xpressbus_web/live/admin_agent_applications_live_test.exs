@@ -14,7 +14,9 @@ defmodule XpressbusWeb.AdminAgentApplicationsLiveTest do
         "business_name" => "Admin Travel",
         "email" => "admin.agent@example.com",
         "phone" => "0734567890",
-        "city" => "Nairobi"
+        "city" => "Nairobi",
+        "password" => "agentpass123",
+        "password_confirmation" => "agentpass123"
       })
 
     {:ok, view, html} = live(admin_conn(conn), ~p"/admin/agent-applications")

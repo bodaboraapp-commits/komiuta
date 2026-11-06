@@ -5,6 +5,10 @@ defmodule Xpressbus.Agents.AgentApplication do
   @primary_key {:id, :binary_id, autogenerate: true}
 
   schema "agent_applications" do
+    field(:password, :string, virtual: true)
+    field(:password_confirmation, :string, virtual: true)
+    field(:password_hash, :string)
+
     field(:reference, :string)
     field(:full_name, :string)
     field(:email, :string)
@@ -46,7 +50,51 @@ defmodule Xpressbus.Agents.AgentApplication do
     |> validate_length(:phone, min: 9, max: 18)
     |> validate_inclusion(:payout_method, ["mpesa", "bank", "card"])
     |> validate_inclusion(:status, ["pending", "approved", "rejected"])
+    |> unique_constraint(:email, name: :agent_applications_email_index)
   end
+
+  @doc """
+  Sign-up changeset used by the Agent PWA. Adds password hashing on top of the
+  regular application fields.
+  """
+  def registration_changeset(application, attrs) when is_map(attrs) do
+    application
+    |> changeset(attrs)
+    |> cast(attrs, [:password, :password_confirmation])
+    |> validate_required([:password, :password_confirmation])
+    |> validate_length(:password, min: 8, max: 72)
+    |> validate_confirmation(:password)
+    |> put_password_hash()
+  end
+
+  def registration_changeset(attrs) when is_map(attrs) do
+    registration_changeset(%__MODULE__{}, attrs)
+  end
+
+  @doc """
+  Sets a first password for an existing application (used by the activation
+  form for applications created before agent login existed).
+  """
+  def password_changeset(application, attrs) do
+    application
+    |> cast(attrs, [:password, :password_confirmation])
+    |> validate_required([:password, :password_confirmation])
+    |> validate_length(:password, min: 8, max: 72)
+    |> validate_confirmation(:password)
+    |> put_password_hash()
+  end
+
+  defp put_password_hash(%Ecto.Changeset{valid?: true} = changeset) do
+    password = get_change(changeset, :password)
+
+    if is_binary(password) do
+      put_change(changeset, :password_hash, Xpressbus.Agents.hash_password(password))
+    else
+      changeset
+    end
+  end
+
+  defp put_password_hash(changeset), do: changeset
 
   defp normalise_email(nil), do: nil
 

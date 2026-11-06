@@ -11,7 +11,9 @@ defmodule Xpressbus.AgentsTest do
       "phone" => "0723456789",
       "city" => "Nairobi",
       "routes" => "Nairobi - Kisumu",
-      "payout_method" => "mpesa"
+      "payout_method" => "mpesa",
+      "password" => "agentpass123",
+      "password_confirmation" => "agentpass123"
     }
   end
 

@@ -5,32 +5,36 @@ defmodule XpressbusWeb.AgentLive do
   alias Xpressbus.Agents.AgentApplication
   alias Xpressbus.AgentApplicationEmail
 
-  def mount(_params, _session, socket) do
-    agent_url = agent_origin(socket) <> "/agent"
+  def mount(_params, session, socket) do
+    if session["agent_id"] do
+      {:ok, redirect(socket, to: "/agent/account")}
+    else
+      agent_url = agent_origin(socket) <> "/agent"
 
-    {:ok,
-     socket
-     |> assign(:page_title, "KOMIUTA Agent — Agent sign-up")
-     |> assign(
-       :page_description,
-       "Join the KOMIUTA Agent app. Sign up to sell bus tickets, manage bookings and serve travellers."
-     )
-     |> assign(:page_canonical, agent_url)
-     |> assign(:page_manifest, "/agent-manifest.json")
-     |> assign(:page_app_name, "KOMIUTA Agent")
-     |> assign(:page_apple_touch_icon, "/images/agent-icon-180.png")
-     |> assign(:page_theme_color, "#ffffff")
-     |> assign(:page_robots, "index,follow")
-     |> assign(:agent_url, agent_url)
-     |> assign(
-       :agent_qr,
-       XpressbusWeb.QRCode.svg(agent_url,
-         aria_label: "Scan to open the Komiuta Agent sign-up app",
-         size: 148
+      {:ok,
+       socket
+       |> assign(:page_title, "KOMIUTA Agent — Agent sign-up")
+       |> assign(
+         :page_description,
+         "Join the KOMIUTA Agent app. Sign up to sell bus tickets, manage bookings and serve travellers."
        )
-     )
-     |> assign(:submitted, nil)
-     |> assign_application_form()}
+       |> assign(:page_canonical, agent_url)
+       |> assign(:page_manifest, "/agent-manifest.json")
+       |> assign(:page_app_name, "KOMIUTA Agent")
+       |> assign(:page_apple_touch_icon, "/images/agent-icon-180.png")
+       |> assign(:page_theme_color, "#ffffff")
+       |> assign(:page_robots, "index,follow")
+       |> assign(:agent_url, agent_url)
+       |> assign(
+         :agent_qr,
+         XpressbusWeb.QRCode.svg(agent_url,
+           aria_label: "Scan to open the Komiuta Agent sign-up app",
+           size: 148
+         )
+       )
+       |> assign(:submitted, nil)
+       |> assign_application_form()}
+    end
   end
 
   def handle_event("validate", %{"agent_application" => attrs}, socket) do
