@@ -2,6 +2,7 @@ defmodule XpressbusWeb.AgentSessionController do
   use XpressbusWeb, :controller
 
   alias Xpressbus.Agents
+  alias Xpressbus.AgentDashboard
   alias Xpressbus.Integrations
 
   @page_assigns [
@@ -46,7 +47,7 @@ defmodule XpressbusWeb.AgentSessionController do
             |> delete_session(:agent_login_id)
             |> put_session(:agent_id, application.id)
             |> put_flash(:info, "Signed in with Google as #{application.email}.")
-            |> redirect(to: "/agent/account")
+            |> redirect(to: next_path(application))
 
           _ ->
             redirect(conn, to: "/agent/login?" <> URI.encode_query(%{"google_error" => "failed"}))
@@ -282,7 +283,7 @@ defmodule XpressbusWeb.AgentSessionController do
     case get_session(conn, :agent_id) |> load_agent() do
       {:ok, application} ->
         if Agents.email_verified?(application) do
-          redirect(conn, to: "/agent/account")
+          redirect(conn, to: next_path(application))
         else
           render_verify_email(conn, application, pending_email(conn, application))
         end
@@ -326,11 +327,11 @@ defmodule XpressbusWeb.AgentSessionController do
         case Agents.verify_email_code(application, code) do
           {:ok, application} ->
             case Agents.mark_email_verified(application, pending_email) do
-              {:ok, _application} ->
+              {:ok, verified_application} ->
                 conn
                 |> delete_session(:agent_verify_email)
                 |> put_flash(:info, "Email verified. Welcome to your dashboard.")
-                |> redirect(to: "/agent/account")
+                |> redirect(to: next_path(verified_application))
 
               {:error, _changeset} ->
                 conn
@@ -347,6 +348,41 @@ defmodule XpressbusWeb.AgentSessionController do
       :error ->
         conn
         |> put_flash(:error, "Please log in to verify your email.")
+        |> redirect(to: "/agent/login")
+    end
+  end
+
+  def dashboard(conn, _params) do
+    case get_session(conn, :agent_id) |> load_agent() do
+      {:ok, application} ->
+        cond do
+          not Agents.email_verified?(application) ->
+            conn
+            |> put_flash(:info, "Verify your email address to continue to your dashboard.")
+            |> redirect(to: "/agent/verify-email")
+
+          application.status != "approved" ->
+            conn
+            |> put_flash(
+              :info,
+              "Your dashboard unlocks when your agent application is approved."
+            )
+            |> redirect(to: "/agent/account")
+
+          true ->
+            dashboard = AgentDashboard.load(application)
+
+            render(
+              conn,
+              :dashboard,
+              [page_title: "KOMIUTA Agent — Dashboard", agent: application, dashboard: dashboard] ++
+                @page_assigns
+            )
+        end
+
+      :error ->
+        conn
+        |> put_flash(:error, "Please log in to view your agent dashboard.")
         |> redirect(to: "/agent/login")
     end
   end
@@ -399,7 +435,11 @@ defmodule XpressbusWeb.AgentSessionController do
   end
 
   defp next_path(application) do
-    if Agents.email_verified?(application), do: "/agent/account", else: "/agent/verify-email"
+    cond do
+      not Agents.email_verified?(application) -> "/agent/verify-email"
+      application.status == "approved" -> "/agent/dashboard"
+      true -> "/agent/account"
+    end
   end
 
   defp mark_google_email_verified(application) do

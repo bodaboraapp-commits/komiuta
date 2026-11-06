@@ -8,7 +8,7 @@ defmodule XpressbusWeb.AgentLive do
 
   def mount(_params, session, socket) do
     if session["agent_id"] do
-      {:ok, redirect(socket, to: "/agent/account")}
+      {:ok, redirect(socket, to: signed_in_path(session["agent_id"]))}
     else
       agent_url = agent_origin(socket) <> "/agent"
 
@@ -87,6 +87,20 @@ defmodule XpressbusWeb.AgentLive do
       |> AgentApplication.changeset(%{})
       |> to_form()
     )
+  end
+
+  defp signed_in_path(agent_id) do
+    case Agents.get_application_with_bus_operator(agent_id) do
+      %AgentApplication{} = application ->
+        cond do
+          not Agents.email_verified?(application) -> "/agent/verify-email"
+          application.status == "approved" -> "/agent/dashboard"
+          true -> "/agent/account"
+        end
+
+      _ ->
+        "/agent/login"
+    end
   end
 
   defp agent_origin(%{host_uri: %URI{host: host}}) when is_binary(host) do

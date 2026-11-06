@@ -136,6 +136,15 @@
       </div>
 
       <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+        <%= if @agent.status == "approved" do %>
+          <a
+            href="/agent/dashboard"
+            class="rounded-xl bg-[#FF4C00] px-5 py-3 text-center text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-[#E64400]"
+          >
+            Open dashboard
+          </a>
+        <% end %>
+
         <a
           href="/agent"
           class="rounded-xl border border-slate-200 bg-white px-5 py-3 text-center text-[10px] font-black uppercase tracking-widest text-slate-600 transition hover:border-slate-300"
