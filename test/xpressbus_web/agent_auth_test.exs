@@ -306,6 +306,9 @@ defmodule XpressbusWeb.AgentAuthTest do
     assert html =~ "Coast Partner"
     assert html =~ "KES 1,800"
     assert html =~ "Confirmed bookings for Coast Partner"
+
+    # The wallet is the first card on the account page.
+    assert :binary.match(html, "Your wallet") < :binary.match(html, "Application status")
   end
 
   test "logged-in agents are sent from the signup page to their account" do

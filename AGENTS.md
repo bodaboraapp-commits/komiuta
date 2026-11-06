@@ -1347,6 +1347,10 @@ mix test test/xpressbus_web/agent_auth_test.exs test/xpressbus_web/recent_bookin
 # 19 passed
 ```
 
+**Follow-up:** the wallet card is now the **first card** on the agent account page, above the
+application-status card (release `2026-11-06.16-agent-wallet-first-card`); the wallet render test asserts
+its position on the page.
+
 
 
 
