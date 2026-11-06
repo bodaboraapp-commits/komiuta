@@ -110,6 +110,19 @@ server verifies the browser's Firebase ID token through Google's Identity Toolki
 
 The admin **Integration** page also shows the configured project ID, auth domain and a masked API key.
 
+### SMS notifications (ticket cancellations / refunds)
+
+When an admin cancels and refunds a ticket from **`/admin/tickets`**, the customer receives an apology email and (when configured) an SMS with the ticket and refund details.
+
+1. Create an **Africa's Talking** account and API key for Kenya.
+2. In Render → Environment, set:
+   - `AFRICASTALKING_USERNAME` — your Africa's Talking username
+   - `AFRICASTALKING_API_KEY` — the API key
+   - `AFRICASTALKING_SENDER_ID` — `KOMIUTA` (must be approved by Africa's Talking for Kenya)
+3. Redeploy. The admin refund dialog will no longer show the “SMS gateway not configured” warning.
+
+If SMS is not configured, email still goes out and the refund is recorded; the admin screen shows the SMS delivery warning so support can follow up manually.
+
 Generate the base64 CA value on Windows:
 
 ```powershell

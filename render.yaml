@@ -54,3 +54,11 @@ services:
         value: no-reply@komiuta.com
       - key: RESEND_API_KEY
         sync: false
+      # --- SMS provider for ticket-cancellation notifications ----------------
+      # Africa's Talking (Kenya). Leave unset to send email only.
+      - key: AFRICASTALKING_USERNAME
+        sync: false
+      - key: AFRICASTALKING_API_KEY
+        sync: false
+      - key: AFRICASTALKING_SENDER_ID
+        value: KOMIUTA

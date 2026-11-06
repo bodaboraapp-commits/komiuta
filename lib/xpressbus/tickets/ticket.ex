@@ -17,6 +17,10 @@ defmodule Xpressbus.Tickets.Ticket do
     field(:payment_method, :string)
     field(:status, :string)
     field(:type, :string)
+    field(:cancelled_at, :utc_datetime)
+    field(:cancellation_reason, :string)
+    field(:refund_amount, :integer)
+    field(:refund_reference, :string)
 
     belongs_to(:bus, Xpressbus.Bookings.Bus)
 
@@ -40,7 +44,11 @@ defmodule Xpressbus.Tickets.Ticket do
       :payment_method,
       :status,
       :bus_id,
-      :type
+      :type,
+      :cancelled_at,
+      :cancellation_reason,
+      :refund_amount,
+      :refund_reference
     ])
     |> validate_required([:ticket_id, :from, :to, :travel_date, :company, :price, :seats])
     |> unique_constraint(:ticket_id)

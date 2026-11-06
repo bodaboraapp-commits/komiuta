@@ -4,8 +4,200 @@ defmodule Xpressbus.Tickets do
   """
 
   import Ecto.Query
+  alias Xpressbus.{Accounts, Payments, SMS, TicketCancellationEmail}
   alias Xpressbus.Repo
-  alias Xpressbus.Tickets.Ticket
+  alias Xpressbus.Payments.Payment
+  alias Xpressbus.Tickets.{Ticket, TicketRefund}
+
+  @doc """
+  Cancels a ticket, records a refund and notifies the traveller by SMS and email.
+
+  `attrs` accepts `refund_amount`, `reason` and `reference`. The ticket and
+  payment are updated transactionally; notifications happen afterwards so a
+  delivery failure cannot roll back a refund.
+  """
+  def cancel_and_refund(%Ticket{} = ticket, attrs, admin_id \\ nil) do
+    # The struct may be stale (e.g. the admin page was opened before another
+    # cancellation), so always re-read the current ticket status first.
+    ticket = Repo.get_by(Ticket, ticket_id: ticket.ticket_id) || ticket
+    attrs = stringify_keys(attrs)
+    refund_amount = parse_amount(attrs["refund_amount"]) || parse_amount(ticket.price) || 0
+    reason = String.trim(to_string(attrs["reason"] || ""))
+    reference = String.trim(to_string(attrs["reference"] || ""))
+
+    cond do
+      ticket.status == "cancelled" ->
+        {:error, :already_cancelled}
+
+      refund_amount < 0 ->
+        {:error, :invalid_amount}
+
+      true ->
+        now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+        result =
+          Repo.transaction(fn ->
+            with {:ok, ticket} <-
+                   ticket
+                   |> Ticket.changeset(%{
+                     status: "cancelled",
+                     cancelled_at: now,
+                     cancellation_reason: reason,
+                     refund_amount: refund_amount,
+                     refund_reference: reference
+                   })
+                   |> Repo.update(),
+                 :ok <- refund_payment(ticket, refund_amount, reference),
+                 {:ok, refund} <-
+                   %TicketRefund{}
+                   |> TicketRefund.changeset(%{
+                     ticket_id: ticket.ticket_id,
+                     amount: refund_amount,
+                     reason: reason,
+                     reference: reference,
+                     status: "refunded",
+                     admin_id: admin_id
+                   })
+                   |> Repo.insert() do
+              {ticket, refund}
+            else
+              {:error, reason} -> Repo.rollback(reason)
+            end
+          end)
+
+        case result do
+          {:ok, {ticket, refund}} ->
+            {refund, notification_results} = notify_traveller(ticket, refund)
+            {:ok, Map.put(notification_results, :ticket, ticket) |> Map.put(:refund, refund)}
+
+          {:error, reason} ->
+            {:error, reason}
+        end
+    end
+  end
+
+  defp notify_traveller(ticket, refund) do
+    user = Accounts.get_user_by_phone(ticket.passenger_phone)
+    email_result = TicketCancellationEmail.deliver(user, ticket, refund)
+    sms_result = SMS.send(ticket.passenger_phone, SMS.body_for_cancellation(ticket, refund))
+
+    details = %{
+      "email" => result_description(email_result),
+      "sms" => result_description(sms_result)
+    }
+
+    refund =
+      refund
+      |> TicketRefund.changeset(%{
+        email_sent: match?({:ok, _}, email_result),
+        sms_sent: match?({:ok, _}, sms_result),
+        notification_details: details
+      })
+      |> Repo.update()
+      |> case do
+        {:ok, updated} -> updated
+        {:error, _} -> refund
+      end
+
+    {refund,
+     %{
+       email: email_result,
+       sms: sms_result,
+       user: user
+     }}
+  end
+
+  defp refund_payment(ticket, amount, reference) do
+    case Payments.get_payment_by_reference(ticket.ticket_id) do
+      nil ->
+        :ok
+
+      %Payment{} = payment ->
+        raw = payment.raw_response || %{}
+
+        raw =
+          Map.put(raw, "refund", %{
+            "amount" => amount,
+            "reference" => reference,
+            "refunded_at" => DateTime.utc_now() |> DateTime.to_iso8601()
+          })
+
+        payment
+        |> Payment.changeset(%{status: "cancelled", raw_response: raw})
+        |> Repo.update()
+        |> case do
+          {:ok, _payment} -> :ok
+          {:error, changeset} -> {:error, changeset}
+        end
+    end
+  end
+
+  defp result_description({:ok, _}), do: "sent"
+  defp result_description({:error, reason}), do: to_string(reason)
+  defp result_description(_), do: "unknown"
+
+  defp stringify_keys(attrs) do
+    for {key, value} <- attrs, into: %{}, do: {to_string(key), value}
+  end
+
+  @doc "Parses a KES amount from a price string such as \"KSH 1,500\"."
+  def parse_amount(value) when is_integer(value), do: value
+
+  def parse_amount(value) when is_binary(value) do
+    digits = String.replace(value, ~r/[^0-9]/, "")
+
+    case Integer.parse(digits) do
+      {amount, _} -> amount
+      :error -> nil
+    end
+  end
+
+  def parse_amount(_), do: nil
+
+  @doc """
+  Paginated ticket list for the admin refunds screen.
+  """
+  def paginate_admin_tickets(page, page_size, search \\ "") do
+    search = String.trim(to_string(search || ""))
+    pattern = "%#{search}%"
+
+    query =
+      from(t in Ticket,
+        order_by: [desc: t.inserted_at]
+      )
+
+    query =
+      if search == "" do
+        query
+      else
+        where(
+          query,
+          [t],
+          fragment("LOWER(?) LIKE LOWER(?)", t.ticket_id, ^pattern) or
+            fragment("LOWER(?) LIKE LOWER(?)", t.passenger_name, ^pattern) or
+            fragment("LOWER(?) LIKE LOWER(?)", t.passenger_phone, ^pattern)
+        )
+      end
+
+    total = Repo.aggregate(query, :count, :id)
+
+    tickets =
+      query
+      |> limit(^page_size)
+      |> offset(^((page - 1) * page_size))
+      |> Repo.all()
+      |> Enum.map(&deserialize_seats/1)
+
+    {tickets, total}
+  end
+
+  def refunds_for_ticket(ticket_id) do
+    from(r in TicketRefund,
+      where: r.ticket_id == ^ticket_id,
+      order_by: [desc: r.inserted_at]
+    )
+    |> Repo.all()
+  end
 
   @doc """
   Lists all tickets.

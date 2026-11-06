@@ -62,6 +62,15 @@ config :xpressbus, :firebase, %{
   measurement_id: "G-V9JD71WH4E"
 }
 
+# Transactional SMS (ticket cancellation notifications). Africa's Talking is the
+# default gateway for Kenya; configure the credentials in the environment.
+config :xpressbus, :sms, %{
+  provider: "africastalking",
+  api_key: "",
+  username: "",
+  sender_id: "KOMIUTA"
+}
+
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.25.4",

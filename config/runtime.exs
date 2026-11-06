@@ -43,6 +43,20 @@ config :xpressbus,
        :firebase,
        Application.get_env(:xpressbus, :firebase, %{}) |> Map.merge(firebase_env)
 
+sms_env =
+  %{
+    provider: System.get_env("SMS_PROVIDER", "africastalking"),
+    api_key: System.get_env("AFRICASTALKING_API_KEY"),
+    username: System.get_env("AFRICASTALKING_USERNAME"),
+    sender_id: System.get_env("AFRICASTALKING_SENDER_ID")
+  }
+  |> Enum.reject(fn {_key, value} -> is_nil(value) or String.trim(value) == "" end)
+  |> Map.new()
+
+config :xpressbus,
+       :sms,
+       Application.get_env(:xpressbus, :sms, %{}) |> Map.merge(sms_env)
+
 if config_env() == :dev do
   # Reload browser tabs when matching files change.
   config :xpressbus, XpressbusWeb.Endpoint,

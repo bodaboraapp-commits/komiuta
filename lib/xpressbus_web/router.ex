@@ -135,6 +135,7 @@ defmodule XpressbusWeb.Router do
     live "/integration", AdminIntegrationLive, :index
     live "/coupons", AdminCouponLive, :index
     live "/users", AdminUsersLive, :index
+    live "/tickets", AdminTicketsLive, :index
   end
 
   scope "/api", XpressbusWeb do

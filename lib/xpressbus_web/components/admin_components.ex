@@ -360,6 +360,15 @@ defmodule XpressbusWeb.AdminComponents do
             has_arrow={!@collapsed}
             collapsed={@collapsed}
           />
+          <.nav_item
+            icon="confirmation_number"
+            label="Tickets & Refunds"
+            id="tickets"
+            href="/admin/tickets"
+            active={@active_tab}
+            has_arrow={!@collapsed}
+            collapsed={@collapsed}
+          />
         </div>
       </div>
       <%!-- Logout --%>

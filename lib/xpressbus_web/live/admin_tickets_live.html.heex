@@ -1,0 +1,270 @@
+<Layouts.app flash={@flash}>
+  <div class="flex min-h-screen bg-[#f8fafc]">
+    <.sidebar
+      active_tab="tickets"
+      bus_expanded={@bus_expanded}
+      chyllz_expanded={@chyllz_expanded}
+      settings_expanded={@settings_expanded}
+      collapsed={@sidebar_collapsed}
+    />
+
+    <div class={[
+      "flex-1 transition-all duration-300",
+      if(@sidebar_collapsed, do: "lg:pl-20", else: "lg:pl-72")
+    ]}>
+      <header class="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-8 sticky top-0 z-30">
+        <h2 class="text-xl font-black text-slate-900 tracking-tight uppercase tracking-widest">
+          Tickets &amp; Refunds
+        </h2>
+
+        <div class="flex items-center gap-3 border-l border-slate-100 pl-6">
+          <div class="text-right hidden sm:block">
+            <p class="text-[11px] font-black text-slate-900 leading-none">Admin User</p>
+            <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">Super Admin</p>
+          </div>
+
+          <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-[#FF4C00] font-black text-xs border-2 border-white shadow-sm">
+            AD
+          </div>
+        </div>
+      </header>
+
+      <main class="p-6 md:p-10">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
+          <div>
+            <h1 class="text-3xl font-black text-slate-900 tracking-tighter uppercase tracking-widest">
+              Refund a ticket
+            </h1>
+            <p class="text-sm font-bold text-slate-400 mt-1 tracking-wide">
+              Cancel a booking, record the refund and apologise to the traveller by SMS and email.
+            </p>
+          </div>
+
+          <form
+            id="admin-ticket-search-form"
+            phx-change="search"
+            class="flex items-center gap-3 bg-white border border-slate-100 rounded-2xl px-5 py-3 shadow-sm w-full md:w-96"
+          >
+            <span class="material-symbols-outlined text-slate-300">search</span>
+            <input
+              type="search"
+              name="search"
+              value={@search}
+              phx-debounce="300"
+              placeholder="Search ticket, passenger or phone"
+              class="w-full border-0 focus:ring-0 focus:outline-none p-0 text-sm font-bold text-slate-700 placeholder:text-slate-300"
+            />
+          </form>
+        </div>
+
+        <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead class="bg-slate-50/70">
+                <tr class="text-[10px] uppercase tracking-widest text-slate-400">
+                  <th class="px-6 py-4 font-black">Ticket</th>
+                  <th class="px-6 py-4 font-black">Passenger</th>
+                  <th class="px-6 py-4 font-black">Route</th>
+                  <th class="px-6 py-4 font-black">Travel date</th>
+                  <th class="px-6 py-4 font-black">Amount</th>
+                  <th class="px-6 py-4 font-black">Status</th>
+                  <th class="px-6 py-4 font-black text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-50">
+                <%= for ticket <- @tickets do %>
+                  <tr class="hover:bg-slate-50/50 transition-colors">
+                    <td class="px-6 py-4">
+                      <span class="text-xs font-black text-slate-900">{ticket.ticket_id}</span>
+                      <span class="block text-[10px] font-bold text-slate-400 mt-1">{ticket.company}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                      <span class="block text-xs font-black text-slate-900">{ticket.passenger_name ||
+                        "Guest"}</span>
+                      <span class="block text-[10px] font-bold text-slate-400 mt-1">{ticket.passenger_phone}</span>
+                    </td>
+                    <td class="px-6 py-4 text-xs font-bold text-slate-600">
+                      {ticket.from} → {ticket.to}
+                    </td>
+                    <td class="px-6 py-4 text-xs font-bold text-slate-600">
+                      {ticket.travel_date && Calendar.strftime(ticket.travel_date, "%d %b %Y")}
+                    </td>
+                    <td class="px-6 py-4 text-xs font-black text-slate-900">{ticket.price}</td>
+                    <td class="px-6 py-4">
+                      <span class={[
+                        "inline-flex items-center rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-widest",
+                        ticket.status == "cancelled" && "bg-red-50 text-red-600",
+                        ticket.status != "cancelled" && "bg-emerald-50 text-emerald-700"
+                      ]}>
+                        {ticket.status || "confirmed"}
+                      </span>
+                      <%= if ticket.status == "cancelled" do %>
+                        <span class="block text-[10px] font-bold text-slate-400 mt-1">
+                          Refunded {ticket.refund_amount && "KES #{ticket.refund_amount}"}
+                        </span>
+                      <% end %>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                      <%= if ticket.status == "cancelled" do %>
+                        <span class="text-[10px] font-bold text-slate-400">Already cancelled</span>
+                      <% else %>
+                        <button
+                          type="button"
+                          phx-click="open_cancel"
+                          phx-value-ticket_id={ticket.ticket_id}
+                          class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-[#FF4C00]"
+                        >
+                          Refund
+                        </button>
+                      <% end %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+
+          <%= if Enum.empty?(@tickets) do %>
+            <div class="px-6 py-16 text-center">
+              <span class="material-symbols-outlined !text-5xl text-slate-200">confirmation_number</span>
+              <p class="mt-4 text-sm font-black text-slate-500">No tickets found</p>
+              <p class="mt-1 text-xs font-bold text-slate-400">Try another search term.</p>
+            </div>
+          <% end %>
+
+          <div class="flex items-center justify-between px-6 py-4 border-t border-slate-50">
+            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              {@total_count} ticket(s) · page {@page} of {@total_pages}
+            </p>
+            <div class="flex gap-2">
+              <button
+                type="button"
+                phx-click="change_page"
+                phx-value-page={@page - 1}
+                disabled={@page <= 1}
+                class="rounded-xl border border-slate-100 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-600 disabled:opacity-30"
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                phx-click="change_page"
+                phx-value-page={@page + 1}
+                disabled={@page >= @total_pages}
+                class="rounded-xl border border-slate-100 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-600 disabled:opacity-30"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <%= if @selected_ticket do %>
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
+      <div class="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-[2rem] bg-white p-6 shadow-2xl md:p-8">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-[10px] font-black uppercase tracking-[0.25em] text-[#FF4C00]">
+              Cancel &amp; refund
+            </p>
+            <h3 class="mt-2 text-2xl font-black tracking-tight text-slate-900">
+              {@selected_ticket.ticket_id}
+            </h3>
+            <p class="mt-1 text-xs font-bold text-slate-400">
+              {@selected_ticket.passenger_name} · {@selected_ticket.from} → {@selected_ticket.to}
+            </p>
+          </div>
+          <button
+            type="button"
+            phx-click="close_cancel"
+            class="text-slate-400 hover:text-slate-900"
+          >
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <form id="cancel-ticket-form" phx-submit="cancel_ticket" class="mt-6 space-y-5">
+          <input type="hidden" name="ticket_id" value={@selected_ticket.ticket_id} />
+
+          <div>
+            <label class="mb-2 block text-[10px] font-black uppercase tracking-widest text-slate-500">
+              Refund amount (KES)
+            </label>
+            <input
+              type="number"
+              name="refund[amount]"
+              value={@refund_amount}
+              min="0"
+              step="1"
+              required
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3.5 font-bold outline-none transition focus:border-[#FF4C00] focus:bg-white"
+            />
+            <p class="mt-2 text-[10px] font-bold text-slate-400">
+              Ticket price: {@selected_ticket.price}. Refund this amount back to the original payment method.
+            </p>
+          </div>
+
+          <div>
+            <label class="mb-2 block text-[10px] font-black uppercase tracking-widest text-slate-500">
+              Reason
+            </label>
+            <select
+              name="refund[reason]"
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3.5 font-bold outline-none transition focus:border-[#FF4C00] focus:bg-white"
+            >
+              <option value="Customer request">Customer request</option>
+              <option value="Operator cancelled the trip">Operator cancelled the trip</option>
+              <option value="Schedule change">Schedule change</option>
+              <option value="Payment issue">Payment issue</option>
+              <option value="Goodwill">Goodwill / service recovery</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="mb-2 block text-[10px] font-black uppercase tracking-widest text-slate-500">
+              Refund reference (optional)
+            </label>
+            <input
+              type="text"
+              name="refund[reference]"
+              placeholder="e.g. M-PESA reversal code"
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3.5 font-bold outline-none transition focus:border-[#FF4C00] focus:bg-white"
+            />
+          </div>
+
+          <div class="rounded-2xl border border-orange-100 bg-orange-50 p-4">
+            <p class="text-[11px] font-bold leading-relaxed text-slate-700">
+              The traveller will receive an apology by email and SMS with the refund details.
+              The ticket will be marked cancelled and the payment refunded.
+            </p>
+            <%= if !@sms_configured do %>
+              <p class="mt-2 text-[10px] font-black uppercase tracking-widest text-amber-700">
+                SMS gateway not configured — email will still be sent.
+              </p>
+            <% end %>
+          </div>
+
+          <div class="flex gap-3 pt-1">
+            <button
+              type="button"
+              phx-click="close_cancel"
+              class="flex-1 rounded-xl border border-slate-200 py-3.5 text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50"
+            >
+              Keep ticket
+            </button>
+            <button
+              type="submit"
+              class="flex-1 rounded-xl bg-[#FF4C00] py-3.5 text-xs font-black uppercase tracking-widest text-white shadow-lg shadow-orange-200 hover:bg-[#E64400]"
+            >
+              Cancel &amp; refund
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  <% end %>
+</Layouts.app>
