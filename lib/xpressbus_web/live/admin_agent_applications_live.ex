@@ -95,6 +95,11 @@ defmodule XpressbusWeb.AdminAgentApplicationsLive do
   defp status_message("rejected"), do: "Application rejected."
   defp status_message(_status), do: "Application marked pending."
 
+  defp payout_label("mpesa"), do: "M-Pesa"
+  defp payout_label("bank"), do: "Bank"
+  defp payout_label("card"), do: "Card"
+  defp payout_label(other), do: other |> to_string() |> String.capitalize()
+
   defp load_applications(socket, page, search) do
     {applications, total} = Agents.paginate_applications(page, socket.assigns.page_size, search)
 

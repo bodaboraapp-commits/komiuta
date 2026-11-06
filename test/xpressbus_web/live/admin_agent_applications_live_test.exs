@@ -39,6 +39,12 @@ defmodule XpressbusWeb.AdminAgentApplicationsLiveTest do
     assert html =~ "Admin Travel"
     assert html =~ application.reference
 
+    assert has_element?(view, "#application-#{application.id}")
+    assert has_element?(view, "a[href='tel:0734567890']")
+    assert has_element?(view, "a[href='mailto:admin.agent@example.com']")
+    assert html =~ "Payout: M-Pesa"
+    assert html =~ "Submitted"
+
     view
     |> element("button[phx-value-id='#{application.id}'][phx-value-status=approved]")
     |> render_click()
@@ -69,6 +75,33 @@ defmodule XpressbusWeb.AdminAgentApplicationsLiveTest do
     assert rejected.status == "rejected"
     assert rejected.admin_notes == "Business registration missing"
     assert render(view) =~ "Business registration missing"
+  end
+
+  test "renders the application details and the M-Pesa payout label", %{conn: conn} do
+    {:ok, application} =
+      Agents.create_application(%{
+        "full_name" => "Detail Agent",
+        "business_name" => "Detail Travel",
+        "email" => "detail.agent@example.com",
+        "phone" => "0711000000",
+        "city" => "Kisumu",
+        "payout_method" => "mpesa",
+        "routes" => "Kisumu - Nairobi",
+        "notes" => "Two shuttles daily."
+      })
+
+    {:ok, _rejected} = Agents.update_status(application, "rejected", "Missing business permit")
+
+    {:ok, view, _html} = live(admin_conn(conn), ~p"/admin/agent-applications")
+
+    assert has_element?(view, "#application-#{application.id}")
+
+    html = render(view)
+    assert html =~ "Kisumu - Nairobi"
+    assert html =~ "Two shuttles daily."
+    assert html =~ "Missing business permit"
+    assert html =~ "Payout: M-Pesa"
+    assert html =~ "Reviewed"
   end
 
   test "redirects non-admin users", %{conn: conn} do
