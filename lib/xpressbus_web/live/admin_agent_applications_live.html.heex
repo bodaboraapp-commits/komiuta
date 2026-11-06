@@ -73,73 +73,83 @@
                 phx-click="toggle_application"
                 phx-value-id={application.id}
                 aria-expanded={to_string(MapSet.member?(@expanded_applications, application.id))}
-                class="flex w-full items-center gap-4 p-5 text-left transition hover:bg-slate-50/60 sm:p-6"
+                class="flex w-full flex-col gap-4 p-5 text-left transition hover:bg-slate-50/60 sm:p-6"
               >
-                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-orange-50 text-[#FF4C00]">
-                  <span class="material-symbols-outlined !text-xl">storefront</span>
-                </div>
+                <div class="flex w-full items-center gap-4">
+                  <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-orange-50 text-[#FF4C00]">
+                    <span class="material-symbols-outlined !text-xl">storefront</span>
+                  </div>
 
-                <div class="min-w-0 flex-1">
-                  <div class="flex flex-wrap items-center gap-2.5">
-                    <h2 class="truncate text-base font-black tracking-tight text-slate-900">
-                      {application.business_name}
-                    </h2>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex flex-wrap items-center gap-2.5">
+                      <h2 class="truncate text-base font-black tracking-tight text-slate-900">
+                        {application.business_name}
+                      </h2>
+
+                      <span class={[
+                        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-widest",
+                        application.status == "approved" && "bg-emerald-50 text-emerald-700",
+                        application.status == "rejected" && "bg-red-50 text-red-600",
+                        application.status == "pending" && "bg-amber-50 text-amber-700"
+                      ]}>
+                        <span class="h-1.5 w-1.5 rounded-full bg-current"></span> {application.status}
+                      </span>
+                    </div>
+
+                    <div class="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-bold text-slate-500">
+                      <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <span class="material-symbols-outlined !text-[14px] text-slate-300">person</span>
+                        <span class="truncate">{application.full_name}</span>
+                      </span>
+
+                      <span class="inline-flex items-center gap-1.5">
+                        <span class="material-symbols-outlined !text-[14px] text-slate-300">location_on</span> {application.city}
+                      </span>
+
+                      <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <span class="material-symbols-outlined !text-[14px] text-slate-300">mail</span>
+                        <span class="truncate">{application.email}</span>
+                      </span>
+
+                      <span class="inline-flex min-w-0 items-center gap-1.5">
+                        <span class="material-symbols-outlined !text-[14px] text-slate-300">directions_bus</span>
+                        <span class="truncate">
+                          {if application.bus_operator,
+                            do: application.bus_operator.name,
+                            else: "No bus operator"}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="hidden shrink-0 border-l border-slate-100 pl-5 xl:block">
+                    <.review_timeline application={application} />
+                  </div>
+
+                  <div class="flex shrink-0 items-center gap-3">
+                    <div class="hidden text-right sm:block">
+                      <p class="font-mono text-[10px] font-black text-slate-500">
+                        Ref {application.reference}
+                      </p>
+
+                      <%= if application.inserted_at do %>
+                        <p class="mt-0.5 text-[9px] font-bold uppercase tracking-widest text-slate-300">
+                          Submitted {Calendar.strftime(application.inserted_at, "%d %b %Y")}
+                        </p>
+                      <% end %>
+                    </div>
 
                     <span class={[
-                      "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-widest",
-                      application.status == "approved" && "bg-emerald-50 text-emerald-700",
-                      application.status == "rejected" && "bg-red-50 text-red-600",
-                      application.status == "pending" && "bg-amber-50 text-amber-700"
+                      "material-symbols-outlined text-slate-300 transition-transform duration-200",
+                      MapSet.member?(@expanded_applications, application.id) && "rotate-180"
                     ]}>
-                      <span class="h-1.5 w-1.5 rounded-full bg-current"></span> {application.status}
-                    </span>
-                  </div>
-
-                  <div class="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-bold text-slate-500">
-                    <span class="inline-flex min-w-0 items-center gap-1.5">
-                      <span class="material-symbols-outlined !text-[14px] text-slate-300">person</span>
-                      <span class="truncate">{application.full_name}</span>
-                    </span>
-
-                    <span class="inline-flex items-center gap-1.5">
-                      <span class="material-symbols-outlined !text-[14px] text-slate-300">location_on</span> {application.city}
-                    </span>
-
-                    <span class="inline-flex min-w-0 items-center gap-1.5">
-                      <span class="material-symbols-outlined !text-[14px] text-slate-300">mail</span>
-                      <span class="truncate">{application.email}</span>
-                    </span>
-
-                    <span class="inline-flex min-w-0 items-center gap-1.5">
-                      <span class="material-symbols-outlined !text-[14px] text-slate-300">directions_bus</span>
-                      <span class="truncate">
-                        {if application.bus_operator,
-                          do: application.bus_operator.name,
-                          else: "No bus operator"}
-                      </span>
+                      expand_more
                     </span>
                   </div>
                 </div>
 
-                <div class="flex shrink-0 items-center gap-3">
-                  <div class="hidden text-right sm:block">
-                    <p class="font-mono text-[10px] font-black text-slate-500">
-                      Ref {application.reference}
-                    </p>
-
-                    <%= if application.inserted_at do %>
-                      <p class="mt-0.5 text-[9px] font-bold uppercase tracking-widest text-slate-300">
-                        Submitted {Calendar.strftime(application.inserted_at, "%d %b %Y")}
-                      </p>
-                    <% end %>
-                  </div>
-
-                  <span class={[
-                    "material-symbols-outlined text-slate-300 transition-transform duration-200",
-                    MapSet.member?(@expanded_applications, application.id) && "rotate-180"
-                  ]}>
-                    expand_more
-                  </span>
+                <div class="w-full border-t border-slate-50 pt-3 xl:hidden">
+                  <.review_timeline application={application} />
                 </div>
               </button>
 
@@ -262,58 +272,6 @@
                         </div>
                       <% end %>
                     </div>
-
-                    <aside class="shrink-0 rounded-2xl border border-slate-100 bg-slate-50/60 p-4 lg:w-72">
-                      <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">
-                        Activity
-                      </p>
-
-                      <div class="mt-3">
-                        <div class="flex gap-3">
-                          <div class="flex flex-col items-center">
-                            <span class="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-[#FF4C00] ring-4 ring-slate-50"></span>
-                            <span class="mt-1 w-px flex-1 bg-slate-200"></span>
-                          </div>
-
-                          <div class="min-w-0 pb-5">
-                            <p class="text-[11px] font-black text-slate-700">
-                              Application submitted
-                            </p>
-
-                            <p class="mt-0.5 text-[10px] font-bold text-slate-400">
-                              <%= if application.inserted_at do %>
-                                {Calendar.strftime(application.inserted_at, "%d %b %Y")}
-                              <% end %>
-                            </p>
-
-                            <p class="mt-1.5 inline-flex rounded-md border border-slate-100 bg-white px-2 py-0.5 font-mono text-[9px] font-black text-slate-500">
-                              Ref {application.reference}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div class="flex gap-3">
-                          <span class={[
-                            "mt-1 h-2.5 w-2.5 shrink-0 rounded-full ring-4 ring-slate-50",
-                            review_dot_class(application.status)
-                          ]}></span>
-
-                          <div class="min-w-0">
-                            <p class="text-[11px] font-black text-slate-700">
-                              {review_title(application)}
-                            </p>
-
-                            <p class="mt-0.5 text-[10px] font-bold text-slate-400">
-                              <%= if application.reviewed_at do %>
-                                {Calendar.strftime(application.reviewed_at, "%d %b %Y, %H:%M")}
-                              <% else %>
-                                Awaiting review
-                              <% end %>
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </aside>
                   </div>
 
                   <div

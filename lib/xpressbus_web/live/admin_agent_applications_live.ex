@@ -148,6 +148,55 @@ defmodule XpressbusWeb.AdminAgentApplicationsLive do
   defp payout_label("card"), do: "Card"
   defp payout_label(other), do: other |> to_string() |> String.capitalize()
 
+  attr :application, :map, required: true
+
+  def review_timeline(assigns) do
+    ~H"""
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
+        <span class="h-2.5 w-2.5 shrink-0 rounded-full bg-[#FF4C00] ring-4 ring-orange-50"></span>
+
+        <div class="min-w-0">
+          <p class="whitespace-nowrap text-[9px] font-black uppercase tracking-widest text-slate-400">
+            Application submitted
+          </p>
+
+          <p class="mt-0.5 whitespace-nowrap text-[10px] font-bold text-slate-600">
+            <%= if @application.inserted_at do %>
+              {Calendar.strftime(@application.inserted_at, "%d %b %Y")}
+            <% else %>
+              —
+            <% end %>
+          </p>
+        </div>
+      </div>
+
+      <span class="h-px w-8 shrink-0 bg-slate-200"></span>
+
+      <div class="flex items-center gap-2">
+        <span class={[
+          "h-2.5 w-2.5 shrink-0 rounded-full ring-4 ring-slate-50",
+          review_dot_class(@application.status)
+        ]}></span>
+
+        <div class="min-w-0">
+          <p class="whitespace-nowrap text-[9px] font-black uppercase tracking-widest text-slate-500">
+            {review_title(@application)}
+          </p>
+
+          <p class="mt-0.5 whitespace-nowrap text-[10px] font-bold text-slate-400">
+            <%= if @application.reviewed_at do %>
+              {Calendar.strftime(@application.reviewed_at, "%d %b %Y, %H:%M")}
+            <% else %>
+              Awaiting review
+            <% end %>
+          </p>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
   defp load_applications(socket, page, search) do
     {applications, total} = Agents.paginate_applications(page, socket.assigns.page_size, search)
 
