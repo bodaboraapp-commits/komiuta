@@ -67,6 +67,19 @@ defmodule Xpressbus.Bookings.ScraperTest do
     assert bus.vip_price == "KES 3500"
   end
 
+  test "filter_soon_departures hides same-day trips inside the two-hour window" do
+    now_utc = ~U[2026-11-06 07:00:00Z]
+
+    buses = [
+      %{travel_date: ~D[2026-11-06], departure: "11:00 AM"},
+      %{travel_date: ~D[2026-11-06], departure: "12:00 PM"},
+      %{travel_date: ~D[2026-11-07], departure: "8:00 AM"}
+    ]
+
+    assert [%{departure: "12:00 PM"}, %{departure: "8:00 AM"}] =
+             Scraper.filter_soon_departures(buses, now_utc)
+  end
+
   defp bus_fixture(attrs) do
     defaults = %{
       company: "Test Coach",

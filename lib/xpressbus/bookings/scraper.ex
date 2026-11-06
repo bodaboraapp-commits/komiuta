@@ -35,20 +35,43 @@ defmodule Xpressbus.Bookings.Scraper do
   end
 
   defp search_live(from, to, date) do
-    case fetch_schedules(from, to, date) do
-      {:ok, []} ->
-        Logger.info("No BuuPass schedules for #{from} -> #{to} on #{date}; using cache.")
-        list_from_db(from, to, date)
+    buses =
+      case fetch_schedules(from, to, date) do
+        {:ok, []} ->
+          Logger.info("No BuuPass schedules for #{from} -> #{to} on #{date}; using cache.")
+          list_from_db(from, to, date)
 
-      {:ok, buses} ->
-        Logger.info("Fetched #{length(buses)} BuuPass schedules for #{from} -> #{to} on #{date}.")
-        save_buses_to_db(buses)
-        list_from_db(from, to, date)
+        {:ok, buses} ->
+          Logger.info(
+            "Fetched #{length(buses)} BuuPass schedules for #{from} -> #{to} on #{date}."
+          )
 
-      {:error, reason} ->
-        Logger.warning("BuuPass schedule fetch failed for #{from} -> #{to}: #{inspect(reason)}")
-        list_from_db(from, to, date)
-    end
+          save_buses_to_db(buses)
+          list_from_db(from, to, date)
+
+        {:error, reason} ->
+          Logger.warning("BuuPass schedule fetch failed for #{from} -> #{to}: #{inspect(reason)}")
+          list_from_db(from, to, date)
+      end
+
+    filter_soon_departures(buses)
+  end
+
+  @doc false
+  # Hides buses departing in less than two hours (Kenya time), matching
+  # BuuPass' behaviour for same-day search results. `now` is UTC for tests.
+  def filter_soon_departures(buses, now_utc \\ DateTime.utc_now()) do
+    now_eat = DateTime.add(now_utc, 3 * 60 * 60, :second)
+    today = DateTime.to_date(now_eat)
+    cutoff = now_eat.hour * 60 + now_eat.minute + 120
+
+    Enum.reject(buses, fn bus ->
+      bus.travel_date == today and
+        case departure_minutes(bus.departure) do
+          nil -> true
+          minutes -> minutes < cutoff
+        end
+    end)
   end
 
   @doc false
@@ -79,7 +102,7 @@ defmodule Xpressbus.Bookings.Scraper do
           buses =
             body
             |> parse_stream(from, to, date_obj)
-            |> Enum.uniq_by(&{&1.company, &1.departure, &1.arrival})
+            |> Enum.uniq_by(&{&1.company, &1.departure, &1.arrival, &1.registration})
 
           {:ok, buses}
 
@@ -286,6 +309,13 @@ defmodule Xpressbus.Bookings.Scraper do
 
   defp departure_to_iso(_), do: "00:00:00"
 
+  defp departure_minutes(value) do
+    case Time.from_iso8601(departure_to_iso(value)) do
+      {:ok, time} -> time.hour * 60 + time.minute
+      _ -> nil
+    end
+  end
+
   defp save_buses_to_db(buses) do
     from_city = List.first(buses).from
     to_city = List.first(buses).to
@@ -297,13 +327,13 @@ defmodule Xpressbus.Bookings.Scraper do
           where: b.from == ^from_city and b.to == ^to_city and b.travel_date == ^travel_date
         )
       )
-      |> Enum.into(%{}, fn bus -> {{bus.company, bus.departure}, bus} end)
+      |> Enum.into(%{}, fn bus -> {{bus.company, bus.registration}, bus} end)
 
     Enum.each(buses, fn bus_data ->
       operator = ensure_operator(bus_data.company)
       bus_data = %{bus_data | bus_operator_id: operator && operator.id}
 
-      existing = Map.get(existing_map, {bus_data.company, bus_data.departure})
+      existing = Map.get(existing_map, {bus_data.company, bus_data.registration})
       upsert_bus_instance(bus_data, existing)
     end)
   end
