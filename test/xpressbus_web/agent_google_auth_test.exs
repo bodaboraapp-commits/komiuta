@@ -51,7 +51,7 @@ defmodule XpressbusWeb.AgentGoogleAuthTest do
 
     assert html =~ "Continue with Google"
     assert html =~ ~s(href="http://localhost:4000/agent/google/start")
-    assert html =~ "or use SMS"
+    assert html =~ "or use email"
   end
 
   test "Google sign-in is hidden when Google OAuth is not configured", %{conn: conn} do

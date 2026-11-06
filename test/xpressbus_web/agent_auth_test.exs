@@ -35,16 +35,18 @@ defmodule XpressbusWeb.AgentAuthTest do
     code
   end
 
-  test "agent login page uses Firebase phone OTP", %{conn: conn} do
+  test "agent login page uses email OTP without a reCAPTCHA", %{conn: conn} do
     html = conn |> get(~p"/agent/login") |> html_response(200)
 
     assert html =~ "Agent sign in"
-    assert html =~ "firebase-sms-auth"
-    assert html =~ ~s(data-verify-url="/agent/firebase/verify")
-    assert html =~ ~s(data-redirect="/agent/account")
-    assert html =~ "Send SMS code"
-    assert html =~ "/assets/js/firebase_phone_auth.js"
-    refute html =~ ~s(name="agent[identifier]")
+    assert html =~ "Send login code"
+    assert html =~ ~s(action="/agent/auth")
+    assert html =~ ~s(name="agent[identifier]")
+
+    refute html =~ "firebase-sms-auth"
+    refute html =~ "firebase_phone_auth.js"
+    refute html =~ "Send SMS code"
+    refute html =~ "firebase-recaptcha"
   end
 
   describe "Firebase phone OTP verification" do
