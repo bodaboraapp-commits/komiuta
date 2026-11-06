@@ -47,6 +47,7 @@ filter_alt
 filter_list
 flag
 forum
+gpp_bad
 gps_fixed
 group
 group_add
@@ -85,11 +86,13 @@ open_in_new
 payments
 person
 person_add
+person_off
 phone_iphone
 pin_drop
 policy
 potted_plant
 power
+print
 qr_code_2
 redeem
 reply
@@ -101,6 +104,7 @@ schedule
 search
 settings
 shield
+smartphone
 sms
 sparkle
 star

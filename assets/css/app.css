@@ -114,7 +114,7 @@ body { font-family: "Lufga", "Trebuchet MS", "Segoe UI", sans-serif; font-weight
 	font-style: normal;
 	font-weight: 400;
 	font-display: block;
-	src: url("/fonts/material-symbols-subset.woff2?v=3") format("woff2");
+	src: url("/fonts/material-symbols-subset.woff2?v=4") format("woff2");
 }
 
 @font-face {

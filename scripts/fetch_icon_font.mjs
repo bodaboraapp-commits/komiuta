@@ -48,6 +48,9 @@ const EXTRA = [
   "rocket_launch",
   "support_agent",
   "verified",
+  "print",
+  "gpp_bad",
+  "smartphone",
 ];
 
 function walk(dir) {
