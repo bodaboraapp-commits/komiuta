@@ -15,7 +15,7 @@ defmodule XpressbusWeb.AdminRefundsLive do
         |> assign(:page_size, @page_size)
         |> assign(:search, "")
         |> assign(:sidebar_collapsed, false)
-        |> assign(:bus_expanded, false)
+        |> assign(:bus_expanded, true)
         |> assign(:chyllz_expanded, false)
         |> assign(:settings_expanded, true)
         |> assign(:refund_totals, Tickets.refund_totals())

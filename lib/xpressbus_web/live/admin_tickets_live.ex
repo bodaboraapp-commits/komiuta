@@ -19,7 +19,7 @@ defmodule XpressbusWeb.AdminTicketsLive do
         |> assign(:refund_amount, "")
         |> assign(:sms_configured, Xpressbus.SMS.configured?())
         |> assign(:sidebar_collapsed, false)
-        |> assign(:bus_expanded, false)
+        |> assign(:bus_expanded, true)
         |> assign(:chyllz_expanded, false)
         |> assign(:settings_expanded, true)
         |> load_tickets(1, "")

@@ -1,4 +1,4 @@
-This is a web application written using the Phoenix web framework.
+﻿This is a web application written using the Phoenix web framework.
 
 ## Project guidelines
 
@@ -43,12 +43,12 @@ The booking page hero section has fixed settings that must not be changed:
 - `pb-[200px]` padding-bottom in `lib/xpressbus_web/live/booking_live.html.heex` - controls hero height to prevent the search section from being pushed too far down
   - `background-size: 100% auto` and `background-position: top center` for `.hero-background` in `assets/css/app.css` - prevents image cropping of the building
 - The Chyllz nav item in the header has a circular orange background (`w-12 h-12 rounded-full flex items-center justify-center`) that should not be changed
-- The admin sidebar category toggle signs (`+`/`−`) use circular backgrounds (`w-6 h-6 rounded-full bg-white`) with the `ml-auto` alignment to vertically align with nav_item chevrons - do not change the circle dimensions or alignment
+- The admin sidebar category toggle signs (`+`/`âˆ’`) use circular backgrounds (`w-6 h-6 rounded-full bg-white`) with the `ml-auto` alignment to vertically align with nav_item chevrons - do not change the circle dimensions or alignment
 - The Chyllz nav item in the header has no circular background, just uses colored icon (`text-[#FF4C00]` when active, `text-slate-400` when inactive)
 
 ## User Authentication
 
-- User login page is at `/user/login` (GET) — accepts a **phone number or email address**
+- User login page is at `/user/login` (GET) â€” accepts a **phone number or email address**
 - `/user/auth` (POST) emails a **6-digit one-time code** to the account's email; it does **not** create a session yet
 - `/user/verify` (GET/POST) is where the code is entered; on success the session is created with `user_id` = user UUID
 - `/user/verify/resend` (POST) re-sends a code (60s cooldown, max 5 codes/hour per account)
@@ -58,22 +58,22 @@ The booking page hero section has fixed settings that must not be changed:
   token is POSTed to `/user/firebase/verify`, checked via Google's Identity Toolkit REST API, and the
   verified phone is matched to an existing account. Config lives in `config/config.exs` under
   `:firebase` (overridable with `FIREBASE_*` env vars); admin status/check is on
-  `/admin/integration → Firebase SMS`. Only existing accounts can use SMS login.
-- **Admin login-method choice:** `/admin/integration → User Login` stores `integrations` provider
+  `/admin/integration â†’ Firebase SMS`. Only existing accounts can use SMS login.
+- **Admin login-method choice:** `/admin/integration â†’ User Login` stores `integrations` provider
   `user_login` with `config.method` = `email` (default), `sms`, or `both`. The login page renders the
   selected method; if SMS is selected but Firebase is not configured, it falls back to email so users
   are not locked out. Google sign-in remains available independent of this setting.
 - Codes: 6 digits, 10-minute expiry, single use, max 5 attempts, HMAC-hashed at rest (`login_codes` table)
-- Registration (`/user/signup` → `/user/register`) now **requires a valid email address** — it is the login factor
+- Registration (`/user/signup` â†’ `/user/register`) now **requires a valid email address** â€” it is the login factor
 - Google OAuth (`/auth/google`) remains available and signs in with the Google-verified email
 - User logout is at `/user/logout` (GET)
 - User dashboard is at `/dashboard`
 - User dashboard tabs: `bus` ("My Bus"), `wallet` ("Wallet & Pay"), `transactions` ("History"), `referral` ("Rewards"), `profile` ("Settings"), `chyllz` ("My Chyllz")
 - Default dashboard tab is `bus`
-- User session uses `user_id`; OTP/Google logins store the user UUID. Legacy code paths may still store the phone number — `Accounts.get_user/1` resolves both
-- **Legacy accounts without an email cannot receive codes** — set an email for those users (support/admin) before they need to log in
+- User session uses `user_id`; OTP/Google logins store the user UUID. Legacy code paths may still store the phone number â€” `Accounts.get_user/1` resolves both
+- **Legacy accounts without an email cannot receive codes** â€” set an email for those users (support/admin) before they need to log in
 - In development, outgoing email is captured by the Swoosh Local adapter and visible at `/dev/mailbox`
-- Production email provider: `RESEND_API_KEY` (recommended) or `MAILGUN_API_KEY` + `MAILGUN_DOMAIN` or `BREVO_API_KEY`, plus `MAILER_FROM`. **Render blocks outbound SMTP**, so mailbox/SMTP credentials cannot be used there — use an HTTP email API. Verify delivery with `mix komiuta.send_test_email --to you@example.com`
+- Production email provider: `RESEND_API_KEY` (recommended) or `MAILGUN_API_KEY` + `MAILGUN_DOMAIN` or `BREVO_API_KEY`, plus `MAILER_FROM`. **Render blocks outbound SMTP**, so mailbox/SMTP credentials cannot be used there â€” use an HTTP email API. Verify delivery with `mix komiuta.send_test_email --to you@example.com`
 
 ### Header Auth Rules
 
@@ -241,7 +241,7 @@ All header authentication logic is centralized in `lib/xpressbus_web/components/
         <% end %>
       </div>
 
-  and **Never** do this – the program will terminate with a syntax error:
+  and **Never** do this â€“ the program will terminate with a syntax error:
 
       <%!-- THIS IS INVALID NEVER EVER DO THIS --%>
       <div id="<%= @invalid_interpolation %>">
@@ -579,13 +579,13 @@ If the system is completely broken (e.g., application will not start, tests fail
 - Check for any other `IO.puts` usage in production code that should use `Logger`
 - Verify `SECRET_KEY_BASE` is set in production environment variables
 
-### 2026-10-29 Session — Chyllz & InSURE catalogue moved from demo content to the database
+### 2026-10-29 Session â€” Chyllz & InSURE catalogue moved from demo content to the database
 
 **Objective:** The Chyllz pages and the InSURE page still rendered hard-coded demo content. Make them
 production pages backed by the database, with no visual regression.
 
 **Completed:**
-- Added `Xpressbus.Chyllz` — read-only catalogue queries (hotels, hidden gems, car hires, events) used by
+- Added `Xpressbus.Chyllz` â€” read-only catalogue queries (hotels, hidden gems, car hires, events) used by
   the public Chyllz pages. Only `active` rows are returned, duplicates are collapsed by natural key, and
   every query is bounded by a limit.
 - Rewrote `ChyllzLive`: all five routes (`/tour-packages`, `/tour-packages/hotels`,
@@ -597,8 +597,8 @@ production pages backed by the database, with no visual regression.
   pitch from the database. Default launch content lives in `Xpressbus.Insurance.SeedData` and is inserted
   idempotently by the migration and by `priv/repo/seeds.exs`.
 - Added `active` flags + unique indexes to `hotels`, `hidden_gems`, `car_hires`, `events`; a data migration
-  removed the duplicate rows created by re-running the old seeder (21→3 hotels, 21→3 gems, 21→3 cars,
-  14→2 events) and `seeds.exs` is now idempotent for these tables.
+  removed the duplicate rows created by re-running the old seeder (21â†’3 hotels, 21â†’3 gems, 21â†’3 cars,
+  14â†’2 events) and `seeds.exs` is now idempotent for these tables.
 - Added the read-only `/admin/insurance-plans` catalogue page and its sidebar entry; the header now keeps
   the Chyllz tab highlighted on all Chyllz sub-pages.
 - Added 33 tests (catalogue context, insurance context, LiveView coverage of every public page + empty
@@ -610,7 +610,7 @@ because they assert whole-table results; `mix test` now creates and migrates the
 automatically. CI can still override `DB_NAME`.
 
 **Content management:** to change what the public pages show, edit the catalogue rows (or
-`Xpressbus.Insurance.SeedData` for launch defaults) — do not hard-code content in the LiveViews again.
+`Xpressbus.Insurance.SeedData` for launch defaults) â€” do not hard-code content in the LiveViews again.
 Set a row's `active` to `false` to hide it from the public site.
 
 **Backups (Git is not installed on this machine):**
@@ -623,14 +623,14 @@ mix precommit        # compile --warnings-as-errors, deps.unlock --unused, forma
 MIX_ENV=dev mix ecto.migrate
 ```
 
-### 2026-10-29 Session — Ticket QR codes generated locally (third-party API removed)
+### 2026-10-29 Session â€” Ticket QR codes generated locally (third-party API removed)
 
 **Objective:** The ticket page loaded its boarding QR image from `api.qrserver.com`, leaking ticket IDs
 to a third party and breaking when that service (or the user's connection) is unavailable.
 
 **Completed:**
-- Added `Xpressbus.QR` — a dependency-free QR encoder (byte mode, EC level M, versions 1–10) covering
-  data encoding, Reed–Solomon over GF(256), interleaving, function patterns, mask evaluation, and
+- Added `Xpressbus.QR` â€” a dependency-free QR encoder (byte mode, EC level M, versions 1â€“10) covering
+  data encoding, Reedâ€“Solomon over GF(256), interleaving, function patterns, mask evaluation, and
   format/version information. Public API: `QR.encode/2` (matrix), `QR.svg/2` (inline SVG, no external
   resources). `encode/2` accepts a `:mask` override for tests/diagnostics only.
 - `TicketLive` now encodes the public ticket URL (`Endpoint.url() <> "/tickets?ticket_id=..."`) and
@@ -640,7 +640,7 @@ to a third party and breaking when that service (or the user's connection) is un
   against an independent reference matrix for "helloqr" (EC M, mask 0), version selection boundaries
   (v1/v2/v3/v4/v6/v8/v10), too-long handling, finder/timing/dark-module invariants, and SVG
   self-containment.
-- Independently cross-checked version 8 (49×49, multi-block interleaving + version information) against
+- Independently cross-checked version 8 (49Ã—49, multi-block interleaving + version information) against
   the same reference implementation (matrix diff: 0 modules).
 
 **Verification:**
@@ -649,7 +649,7 @@ DB_PORT=3308 mix test          # 92/92 (86 existing + 6 QR)
 mix compile --warnings-as-errors
 ```
 
-### 2026-10-29 Session — Installable PWA (manifest, install UX, offline shell)
+### 2026-10-29 Session â€” Installable PWA (manifest, install UX, offline shell)
 
 **Objective:** Turn the web app into a proper installable PWA instead of a bare manifest + minimal
 service worker.
@@ -666,7 +666,7 @@ service worker.
 - `assets/js/app.js`: captures `beforeinstallprompt` for the in-app install buttons, handles
   `appinstalled`, and reloads once when a new service worker takes control.
 - Header (`brand_components.ex`): the existing "Download App" links (desktop + mobile) are now the PWA
-  install action via a colocated `.InstallApp` hook — native install sheet where supported, "Add to Home
+  install action via a colocated `.InstallApp` hook â€” native install sheet where supported, "Add to Home
   Screen" hint on iOS, and the original `#app-section` download area as fallback (that section is kept
   for the future Play Store / App Store links). The links hide in standalone mode
   (`pwa-hide-installed`).
@@ -690,7 +690,7 @@ service worker.
 DB_PORT=3308 mix test   # 99/99 (92 + 5 PWA + 2 QR/QRCode additions)
 ```
 
-### 2026-10-29 Session — Email OTP login (phone-only login blocker removed)
+### 2026-10-29 Session â€” Email OTP login (phone-only login blocker removed)
 
 **Objective:** Login previously trusted a phone number with no verification, so anyone who knew a
 customer's number could access that account. Replace it with email one-time codes.
@@ -712,7 +712,7 @@ customer's number could access that account. Replace it with email one-time code
 - Production mailer config: Mailgun (`MAILGUN_API_KEY` + `MAILGUN_DOMAIN`) or Resend (`RESEND_API_KEY`),
   plus `MAILER_FROM`; warns at boot when no provider is configured.
 - 22 new tests (`login_code_test.exs`, `user_auth_test.exs`): delivery, expiry, single-use, attempt
-  lockout, cooldown/rate limit, registration validation/normalisation, and full request→verify→session
+  lockout, cooldown/rate limit, registration validation/normalisation, and full requestâ†’verifyâ†’session
   controller flows.
 
 **Notes / follow-ups:**
@@ -726,7 +726,7 @@ DB_PORT=3308 mix precommit   # 121/121 tests
 mix ecto.migrate             # applies the login_codes migration
 ```
 
-### 2026-10-29 Session — Mobile loading performance (phone payload)
+### 2026-10-29 Session â€” Mobile loading performance (phone payload)
 
 **Objective:** The phone experience was slow because the landing page loaded a 637 KB hero PNG and the
 Chyllz pages autoplayed a 5.9 MB video; icons came from Google's full Material Symbols font through two
@@ -738,7 +738,7 @@ render-blocking requests (one duplicated by a CSS `@import`).
   `type="image/avif"` LCP preload, `fetchpriority="high"`, `decoding="async"`, and intrinsic dimensions.
   The app-download/store QR section etc. unchanged.
 - Hero video is desktop-only: no `autoplay`/`<source>` in the HTML; the new `HeroVideo` hook in
-  `assets/js/app.js` loads it only at `≥768px`, and skips it under Save-Data or reduced motion. Phones
+  `assets/js/app.js` loads it only at `â‰¥768px`, and skips it under Save-Data or reduced motion. Phones
   download the 16 KB WebP poster only.
 - Material Symbols: removed the Google Fonts stylesheet, the `@import`, and the old preload/fallbacks.
   `scripts/fetch_icon_font.mjs` extracts the 105 used icons, downloads a **self-hosted 11 KB subset**
@@ -753,7 +753,7 @@ render-blocking requests (one duplicated by a CSS `@import`).
 
 **Not changed / follow-ups:**
 - Desktop still downloads the 5.9 MB hero video; re-encode it (ffmpeg) before relying on it.
-- The biggest remaining phone delay is Render Free's ~1 minute cold start after idle — upgrade the plan
+- The biggest remaining phone delay is Render Free's ~1 minute cold start after idle â€” upgrade the plan
   or keep the service warm.
 - `mix precommit` could not be re-run after these changes because the environment denied the required
   build-write escalation; the targeted mobile/PWA tests passed. Run `mix precommit` before deploying.
@@ -765,7 +765,7 @@ DB_PORT=3308 mix test test/xpressbus_web/mobile_perf_test.exs test/xpressbus_web
 # 13 passed
 ```
 
-### 2026-10-31 Session — Search-result journey timeline overlap fix
+### 2026-10-31 Session â€” Search-result journey timeline overlap fix
 
 **Objective:** On the bus search results card the orange bus icon overlapped the
 duration/departure label above the journey line on narrow (phone) screens.
@@ -787,19 +787,19 @@ DB_PORT=3308 mix test test/xpressbus_web/search_card_layout_test.exs test/xpress
 # 2 passed
 ```
 
-### 2026-10-31 Session — Login email branding (Komiuta logo)
+### 2026-10-31 Session â€” Login email branding (Komiuta logo)
 
 **Objective:** The OTP email header was plain text ("Komiuta") on the orange bar; add the Komiuta logo
 to the branded transaction email.
 
 **Completed:**
 - `lib/xpressbus/login_email.ex`: orange header now shows the Komiuta lockup as an image
-  (`137×54` display, 2x asset) with `alt="Komiuta"`, plus a **"SECURE SIGN-IN"** label and a hidden
+  (`137Ã—54` display, 2x asset) with `alt="Komiuta"`, plus a **"SECURE SIGN-IN"** label and a hidden
   preheader. Logo URL is absolute (`Endpoint.url() <> "/images/logo_email.png"`), with a
   `:mailer_logo_url` config override used by the local preview helper. Added
   `color-scheme`/`supported-color-schemes` meta tags for dark-mode clients.
-- `priv/static/images/logo_email.png` (new): the supplied **transparent-background Komiuta logo** (190×52),
-  displayed at 146×40 on a **white email header** with a thin orange brand strip. The white header keeps
+- `priv/static/images/logo_email.png` (new): the supplied **transparent-background Komiuta logo** (190Ã—52),
+  displayed at 146Ã—40 on a **white email header** with a thin orange brand strip. The white header keeps
   the black wordmark readable; the earlier white rounded chip was removed.
 - `test/xpressbus/login_code_test.exs`: asserts the email HTML contains the absolute logo URL,
   `alt="Komiuta"`, "Secure sign-in", and that the logo PNG exists.
@@ -818,15 +818,15 @@ DB_PORT=3308 mix test test/xpressbus/login_code_test.exs
 # 15 passed
 ```
 
-### 2026-10-31 Session — Dashboard ticket modal: real QR code and Code 128 barcode
+### 2026-10-31 Session â€” Dashboard ticket modal: real QR code and Code 128 barcode
 
 **Objective:** The "Congratulations! Booking Confirmed & E-Ticket Ready" modal on the user
-dashboard drew a decorative random-pixel "QR" (`:rand.uniform/1` over a 41×41 grid) and a
+dashboard drew a decorative random-pixel "QR" (`:rand.uniform/1` over a 41Ã—41 grid) and a
 random-width "barcode" (`Enum.random([1, 2])` px divs at 30% opacity). Neither was scannable, the
 codes changed on every render, and the grid added ~1,700 DOM nodes per render.
 
 **Completed:**
-- Added `XpressbusWeb.TicketCodes` — the single source of truth for the boarding pass codes:
+- Added `XpressbusWeb.TicketCodes` â€” the single source of truth for the boarding pass codes:
   `qr/1` renders the signed ticket URL (`Xpressbus.TicketAccess.url/1`) through the existing
   `XpressbusWeb.QRCode`/`Xpressbus.QR`, and `barcode/1,2` renders the ticket number as ISO/IEC
   15417 Code 128B through the existing `Xpressbus.Barcode`. Both return `{:safe, svg}` or `nil`.
@@ -834,7 +834,7 @@ codes changed on every render, and the grid added ~1,700 DOM nodes per render.
   `preserveAspectRatio`) so a code can fill a fluid container while staying crisp; fixed-size
   output is unchanged, so the public ticket page is unaffected.
 - `UserDashboardLive` now assigns `:ticket_qr`/`:ticket_barcode` when a ticket modal opens and
-  clears them on close. The modal renders them in a 160×160 white QR panel (2px black border,
+  clears them on close. The modal renders them in a 160Ã—160 white QR panel (2px black border,
   4-module quiet zone from the encoder, no logo overlay covering modules) and a full-width
   white barcode strip (responsive, 56px tall, no opacity/filters). Text fallbacks remain if a
   code cannot be generated.
@@ -856,10 +856,10 @@ mix precommit                     # 203/203 tests
 mix assets.deploy                 # rebuilt minified/digested assets
 ```
 
-### 2026-10-31 Session — Website + email contact/social details
+### 2026-10-31 Session â€” Website + email contact/social details
 
 **Objective:** Add the website, support contact details and social media links to the public footer and
-to the transactional login-code email (the email previously ended with just "Komiuta · Elevate Your
+to the transactional login-code email (the email previously ended with just "Komiuta Â· Elevate Your
 Journey").
 
 **Completed:**
@@ -870,7 +870,7 @@ Journey").
   **Facebook / Instagram / X / TikTok** links (`target="_blank" rel="noopener noreferrer"`); email and
   phone now come from `Xpressbus.Brand`.
 - Login-code email (`login_email.ex`): footer now shows
-  `www.komiuta.com · hello@komiuta.com · 0800 211 211` and "Follow us: Facebook · Instagram · X · TikTok";
+  `www.komiuta.com Â· hello@komiuta.com Â· 0800 211 211` and "Follow us: Facebook Â· Instagram Â· X Â· TikTok";
   the plain-text alternative carries the same details. Footer text is **center-aligned** in the email.
 - Updated the mockup `docs/komiuta-login-email-preview.png` (rendered from the real email HTML with
   `scratch/email_preview.exs`) to show the logo, website, contact and social footer.
@@ -879,7 +879,7 @@ Journey").
 
 **Important:** social URLs currently default to the `@komiuta` handles
 (`facebook.com/komiuta`, `instagram.com/komiuta`, `x.com/komiuta`, `tiktok.com/@komiuta`). Confirm/replace
-them in `config/config.exs` (`:brand` → `:social_links`) with the real pages before launch.
+them in `config/config.exs` (`:brand` â†’ `:social_links`) with the real pages before launch.
 
 **Verification:**
 ```
@@ -888,7 +888,7 @@ DB_PORT=3308 mix test test/xpressbus/login_code_test.exs test/xpressbus_web/bran
 # 17 passed
 ```
 
-### 2026-10-31 Session — Printable PDF boarding pass + production deploy
+### 2026-10-31 Session â€” Printable PDF boarding pass + production deploy
 
 **Objective:** The "Download PDF" button produced a text-only A4 page with no QR/barcode, and the code
 had not yet been pushed to production.
@@ -907,19 +907,19 @@ had not yet been pushed to production.
   without a second login. The old `/user/tickets/:id/download` route keeps working.
 - Ticket page: "DOWNLOAD PASS" (which only printed the page) is now a real **DOWNLOAD PDF** link plus a
   separate **PRINT PASS** button; dashboard modal's **Download PDF** uses the signed URL too.
-- Verified the rendered PDF visually (`docs/ticket-boarding-pass-preview.pdf` + `.png`) — real QR matrix
+- Verified the rendered PDF visually (`docs/ticket-boarding-pass-preview.pdf` + `.png`) â€” real QR matrix
   and clean Code 128 bars; added tests for the vector codes, PDF xref integrity, token/owner/guest
   authorisation, and the download links.
 
 **Completed (deploy):**
-- Ran `mix precommit` → **213/213**.
+- Ran `mix precommit` â†’ **213/213**.
 - Committed the working tree (`22850b7`) and pushed branch `phoenix-app` to
   `github.com/bodaboraapp-commits/komiuta` using the portable MinGit in `%TEMP%\komiuta-git` over the
   machine's GitHub SSH key (no token file needed; `GIT_SSH=C:\Windows\System32\OpenSSH\ssh.exe`).
 - Render auto-deployed on the push. Verified against the live site: `/` (hero `<picture>` AVIF),
   `/user/login` (OTP copy), `/tour-packages` + `/tour-packages/hotels` (search + DB cards),
-  `/tour-packages/insurance` (DB plan grid + coverage table), `/admin/insurance-plans` → login redirect,
-  `/tickets/:id/download` → new route. `scratch/smoke-test.ps1 -BaseUrl https://www.komiuta.com`:
+  `/tour-packages/insurance` (DB plan grid + coverage table), `/admin/insurance-plans` â†’ login redirect,
+  `/tickets/:id/download` â†’ new route. `scratch/smoke-test.ps1 -BaseUrl https://www.komiuta.com`:
   **all checks passed**.
 - `login.html.heex`: copy now says "Phone or Email" with an email-or-phone placeholder (backend already
   accepted both).
@@ -937,25 +937,25 @@ git push origin phoenix-app   # 8928f7f..22850b7 (+ follow-up commit)
 .\scratch\smoke-test.ps1 -BaseUrl https://www.komiuta.com   # all PASS
 ```
 
-### 2026-11-06 Session — Clear stale pending bookings (local DB done, production on next deploy)
+### 2026-11-06 Session â€” Clear stale pending bookings (local DB done, production on next deploy)
 
 **Objective:** Abandoned "pending" ticket bookings made before 2026-11-06 were cluttering the app. Clear
 them (and their payment attempts) from the local development database and production.
 
 **Local database (`buupasskomiuta_db`, done manually with backups):**
-- Deleted **8 pending tickets** (created 21–24 Sep 2026) and their **8 linked payments** (6 pending,
+- Deleted **8 pending tickets** (created 21â€“24 Sep 2026) and their **8 linked payments** (6 pending,
   2 failed M-PESA attempts) in a transaction. Confirmed bookings were untouched.
 - Backups written before deletion to
   `backups/db-cleanup-20261106/` (workspace; not committed):
   `buupasskomiuta_db_full.sql` (full dump), `pending_tickets_before_today.sql` (the 8 ticket rows),
   `linked_payments.sql` (the 8 payment rows).
-- Started the local XAMPP MariaDB (`mysqld --defaults-file=C:\xampp\mysql\bin\my.ini --standalone`) —
+- Started the local XAMPP MariaDB (`mysqld --defaults-file=C:\xampp\mysql\bin\my.ini --standalone`) â€”
   it was not running after the last reboot.
 
 **Production (via code + git push, because Aiven credentials/valid Render API key are not available):**
 - Added `Xpressbus.DataCleanup` (`lib/xpressbus/data_cleanup.ex`): archives rows as JSON into the new
   `pending_booking_archive` table (migration `20261106094000_create_pending_booking_archive.exs`) and
-  then deletes pending tickets created before a cutoff plus their linked payments — inside one
+  then deletes pending tickets created before a cutoff plus their linked payments â€” inside one
   transaction. Safety rules: never touches bookings created after the cutoff; keeps any pending ticket
   that has a `success` payment (paid-but-pending anomalies are reported, not deleted); idempotent;
   schema-decoupled (schemaless queries) so it works regardless of pending schema migrations.
@@ -976,7 +976,7 @@ mix komiuta.clear_pending_bookings --before 2026-11-06 --dry-run   # 0 tickets /
 mix run priv/repo/render_bootstrap.exs                             # cleanup no-op, boot OK
 ```
 
-### 2026-11-06 Session — "+ Add Return" button on the bus search pill
+### 2026-11-06 Session â€” "+ Add Return" button on the bus search pill
 
 **Objective:** Let users turn the landing bus search into a round trip from the search pill itself
 (there was a return-date plumbing in the LiveView, but no way to add one and the old default silently
@@ -988,11 +988,11 @@ marked every booking as "Round Trip").
   ticket `type` is "One Way" instead of always "Round Trip".
 - Search pill (`booking_live.html.heex`): after the Travel Date field there is now an
   **"+ Add Return"** outline chip (`#add-return-button`). Clicking it reveals a **Return Date** field
-  (`#return-date-field`, `#search-return-date`) with a remove (`×`, `#remove-return-button`) control.
+  (`#return-date-field`, `#search-return-date`) with a remove (`Ã—`, `#remove-return-button`) control.
   Layout is responsive: chip on desktop, full-width row on phones; no horizontal overflow and the
   fixed hero (`pb-[200px]`) settings are untouched.
 - Round trips are carried through the results URL (`return=YYYY-MM-DD`), the results summary shows a
-  **Return date** badge (`#round-trip-badge`), the passenger page title shows `round trip · return
+  **Return date** badge (`#round-trip-badge`), the passenger page title shows `round trip Â· return
   <date>`, and the payment/ticket `type` becomes "Round Trip".
 - Return date validation/normalisation: the return date can never be before the travel date (it is
   bumped to travel + 7 days if the travel date moves past it), and an invalid/missing value falls back
@@ -1004,7 +1004,7 @@ marked every booking as "Round Trip").
   return date, round-trip URL, one-way URL without `return`, results badge, MODIFY state, deep-link
   prefill).
 - Visual check: `scratch/return_trip_screenshot.js` (puppeteer-core + installed Chrome) captured the
-  pill in one-way/round-trip state on desktop 1440px and mobile 390px — both fit within the viewport
+  pill in one-way/round-trip state on desktop 1440px and mobile 390px â€” both fit within the viewport
   (`docScrollWidth == innerWidth`) and the results page renders the return badge.
 
 **Not implemented:** the return leg is still booked as a separate one-way search; the round-trip
@@ -1018,7 +1018,7 @@ mix assets.build     # rebuilt Tailwind/esbuild bundles
 node scratch/return_trip_screenshot.js   # desktop + mobile screenshots, no overflow
 ```
 
-### 2026-11-06 Session — Database-driven "recent booking" pills above the trusted-partner marquee
+### 2026-11-06 Session â€” Database-driven "recent booking" pills above the trusted-partner marquee
 
 **Objective:** Show a live/tending booking strip on the landing page, directly above the trusted
 partner logos and outside the search pill, without exceeding the search section's width.
@@ -1029,7 +1029,7 @@ partner logos and outside the search pill, without exceeding the search section'
     count then recency (up to 8 pills).
   - **Popular fallback:** when nothing was booked in the live window, the all-time most booked routes
     are shown instead (labelled "Popular routes" rather than "Live bookings").
-  - Privacy: only route, count and latest-booking time are selected — no passenger/phone/ticket/price
+  - Privacy: only route, count and latest-booking time are selected â€” no passenger/phone/ticket/price
     data ever leaves the DB. `relative_time/1` renders "just now", "4m ago", "3h ago", "2d ago".
 - `BookingLive` fetches the pills in parallel with the existing mount queries, assigns
   `:recent_booking_pills` / `:recent_booking_mode`, and refreshes them every 60s while the landing page
@@ -1055,9 +1055,9 @@ mix assets.build
 node scratch/recent_bookings_screenshot.js   # desktop 1440 / mobile 390: row within search-pill width, no overlap, no overflow
 ```
 
-### 2026-11-06 Session — Two-hour departure window sanitizer for bus search
+### 2026-11-06 Session â€” Two-hour departure window sanitizer for bus search
 
-**Objective:** Search results were showing buses departing within minutes/two hours — trips a user cannot
+**Objective:** Search results were showing buses departing within minutes/two hours â€” trips a user cannot
 realistically catch (and can leave them paying for a bus that has already left). Hide those from the
 search.
 
@@ -1085,15 +1085,15 @@ search.
 mix precommit        # 286/286 tests
 ```
 
-### 2026-11-06 Session — One consistent search API across every public bus surface
+### 2026-11-06 Session â€” One consistent search API across every public bus surface
 
-**Objective:** Make sure the public bus-visibility rules are identical everywhere a bus can appear —
-booking search, the BuuPass cache fallback, city pages, operator pages and SEO route discovery — and
+**Objective:** Make sure the public bus-visibility rules are identical everywhere a bus can appear â€”
+booking search, the BuuPass cache fallback, city pages, operator pages and SEO route discovery â€” and
 prove it with tests.
 
 **Completed:**
 - `Xpressbus.Bookings.Search` is now the single source of truth:
-  - `base_query/0` = public visibility (no `legacy_fallback`, no sold-out `"0 seats left"` — nil seat
+  - `base_query/0` = public visibility (no `legacy_fallback`, no sold-out `"0 seats left"` â€” nil seat
     text allowed, and only buses whose partner operator is approved or absent);
   - `list_bookable/4` = base query + route/date + 2-hour `DepartureWindow` filter (search results);
   - `list_route_inventory/3` = base query + route/date without the time window (summary/SEO only).
@@ -1119,7 +1119,7 @@ prove it with tests.
 mix precommit        # 315/315 tests
 ```
 
-### 2026-11-06 Session — Admin sidebar: User List and Agent List split
+### 2026-11-06 Session â€” Admin sidebar: User List and Agent List split
 
 **Objective:** The admin sidebar had a single combined "User/Agent List" entry (pointing at the users
 page) plus a separate "Agent Applications" entry. Split the combined label into two clearly separate
@@ -1127,8 +1127,8 @@ lists in the admin nav.
 
 **Completed:**
 - `lib/xpressbus_web/components/admin_components.ex` sidebar now has two adjacent entries:
-  - **User List** — `group` icon, `id="users"`, links to `/admin/users`;
-  - **Agent List** — `support_agent` icon, `id="agents"`, links to `/admin/agent-applications`.
+  - **User List** â€” `group` icon, `id="users"`, links to `/admin/users`;
+  - **Agent List** â€” `support_agent` icon, `id="agents"`, links to `/admin/agent-applications`.
   The combined "User/Agent List" label and the separate "Agent Applications" nav entry are gone; the
   tests/refunds entry follows the two list entries.
 - `AdminUsersLive`: page title and page header renamed from "User/Agent List" to **User List** (nav
@@ -1142,15 +1142,15 @@ lists in the admin nav.
 mix precommit        # 318/318 tests
 ```
 
-### 2026-11-06 Session — Tickets & Refunds moved into the BUS section as split items
+### 2026-11-06 Session â€” Tickets & Refunds moved into the BUS section as split items
 
 **Objective:** The combined "Tickets & Refunds" admin entry lived in the Settings section. Move it to the
 BUS section and split it into **Tickets** and **Refunds** as separate list items.
 
 **Completed:**
 - Admin sidebar (`lib/xpressbus_web/components/admin_components.ex`):
-  - BUS section now ends with **Tickets** (`confirmation_number` icon → `/admin/tickets`, `id="tickets"`)
-    and **Refunds** (`reply` icon → `/admin/refunds`, `id="refunds"`), right after Facility.
+  - BUS section now ends with **Tickets** (`confirmation_number` icon â†’ `/admin/tickets`, `id="tickets"`)
+    and **Refunds** (`reply` icon â†’ `/admin/refunds`, `id="refunds"`), right after Facility.
   - The combined "Tickets & Refunds" entry was removed from the Settings section.
 - New refunds admin page:
   - `Xpressbus.Tickets.paginate_refunds/3` joins `ticket_refunds` with `tickets` (passenger, route, price)
@@ -1165,8 +1165,9 @@ BUS section and split it into **Tickets** and **Refunds** as separate list items
 
 **Verification:**
 ```
-mix precommit        # 333/333 tests
+mix precommit        # 334/334 tests
 ```
+
 
 
 
