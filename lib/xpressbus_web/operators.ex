@@ -22,6 +22,7 @@ defmodule XpressbusWeb.Operators do
     Repo.all(
       from(b in Bus,
         where: not is_nil(b.company),
+        where: is_nil(b.source) or b.source != "legacy_fallback",
         group_by: b.company,
         select: %{name: b.company, buses: count(b.id)},
         order_by: [desc: count(b.id)],
@@ -39,6 +40,7 @@ defmodule XpressbusWeb.Operators do
     Repo.all(
       from(b in Bus,
         where: b.company == ^name,
+        where: is_nil(b.source) or b.source != "legacy_fallback",
         order_by: [asc: b.travel_date],
         limit: 600
       )
@@ -68,7 +70,14 @@ defmodule XpressbusWeb.Operators do
   end
 
   def cities(name) do
-    Repo.all(from(b in Bus, where: b.company == ^name, select: b.from, distinct: true))
+    Repo.all(
+      from(b in Bus,
+        where: b.company == ^name,
+        where: is_nil(b.source) or b.source != "legacy_fallback",
+        select: b.from,
+        distinct: true
+      )
+    )
     |> Enum.reject(&is_nil/1)
     |> Enum.sort()
   end

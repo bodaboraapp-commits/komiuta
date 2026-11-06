@@ -35,6 +35,7 @@ defmodule XpressbusWeb.SeoController do
       Repo.all(
         from(b in Bus,
           where: not is_nil(b.from) and not is_nil(b.to),
+          where: is_nil(b.source) or b.source != "legacy_fallback",
           group_by: [b.from, b.to],
           select: %{from: b.from, to: b.to, count: count(b.id)},
           order_by: [desc: count(b.id)],

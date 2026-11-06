@@ -80,6 +80,7 @@ defmodule XpressbusWeb.CityLive do
     Repo.all(
       from(b in Bus,
         where: fragment("LOWER(?) = LOWER(?)", b.from, ^city_name),
+        where: is_nil(b.source) or b.source != "legacy_fallback",
         order_by: [asc: b.travel_date],
         limit: 800
       )

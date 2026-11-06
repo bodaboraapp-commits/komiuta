@@ -22,6 +22,7 @@ defmodule Xpressbus.Bookings.Bus do
     field(:occupied_seats, {:array, :string}, default: [])
     field(:total_seats, :integer, default: 40)
     field(:logo_url, :string, virtual: true)
+    field(:source, :string)
 
     belongs_to(:bus_operator, Xpressbus.BusOperators.BusOperator)
 
@@ -50,7 +51,8 @@ defmodule Xpressbus.Bookings.Bus do
       :seat_types,
       :occupied_seats,
       :total_seats,
-      :bus_operator_id
+      :bus_operator_id,
+      :source
     ])
     |> validate_required([:company, :departure, :arrival, :from, :to, :travel_date])
     |> unique_constraint(:unique_bus_trip, name: :unique_bus_trip)

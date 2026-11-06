@@ -43,3 +43,6 @@ config :xpressbus, Xpressbus.Repo,
   hostname: System.get_env("DB_HOST", "127.0.0.1"),
   port: String.to_integer(System.get_env("DB_PORT", "3307")),
   pool: Ecto.Adapters.SQL.Sandbox
+
+# Never hit the live BuuPass API during the test suite.
+config :xpressbus, :scraper_enabled, false
