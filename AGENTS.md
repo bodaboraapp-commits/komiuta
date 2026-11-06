@@ -1142,6 +1142,33 @@ lists in the admin nav.
 mix precommit        # 318/318 tests
 ```
 
+### 2026-11-06 Session — Tickets & Refunds moved into the BUS section as split items
+
+**Objective:** The combined "Tickets & Refunds" admin entry lived in the Settings section. Move it to the
+BUS section and split it into **Tickets** and **Refunds** as separate list items.
+
+**Completed:**
+- Admin sidebar (`lib/xpressbus_web/components/admin_components.ex`):
+  - BUS section now ends with **Tickets** (`confirmation_number` icon → `/admin/tickets`, `id="tickets"`)
+    and **Refunds** (`reply` icon → `/admin/refunds`, `id="refunds"`), right after Facility.
+  - The combined "Tickets & Refunds" entry was removed from the Settings section.
+- New refunds admin page:
+  - `Xpressbus.Tickets.paginate_refunds/3` joins `ticket_refunds` with `tickets` (passenger, route, price)
+    and supports search by ticket id, refund reference, passenger name or phone.
+  - `Xpressbus.Tickets.refund_totals/0` returns the refund count and total refunded amount.
+  - `AdminRefundsLive` + template (`/admin/refunds`): totals cards, searchable/paginated refund table with
+    amount, reference, email/SMS notification badges and status.
+- `AdminTicketsLive`: page title and header renamed from "Tickets & Refunds" to **Tickets** (refunds now
+  have their own page).
+- Tests: `test/xpressbus_web/live/admin_refunds_live_test.exs` (redirect, list + totals, search, empty
+  state, split nav entries). Existing tickets/admin tests still pass.
+
+**Verification:**
+```
+mix precommit        # 333/333 tests
+```
+
+
 
 
 

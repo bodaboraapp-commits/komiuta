@@ -10,7 +10,7 @@ defmodule XpressbusWeb.AdminTicketsLive do
     if admin_id = session["admin_id"] do
       socket =
         socket
-        |> assign(:page_title, "Tickets & Refunds")
+        |> assign(:page_title, "Tickets")
         |> assign(:active_tab, "tickets")
         |> assign(:admin_id, admin_id)
         |> assign(:page_size, @page_size)

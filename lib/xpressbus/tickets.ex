@@ -200,6 +200,79 @@ defmodule Xpressbus.Tickets do
   end
 
   @doc """
+  Paginated refund history for the admin refunds page.
+
+  Joins the refund to its ticket so the row can show the passenger and route.
+  """
+  def paginate_refunds(page, page_size, search \\ "") do
+    search = String.trim(to_string(search || ""))
+    pattern = "%#{search}%"
+
+    base =
+      from(r in TicketRefund,
+        join: t in Ticket,
+        on: t.ticket_id == r.ticket_id
+      )
+
+    base =
+      if search == "" do
+        base
+      else
+        where(
+          base,
+          [r, t],
+          fragment("LOWER(?) LIKE LOWER(?)", r.ticket_id, ^pattern) or
+            fragment("LOWER(?) LIKE LOWER(?)", r.reference, ^pattern) or
+            fragment("LOWER(?) LIKE LOWER(?)", t.passenger_name, ^pattern) or
+            fragment("LOWER(?) LIKE LOWER(?)", t.passenger_phone, ^pattern)
+        )
+      end
+
+    total = Repo.aggregate(base, :count, :id)
+
+    refunds =
+      base
+      |> select(
+        [r, t],
+        %{
+          id: r.id,
+          ticket_id: r.ticket_id,
+          amount: r.amount,
+          reason: r.reason,
+          reference: r.reference,
+          status: r.status,
+          inserted_at: r.inserted_at,
+          email_sent: r.email_sent,
+          sms_sent: r.sms_sent,
+          passenger_name: t.passenger_name,
+          passenger_phone: t.passenger_phone,
+          from: t.from,
+          to: t.to,
+          travel_date: t.travel_date,
+          price: t.price
+        }
+      )
+      |> order_by([r], desc: r.inserted_at)
+      |> limit(^page_size)
+      |> offset(^((page - 1) * page_size))
+      |> Repo.all()
+
+    {refunds, total}
+  end
+
+  @doc "Aggregate refund count and total refunded amount."
+  def refund_totals do
+    from(r in TicketRefund,
+      select: %{count: count(r.id), amount: sum(r.amount)}
+    )
+    |> Repo.one()
+    |> case do
+      nil -> %{count: 0, amount: 0}
+      %{count: count, amount: amount} -> %{count: count, amount: amount || 0}
+    end
+  end
+
+  @doc """
   Lists all tickets.
   """
   def list_tickets do
