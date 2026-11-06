@@ -10,8 +10,8 @@ defmodule XpressbusWeb.PWATest do
   test "web app manifest is valid and installable" do
     manifest = @priv |> Path.join("manifest.json") |> File.read!() |> Jason.decode!()
 
-    assert manifest["name"] =~ "Komiuta"
-    assert manifest["short_name"] == "Komiuta"
+    assert manifest["name"] == "KOMIUTA APP"
+    assert manifest["short_name"] == "KOMIUTA"
     assert manifest["start_url"] == "/"
     assert manifest["scope"] == "/"
     assert manifest["display"] == "standalone"
@@ -22,6 +22,7 @@ defmodule XpressbusWeb.PWATest do
     assert Enum.any?(icons, &(&1["sizes"] == "192x192" and &1["type"] == "image/png"))
     assert Enum.any?(icons, &(&1["sizes"] == "512x512"))
     assert Enum.any?(icons, &(&1["purpose"] == "maskable"))
+    assert Enum.any?(icons, &(&1["src"] == "/images/app-icon-192.png"))
 
     for icon <- icons do
       assert File.exists?(Path.join(@priv, String.trim_leading(icon["src"], "/"))),
