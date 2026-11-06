@@ -3,7 +3,9 @@ defmodule XpressbusWeb.AgentSessionController do
 
   alias Xpressbus.Agents
   alias Xpressbus.AgentDashboard
+  alias Xpressbus.AgentTags
   alias Xpressbus.Integrations
+  alias XpressbusWeb.Endpoint
 
   @page_assigns [
     page_manifest: "/agent-manifest.json",
@@ -352,6 +354,85 @@ defmodule XpressbusWeb.AgentSessionController do
     end
   end
 
+  @doc """
+  Prints the approved agent's physical ID tag. The QR code is scanned by staff
+  or partners to open the public verification page.
+  """
+  def tag(conn, _params) do
+    case get_session(conn, :agent_id) |> load_agent() do
+      {:ok, %{status: "approved"} = application} ->
+        token = AgentTags.token(application)
+        verify_url = Endpoint.url() <> "/agent/verified/" <> token
+
+        render(
+          conn,
+          :tag,
+          [
+            page_title: "KOMIUTA Agent — Verified ID tag",
+            page_robots: "noindex,nofollow",
+            agent: application,
+            tag_token: token,
+            verify_url: verify_url,
+            tag_qr:
+              XpressbusWeb.QRCode.svg(verify_url,
+                aria_label: "Scan to verify this Komiuta agent",
+                size: 132
+              ),
+            initials: AgentTags.initials(application),
+            issued_on: AgentTags.issued_on(application)
+          ] ++ @page_assigns
+        )
+
+      {:ok, _application} ->
+        conn
+        |> put_flash(
+          :error,
+          "Your verified ID tag becomes available once your application is approved."
+        )
+        |> redirect(to: "/agent/account")
+
+      :error ->
+        conn
+        |> put_flash(:error, "Please log in to view your agent ID tag.")
+        |> redirect(to: "/agent/login")
+    end
+  end
+
+  @doc "Public page opened by scanning the QR code on a printed agent tag."
+  def verified_agent(conn, %{"token" => token}) do
+    case AgentTags.verify(token) do
+      {:ok, application_id} ->
+        case Agents.get_application_with_bus_operator(application_id) do
+          %{status: "approved"} = application ->
+            render(
+              conn,
+              :verified_agent,
+              [
+                page_title: "KOMIUTA Agent — Verified agent",
+                page_robots: "noindex,nofollow",
+                agent: application
+              ] ++ @page_assigns
+            )
+
+          _ ->
+            render_agent_tag_invalid(conn)
+        end
+
+      _ ->
+        render_agent_tag_invalid(conn)
+    end
+  end
+
+  defp render_agent_tag_invalid(conn) do
+    conn
+    |> put_status(:not_found)
+    |> render(
+      :verified_agent,
+      [page_title: "KOMIUTA Agent — Tag not valid", page_robots: "noindex,nofollow", agent: nil] ++
+        @page_assigns
+    )
+  end
+
   def dashboard(conn, _params) do
     case get_session(conn, :agent_id) |> load_agent() do
       {:ok, application} ->
@@ -391,10 +472,19 @@ defmodule XpressbusWeb.AgentSessionController do
     case get_session(conn, :agent_id) |> load_agent() do
       {:ok, application} ->
         if Agents.email_verified?(application) do
+          dashboard =
+            if application.bus_operator do
+              AgentDashboard.load(application)
+            end
+
           render(
             conn,
             :account,
-            [page_title: "KOMIUTA Agent — Account", agent: application] ++ @page_assigns
+            [
+              page_title: "KOMIUTA Agent — Account",
+              agent: application,
+              dashboard: dashboard
+            ] ++ @page_assigns
           )
         else
           conn

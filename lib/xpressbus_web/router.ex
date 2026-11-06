@@ -49,6 +49,8 @@ defmodule XpressbusWeb.Router do
     post "/agent/verify/resend", AgentSessionController, :resend_code
     get "/agent/logout", AgentSessionController, :logout
     get "/agent/dashboard", AgentSessionController, :dashboard
+    get "/agent/tag", AgentSessionController, :tag
+    get "/agent/verified/:token", AgentSessionController, :verified_agent
     get "/agent/account", AgentSessionController, :account
     get "/agent/verify-email", AgentSessionController, :verify_email
     post "/agent/verify-email/send", AgentSessionController, :send_email_verification
