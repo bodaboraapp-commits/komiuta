@@ -145,7 +145,7 @@ defmodule Xpressbus.Bookings.Scraper do
         rating: nil,
         vip_price: format_money(vip_fare, currency),
         business_price: format_money(business_fare, currency),
-        first_class_price: format_money(first_fare, currency),
+        first_class_price: format_money(first_fare, currency) || "",
         duration: duration_label(departure, arrival),
         seat_types: seat_type_names(seat_types),
         from: from,

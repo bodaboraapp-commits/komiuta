@@ -138,6 +138,51 @@
                       />
                     </div>
                   </div>
+
+                  <%= if @return_added do %>
+                    <%!-- Return Date (round trip) --%>
+                    <div
+                      id="return-date-field"
+                      class="flex-1 group px-4 md:px-6 py-2 md:py-3 rounded-2xl md:rounded-full hover:bg-slate-50 transition-colors"
+                    >
+                      <div class="flex items-center justify-between gap-2">
+                        <label class="block text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-0.5 md:mb-1 ml-6 md:ml-7">
+                          Return Date
+                        </label>
+
+                        <button
+                          type="button"
+                          id="remove-return-button"
+                          phx-click="remove_return"
+                          title="Remove return trip"
+                          aria-label="Remove return trip"
+                          class="mb-0.5 md:mb-1 mr-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-slate-300 hover:bg-slate-100 hover:text-[#FF4C00] transition-colors"
+                        >
+                          <span class="material-symbols-outlined !text-sm">close</span>
+                        </button>
+                      </div>
+
+                      <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-slate-300 group-focus-within:text-[#FF4C00] transition-colors !text-lg md:!text-2xl">calendar_month</span>
+                        <.input
+                          id="search-return-date"
+                          field={@search_form[:return_date]}
+                          type="date"
+                          min={@date || Date.to_string(Date.utc_today())}
+                          class="w-full border-0 focus:ring-0 focus:outline-none focus:ring-transparent focus:border-transparent p-0 text-sm md:text-base font-bold text-slate-900 cursor-pointer"
+                        />
+                      </div>
+                    </div>
+                  <% else %>
+                    <button
+                      type="button"
+                      id="add-return-button"
+                      phx-click="add_return"
+                      class="shrink-0 self-stretch md:self-center flex items-center justify-center gap-1.5 px-4 md:px-5 py-2.5 md:py-3 rounded-full border border-dashed border-orange-200 bg-orange-50/60 text-[#FF4C00] font-black uppercase tracking-[0.15em] text-[9px] md:text-[10px] hover:bg-orange-50 hover:border-[#FF4C00] transition-all active:scale-95 whitespace-nowrap"
+                    >
+                      <span class="material-symbols-outlined !text-base">add</span> Add Return
+                    </button>
+                  <% end %>
                 </div>
 
                 <button
@@ -791,6 +836,18 @@
                 <div class="text-sm font-bold text-slate-900">{@date}</div>
               </div>
 
+              <%= if @return_added && @return_date do %>
+                <div
+                  id="round-trip-badge"
+                  class="flex-1 flex items-center px-4 py-2 border-r border-slate-50 gap-2 min-w-[120px]"
+                >
+                  <span class="material-symbols-outlined text-[#FF4C00] !text-lg">sync_alt</span>
+                  <div class="text-sm font-bold text-[#FF4C00]">
+                    Return <span class="text-slate-900">{@return_date}</span>
+                  </div>
+                </div>
+              <% end %>
+
               <button
                 phx-click="back_to_search"
                 class="px-5 h-10 rounded-xl bg-[#d52263] text-white font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] transition-all active:scale-95 shadow-lg shadow-pink-500/20 shrink-0"
@@ -1161,7 +1218,7 @@
                               )}</span>
                             </div>
 
-                            <%= if Map.get(bus, :vip_price) do %>
+                            <%= if Map.get(bus, :vip_price) not in [nil, "", "N/A"] do %>
                               <div class="flex items-baseline justify-between gap-2">
                                 <span class="text-[10px] font-bold text-slate-400 uppercase">VIP</span>
                                 <span class="text-sm font-black text-slate-900">KES {String.replace(
@@ -1172,7 +1229,7 @@
                               </div>
                             <% end %>
 
-                            <%= if Map.get(bus, :business_price) do %>
+                            <%= if Map.get(bus, :business_price) not in [nil, "", "N/A"] do %>
                               <div class="flex items-baseline justify-between gap-2">
                                 <span class="text-[10px] font-bold text-slate-400 uppercase">Business</span>
                                 <span class="text-sm font-black text-slate-900">KES {String.replace(
@@ -1183,7 +1240,7 @@
                               </div>
                             <% end %>
 
-                            <%= if Map.get(bus, :first_class_price) do %>
+                            <%= if Map.get(bus, :first_class_price) not in [nil, "", "N/A"] do %>
                               <div class="flex items-baseline justify-between gap-2">
                                 <span class="text-[10px] font-bold text-slate-400 uppercase">First</span>
                                 <span class="text-sm font-black text-slate-900">KES {String.replace(
@@ -1529,8 +1586,8 @@
           <.booking_progress step={@step} /> <%!-- Dynamic Page Title --%>
           <h1 class="text-2xl md:text-4xl font-black text-slate-900 mb-4 tracking-tighter">
             {@from} <span class="text-[#FF4C00] opacity-50">→</span> {@to}
-            <%= if @return_date && !String.match?(@return_date, ~r/^null$/) do %>
-              round trip
+            <%= if @return_date do %>
+              round trip · return {@return_date}
             <% else %>
               one way trip
             <% end %>

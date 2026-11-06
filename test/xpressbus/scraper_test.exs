@@ -20,6 +20,7 @@ defmodule Xpressbus.Bookings.ScraperTest do
     assert bus.duration == "9h 0m"
     assert bus.seats == "38 seats left"
     assert bus.source == "buupass_api"
+    assert bus.first_class_price == ""
     assert bus.logo_url == "https://example.com/chania.webp"
   end
 
