@@ -14,13 +14,6 @@
             Agent App
           </span>
         </a>
-
-        <a
-          href="/agent/logout"
-          class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-700 shadow-sm transition hover:border-red-200 hover:text-red-600"
-        >
-          <span class="material-symbols-outlined !text-base">logout</span> Log out
-        </a>
       </div>
     </header>
 
@@ -116,6 +109,19 @@
 
             <dd class="mt-1 text-sm font-bold uppercase">{@agent.payout_method}</dd>
           </div>
+
+          <%= if @agent.partner do %>
+            <div class="sm:col-span-2">
+              <dt class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
+                Partner
+              </dt>
+
+              <dd class="mt-1 inline-flex items-center gap-2 text-sm font-bold">
+                <span class="material-symbols-outlined !text-base text-[#FF4C00]">handshake</span>
+                {@agent.partner.name}
+              </dd>
+            </div>
+          <% end %>
 
           <%= if @agent.routes do %>
             <div class="sm:col-span-2">
