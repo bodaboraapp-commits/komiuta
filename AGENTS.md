@@ -937,6 +937,46 @@ git push origin phoenix-app   # 8928f7f..22850b7 (+ follow-up commit)
 .\scratch\smoke-test.ps1 -BaseUrl https://www.komiuta.com   # all PASS
 ```
 
+### 2026-11-06 Session — Clear stale pending bookings (local DB done, production on next deploy)
+
+**Objective:** Abandoned "pending" ticket bookings made before 2026-11-06 were cluttering the app. Clear
+them (and their payment attempts) from the local development database and production.
+
+**Local database (`buupasskomiuta_db`, done manually with backups):**
+- Deleted **8 pending tickets** (created 21–24 Sep 2026) and their **8 linked payments** (6 pending,
+  2 failed M-PESA attempts) in a transaction. Confirmed bookings were untouched.
+- Backups written before deletion to
+  `backups/db-cleanup-20261106/` (workspace; not committed):
+  `buupasskomiuta_db_full.sql` (full dump), `pending_tickets_before_today.sql` (the 8 ticket rows),
+  `linked_payments.sql` (the 8 payment rows).
+- Started the local XAMPP MariaDB (`mysqld --defaults-file=C:\xampp\mysql\bin\my.ini --standalone`) —
+  it was not running after the last reboot.
+
+**Production (via code + git push, because Aiven credentials/valid Render API key are not available):**
+- Added `Xpressbus.DataCleanup` (`lib/xpressbus/data_cleanup.ex`): archives rows as JSON into the new
+  `pending_booking_archive` table (migration `20261106094000_create_pending_booking_archive.exs`) and
+  then deletes pending tickets created before a cutoff plus their linked payments — inside one
+  transaction. Safety rules: never touches bookings created after the cutoff; keeps any pending ticket
+  that has a `success` payment (paid-but-pending anomalies are reported, not deleted); idempotent;
+  schema-decoupled (schemaless queries) so it works regardless of pending schema migrations.
+- Added the Mix task `mix komiuta.clear_pending_bookings [--before YYYY-MM-DD] [--dry-run]`
+  (`lib/mix/tasks/komiuta.clear_pending_bookings.ex`; default cutoff = 00:00 Africa/Nairobi today).
+- `priv/repo/render_bootstrap.exs` now runs the cleanup once per boot with the fixed cutoff
+  `2026-11-05T21:00:00Z` (= 2026-11-06 00:00 Africa/Nairobi), logs the counts, and is wrapped in a
+  rescue so a data problem can never block boot. Render's start command runs the bootstrap after
+  `mix ecto.migrate`, so the next deploy performs the cleanup automatically and keeps the archived rows
+  in `pending_booking_archive` for recovery.
+- Tests: `test/xpressbus/data_cleanup_test.exs` (dry run, archive+delete scope, idempotency,
+  paid-but-pending protection, cutoff conversion).
+
+**Verification (local):**
+```
+MIX_ENV=dev mix ecto.migrate
+mix komiuta.clear_pending_bookings --before 2026-11-06 --dry-run   # 0 tickets / 0 payments after cleanup
+mix run priv/repo/render_bootstrap.exs                             # cleanup no-op, boot OK
+```
+
+
 
 
 
