@@ -6,7 +6,7 @@ defmodule XpressbusWeb.AgentLive do
   alias Xpressbus.AgentApplicationEmail
 
   def mount(_params, _session, socket) do
-    agent_url = XpressbusWeb.Endpoint.url() <> "/agent"
+    agent_url = agent_origin(socket) <> "/agent"
 
     {:ok,
      socket
@@ -79,4 +79,14 @@ defmodule XpressbusWeb.AgentLive do
       |> to_form()
     )
   end
+
+  defp agent_origin(%{host_uri: %URI{host: host}}) when is_binary(host) do
+    if String.starts_with?(host, "agent.") do
+      "https://" <> host
+    else
+      XpressbusWeb.Endpoint.url()
+    end
+  end
+
+  defp agent_origin(_socket), do: XpressbusWeb.Endpoint.url()
 end

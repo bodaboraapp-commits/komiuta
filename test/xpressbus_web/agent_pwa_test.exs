@@ -20,6 +20,30 @@ defmodule XpressbusWeb.AgentPwaTest do
     refute html =~ "Track Ticket"
   end
 
+  test "website /agent redirects to the separate Agent origin", %{conn: conn} do
+    conn = %{conn | host: "www.komiuta.com"}
+
+    conn = conn |> get(~p"/agent")
+
+    assert redirected_to(conn, 302) == "https://agent.komiuta.com/agent"
+  end
+
+  test "Agent subdomain root opens the Agent app", %{conn: conn} do
+    conn = %{conn | host: "agent.komiuta.com"}
+
+    conn = conn |> get(~p"/")
+
+    assert redirected_to(conn, 302) == "https://agent.komiuta.com/agent"
+  end
+
+  test "Agent page canonical and QR use the Agent origin on the Agent subdomain", %{conn: conn} do
+    conn = %{conn | host: "agent.komiuta.com"}
+    html = conn |> get(~p"/agent") |> html_response(200)
+
+    assert html =~ ~s(rel="canonical" href="https://agent.komiuta.com/agent")
+    assert html =~ "https://agent.komiuta.com/agent"
+  end
+
   test "agent can submit a sign-up application from the Agent PWA", %{conn: conn} do
     {:ok, view, _html} = live(conn, ~p"/agent")
 
