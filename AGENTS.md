@@ -1,4 +1,4 @@
-﻿This is a web application written using the Phoenix web framework.
+This is a web application written using the Phoenix web framework.
 
 ## Project guidelines
 
@@ -1254,6 +1254,36 @@ timeline.
 mix precommit        # 362/362 tests
 node scratch/agent_applications_screenshot.js   # collapsed 97px, expanded timeline; desktop + phone 390, no overflow
 ```
+
+### 2026-11-06 Session — Fix legacy Agent PWA installs not launching
+
+**Objective:** Agent PWA installs created before the Agent app moved to `agent.komiuta.com` opened as a
+blank/loading screen on Android. Their installed `start_url` is `www.komiuta.com/agent`; the website
+answered that with a 302 to the Agent subdomain, and a cross-origin redirect while Chrome launches a
+standalone PWA makes Android fall back to the browser (or an empty window).
+
+**Completed:**
+- `XpressbusWeb.Plugs.AgentHost` no longer redirects `www.komiuta.com/agent` to the Agent subdomain.
+  The legacy `/agent` page is served normally so an already-installed Agent PWA launches in standalone
+  mode on the website origin and can use its existing www session. The Agent subdomain root
+  (`agent.komiuta.com/`) still redirects to `/agent`.
+- `assets/js/app.js` now redirects **normal browser visits** (non-standalone display mode) to
+  `https://agent.komiuta.com` for `/agent*` paths on the website hosts, so new users still install the
+  Agent app from its own origin (no nested PWA scopes). Installed PWA launches
+  (`display-mode: standalone` / `navigator.standalone`) stay on the website page they were installed
+  from, fixing the legacy blank/redirect launch.
+- `priv/static/sw.js` cache version bumped `komiuta-v5` so old installs activate a fresh service worker
+  and drop stale shell/asset caches from before the subdomain split.
+- Tests: `agent_pwa_test.exs` website-`/agent` test now asserts the page renders with the Agent manifest
+  and that `app.js` contains the standalone-aware client redirect; the Agent subdomain redirect test is
+  unchanged.
+
+**Verification:**
+```
+mix test test/xpressbus_web/agent_pwa_test.exs   # passes
+mix precommit                                   # full suite
+```
+
 
 
 

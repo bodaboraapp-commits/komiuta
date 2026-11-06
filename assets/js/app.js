@@ -27,6 +27,25 @@ import topbar from "../vendor/topbar"
 import {initAnalytics} from "./analytics"
 import {initOtpAutofill} from "./otp_autofill"
 
+// --- Legacy Agent PWA launch compatibility ---------------------------------
+// Older Agent PWA installs were installed from www.komiuta.com with
+// /agent as their start_url. A server-side redirect to agent.komiuta.com
+// breaks those installs (a cross-origin redirect during launch opens the
+// browser instead of the standalone app). Serve /agent on the website host
+// for installed apps, and only bounce regular browser visits to the Agent
+// subdomain origin.
+const agentPwaPath = /^\/agent(\/|$)/.test(window.location.pathname)
+const isWebsiteHost = /^(www\.)?komiuta\.com$/i.test(window.location.hostname)
+const isStandaloneDisplay =
+  window.matchMedia("(display-mode: standalone)").matches ||
+  window.navigator.standalone === true
+
+if (isWebsiteHost && agentPwaPath && !isStandaloneDisplay) {
+  window.location.replace(
+    `https://agent.komiuta.com${window.location.pathname}${window.location.search}${window.location.hash}`
+  )
+}
+
 document.addEventListener("click", event => {
   const control = event.target.closest("[data-carousel-prev], [data-carousel-next]")
   if (!control) return
