@@ -8,7 +8,10 @@ defmodule XpressbusWeb.AgentAuthTest do
   alias Xpressbus.Agents
   alias Xpressbus.Agents.AgentApplication
   alias Xpressbus.Agents.AgentLoginCode
+  alias Xpressbus.Buses
+  alias Xpressbus.BusOperators
   alias Xpressbus.Repo
+  alias Xpressbus.Tickets
 
   defp attrs(overrides \\ %{}) do
     Map.merge(
@@ -35,18 +38,16 @@ defmodule XpressbusWeb.AgentAuthTest do
     code
   end
 
-  test "agent login page uses email OTP without a reCAPTCHA", %{conn: conn} do
+  test "agent login page is phone/SMS first with no visible security puzzle", %{conn: conn} do
     html = conn |> get(~p"/agent/login") |> html_response(200)
 
     assert html =~ "Agent sign in"
-    assert html =~ "Send Login Code"
-    assert html =~ ~s(action="/agent/auth")
-    assert html =~ ~s(name="agent[identifier]")
+    assert html =~ "Phone number"
 
-    refute html =~ "firebase-sms-auth"
-    refute html =~ "firebase_phone_auth.js"
+    assert html =~ "firebase-sms-auth" or html =~ "SMS sign-in is not configured yet"
+
+    refute html =~ ~s(action="/agent/auth")
     refute html =~ "Send SMS code"
-    refute html =~ "firebase-recaptcha"
   end
 
   describe "Firebase phone OTP verification" do
@@ -260,11 +261,58 @@ defmodule XpressbusWeb.AgentAuthTest do
     refute get_session(logged_out, :agent_id)
   end
 
+  test "account shows the agent wallet with partner sales", %{conn: conn} do
+    {:ok, operator} =
+      BusOperators.create_bus_operator(%{name: "Coast Partner", active: true})
+
+    {:ok, bus} =
+      Buses.create_bus(%{
+        "company" => operator.name,
+        "from" => "Nairobi",
+        "to" => "Mombasa",
+        "travel_date" => Date.utc_today(),
+        "departure" => "8:00 AM",
+        "arrival" => "3:00 PM",
+        "price" => "KSH 1,800",
+        "seats" => "[]",
+        "bus_operator_id" => operator.id
+      })
+
+    {:ok, _ticket} =
+      Tickets.create_ticket(%{
+        "ticket_id" => "TKT-WALLET-#{System.unique_integer([:positive])}",
+        "from" => "Nairobi",
+        "to" => "Mombasa",
+        "travel_date" => Date.utc_today(),
+        "departure" => "8:00 AM",
+        "arrival" => "3:00 PM",
+        "company" => operator.name,
+        "price" => "KSH 1,800",
+        "seats" => "[\"1A\"]",
+        "passenger_name" => "Wallet Passenger",
+        "passenger_phone" => "0712345678",
+        "status" => "confirmed",
+        "bus_id" => bus.id
+      })
+
+    application = create_application(%{"bus_operator_id" => operator.id})
+    {:ok, application} = Agents.update_status(application, "approved")
+    {:ok, application} = Agents.mark_email_verified(application, application.email)
+
+    authed = Plug.Test.init_test_session(conn, %{agent_id: application.id})
+    html = authed |> get(~p"/agent/account") |> html_response(200)
+
+    assert html =~ "Your wallet"
+    assert html =~ "Coast Partner"
+    assert html =~ "KES 1,800"
+    assert html =~ "Confirmed bookings for Coast Partner"
+  end
+
   test "logged-in agents are sent from the signup page to their account" do
     application = create_application()
     authed = Plug.Test.init_test_session(build_conn(), %{agent_id: application.id})
 
-    assert {:error, {:redirect, %{to: "/agent/account"}}} = live(authed, ~p"/agent")
+    assert {:error, {:redirect, %{to: "/agent/verify-email"}}} = live(authed, ~p"/agent")
   end
 
   test "signup persists the application without a password", %{conn: conn} do

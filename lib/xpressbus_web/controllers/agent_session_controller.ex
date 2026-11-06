@@ -473,7 +473,7 @@ defmodule XpressbusWeb.AgentSessionController do
       {:ok, application} ->
         if Agents.email_verified?(application) do
           dashboard =
-            if application.bus_operator do
+            if application.status == "approved" do
               AgentDashboard.load(application)
             end
 

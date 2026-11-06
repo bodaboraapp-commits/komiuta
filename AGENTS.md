@@ -1319,6 +1319,35 @@ mix test test/xpressbus_web/agent_auth_test.exs test/xpressbus_web/agent_google_
 fell back to a giant ligature. Swapped it to the bundled `phone_iphone` glyph (release
 `2026-11-06.14-agent-phone-login-icon`).
 
+### 2026-11-06 Session — Landing spacing tweaks + agent wallet card
+
+**Objective:** Centre the live-bookings pill strip, tighten the whitespace around the partner marquee
+and “The #1 Choice…” heading, and show the agent's wallet on the account page.
+
+**Completed:**
+- Landing (`booking_live.html.heex`):
+  - `#recent-bookings-pills` row is now **centred** (`flex-wrap justify-center`); pills wrap into
+    centred lines instead of forcing a left-aligned strip, and still use the search pill's
+    `max-w-[1350px]` width budget.
+  - Reduced whitespace: partners section `pt-20 → pt-8/pb-10` (desktop `md:pt-10 md:pb-12`), partner
+    row `mb-10/md:mb-12 → mb-6/md:mb-8`, and the value-props block `pt-8/md:pt-10 → pt-4/md:pt-5`
+    with the “#1 Choice” heading margin reduced (`mb-6/md:mb-8`).
+- Agent account page (`account.html.heex` + `AgentSessionController.account/2`): added a dark
+  **“Your wallet”** card for approved agents under the account details — shows confirmed partner
+  ticket sales (`KES`, via `AgentDashboard.load/1`), payout method, confirmed/upcoming bookings and
+  routes sold, plus an “Open dashboard” link. Approved agents without a partner still see the card
+  with a “No partner linked yet” note.
+- Tests: `recent_bookings_pills_test.exs` updated for the centred/wrapped row and the reduced spacing
+  classes; `agent_auth_test.exs` gained a wallet test (partner + ticket fixture) and updated the
+  login-page expectations for the new phone/SMS sign-in UI.
+
+**Verification:**
+```
+mix test test/xpressbus_web/agent_auth_test.exs test/xpressbus_web/recent_bookings_pills_test.exs
+# 19 passed
+```
+
+
 
 
 

@@ -52,12 +52,18 @@ defmodule XpressbusWeb.RecentBookingsPillsTest do
     assert html =~ "Nairobi"
     assert html =~ "Mombasa"
 
-    # Same width budget as the search pill and horizontally scrollable so the
-    # row can never stretch past it.
+    # Same width budget as the search pill; the row is centred and wraps into
+    # centred lines instead of stretching the page.
     pills_html = view |> element("#recent-bookings-pills") |> render()
     assert pills_html =~ "max-w-[1350px]"
-    assert pills_html =~ "overflow-x-auto"
-    assert pills_html =~ "no-scrollbar"
+    assert pills_html =~ "flex-wrap"
+    assert pills_html =~ "justify-center"
+
+    # The partners/benefits block sits close to the pills row and to the
+    # "#1 Choice" heading (reduced whitespace).
+    assert html =~ "pt-8 pb-10 md:pt-10 md:pb-12"
+    assert html =~ "mb-6 md:mb-8"
+    assert html =~ "px-6 pt-4 md:pt-5"
 
     # The pills are outside the search form.
     refute has_element?(view, "#search-form #recent-bookings-pills")

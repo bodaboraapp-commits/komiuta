@@ -193,7 +193,11 @@
           </p>
 
           <p class="mt-1 text-xs font-bold text-white/60">
-            Confirmed bookings for {@dashboard.operator.name}
+            <%= if @dashboard.operator do %>
+              Confirmed bookings for {@dashboard.operator.name}
+            <% else %>
+              No partner linked yet — sales appear once an admin attaches your bus partner.
+            <% end %>
           </p>
 
           <div class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
