@@ -78,6 +78,24 @@ defmodule XpressbusWeb.PWATest do
     end
   end
 
+  test "OTP fields autofill from SMS WebOTP and email code links" do
+    js = source("assets/js/otp_autofill.js")
+    app_js = source("assets/js/app.js")
+
+    assert js =~ "OTPCredential"
+    assert js =~ "navigator.credentials"
+    assert js =~ "one-time-code"
+    assert js =~ "#code"
+    assert js =~ "clipboard"
+    assert app_js =~ "initOtpAutofill"
+
+    assert source("lib/xpressbus_web/controllers/user_html/verify.html.heex") =~
+             ~s(autocomplete="one-time-code")
+
+    assert source("lib/xpressbus_web/controllers/agent_session_html/verify.html.heex") =~
+             ~s(autocomplete="one-time-code")
+  end
+
   test "service worker provides an offline shell and leaves HTML uncached" do
     sw = priv("sw.js")
 

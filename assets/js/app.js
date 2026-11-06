@@ -25,6 +25,7 @@ import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/xpressbus"
 import topbar from "../vendor/topbar"
 import {initAnalytics} from "./analytics"
+import {initOtpAutofill} from "./otp_autofill"
 
 document.addEventListener("click", event => {
   const control = event.target.closest("[data-carousel-prev], [data-carousel-next]")
@@ -52,6 +53,9 @@ liveSocket.connect()
 
 // Campaign attribution + funnel events (UTM aware; GA4 optional).
 initAnalytics()
+
+// SMS WebOTP + email-code autofill for every OTP input in both PWAs.
+initOtpAutofill()
 
 // expose liveSocket on window for web console debug logs and latency simulation:
 // >> liveSocket.enableDebug()

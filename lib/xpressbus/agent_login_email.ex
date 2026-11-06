@@ -48,6 +48,11 @@ defmodule Xpressbus.AgentLoginEmail do
     {"Komiuta", address}
   end
 
+  defp verify_url(code) do
+    origin = Application.get_env(:xpressbus, :agent_app_origin, "https://agent.komiuta.com")
+    "#{String.trim_trailing(origin, "/")}/agent/verify#code=#{URI.encode_www_form(code)}"
+  end
+
   defp text_body(name, code, ttl_minutes) do
     """
     Hi #{name},
@@ -55,6 +60,9 @@ defmodule Xpressbus.AgentLoginEmail do
     Your KOMIUTA Agent sign-in code is:
 
         #{code}
+
+    Open this link in the same browser to fill the code automatically:
+    #{verify_url(code)}
 
     It expires in #{ttl_minutes} minutes and can only be used once.
     If you did not try to sign in to the Agent app, you can ignore this email.
@@ -89,6 +97,11 @@ defmodule Xpressbus.AgentLoginEmail do
                     <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:18px;text-align:center;font-size:32px;letter-spacing:8px;font-weight:800;color:#0f172a;">
                       #{code}
                     </div>
+                    <p style="margin:18px 0;text-align:center;">
+                      <a href="#{verify_url(code)}" style="display:inline-block;background:#FF4C00;color:#ffffff;text-decoration:none;font-size:13px;font-weight:800;padding:13px 22px;border-radius:12px;">
+                        Fill code automatically
+                      </a>
+                    </p>
                     <p style="margin:18px 0 0;font-size:12px;line-height:1.6;color:#64748b;">
                       It expires in #{ttl_minutes} minutes and can only be used once.
                       If you did not try to sign in, you can ignore this email.

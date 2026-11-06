@@ -48,6 +48,10 @@ defmodule Xpressbus.LoginEmail do
     {"Komiuta", address}
   end
 
+  defp verify_url(code) do
+    "#{XpressbusWeb.Endpoint.url()}/user/verify#code=#{URI.encode_www_form(code)}"
+  end
+
   defp text_body(name, code, ttl_minutes) do
     """
     Hi #{name},
@@ -55,6 +59,9 @@ defmodule Xpressbus.LoginEmail do
     Your Komiuta login code is:
 
         #{code}
+
+    Open this link in the same browser to fill the code automatically:
+    #{verify_url(code)}
 
     It expires in #{ttl_minutes} minutes and can only be used once.
     If you did not try to sign in, you can ignore this email — no one can log
@@ -131,9 +138,14 @@ defmodule Xpressbus.LoginEmail do
                     <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#475569;">
                       Use the code below to sign in to your Komiuta account.
                     </p>
-                    <div style="background:#fff7ed;border:2px dashed #fdba74;border-radius:16px;padding:20px;text-align:center;margin-bottom:24px;">
+                    <div style="background:#fff7ed;border:2px dashed #fdba74;border-radius:16px;padding:20px;text-align:center;margin-bottom:16px;">
                       <div style="font-family:'Courier New',monospace;font-size:34px;letter-spacing:0.35em;font-weight:800;color:#0f172a;">#{code}</div>
                     </div>
+                    <p style="margin:0 0 20px;text-align:center;">
+                      <a href="#{verify_url(code)}" style="display:inline-block;background:#FF4C00;color:#ffffff;text-decoration:none;font-size:13px;font-weight:800;padding:13px 22px;border-radius:12px;">
+                        Fill code automatically
+                      </a>
+                    </p>
                     <p style="margin:0 0 8px;font-size:13px;line-height:1.6;color:#64748b;">
                       This code expires in <strong>#{ttl_minutes} minutes</strong> and can only be used once.
                     </p>
