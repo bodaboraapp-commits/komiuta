@@ -23,8 +23,6 @@ defmodule XpressbusWeb.BookingLive do
     Logger.info("Mounting BookingLive. Action: #{socket.assigns.live_action}")
     departure_date = Date.utc_today()
     departure_date_str = Date.to_string(departure_date)
-    return_date = Date.add(departure_date, 28)
-    return_date_str = Date.to_string(return_date)
     current_user = session["user_id"]
 
     # Parallelize initial data fetching for better load performance
@@ -79,15 +77,15 @@ defmodule XpressbusWeb.BookingLive do
      |> assign(:from_suggestions, [])
      |> assign(:to_suggestions, [])
      |> assign(:date, departure_date_str)
-     |> assign(:return_date, return_date_str)
+     |> assign(:return_date, nil)
+     |> assign(:return_added, false)
      |> assign(:date_parts, parse_date_parts(departure_date_str))
      |> assign(
        :search_form,
        to_form(%{
          "from" => "",
          "to" => "",
-         "date" => departure_date_str,
-         "return_date" => return_date_str
+         "date" => departure_date_str
        })
      )
      |> assign(:buses, [])
@@ -167,7 +165,10 @@ defmodule XpressbusWeb.BookingLive do
 
     case socket.assigns.live_action do
       :index ->
-        {:noreply, assign(socket, :step, :search)}
+        {:noreply,
+         socket
+         |> prefill_search_from_params(params)
+         |> assign(:step, :search)}
 
       :results ->
         handle_results_params(params, socket)
@@ -370,13 +371,71 @@ defmodule XpressbusWeb.BookingLive do
     from = Map.get(params, "from", "")
     to = Map.get(params, "to", "")
     date = Map.get(params, "date", socket.assigns.date)
-    return_date = Map.get(params, "return_date", socket.assigns.return_date)
+    return_added? = Map.get(params, "return_date", "") not in [nil, ""]
 
-    if from != "" and to != "" do
-      {:noreply, push_search_url(socket, from, to, date, return_date)}
-    else
-      {:noreply, put_flash(socket, :error, "Please select both from and to cities.")}
+    return_date =
+      if return_added?,
+        do: normalize_return_date(Map.get(params, "return_date"), date),
+        else: nil
+
+    cond do
+      from == "" or to == "" ->
+        {:noreply, put_flash(socket, :error, "Please select both from and to cities.")}
+
+      return_added? and return_before_travel?(return_date, date) ->
+        {:noreply, put_flash(socket, :error, "Your return date can't be before the travel date.")}
+
+      true ->
+        {:noreply,
+         socket
+         |> assign(:return_added, return_added?)
+         |> assign(:return_date, return_date)
+         |> push_search_url(from, to, date, return_date)}
     end
+  end
+
+  def handle_event("add_return", _params, socket) do
+    return_date =
+      normalize_return_date(
+        socket.assigns.return_date || default_return_date(socket.assigns.date),
+        socket.assigns.date
+      )
+
+    {:noreply,
+     socket
+     |> assign(:return_added, true)
+     |> assign(:return_date, return_date)
+     |> assign(
+       :search_form,
+       to_form(
+         search_form_attrs(
+           socket.assigns.from,
+           socket.assigns.to,
+           socket.assigns.date,
+           true,
+           return_date
+         )
+       )
+     )}
+  end
+
+  def handle_event("remove_return", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:return_added, false)
+     |> assign(:return_date, nil)
+     |> assign(
+       :search_form,
+       to_form(
+         search_form_attrs(
+           socket.assigns.from,
+           socket.assigns.to,
+           socket.assigns.date,
+           false,
+           nil
+         )
+       )
+     )}
   end
 
   def handle_event("search_input", params, socket) do
@@ -401,13 +460,23 @@ defmodule XpressbusWeb.BookingLive do
       end
 
     # Fast return if only date changed and not cities
+    date = Map.get(params, "date", socket.assigns.date)
+
+    return_added? =
+      if Map.has_key?(params, "return_date") do
+        Map.get(params, "return_date") not in [nil, ""]
+      else
+        socket.assigns.return_added
+      end
+
+    return_date =
+      if return_added?,
+        do:
+          normalize_return_date(Map.get(params, "return_date", socket.assigns.return_date), date),
+        else: nil
+
     search_form =
-      to_form(%{
-        "from" => new_from,
-        "to" => new_to,
-        "date" => Map.get(params, "date", socket.assigns.date),
-        "return_date" => Map.get(params, "return_date", socket.assigns.return_date)
-      })
+      to_form(search_form_attrs(new_from, new_to, date, return_added?, return_date))
 
     {:noreply,
      socket
@@ -415,9 +484,10 @@ defmodule XpressbusWeb.BookingLive do
      |> assign(:to_suggestions, to_suggestions)
      |> assign(:from, new_from)
      |> assign(:to, new_to)
-     |> assign(:date, Map.get(params, "date", socket.assigns.date))
-     |> assign(:date_parts, parse_date_parts(Map.get(params, "date", socket.assigns.date)))
-     |> assign(:return_date, Map.get(params, "return_date", socket.assigns.return_date))
+     |> assign(:date, date)
+     |> assign(:date_parts, parse_date_parts(date))
+     |> assign(:return_added, return_added?)
+     |> assign(:return_date, return_date)
      |> assign(:search_form, search_form)}
   end
 
@@ -426,12 +496,15 @@ defmodule XpressbusWeb.BookingLive do
     current_to = if field == "to", do: city, else: socket.assigns.to
 
     search_form =
-      to_form(%{
-        "from" => current_from,
-        "to" => current_to,
-        "date" => socket.assigns.date,
-        "return_date" => socket.assigns.return_date
-      })
+      to_form(
+        search_form_attrs(
+          current_from,
+          current_to,
+          socket.assigns.date,
+          socket.assigns.return_added,
+          socket.assigns.return_date
+        )
+      )
 
     {:noreply,
      socket
@@ -447,12 +520,15 @@ defmodule XpressbusWeb.BookingLive do
     current_to = if field == "to", do: "", else: socket.assigns.to
 
     search_form =
-      to_form(%{
-        "from" => current_from,
-        "to" => current_to,
-        "date" => socket.assigns.date,
-        "return_date" => socket.assigns.return_date
-      })
+      to_form(
+        search_form_attrs(
+          current_from,
+          current_to,
+          socket.assigns.date,
+          socket.assigns.return_added,
+          socket.assigns.return_date
+        )
+      )
 
     {:noreply,
      socket
@@ -481,12 +557,15 @@ defmodule XpressbusWeb.BookingLive do
       handle_search_params(socket, new_from, new_to, date, return_date)
     else
       search_form =
-        to_form(%{
-          "from" => new_from,
-          "to" => new_to,
-          "date" => date,
-          "return_date" => return_date
-        })
+        to_form(
+          search_form_attrs(
+            new_from,
+            new_to,
+            date,
+            socket.assigns.return_added,
+            return_date
+          )
+        )
 
       {:noreply,
        socket
@@ -514,14 +593,15 @@ defmodule XpressbusWeb.BookingLive do
   end
 
   def handle_event("change_date", %{"date" => date}, socket) do
+    return_date =
+      if socket.assigns.return_added,
+        do: normalize_return_date(socket.assigns.return_date, date),
+        else: nil
+
     {:noreply,
-     push_search_url(
-       socket,
-       socket.assigns.from,
-       socket.assigns.to,
-       date,
-       socket.assigns.return_date
-     )}
+     socket
+     |> assign(:return_date, return_date)
+     |> push_search_url(socket.assigns.from, socket.assigns.to, date, return_date)}
   end
 
   def handle_event("change_date_part", %{"part" => part, "value" => value}, socket)
@@ -532,18 +612,29 @@ defmodule XpressbusWeb.BookingLive do
       case Date.from_iso8601(date_parts_to_string(new_parts)) do
         {:ok, valid_date} ->
           if Date.compare(valid_date, Date.utc_today()) != :lt do
+            new_date = date_parts_to_string(new_parts)
+
+            return_date =
+              if socket.assigns.return_added,
+                do: normalize_return_date(socket.assigns.return_date, new_date),
+                else: nil
+
             search_form =
-              to_form(%{
-                "from" => socket.assigns.from,
-                "to" => socket.assigns.to,
-                "date" => date_parts_to_string(new_parts),
-                "return_date" => socket.assigns.return_date
-              })
+              to_form(
+                search_form_attrs(
+                  socket.assigns.from,
+                  socket.assigns.to,
+                  new_date,
+                  socket.assigns.return_added,
+                  return_date
+                )
+              )
 
             {:noreply,
              socket
              |> assign(:date_parts, new_parts)
-             |> assign(:date, date_parts_to_string(new_parts))
+             |> assign(:date, new_date)
+             |> assign(:return_date, return_date)
              |> assign(:search_form, search_form)}
           else
             {:noreply, socket}
@@ -894,7 +985,7 @@ defmodule XpressbusWeb.BookingLive do
         user_id = current_user_id(socket.assigns.current_user)
 
         trip_type =
-          if socket.assigns.return_date && !String.match?(socket.assigns.return_date, ~r/^null$/) do
+          if socket.assigns.return_date do
             "Round Trip"
           else
             "One Way"
@@ -965,7 +1056,20 @@ defmodule XpressbusWeb.BookingLive do
   end
 
   def handle_event("back_to_search", _params, socket) do
-    {:noreply, push_navigate(socket, to: ~p"/")}
+    params = %{
+      "from" => socket.assigns.from,
+      "to" => socket.assigns.to,
+      "date" => socket.assigns.date
+    }
+
+    params =
+      if socket.assigns.return_added and socket.assigns.return_date not in [nil, ""] do
+        Map.put(params, "return_date", socket.assigns.return_date)
+      else
+        params
+      end
+
+    {:noreply, push_navigate(socket, to: "/?" <> URI.encode_query(params))}
   end
 
   def handle_event("app_coming_soon", _params, socket) do
@@ -1080,8 +1184,11 @@ defmodule XpressbusWeb.BookingLive do
 
   # Helper logic for search/results
   defp begin_search(socket, from, to, date, return_date) do
+    return_date = normalize_return_date(return_date, date)
+    return_added? = not is_nil(return_date)
+
     search_form =
-      to_form(%{"from" => from, "to" => to, "date" => date, "return_date" => return_date})
+      to_form(search_form_attrs(from, to, date, return_added?, return_date))
 
     # Parallelize data fetching for better responsiveness
     tasks = [
@@ -1128,6 +1235,7 @@ defmodule XpressbusWeb.BookingLive do
       |> assign(:date, date)
       |> assign(:date_parts, parse_date_parts(date))
       |> assign(:return_date, return_date)
+      |> assign(:return_added, return_added?)
       |> assign(:search_form, search_form)
       |> assign(:buses, buses_from_db)
       |> assign(:buses_map, buses_map)
@@ -1206,12 +1314,43 @@ defmodule XpressbusWeb.BookingLive do
     end
   end
 
+  # Prefills the landing search pill from query parameters. This keeps the
+  # round-trip selection when the user taps MODIFY on the results page.
+  defp prefill_search_from_params(socket, params) do
+    from = params["from"] || socket.assigns.from || ""
+    to = params["to"] || socket.assigns.to || ""
+
+    date =
+      case Date.from_iso8601(to_string(params["date"] || socket.assigns.date)) do
+        {:ok, valid_date} -> Date.to_string(valid_date)
+        _ -> socket.assigns.date
+      end
+
+    return_date =
+      normalize_return_date(
+        params["return_date"] || params["return"] || socket.assigns.return_date,
+        date
+      )
+
+    return_added? = not is_nil(return_date)
+
+    socket
+    |> assign(:from, from)
+    |> assign(:to, to)
+    |> assign(:date, date)
+    |> assign(:date_parts, parse_date_parts(date))
+    |> assign(:return_added, return_added?)
+    |> assign(:return_date, return_date)
+    |> assign(
+      :search_form,
+      to_form(search_form_attrs(from, to, date, return_added?, return_date))
+    )
+  end
+
   defp handle_results_params(
          %{"fromCityName" => from, "toCityName" => to, "onward" => date} = params,
          socket
        ) do
-    return_date = Map.get(params, "return", "")
-
     date =
       case Date.from_iso8601(date) do
         {:ok, _} -> date
@@ -1219,10 +1358,9 @@ defmodule XpressbusWeb.BookingLive do
       end
 
     return_date =
-      if return_date == "" do
-        Date.to_string(Date.add(Date.from_iso8601!(date), 28))
-      else
-        return_date
+      case Map.get(params, "return", "") do
+        value when value in [nil, ""] -> nil
+        value -> value
       end
 
     handle_search_params(socket, from, to, date, return_date)
@@ -1231,13 +1369,7 @@ defmodule XpressbusWeb.BookingLive do
   defp handle_results_params(%{"from" => from, "to" => to, "date" => date}, socket) do
     case Date.from_iso8601(to_string(date)) do
       {:ok, valid_date} ->
-        handle_search_params(
-          socket,
-          from,
-          to,
-          Date.to_string(valid_date),
-          Date.to_string(Date.add(valid_date, 28))
-        )
+        handle_search_params(socket, from, to, Date.to_string(valid_date), nil)
 
       _ ->
         {:noreply, assign(socket, :step, :search)}
@@ -1252,7 +1384,7 @@ defmodule XpressbusWeb.BookingLive do
           URI.decode(from),
           URI.decode(to),
           Date.to_string(Date.utc_today()),
-          Date.to_string(Date.add(Date.utc_today(), 28))
+          nil
         )
 
       _ ->
@@ -1962,15 +2094,65 @@ defmodule XpressbusWeb.BookingLive do
   defp push_search_url(socket, from, to, date, return_date) do
     route = URI.encode("#{from}-to-#{to}", &URI.char_unreserved?/1)
 
-    query =
-      URI.encode_query(%{
-        "fromCityName" => from,
-        "toCityName" => to,
-        "onward" => date,
-        "return" => return_date
-      })
+    params = %{
+      "fromCityName" => from,
+      "toCityName" => to,
+      "onward" => date
+    }
+
+    params =
+      if return_date in [nil, ""], do: params, else: Map.put(params, "return", return_date)
+
+    query = URI.encode_query(params)
 
     push_navigate(socket, to: "/buses/" <> route <> "?" <> query)
+  end
+
+  # --- Return trip helpers ---------------------------------------------------
+
+  @default_return_offset_days 7
+
+  defp default_return_date(date) do
+    case Date.from_iso8601(to_string(date)) do
+      {:ok, date} -> Date.to_string(Date.add(date, @default_return_offset_days))
+      _ -> Date.to_string(Date.add(Date.utc_today(), @default_return_offset_days))
+    end
+  end
+
+  defp normalize_return_date(nil, _date), do: nil
+  defp normalize_return_date("", _date), do: nil
+
+  defp normalize_return_date(return_date, date) when is_binary(return_date) do
+    with {:ok, return_d} <- Date.from_iso8601(return_date),
+         {:ok, travel_d} <- Date.from_iso8601(to_string(date)),
+         :gte <- if(Date.compare(return_d, travel_d) == :lt, do: :lt, else: :gte) do
+      Date.to_string(return_d)
+    else
+      _ -> default_return_date(date)
+    end
+  end
+
+  defp normalize_return_date(_return_date, date), do: default_return_date(date)
+
+  defp return_before_travel?(nil, _date), do: false
+
+  defp return_before_travel?(return_date, date) do
+    with {:ok, return_d} <- Date.from_iso8601(to_string(return_date)),
+         {:ok, travel_d} <- Date.from_iso8601(to_string(date)) do
+      Date.compare(return_d, travel_d) == :lt
+    else
+      _ -> false
+    end
+  end
+
+  defp search_form_attrs(from, to, date, return_added?, return_date) do
+    attrs = %{"from" => from, "to" => to, "date" => date}
+
+    if return_added? and return_date not in [nil, ""] do
+      Map.put(attrs, "return_date", return_date)
+    else
+      attrs
+    end
   end
 
   defp compute_suggestions(query, city_names) do

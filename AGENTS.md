@@ -976,6 +976,49 @@ mix komiuta.clear_pending_bookings --before 2026-11-06 --dry-run   # 0 tickets /
 mix run priv/repo/render_bootstrap.exs                             # cleanup no-op, boot OK
 ```
 
+### 2026-11-06 Session — "+ Add Return" button on the bus search pill
+
+**Objective:** Let users turn the landing bus search into a round trip from the search pill itself
+(there was a return-date plumbing in the LiveView, but no way to add one and the old default silently
+marked every booking as "Round Trip").
+
+**Completed:**
+- `BookingLive` now has explicit `:return_added` / `:return_date` state. The always-set
+  `departure + 28 days` default is gone: one-way searches keep `return_date = nil`, so the recorded
+  ticket `type` is "One Way" instead of always "Round Trip".
+- Search pill (`booking_live.html.heex`): after the Travel Date field there is now an
+  **"+ Add Return"** outline chip (`#add-return-button`). Clicking it reveals a **Return Date** field
+  (`#return-date-field`, `#search-return-date`) with a remove (`×`, `#remove-return-button`) control.
+  Layout is responsive: chip on desktop, full-width row on phones; no horizontal overflow and the
+  fixed hero (`pb-[200px]`) settings are untouched.
+- Round trips are carried through the results URL (`return=YYYY-MM-DD`), the results summary shows a
+  **Return date** badge (`#round-trip-badge`), the passenger page title shows `round trip · return
+  <date>`, and the payment/ticket `type` becomes "Round Trip".
+- Return date validation/normalisation: the return date can never be before the travel date (it is
+  bumped to travel + 7 days if the travel date moves past it), and an invalid/missing value falls back
+  to travel + 7 days.
+- **MODIFY** on the results page now returns to the landing pill with from/to/date/return prefilled
+  (`#modify-search-button`), and `/?from=...&to=...&date=...&return_date=...` deep links prefill the
+  pill (`prefill_search_from_params/2`).
+- Tests: `test/xpressbus_web/search_return_trip_test.exs` (8 tests: add/remove field, default
+  return date, round-trip URL, one-way URL without `return`, results badge, MODIFY state, deep-link
+  prefill).
+- Visual check: `scratch/return_trip_screenshot.js` (puppeteer-core + installed Chrome) captured the
+  pill in one-way/round-trip state on desktop 1440px and mobile 390px — both fit within the viewport
+  (`docScrollWidth == innerWidth`) and the results page renders the return badge.
+
+**Not implemented:** the return leg is still booked as a separate one-way search; the round-trip
+selection records the intent/return date (ticket type + UI) but does not purchase both legs in one
+payment. A two-leg checkout would need a multi-bus booking model.
+
+**Verification:**
+```
+mix precommit        # 267/267 tests
+mix assets.build     # rebuilt Tailwind/esbuild bundles
+node scratch/return_trip_screenshot.js   # desktop + mobile screenshots, no overflow
+```
+
+
 
 
 
