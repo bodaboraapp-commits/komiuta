@@ -107,6 +107,7 @@ defmodule Xpressbus.Bookings.Scraper do
         Enum.flat_map(buses, fn item ->
           case build_bus(item, from, to, date) do
             nil -> []
+            %Bus{seats: "0 seats left"} -> []
             bus -> [bus]
           end
         end)
@@ -124,8 +125,9 @@ defmodule Xpressbus.Bookings.Scraper do
     if is_binary(operator) do
       departure = item["departure_time"]
       arrival = item["arrival_time"]
+      arrival_label = if format_time(arrival) == "", do: "Direct", else: format_time(arrival)
       seat_types = item["seats_types"] || []
-      normal_fare = seat_fare(seat_types, ["normal"]) || item["fare"]
+      normal_fare = seat_fare(seat_types, ["normal"]) || min_seat_fare(seat_types) || item["fare"]
       vip_fare = seat_fare(seat_types, ["vip", "business", "first class", "first"])
       business_fare = seat_fare(seat_types, ["business"])
       first_fare = seat_fare(seat_types, ["first class", "first"])
@@ -135,7 +137,7 @@ defmodule Xpressbus.Bookings.Scraper do
       %Bus{
         company: operator,
         departure: format_time(departure),
-        arrival: format_time(arrival),
+        arrival: arrival_label,
         seats: if(is_integer(seats), do: "#{seats} seats left", else: "Seats available"),
         price: format_money(normal_fare, currency),
         registration: registration_for(item),
@@ -167,6 +169,13 @@ defmodule Xpressbus.Bookings.Scraper do
         seat["fare"]
       end
     end)
+  end
+
+  defp min_seat_fare(seat_types) do
+    seat_types
+    |> Enum.map(fn seat -> seat["fare"] end)
+    |> Enum.reject(&is_nil/1)
+    |> Enum.min(fn -> nil end)
   end
 
   defp seat_currency(seat_types) do
@@ -220,7 +229,7 @@ defmodule Xpressbus.Bookings.Scraper do
       diff = if arr <= dep, do: arr + 24 * 60 - dep, else: arr - dep
       "#{div(diff, 60)}h #{rem(diff, 60)}m"
     else
-      ""
+      "Direct"
     end
   end
 
@@ -238,6 +247,7 @@ defmodule Xpressbus.Bookings.Scraper do
       from(b in Bus,
         where: b.from == ^from and b.to == ^to and b.travel_date == ^date_obj,
         where: is_nil(b.source) or b.source != "legacy_fallback",
+        where: b.seats != "0 seats left",
         preload: [:bus_operator]
       )
     )

@@ -43,6 +43,18 @@ defmodule Xpressbus.Bookings.ScraperTest do
     assert XpressbusWeb.BookingLive.seat_type_available?(bus, ["normal"])
   end
 
+  test "parse_stream handles a direct shuttle with no arrival time and hides sold-out buses" do
+    direct = """
+    data: {"provider": "greenline_new", "data": [{"operator": {"name": "Greenline"}, "departure_time": "21:00:00", "arrival_time": "", "number_of_available_seats": 67, "fare": 1500, "seats_types": [{"alias": "business", "fare": 1500, "name": "Normal", "currency": "KES"}], "trip_id": 128}, {"operator": {"name": "Sold Out"}, "departure_time": "22:00:00", "arrival_time": "", "number_of_available_seats": 0, "fare": 1500, "seats_types": [], "trip_id": 9}], "status": false, "completed": false}
+    """
+
+    assert [bus] = Scraper.parse_stream(direct, "Nairobi", "Kisumu", ~D[2026-11-06])
+    assert bus.company == "Greenline"
+    assert bus.arrival == "Direct"
+    assert bus.duration == "Direct"
+    assert bus.price == "KES 1500"
+  end
+
   defp bus_fixture(attrs) do
     defaults = %{
       company: "Test Coach",
