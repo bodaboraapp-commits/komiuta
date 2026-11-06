@@ -39,7 +39,7 @@ defmodule XpressbusWeb.AgentAuthTest do
     html = conn |> get(~p"/agent/login") |> html_response(200)
 
     assert html =~ "Agent sign in"
-    assert html =~ "Send login code"
+    assert html =~ "Send Login Code"
     assert html =~ ~s(action="/agent/auth")
     assert html =~ ~s(name="agent[identifier]")
 
