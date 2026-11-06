@@ -20,8 +20,8 @@ defmodule XpressbusWeb.AdminBannerLive do
        |> assign(:page_size, page_size)
        |> assign(:total_count, total_count)
        |> assign(:sidebar_collapsed, false)
-       |> assign(:bus_expanded, true)
-       |> assign(:chyllz_expanded, true)
+       |> assign(:bus_expanded, false)
+       |> assign(:chyllz_expanded, false)
        |> assign(:settings_expanded, true)
        |> assign(:banners, Banners.paginate_banners(page, page_size))
        |> assign(

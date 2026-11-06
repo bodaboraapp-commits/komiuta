@@ -23,8 +23,8 @@ defmodule XpressbusWeb.AdminDashboardLive do
        |> assign(:page_size, page_size)
        |> assign(:total_count, total_count)
        |> assign(:sidebar_collapsed, false)
-       |> assign(:bus_expanded, true)
-       |> assign(:chyllz_expanded, true)
+       |> assign(:bus_expanded, false)
+       |> assign(:chyllz_expanded, false)
        |> assign(:settings_expanded, true)
        |> assign(:recent_tickets, Tickets.paginate_tickets(page, page_size))}
     else

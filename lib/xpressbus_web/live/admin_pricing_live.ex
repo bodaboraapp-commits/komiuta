@@ -13,8 +13,8 @@ defmodule XpressbusWeb.AdminPricingLive do
        |> assign(:page_title, "Pricing & Fees")
        |> assign(:active_tab, "pricing")
        |> assign(:sidebar_collapsed, false)
-       |> assign(:bus_expanded, true)
-       |> assign(:chyllz_expanded, true)
+       |> assign(:bus_expanded, false)
+       |> assign(:chyllz_expanded, false)
        |> assign(:settings_expanded, true)
        |> assign(:settings, settings)
        |> assign(:form, form_for_settings(settings))}

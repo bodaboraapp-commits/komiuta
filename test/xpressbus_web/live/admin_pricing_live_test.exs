@@ -18,6 +18,17 @@ defmodule XpressbusWeb.AdminPricingLiveTest do
     assert has_element?(view, "input[name='pricing[tax_rate]'][value='0.0']")
   end
 
+  test "sidebar starts with every section collapsed except Settings", %{conn: conn} do
+    {:ok, view, _html} = live(admin_conn(conn), ~p"/admin/pricing")
+
+    html = render(view)
+
+    # Bus and Chyllz category bodies are hidden; only Settings is expanded.
+    hidden_bodies = Regex.scan(~r/class="mt-2 hidden"/, html) |> length()
+    assert hidden_bodies >= 2
+    assert html =~ ~s(class="mt-2 block")
+  end
+
   test "admin can update convenience fee and tax rate", %{conn: conn} do
     {:ok, view, _html} = live(admin_conn(conn), ~p"/admin/pricing")
 

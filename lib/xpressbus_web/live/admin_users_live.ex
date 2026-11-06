@@ -15,8 +15,8 @@ defmodule XpressbusWeb.AdminUsersLive do
         |> assign(:page_size, @page_size)
         |> assign(:search, "")
         |> assign(:sidebar_collapsed, false)
-        |> assign(:bus_expanded, true)
-        |> assign(:chyllz_expanded, true)
+        |> assign(:bus_expanded, false)
+        |> assign(:chyllz_expanded, false)
         |> assign(:settings_expanded, true)
         |> load_users(1, "")
 

@@ -19,8 +19,8 @@ defmodule XpressbusWeb.AdminHiddenGemLive do
        |> assign(:page_size, page_size)
        |> assign(:total_count, total_count)
        |> assign(:sidebar_collapsed, false)
-       |> assign(:bus_expanded, true)
-       |> assign(:chyllz_expanded, true)
+       |> assign(:bus_expanded, false)
+       |> assign(:chyllz_expanded, false)
        |> assign(:settings_expanded, true)
        |> assign(:hidden_gems, HiddenGems.paginate_hidden_gems(page, page_size))}
     else

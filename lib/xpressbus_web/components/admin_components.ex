@@ -2,8 +2,8 @@ defmodule XpressbusWeb.AdminComponents do
   use XpressbusWeb, :html
 
   attr :active_tab, :string, default: "dashboard"
-  attr :bus_expanded, :boolean, default: true
-  attr :chyllz_expanded, :boolean, default: true
+  attr :bus_expanded, :boolean, default: false
+  attr :chyllz_expanded, :boolean, default: false
   attr :settings_expanded, :boolean, default: true
   attr :collapsed, :boolean, default: false
 

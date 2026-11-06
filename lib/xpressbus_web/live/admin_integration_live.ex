@@ -53,8 +53,8 @@ defmodule XpressbusWeb.AdminIntegrationLive do
        |> assign(:firebase_config, Xpressbus.Firebase.client_config())
        |> assign(:login_method_choice, Integrations.login_method())
        |> assign(:sidebar_collapsed, false)
-       |> assign(:bus_expanded, true)
-       |> assign(:chyllz_expanded, true)
+       |> assign(:bus_expanded, false)
+       |> assign(:chyllz_expanded, false)
        |> assign(:settings_expanded, true)}
     else
       {:ok,

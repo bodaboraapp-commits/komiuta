@@ -19,8 +19,8 @@ defmodule XpressbusWeb.AdminCityLive do
        |> assign(:page_size, page_size)
        |> assign(:total_count, total_count)
        |> assign(:sidebar_collapsed, false)
-       |> assign(:bus_expanded, true)
-       |> assign(:chyllz_expanded, true)
+       |> assign(:bus_expanded, false)
+       |> assign(:chyllz_expanded, false)
        |> assign(:settings_expanded, true)
        |> assign(:cities, Cities.paginate_cities(page, page_size))
        |> assign(:form, to_form(%{"name" => "", "region" => ""}))}
