@@ -12,12 +12,14 @@ defmodule XpressbusWeb.AgentSessionController do
   ]
 
   def login(conn, params) do
-    if get_session(conn, :agent_id) do
-      redirect(conn, to: "/agent/account")
-    else
-      conn
-      |> apply_google_error(params)
-      |> render(:login, login_assigns(""))
+    case get_session(conn, :agent_id) |> load_agent() do
+      {:ok, application} ->
+        redirect(conn, to: next_path(application))
+
+      :error ->
+        conn
+        |> apply_google_error(params)
+        |> render(:login, login_assigns(""))
     end
   end
 
@@ -37,6 +39,8 @@ defmodule XpressbusWeb.AgentSessionController do
       {:ok, agent_id} ->
         case Agents.get_application(agent_id) do
           %{} = application ->
+            application = mark_google_email_verified(application)
+
             conn
             |> configure_session(renew: true)
             |> delete_session(:agent_login_id)
@@ -90,7 +94,7 @@ defmodule XpressbusWeb.AgentSessionController do
                 conn
                 |> configure_session(renew: true)
                 |> put_session(:agent_id, application.id)
-                |> json(%{ok: true, redirect: "/agent/account"})
+                |> json(%{ok: true, redirect: next_path(application)})
 
               nil ->
                 conn
@@ -152,18 +156,33 @@ defmodule XpressbusWeb.AgentSessionController do
   defp apply_google_error(conn, _params), do: conn
 
   @doc """
-  Emails a one-time sign-in code. The application itself is the agent account,
-  so no separate password is stored or checked.
+  Starts an agent login. Agents normally sign in with the phone number on their
+  application (we text a one-time code; if SMS is unavailable we email it).
+  Email identifiers keep working for anyone who still types their email.
   """
   def request_code(conn, %{"agent" => params}) do
     identifier = String.trim(to_string(params["identifier"] || ""))
 
-    case Agents.request_login_code(identifier) do
+    result =
+      if String.contains?(identifier, "@") do
+        Agents.request_login_code(identifier)
+      else
+        Agents.request_phone_login_code(identifier)
+      end
+
+    case result do
       {:ok, application} ->
         conn
         |> configure_session(renew: true)
         |> put_session(:agent_login_id, application.id)
         |> put_flash(:info, "We sent a 6-digit code to #{application.email}.")
+        |> redirect(to: "/agent/verify")
+
+      {:ok, application, delivery} ->
+        conn
+        |> configure_session(renew: true)
+        |> put_session(:agent_login_id, application.id)
+        |> put_flash(:info, phone_login_message(application, delivery))
         |> redirect(to: "/agent/verify")
 
       {:error, reason} ->
@@ -184,7 +203,7 @@ defmodule XpressbusWeb.AgentSessionController do
           :verify,
           [
             page_title: "KOMIUTA Agent — Verify code",
-            identifier: application.email,
+            identifier: identifier_for(application),
             expires_in_minutes: Agents.login_code_ttl_minutes()
           ] ++ @page_assigns
         )
@@ -208,7 +227,7 @@ defmodule XpressbusWeb.AgentSessionController do
             |> delete_session(:agent_login_id)
             |> put_session(:agent_id, application.id)
             |> put_flash(:info, "Welcome back, #{first_name(application.full_name)}.")
-            |> redirect(to: "/agent/account")
+            |> redirect(to: next_path(application))
 
           {:error, reason} ->
             conn
@@ -217,7 +236,7 @@ defmodule XpressbusWeb.AgentSessionController do
               :verify,
               [
                 page_title: "KOMIUTA Agent — Verify code",
-                identifier: application.email,
+                identifier: identifier_for(application),
                 expires_in_minutes: Agents.login_code_ttl_minutes()
               ] ++ @page_assigns
             )
@@ -233,10 +252,10 @@ defmodule XpressbusWeb.AgentSessionController do
   def resend_code(conn, _params) do
     case pending_login_application(conn) do
       {:ok, application} ->
-        case Agents.resend_login_code(application.id) do
-          {:ok, _application} ->
+        case Agents.resend_phone_login_code(application.id) do
+          {:ok, _application, delivery} ->
             conn
-            |> put_flash(:info, "A new code has been sent to #{application.email}.")
+            |> put_flash(:info, resend_message(application, delivery))
             |> redirect(to: "/agent/verify")
 
           {:error, reason} ->
@@ -246,7 +265,7 @@ defmodule XpressbusWeb.AgentSessionController do
               :verify,
               [
                 page_title: "KOMIUTA Agent — Verify code",
-                identifier: application.email,
+                identifier: identifier_for(application),
                 expires_in_minutes: Agents.login_code_ttl_minutes()
               ] ++ @page_assigns
             )
@@ -259,14 +278,93 @@ defmodule XpressbusWeb.AgentSessionController do
     end
   end
 
+  def verify_email(conn, _params) do
+    case get_session(conn, :agent_id) |> load_agent() do
+      {:ok, application} ->
+        if Agents.email_verified?(application) do
+          redirect(conn, to: "/agent/account")
+        else
+          render_verify_email(conn, application, pending_email(conn, application))
+        end
+
+      :error ->
+        conn
+        |> put_flash(:error, "Please log in to verify your email.")
+        |> redirect(to: "/agent/login")
+    end
+  end
+
+  def send_email_verification(conn, %{"email" => email}) do
+    case get_session(conn, :agent_id) |> load_agent() do
+      {:ok, application} ->
+        case Agents.request_email_verification(application, email) do
+          {:ok, email} ->
+            conn
+            |> put_session(:agent_verify_email, email)
+            |> put_flash(:info, "We sent a 6-digit code to #{email}.")
+            |> redirect(to: "/agent/verify-email")
+
+          {:error, reason} ->
+            conn
+            |> put_flash(:error, error_message(reason))
+            |> render_verify_email(application, to_string(email || ""))
+        end
+
+      :error ->
+        conn
+        |> put_flash(:error, "Please log in to verify your email.")
+        |> redirect(to: "/agent/login")
+    end
+  end
+
+  def confirm_email_verification(conn, %{"code" => code}) do
+    case get_session(conn, :agent_id) |> load_agent() do
+      {:ok, application} ->
+        pending_email = pending_email(conn, application)
+        code = String.trim(to_string(code || ""))
+
+        case Agents.verify_email_code(application, code) do
+          {:ok, application} ->
+            case Agents.mark_email_verified(application, pending_email) do
+              {:ok, _application} ->
+                conn
+                |> delete_session(:agent_verify_email)
+                |> put_flash(:info, "Email verified. Welcome to your dashboard.")
+                |> redirect(to: "/agent/account")
+
+              {:error, _changeset} ->
+                conn
+                |> put_flash(:error, "That email is already linked to another agent account.")
+                |> render_verify_email(application, pending_email)
+            end
+
+          {:error, reason} ->
+            conn
+            |> put_flash(:error, error_message(reason))
+            |> render_verify_email(application, pending_email)
+        end
+
+      :error ->
+        conn
+        |> put_flash(:error, "Please log in to verify your email.")
+        |> redirect(to: "/agent/login")
+    end
+  end
+
   def account(conn, _params) do
     case get_session(conn, :agent_id) |> load_agent() do
       {:ok, application} ->
-        render(
-          conn,
-          :account,
-          [page_title: "KOMIUTA Agent — Account", agent: application] ++ @page_assigns
-        )
+        if Agents.email_verified?(application) do
+          render(
+            conn,
+            :account,
+            [page_title: "KOMIUTA Agent — Account", agent: application] ++ @page_assigns
+          )
+        else
+          conn
+          |> put_flash(:info, "Verify your email address to continue to your dashboard.")
+          |> redirect(to: "/agent/verify-email")
+        end
 
       :error ->
         conn
@@ -279,6 +377,7 @@ defmodule XpressbusWeb.AgentSessionController do
     conn
     |> delete_session(:agent_id)
     |> delete_session(:agent_login_id)
+    |> delete_session(:agent_verify_email)
     |> put_flash(:info, "You have been logged out.")
     |> redirect(to: "/agent/login")
   end
@@ -299,8 +398,77 @@ defmodule XpressbusWeb.AgentSessionController do
     end
   end
 
+  defp next_path(application) do
+    if Agents.email_verified?(application), do: "/agent/account", else: "/agent/verify-email"
+  end
+
+  defp mark_google_email_verified(application) do
+    if Agents.email_verified?(application) do
+      application
+    else
+      case Agents.mark_email_verified(application, application.email) do
+        {:ok, updated} -> updated
+        {:error, _changeset} -> application
+      end
+    end
+  end
+
+  defp pending_email(conn, application) do
+    get_session(conn, :agent_verify_email) || application.email || ""
+  end
+
+  defp render_verify_email(conn, application, email) do
+    render(
+      conn,
+      :verify_email,
+      [
+        page_title: "KOMIUTA Agent — Verify email",
+        agent: application,
+        pending_email: email,
+        code_sent: not is_nil(get_session(conn, :agent_verify_email))
+      ] ++ @page_assigns
+    )
+  end
+
+  defp identifier_for(application) do
+    if is_binary(application.phone) and application.phone != "" do
+      application.phone
+    else
+      application.email || ""
+    end
+  end
+
+  defp phone_login_message(application, :sms_and_email) do
+    "We sent your 6-digit code by SMS to #{identifier_for(application)} and by email to #{application.email}."
+  end
+
+  defp phone_login_message(application, :sms) do
+    "We texted a 6-digit code to #{identifier_for(application)}."
+  end
+
+  defp phone_login_message(application, :email) do
+    "Text message unavailable — we emailed your 6-digit code to #{application.email}."
+  end
+
+  defp resend_message(application, :sms_and_email) do
+    "We resent your code by SMS to #{identifier_for(application)} and by email to #{application.email}."
+  end
+
+  defp resend_message(application, :sms) do
+    "A new code has been sent by SMS to #{identifier_for(application)}."
+  end
+
+  defp resend_message(application, :email) do
+    "Text message unavailable — a new code was emailed to #{application.email}."
+  end
+
   defp first_name(nil), do: "Agent"
   defp first_name(name), do: name |> to_string() |> String.split() |> List.first()
+
+  defp error_message(:invalid_email), do: "Enter a valid email address."
+
+  defp error_message(:email_taken),
+    do: "That email is already linked to another agent account."
 
   defp error_message(:not_found),
     do: "No agent application was found for that email or phone number."

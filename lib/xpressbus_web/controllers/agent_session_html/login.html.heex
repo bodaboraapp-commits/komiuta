@@ -21,41 +21,16 @@
     <main class="mx-auto max-w-md px-5 py-12 md:py-20">
       <div class="rounded-[2rem] border border-slate-100 bg-white p-6 shadow-xl shadow-slate-900/5 md:p-8">
         <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-[#FF4C00]">
-          <span class="material-symbols-outlined !text-2xl">login</span>
+          <span class="material-symbols-outlined !text-2xl">smartphone</span>
         </div>
 
         <h1 class="mt-5 text-2xl font-black tracking-tight">Agent sign in</h1>
         <p class="mt-2 text-xs font-bold leading-relaxed text-slate-400">
-          Enter the phone number or email address on your agent application. We’ll email you a
-          one-time 6-digit login code — no password and no security puzzle.
+          Enter the phone number on your agent application. We’ll send a one-time 6-digit
+          code by SMS and email — no password and no security puzzle.
         </p>
 
-        <%= if @google_enabled do %>
-          <a
-            href={@google_start_url}
-            class="mt-7 flex w-full items-center justify-center gap-3 rounded-xl border-2 border-slate-100 bg-white px-6 py-4 text-xs font-black tracking-tight text-slate-700 shadow-sm transition hover:bg-slate-50 active:scale-[0.99]"
-          >
-            <img
-              src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png"
-              class="h-5 w-5"
-              alt="Google"
-              width="20"
-              height="20"
-              decoding="async"
-            /> Continue with Google
-          </a>
-
-          <div class="relative my-7">
-            <div class="absolute inset-0 flex items-center">
-              <div class="w-full border-t border-slate-100"></div>
-            </div>
-            <div class="relative flex justify-center text-[9px] font-black uppercase tracking-widest">
-              <span class="bg-white px-4 text-slate-400">or use email</span>
-            </div>
-          </div>
-        <% end %>
-
-        <form action="/agent/auth" method="post" class="space-y-4">
+        <form action="/agent/auth" method="post" class="mt-7 space-y-4">
           <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
 
           <div>
@@ -63,21 +38,21 @@
               for="agent-identifier"
               class="mb-1.5 block text-[10px] font-black uppercase tracking-widest text-slate-500"
             >
-              Phone or Email
+              Phone number
             </label>
             <input
               id="agent-identifier"
               name="agent[identifier]"
-              type="text"
-              inputmode="email"
+              type="tel"
+              inputmode="tel"
               value={@identifier}
-              autocomplete="username"
-              placeholder="07XX XXX XXX or you@example.com"
+              autocomplete="tel"
+              placeholder="07XX XXX XXX"
               required
               class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-sm font-bold outline-none transition focus:border-[#FF4C00] focus:bg-white"
             />
             <p class="mt-2 text-[10px] font-bold leading-relaxed text-slate-400">
-              The sign-in code is sent to the email address on your agent application.
+              The code goes to your phone by SMS and to the email address on your agent application.
             </p>
           </div>
 

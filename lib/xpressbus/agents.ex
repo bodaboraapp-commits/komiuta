@@ -9,6 +9,7 @@ defmodule Xpressbus.Agents do
   alias Xpressbus.Agents.AgentApplication
   alias Xpressbus.Agents.AgentLoginCode
   alias Xpressbus.AgentLoginEmail
+  alias Xpressbus.SMS
 
   @page_size 20
 
@@ -64,6 +65,85 @@ defmodule Xpressbus.Agents do
   @doc "Minimum number of seconds between agent login-code emails."
   def login_code_resend_seconds, do: @login_code_resend_seconds
 
+  @doc "Whether the agent has proven ownership of the email on their application."
+  def email_verified?(%AgentApplication{email_verified_at: %DateTime{}}), do: true
+  def email_verified?(_application), do: false
+
+  @doc """
+  Starts a phone-first login for an agent.
+
+  Returns `{:ok, application, :sms}` when the code was texted to the agent's
+  phone, `{:ok, application, :email}` when SMS is unavailable/failed and the code
+  was emailed instead, or one of the usual `{:error, reason}` values.
+  """
+  def request_phone_login_code(phone) when is_binary(phone) do
+    case find_by_phone(phone) do
+      %AgentApplication{} = application -> send_phone_login_code(application)
+      nil -> {:error, :not_found}
+    end
+  end
+
+  def request_phone_login_code(_phone), do: {:error, :not_found}
+
+  @doc """
+  Sends a verification code to `email` (which may be a corrected email entered
+  by the agent) so the agent can prove ownership before reaching the dashboard.
+
+  Returns `{:ok, email}` when the email was handed to the mailer.
+  """
+  def request_email_verification(%AgentApplication{} = application, email) do
+    email = normalise_email_input(email)
+
+    cond do
+      not valid_email?(email) ->
+        {:error, :invalid_email}
+
+      email_taken_by_another_application?(application, email) ->
+        {:error, :email_taken}
+
+      true ->
+        with {:ok, code} <- issue_login_code(application) do
+          case AgentLoginEmail.deliver_verification(
+                 application,
+                 email,
+                 code,
+                 login_code_ttl_minutes()
+               ) do
+            :ok -> {:ok, email}
+            {:error, _reason} -> {:error, :delivery_failed}
+          end
+        end
+    end
+  end
+
+  @doc "Verifies the email verification code sent to an agent."
+  def verify_email_code(%AgentApplication{} = application, code) do
+    verify_login_code(application.id, code)
+  end
+
+  @doc "Stores the verified email on the application and marks it verified."
+  def mark_email_verified(%AgentApplication{} = application, email) do
+    application
+    |> AgentApplication.changeset(%{
+      email: normalise_email_input(email),
+      email_verified_at: now()
+    })
+    |> Repo.update()
+  end
+
+  defp normalise_email_input(nil), do: nil
+
+  defp normalise_email_input(email) do
+    email |> to_string() |> String.trim() |> String.downcase()
+  end
+
+  defp email_taken_by_another_application?(%AgentApplication{} = application, email) do
+    case find_by_email(email) do
+      nil -> false
+      %AgentApplication{id: id} -> id != application.id
+    end
+  end
+
   @doc """
   Starts an email-OTP login for an agent application identified by email or phone.
 
@@ -97,6 +177,14 @@ defmodule Xpressbus.Agents do
     case get_application(application_id) do
       nil -> {:error, :not_found}
       %AgentApplication{} = application -> send_agent_login_code(application)
+    end
+  end
+
+  @doc "Re-sends a phone-first login code, falling back to email when SMS fails."
+  def resend_phone_login_code(application_id) do
+    case get_application(application_id) do
+      nil -> {:error, :not_found}
+      %AgentApplication{} = application -> send_phone_login_code(application)
     end
   end
 
@@ -158,6 +246,39 @@ defmodule Xpressbus.Agents do
   end
 
   defp send_agent_login_code(%AgentApplication{} = application) do
+    with {:ok, code} <- issue_login_code(application) do
+      case AgentLoginEmail.deliver(application, code, login_code_ttl_minutes()) do
+        :ok -> {:ok, application}
+        {:error, _reason} -> {:error, :delivery_failed}
+      end
+    end
+  end
+
+  defp send_phone_login_code(%AgentApplication{} = application) do
+    with {:ok, code} <- issue_login_code(application) do
+      message =
+        "Your KOMIUTA Agent sign-in code is #{code}. " <>
+          "It expires in #{login_code_ttl_minutes()} minutes. Do not share it."
+
+      sms_result = SMS.send(application.phone, message)
+
+      email_result =
+        if valid_email?(application.email) do
+          AgentLoginEmail.deliver(application, code, login_code_ttl_minutes())
+        else
+          {:error, :missing_email}
+        end
+
+      case {sms_result, email_result} do
+        {{:ok, _details}, :ok} -> {:ok, application, :sms_and_email}
+        {{:ok, _details}, {:error, _reason}} -> {:ok, application, :sms}
+        {{:error, _reason}, :ok} -> {:ok, application, :email}
+        _ -> {:error, :delivery_failed}
+      end
+    end
+  end
+
+  defp issue_login_code(%AgentApplication{} = application) do
     now = now()
     cooldown_cutoff = DateTime.add(now, -@login_code_resend_seconds, :second)
     hour_cutoff = DateTime.add(now, -3_600, :second)
@@ -182,8 +303,12 @@ defmodule Xpressbus.Agents do
         :id
       )
 
+    cooldown_active? =
+      latest && is_nil(latest.consumed_at) &&
+        DateTime.compare(latest.inserted_at, cooldown_cutoff) == :gt
+
     cond do
-      latest && DateTime.compare(latest.inserted_at, cooldown_cutoff) == :gt ->
+      cooldown_active? ->
         {:error, {:cooldown, application}}
 
       recent_count >= @login_code_max_per_hour ->
@@ -191,17 +316,10 @@ defmodule Xpressbus.Agents do
 
       true ->
         code = generate_login_code()
-        now = now()
 
         case store_login_code(application, code, now) do
-          {:ok, _login_code} ->
-            case AgentLoginEmail.deliver(application, code, login_code_ttl_minutes()) do
-              :ok -> {:ok, application}
-              {:error, _reason} -> {:error, :delivery_failed}
-            end
-
-          {:error, _changeset} ->
-            {:error, :delivery_failed}
+          {:ok, _login_code} -> {:ok, code}
+          {:error, _changeset} -> {:error, :delivery_failed}
         end
     end
   end

@@ -20,7 +20,7 @@
           href="/agent/login"
           class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-700 shadow-sm transition hover:border-[#FF4C00] hover:text-[#FF4C00]"
         >
-          Use another email
+          Use another number
         </a>
       </div>
     </header>
@@ -31,9 +31,10 @@
           <span class="material-symbols-outlined !text-2xl">mark_email_read</span>
         </div>
 
-        <h1 class="mt-5 text-2xl font-black tracking-tight">Check your email</h1>
+        <h1 class="mt-5 text-2xl font-black tracking-tight">Enter your code</h1>
         <p class="mt-2 text-xs font-bold leading-relaxed text-slate-400">
-          We sent a 6-digit sign-in code to <strong class="text-slate-700">{@identifier}</strong>. It expires in {@expires_in_minutes} minutes.
+          We sent a 6-digit code by SMS to <strong class="text-slate-700">{@identifier}</strong>
+          and by email to the address on your agent application. It expires in {@expires_in_minutes} minutes.
         </p>
 
         <form action="/agent/verify" method="post" class="mt-7 space-y-4">
