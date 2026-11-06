@@ -3,7 +3,7 @@ defmodule XpressbusWeb.AgentLive do
 
   alias Xpressbus.Agents
   alias Xpressbus.Agents.AgentApplication
-  alias Xpressbus.AgentApplicationEmail
+  alias Xpressbus.AgentNotifications
 
   def mount(_params, session, socket) do
     if session["agent_id"] do
@@ -49,8 +49,7 @@ defmodule XpressbusWeb.AgentLive do
   def handle_event("submit", %{"agent_application" => attrs}, socket) do
     case Agents.create_application(attrs) do
       {:ok, application} ->
-        _ = AgentApplicationEmail.deliver_applicant(application)
-        _ = AgentApplicationEmail.deliver_admin(application)
+        _ = AgentNotifications.notify(application, :registered)
 
         {:noreply,
          assign(socket,

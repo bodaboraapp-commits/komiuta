@@ -7,6 +7,21 @@ defmodule XpressbusWeb.AdminAgentApplicationsLiveTest do
 
   defp admin_conn(conn), do: Plug.Test.init_test_session(conn, %{admin_id: 1})
 
+  defp create_agent do
+    {:ok, application} =
+      Agents.create_application(%{
+        "full_name" => "Admin Agent",
+        "business_name" => "Admin Travel",
+        "email" => "admin.agent@example.com",
+        "phone" => "0734567890",
+        "city" => "Nairobi",
+        "password" => "agentpass123",
+        "password_confirmation" => "agentpass123"
+      })
+
+    application
+  end
+
   test "lists agent applications and lets an admin approve one", %{conn: conn} do
     {:ok, application} =
       Agents.create_application(%{
@@ -30,6 +45,30 @@ defmodule XpressbusWeb.AdminAgentApplicationsLiveTest do
 
     assert Agents.get_application!(application.id).status == "approved"
     assert render(view) =~ "Application approved"
+    assert render(view) =~ "Email: sent"
+  end
+
+  test "rejection requires a reason and sends it to the agent", %{conn: conn} do
+    application = create_agent()
+    {:ok, view, _html} = live(admin_conn(conn), ~p"/admin/agent-applications")
+
+    view
+    |> form("#reject-agent-#{application.id}", %{"reason" => ""})
+    |> render_submit()
+
+    assert Agents.get_application!(application.id).status == "pending"
+    assert render(view) =~ "rejection reason is required"
+
+    view
+    |> form("#reject-agent-#{application.id}", %{
+      "reason" => "Business registration missing"
+    })
+    |> render_submit()
+
+    rejected = Agents.get_application!(application.id)
+    assert rejected.status == "rejected"
+    assert rejected.admin_notes == "Business registration missing"
+    assert render(view) =~ "Business registration missing"
   end
 
   test "redirects non-admin users", %{conn: conn} do

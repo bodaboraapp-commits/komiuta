@@ -3,6 +3,7 @@ defmodule XpressbusWeb.AdminAgentApplicationsLive do
   import XpressbusWeb.AdminComponents
 
   alias Xpressbus.Agents
+  alias Xpressbus.AgentNotifications
 
   @page_size 20
 
@@ -37,24 +38,16 @@ defmodule XpressbusWeb.AdminAgentApplicationsLive do
   end
 
   def handle_event("update_status", %{"id" => id, "status" => status}, socket) do
-    application = Agents.get_application!(id)
+    update_agent_status(socket, id, status, nil)
+  end
 
-    case Agents.update_status(application, status) do
-      {:ok, _application} ->
-        message =
-          case status do
-            "approved" -> "Application approved."
-            "rejected" -> "Application rejected."
-            _ -> "Application marked pending."
-          end
+  def handle_event("reject_application", %{"application_id" => id, "reason" => reason}, socket) do
+    reason = String.trim(to_string(reason || ""))
 
-        {:noreply,
-         socket
-         |> put_flash(:info, message)
-         |> load_applications(socket.assigns.page, socket.assigns.search)}
-
-      {:error, _changeset} ->
-        {:noreply, put_flash(socket, :error, "Could not update the application.")}
+    if reason == "" do
+      {:noreply, put_flash(socket, :error, "A rejection reason is required.")}
+    else
+      update_agent_status(socket, id, "rejected", reason)
     end
   end
 
@@ -73,6 +66,34 @@ defmodule XpressbusWeb.AdminAgentApplicationsLive do
   def handle_event("toggle_sidebar", _params, socket) do
     {:noreply, assign(socket, :sidebar_collapsed, !socket.assigns.sidebar_collapsed)}
   end
+
+  defp update_agent_status(socket, id, status, reason) do
+    application = Agents.get_application!(id)
+
+    case Agents.update_status(application, status, reason) do
+      {:ok, updated} ->
+        notifications = AgentNotifications.notify(updated, event_for(status), reason)
+
+        message =
+          "#{status_message(status)} Email: #{AgentNotifications.label(notifications.email)}. SMS: #{AgentNotifications.label(notifications.sms)}."
+
+        {:noreply,
+         socket
+         |> put_flash(:info, message)
+         |> load_applications(socket.assigns.page, socket.assigns.search)}
+
+      {:error, _changeset} ->
+        {:noreply, put_flash(socket, :error, "Could not update the application.")}
+    end
+  end
+
+  defp event_for("approved"), do: :approved
+  defp event_for("rejected"), do: :rejected
+  defp event_for(_status), do: :pending
+
+  defp status_message("approved"), do: "Application approved."
+  defp status_message("rejected"), do: "Application rejected."
+  defp status_message(_status), do: "Application marked pending."
 
   defp load_applications(socket, page, search) do
     {applications, total} = Agents.paginate_applications(page, socket.assigns.page_size, search)
