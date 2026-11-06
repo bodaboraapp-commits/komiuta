@@ -353,9 +353,18 @@ defmodule XpressbusWeb.AdminComponents do
           />
           <.nav_item
             icon="group"
-            label="User/Agent List"
+            label="User List"
             id="users"
             href="/admin/users"
+            active={@active_tab}
+            has_arrow={!@collapsed}
+            collapsed={@collapsed}
+          />
+          <.nav_item
+            icon="support_agent"
+            label="Agent List"
+            id="agents"
+            href="/admin/agent-applications"
             active={@active_tab}
             has_arrow={!@collapsed}
             collapsed={@collapsed}
@@ -365,15 +374,6 @@ defmodule XpressbusWeb.AdminComponents do
             label="Tickets & Refunds"
             id="tickets"
             href="/admin/tickets"
-            active={@active_tab}
-            has_arrow={!@collapsed}
-            collapsed={@collapsed}
-          />
-          <.nav_item
-            icon="group"
-            label="Agent Applications"
-            id="agents"
-            href="/admin/agent-applications"
             active={@active_tab}
             has_arrow={!@collapsed}
             collapsed={@collapsed}

@@ -40,7 +40,7 @@ defmodule XpressbusWeb.AdminUsersLiveTest do
 
     {:ok, view, html} = live(admin_conn(conn), ~p"/admin/users")
 
-    assert html =~ "User/Agent List"
+    assert html =~ "User List"
     assert html =~ "Alice Example"
     assert html =~ "Bob Example"
     assert html =~ "KES 120.5"
@@ -52,6 +52,29 @@ defmodule XpressbusWeb.AdminUsersLiveTest do
 
     assert filtered =~ "Alice Example"
     refute filtered =~ "Bob Example"
+  end
+
+  test "sidebar splits the user list and agent list into separate nav entries", %{conn: conn} do
+    {:ok, view, html} = live(admin_conn(conn), ~p"/admin/users")
+
+    assert html =~ "User List"
+    assert html =~ "Agent List"
+    assert html =~ ~s(href="/admin/users")
+    assert html =~ ~s(href="/admin/agent-applications")
+    refute html =~ "User/Agent List"
+
+    # The agents page uses the same sidebar with its own entry active.
+    agent_html = admin_conn(conn) |> get(~p"/admin/agent-applications") |> html_response(200)
+    assert agent_html =~ "User List"
+    assert agent_html =~ "Agent List"
+    refute agent_html =~ "User/Agent List"
+
+    # Both entries are real links in the sidebar.
+    user_link = view |> element(~s(a[href="/admin/users"])) |> render()
+    assert user_link =~ "User List"
+
+    agent_link = view |> element(~s(a[href="/admin/agent-applications"])) |> render()
+    assert agent_link =~ "Agent List"
   end
 
   test "paginates the user list", %{conn: conn} do

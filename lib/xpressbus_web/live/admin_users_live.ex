@@ -10,7 +10,7 @@ defmodule XpressbusWeb.AdminUsersLive do
     if session["admin_id"] do
       socket =
         socket
-        |> assign(:page_title, "User/Agent List")
+        |> assign(:page_title, "User List")
         |> assign(:active_tab, "users")
         |> assign(:page_size, @page_size)
         |> assign(:search, "")

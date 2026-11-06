@@ -1119,6 +1119,30 @@ prove it with tests.
 mix precommit        # 315/315 tests
 ```
 
+### 2026-11-06 Session — Admin sidebar: User List and Agent List split
+
+**Objective:** The admin sidebar had a single combined "User/Agent List" entry (pointing at the users
+page) plus a separate "Agent Applications" entry. Split the combined label into two clearly separate
+lists in the admin nav.
+
+**Completed:**
+- `lib/xpressbus_web/components/admin_components.ex` sidebar now has two adjacent entries:
+  - **User List** — `group` icon, `id="users"`, links to `/admin/users`;
+  - **Agent List** — `support_agent` icon, `id="agents"`, links to `/admin/agent-applications`.
+  The combined "User/Agent List" label and the separate "Agent Applications" nav entry are gone; the
+  tests/refunds entry follows the two list entries.
+- `AdminUsersLive`: page title and page header renamed from "User/Agent List" to **User List** (nav
+  label and page header now match).
+- Tests: `test/xpressbus_web/admin_users_live_test.exs` updated for the new label plus a new test that
+  asserts the sidebar renders separate `User List` + `Agent List` links (`/admin/users` and
+  `/admin/agent-applications`) on both admin pages and no longer contains "User/Agent List".
+
+**Verification:**
+```
+mix precommit        # 318/318 tests
+```
+
+
 
 
 
