@@ -20,7 +20,8 @@ defmodule XpressbusWeb.SeoController do
     {"faqs", "0.7", "monthly"},
     {"about", "0.6", "monthly"},
     {"blog", "0.7", "weekly"},
-    {"operators", "0.7", "weekly"}
+    {"operators", "0.7", "weekly"},
+    {"agent", "0.5", "monthly"}
   ]
 
   @doc "Dynamic XML sitemap for static pages plus the top bus routes."

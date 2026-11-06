@@ -38,6 +38,7 @@ defmodule XpressbusWeb.Router do
     live "/our-packages/hidden-gems", ChyllzLive, :gems
     live "/tour-packages/car", ChyllzLive, :car
     live "/tour-packages/events", ChyllzLive, :events
+    live "/agent", AgentLive, :index
     live "/buses/*route", BookingLive, :results
     live "/cities/:slug", CityLive, :show
     live "/operators", OperatorLive, :index

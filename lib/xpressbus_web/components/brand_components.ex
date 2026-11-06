@@ -451,6 +451,12 @@ defmodule XpressbusWeb.BrandComponents do
               </li>
               <li>
                 <a
+                  href="/agent"
+                  class="whitespace-nowrap text-[11px] font-bold text-slate-600 hover:text-[#FF4C00] transition-colors"
+                >Komiuta Agent app</a>
+              </li>
+              <li>
+                <a
                   href="mailto:hello@komiuta.com"
                   class="whitespace-nowrap text-[11px] font-bold text-slate-600 hover:text-[#FF4C00] transition-colors"
                 >Contact support</a>
