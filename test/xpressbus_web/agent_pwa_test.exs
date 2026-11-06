@@ -70,10 +70,13 @@ defmodule XpressbusWeb.AgentPwaTest do
       |> Jason.decode!()
 
     assert manifest["id"] == "/agent"
-    assert manifest["name"] == "Komiuta Agent"
+    assert manifest["name"] == "KOMIUTA Agent"
+    assert manifest["short_name"] == "KOMIUTA Agent"
     assert manifest["start_url"] == "/agent"
     assert manifest["scope"] == "/agent"
     assert manifest["display"] == "standalone"
+
+    assert Enum.any?(manifest["icons"], &(&1["src"] == "/images/agent-icon-192.png"))
 
     for icon <- manifest["icons"] do
       assert File.exists?(Path.join(["priv", "static", String.trim_leading(icon["src"], "/")]))

@@ -10,14 +10,15 @@ defmodule XpressbusWeb.AgentLive do
 
     {:ok,
      socket
-     |> assign(:page_title, "Komiuta Agent — Agent sign-up")
+     |> assign(:page_title, "KOMIUTA Agent — Agent sign-up")
      |> assign(
        :page_description,
-       "Join the Komiuta Agent app. Sign up to sell bus tickets, manage bookings and serve travellers."
+       "Join the KOMIUTA Agent app. Sign up to sell bus tickets, manage bookings and serve travellers."
      )
      |> assign(:page_canonical, agent_url)
      |> assign(:page_manifest, "/agent-manifest.json")
-     |> assign(:page_app_name, "Komiuta Agent")
+     |> assign(:page_app_name, "KOMIUTA Agent")
+     |> assign(:page_apple_touch_icon, "/images/agent-icon-180.png")
      |> assign(:page_robots, "index,follow")
      |> assign(:agent_url, agent_url)
      |> assign(

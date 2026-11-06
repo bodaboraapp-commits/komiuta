@@ -85,7 +85,10 @@
     <link phx-track-static rel="manifest" href={assigns[:page_manifest] || "/manifest.json"} />
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" href="/images/favicon-32.png" sizes="32x32" />
-    <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
+    <link
+      rel="apple-touch-icon"
+      href={assigns[:page_apple_touch_icon] || "/images/apple-touch-icon.png"}
+    />
     <link rel="preload" as="font" type="font/otf" crossorigin href="/fonts/Lufga-Bold.otf" />
     <link
       rel="preload"
