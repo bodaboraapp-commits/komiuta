@@ -870,17 +870,20 @@ footer nav[aria-label="Explore Komiuta"] {
 }
 
 
-/* Firebase phone auth uses an invisible reCAPTCHA. Keep the widget container
-   and Google badge out of the visible checkout/login UI; the challenge still
-   runs automatically and only appears in the rare high-risk case. */
+/* Firebase phone auth uses a normal reCAPTCHA widget on Agent login. Keep the
+   container in flow so the "I'm not a robot" check/challenge is visible and
+   users can complete it before Firebase sends the SMS. */
 #firebase-recaptcha {
-  position: fixed !important;
-  left: -9999px !important;
-  bottom: 0 !important;
-  width: 1px !important;
-  height: 1px !important;
-  overflow: hidden !important;
-  pointer-events: none !important;
+  position: relative !important;
+  left: auto !important;
+  bottom: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: 78px;
+  overflow: visible !important;
+  pointer-events: auto !important;
 }
 
 .grecaptcha-badge {
