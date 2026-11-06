@@ -35,13 +35,65 @@ defmodule XpressbusWeb.AgentAuthTest do
     code
   end
 
-  test "agent login page uses the email OTP flow", %{conn: conn} do
+  test "agent login page uses Firebase phone OTP", %{conn: conn} do
     html = conn |> get(~p"/agent/login") |> html_response(200)
 
     assert html =~ "Agent sign in"
-    assert html =~ "Send login code"
-    assert html =~ "one-time 6-digit code"
-    refute html =~ ~s(name="agent[password]")
+    assert html =~ "firebase-sms-auth"
+    assert html =~ ~s(data-verify-url="/agent/firebase/verify")
+    assert html =~ ~s(data-redirect="/agent/account")
+    assert html =~ "Send SMS code"
+    assert html =~ "/assets/js/firebase_phone_auth.js"
+    refute html =~ ~s(name="agent[identifier]")
+  end
+
+  describe "Firebase phone OTP verification" do
+    test "rejects a missing token", %{conn: conn} do
+      conn = post(conn, ~p"/agent/firebase/verify", %{})
+      assert conn.status == 400
+      assert json_response(conn, 400)["error"] =~ "Missing"
+    end
+
+    test "logs in the agent whose application phone Firebase verified", %{conn: conn} do
+      application = create_application()
+
+      Application.put_env(:xpressbus, :firebase_lookup_fun, fn token ->
+        assert token == "agent-firebase-token"
+        {:ok, "+254712345678"}
+      end)
+
+      on_exit(fn -> Application.delete_env(:xpressbus, :firebase_lookup_fun) end)
+
+      conn = post(conn, ~p"/agent/firebase/verify", %{"id_token" => "agent-firebase-token"})
+
+      assert %{"ok" => true, "redirect" => "/agent/account"} = json_response(conn, 200)
+      assert get_session(conn, :agent_id) == application.id
+    end
+
+    test "returns not_found when the verified phone has no agent application", %{conn: conn} do
+      Application.put_env(:xpressbus, :firebase_lookup_fun, fn _token ->
+        {:ok, "+254700000001"}
+      end)
+
+      on_exit(fn -> Application.delete_env(:xpressbus, :firebase_lookup_fun) end)
+
+      conn = post(conn, ~p"/agent/firebase/verify", %{"id_token" => "agent-firebase-token"})
+
+      assert conn.status == 404
+      assert json_response(conn, 404)["error"] =~ "No agent application"
+    end
+
+    test "rejects an invalid Firebase token", %{conn: conn} do
+      Application.put_env(:xpressbus, :firebase_lookup_fun, fn _token ->
+        {:error, :invalid_token}
+      end)
+
+      on_exit(fn -> Application.delete_env(:xpressbus, :firebase_lookup_fun) end)
+
+      conn = post(conn, ~p"/agent/firebase/verify", %{"id_token" => "bad-token"})
+
+      assert conn.status == 401
+    end
   end
 
   test "requesting a code emails it and redirects to verification", %{conn: conn} do

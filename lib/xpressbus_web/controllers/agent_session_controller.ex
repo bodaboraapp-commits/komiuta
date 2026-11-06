@@ -17,9 +17,75 @@ defmodule XpressbusWeb.AgentSessionController do
       render(
         conn,
         :login,
-        [page_title: "KOMIUTA Agent — Log in", identifier: ""] ++ @page_assigns
+        login_assigns("")
       )
     end
+  end
+
+  @doc """
+  Verifies a Firebase Phone Auth ID token and starts the agent session.
+
+  Firebase proves the agent owns the phone number on their application, so no
+  password or email code is needed.
+  """
+  def firebase_verify(conn, params) do
+    token =
+      params["id_token"] ||
+        get_in(params, ["firebase", "id_token"]) ||
+        ""
+
+    token = if is_binary(token), do: String.trim(token), else: ""
+
+    cond do
+      not Xpressbus.Firebase.configured?() ->
+        conn
+        |> put_status(:service_unavailable)
+        |> json(%{error: "SMS login is not configured yet. Please contact support."})
+
+      token == "" ->
+        conn
+        |> put_status(:bad_request)
+        |> json(%{error: "Missing Firebase verification token."})
+
+      true ->
+        case Xpressbus.Firebase.verify_id_token(token) do
+          {:ok, phone} ->
+            case Agents.find_by_phone(phone) do
+              %Xpressbus.Agents.AgentApplication{} = application ->
+                conn
+                |> configure_session(renew: true)
+                |> put_session(:agent_id, application.id)
+                |> json(%{ok: true, redirect: "/agent/account"})
+
+              nil ->
+                conn
+                |> put_status(:not_found)
+                |> json(%{
+                  error:
+                    "No agent application was found for that phone number. Apply for an agent account first."
+                })
+            end
+
+          {:error, :not_configured} ->
+            conn
+            |> put_status(:service_unavailable)
+            |> json(%{error: "SMS login is not configured yet. Please contact support."})
+
+          {:error, _reason} ->
+            conn
+            |> put_status(:unauthorized)
+            |> json(%{error: "That SMS code could not be verified. Please try again."})
+        end
+    end
+  end
+
+  defp login_assigns(identifier) do
+    [
+      page_title: "KOMIUTA Agent — Sign in",
+      identifier: identifier,
+      firebase_config: Xpressbus.Firebase.client_config(),
+      firebase_configured: Xpressbus.Firebase.configured?()
+    ] ++ @page_assigns
   end
 
   @doc """
@@ -42,7 +108,7 @@ defmodule XpressbusWeb.AgentSessionController do
         |> put_flash(:error, error_message(reason))
         |> render(
           :login,
-          [page_title: "KOMIUTA Agent — Log in", identifier: identifier] ++ @page_assigns
+          login_assigns(identifier)
         )
     end
   end

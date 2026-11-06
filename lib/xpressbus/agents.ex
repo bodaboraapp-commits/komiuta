@@ -65,6 +65,13 @@ defmodule Xpressbus.Agents do
   `{:error, :not_found}`, `{:error, :missing_email}`, `{:error, :delivery_failed}`,
   `{:error, {:cooldown, application}}` and `{:error, {:rate_limited, application}}`.
   """
+  def find_by_phone(phone) when is_binary(phone) do
+    Xpressbus.Firebase.phone_candidates(phone)
+    |> Enum.find_value(fn candidate -> Repo.get_by(AgentApplication, phone: candidate) end)
+  end
+
+  def find_by_phone(_phone), do: nil
+
   def request_login_code(identifier) when is_binary(identifier) do
     case find_by_identifier(identifier) do
       nil ->

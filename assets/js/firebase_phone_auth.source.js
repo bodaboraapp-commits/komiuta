@@ -23,6 +23,8 @@ function initSmsLogin(root) {
   const changeNumberButton = root.querySelector("#firebase-change-number")
   const statusEl = root.querySelector("#firebase-status")
   const phoneHint = root.querySelector("#firebase-phone-hint")
+  const verifyUrl = root.dataset.verifyUrl || "/user/firebase/verify"
+  const successRedirect = root.dataset.redirect || "/dashboard"
 
   const config = {
     apiKey: root.dataset.apiKey,
@@ -125,7 +127,7 @@ function initSmsLogin(root) {
       stopSmsOtpListener()
       const idToken = await credential.user.getIdToken()
 
-      const response = await fetch("/user/firebase/verify", {
+      const response = await fetch(verifyUrl, {
         method: "POST",
         headers: {
           "content-type": "application/json",
@@ -140,7 +142,7 @@ function initSmsLogin(root) {
         throw new Error(data.error || "That code could not be verified.")
       }
 
-      window.location.assign(data.redirect || "/dashboard")
+      window.location.assign(data.redirect || successRedirect)
     } catch (error) {
       setStatus(friendlyError(error), "error")
       codeInput.focus()

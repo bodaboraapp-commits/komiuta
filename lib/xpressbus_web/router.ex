@@ -41,6 +41,7 @@ defmodule XpressbusWeb.Router do
     live "/agent", AgentLive, :index
     get "/agent/login", AgentSessionController, :login
     post "/agent/auth", AgentSessionController, :request_code
+    post "/agent/firebase/verify", AgentSessionController, :firebase_verify
     get "/agent/verify", AgentSessionController, :verify
     post "/agent/verify", AgentSessionController, :verify_code
     post "/agent/verify/resend", AgentSessionController, :resend_code
