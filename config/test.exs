@@ -10,6 +10,9 @@ config :xpressbus, XpressbusWeb.Endpoint,
 # In test we don't send emails
 config :xpressbus, Xpressbus.Mailer, adapter: Swoosh.Adapters.Test
 
+# Do not send operational booking/payment alert emails during the test suite.
+config :xpressbus, :admin_alert_emails, []
+
 # Disable swoosh api client as it is only required for production adapters
 config :swoosh, :api_client, false
 

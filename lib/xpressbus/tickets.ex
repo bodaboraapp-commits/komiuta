@@ -363,9 +363,16 @@ defmodule Xpressbus.Tickets do
       end
       |> serialize_seats()
 
-    %Ticket{}
-    |> Ticket.changeset(attrs)
-    |> Repo.insert()
+    case %Ticket{}
+         |> Ticket.changeset(attrs)
+         |> Repo.insert() do
+      {:ok, ticket} = result ->
+        _ = Xpressbus.AdminAlerts.booking_created(ticket)
+        result
+
+      other ->
+        other
+    end
   end
 
   @doc """

@@ -34,6 +34,10 @@ config :xpressbus, Xpressbus.Mailer, adapter: Swoosh.Adapters.Local
 # production with the MAILER_FROM environment variable.
 config :xpressbus, :mailer_from, "no-reply@komiuta.com"
 
+# Operational booking/payment alerts. This is intentionally separate from the
+# admin login accounts: recipients here only receive ops alerts.
+config :xpressbus, :admin_alert_emails, ["komondiedward@gmail.com"]
+
 # Public contact details and social links, used by the website footer and
 # transactional email. Update the social URLs here when the real handles change.
 config :xpressbus, :brand, %{

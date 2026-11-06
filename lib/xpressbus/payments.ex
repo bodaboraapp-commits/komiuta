@@ -162,12 +162,25 @@ defmodule Xpressbus.Payments do
       status: status
     })
 
+    previous_payment = get_payment_by_reference(reference)
+    already_paid = previous_payment && previous_payment.status == "success"
+
+    existing_ticket =
+      if previous_payment && previous_payment.ticket_id,
+        do: Tickets.get_ticket(previous_payment.ticket_id),
+        else: nil
+
     case update_payment_status(reference, status, raw_response) do
       {:ok, payment} ->
         if status == "success" do
           case create_ticket_from_payment(payment) do
             {:ok, ticket} ->
               maybe_create_user_transaction(payment)
+
+              if existing_ticket && !already_paid do
+                _ = Xpressbus.AdminAlerts.payment_received(payment, ticket)
+              end
+
               {:ok, ticket}
 
             {:error, reason} ->
