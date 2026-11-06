@@ -19,6 +19,7 @@ defmodule XpressbusWeb.AgentLive do
      |> assign(:page_manifest, "/agent-manifest.json")
      |> assign(:page_app_name, "KOMIUTA Agent")
      |> assign(:page_apple_touch_icon, "/images/agent-icon-180.png")
+     |> assign(:page_theme_color, "#ffffff")
      |> assign(:page_robots, "index,follow")
      |> assign(:agent_url, agent_url)
      |> assign(

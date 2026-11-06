@@ -75,6 +75,8 @@ defmodule XpressbusWeb.AgentPwaTest do
     assert manifest["start_url"] == "/agent"
     assert manifest["scope"] == "/agent"
     assert manifest["display"] == "standalone"
+    assert manifest["background_color"] == "#ffffff"
+    assert manifest["theme_color"] == "#ffffff"
 
     assert Enum.any?(manifest["icons"], &(&1["src"] == "/images/agent-icon-192.png"))
 
