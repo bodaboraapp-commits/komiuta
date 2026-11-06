@@ -4,6 +4,7 @@ defmodule XpressbusWeb.AdminAgentApplicationsLive do
 
   alias Xpressbus.Agents
   alias Xpressbus.AgentNotifications
+  alias Xpressbus.BusOperators
 
   @page_size 20
 
@@ -62,6 +63,31 @@ defmodule XpressbusWeb.AdminAgentApplicationsLive do
       {:noreply, put_flash(socket, :error, "A rejection reason is required.")}
     else
       update_agent_status(socket, id, "rejected", reason)
+    end
+  end
+
+  def handle_event(
+        "assign_bus_operator",
+        %{"application_id" => id, "bus_operator_id" => bus_operator_id},
+        socket
+      ) do
+    application = Agents.get_application!(id)
+
+    case Agents.assign_bus_operator(application, bus_operator_id) do
+      {:ok, updated} ->
+        updated = Agents.get_application_with_bus_operator(updated.id)
+
+        bus_operator_name =
+          if(updated.bus_operator, do: updated.bus_operator.name, else: "No bus operator")
+
+        {:noreply,
+         socket
+         |> put_flash(:success, "Agent assigned to #{bus_operator_name}.")
+         |> load_applications(socket.assigns.page, socket.assigns.search)}
+
+      {:error, _changeset} ->
+        {:noreply,
+         put_flash(socket, :error, "Could not assign the bus operator. Please try again.")}
     end
   end
 
@@ -127,6 +153,7 @@ defmodule XpressbusWeb.AdminAgentApplicationsLive do
 
     socket
     |> assign(:applications, applications)
+    |> assign(:bus_operators, BusOperators.list_bus_operators())
     |> assign(:total_count, total)
     |> assign(:page, page)
     |> assign(:total_pages, max(1, ceil(total / socket.assigns.page_size)))

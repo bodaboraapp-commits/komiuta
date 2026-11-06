@@ -282,7 +282,9 @@ defmodule Xpressbus.Agents do
   defp now, do: DateTime.utc_now() |> DateTime.truncate(:second)
 
   def list_applications do
-    Repo.all(from(a in AgentApplication, order_by: [desc: a.inserted_at]))
+    Repo.all(
+      from(a in AgentApplication, order_by: [desc: a.inserted_at], preload: [:bus_operator])
+    )
   end
 
   def paginate_applications(page, page_size \\ @page_size, search \\ "") do
@@ -312,9 +314,45 @@ defmodule Xpressbus.Agents do
       query
       |> limit(^page_size)
       |> offset(^((page - 1) * page_size))
+      |> preload(:bus_operator)
       |> Repo.all()
 
     {applications, total}
+  end
+
+  @doc "Loads an application with its assigned bus operator (partner) preloaded."
+  def get_application_with_bus_operator(id) do
+    AgentApplication
+    |> Repo.get(id)
+    |> case do
+      nil -> nil
+      application -> Repo.preload(application, :bus_operator)
+    end
+  end
+
+  @doc "Attaches or detaches an agent application from a bus operator."
+  def assign_bus_operator(%AgentApplication{} = application, bus_operator_id) do
+    bus_operator_id =
+      case bus_operator_id do
+        nil ->
+          nil
+
+        "" ->
+          nil
+
+        id when is_integer(id) ->
+          id
+
+        id when is_binary(id) ->
+          case Integer.parse(id) do
+            {value, ""} -> value
+            _ -> nil
+          end
+      end
+
+    application
+    |> Ecto.Changeset.change(bus_operator_id: bus_operator_id)
+    |> Repo.update()
   end
 
   def get_application!(id), do: Repo.get!(AgentApplication, id)

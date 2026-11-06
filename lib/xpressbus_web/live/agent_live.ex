@@ -4,6 +4,7 @@ defmodule XpressbusWeb.AgentLive do
   alias Xpressbus.Agents
   alias Xpressbus.Agents.AgentApplication
   alias Xpressbus.AgentNotifications
+  alias Xpressbus.BusOperators
 
   def mount(_params, session, socket) do
     if session["agent_id"] do
@@ -33,6 +34,11 @@ defmodule XpressbusWeb.AgentLive do
          )
        )
        |> assign(:submitted, nil)
+       |> assign(
+         :bus_operator_options,
+         BusOperators.list_active_bus_operators()
+         |> Enum.map(&{&1.name, &1.id})
+       )
        |> assign_application_form()}
     end
   end

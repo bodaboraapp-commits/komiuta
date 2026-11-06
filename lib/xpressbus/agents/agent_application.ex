@@ -20,6 +20,8 @@ defmodule Xpressbus.Agents.AgentApplication do
     field(:admin_notes, :string)
     field(:reviewed_at, :utc_datetime)
 
+    belongs_to(:bus_operator, Xpressbus.BusOperators.BusOperator)
+
     timestamps(type: :utc_datetime)
   end
 
@@ -37,7 +39,8 @@ defmodule Xpressbus.Agents.AgentApplication do
       :notes,
       :status,
       :admin_notes,
-      :reviewed_at
+      :reviewed_at,
+      :bus_operator_id
     ])
     |> update_change(:email, &normalise_email/1)
     |> update_change(:phone, &normalise_phone/1)
@@ -48,6 +51,7 @@ defmodule Xpressbus.Agents.AgentApplication do
     |> validate_length(:phone, min: 9, max: 18)
     |> validate_inclusion(:payout_method, ["mpesa", "bank", "card"])
     |> validate_inclusion(:status, ["pending", "approved", "rejected"])
+    |> foreign_key_constraint(:bus_operator_id)
     |> unique_constraint(:email, name: :agent_applications_email_index)
   end
 

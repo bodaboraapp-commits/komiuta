@@ -10,6 +10,8 @@ defmodule Xpressbus.BusOperators.BusOperator do
     field(:active, :boolean, default: true)
     field(:logo_url, :string)
 
+    has_many(:agents, Xpressbus.Agents.AgentApplication, foreign_key: :bus_operator_id)
+
     timestamps(type: :utc_datetime)
   end
 

@@ -5,6 +5,7 @@ defmodule XpressbusWeb.AgentPwaTest do
   import Swoosh.TestAssertions
 
   alias Xpressbus.Agents
+  alias Xpressbus.BusOperators
   alias Xpressbus.Repo
 
   test "agent app exposes the sign-up experience and Agent PWA manifest", %{conn: conn} do
@@ -21,12 +22,21 @@ defmodule XpressbusWeb.AgentPwaTest do
     refute html =~ "Track Ticket"
   end
 
-  test "website /agent redirects to the separate Agent origin", %{conn: conn} do
+  test "website /agent keeps legacy Agent PWA installs working", %{conn: conn} do
     conn = %{conn | host: "www.komiuta.com"}
 
-    conn = conn |> get(~p"/agent")
+    html = conn |> get(~p"/agent") |> html_response(200)
 
-    assert redirected_to(conn, 302) == "https://agent.komiuta.com/agent"
+    assert html =~ "Komiuta Agent"
+    assert html =~ ~s(href="/agent-manifest.json")
+    assert html =~ "agent-install-button"
+
+    # A server-side redirect during launch breaks already-installed Agent PWAs
+    # (Android opens the browser when the start_url crosses origins). Browser
+    # visits are bounced to the Agent subdomain client-side instead.
+    app_js = File.read!(Path.expand("../../assets/js/app.js", __DIR__))
+    assert app_js =~ "display-mode: standalone"
+    assert app_js =~ "agent.komiuta.com"
   end
 
   test "Agent subdomain root opens the Agent app", %{conn: conn} do
@@ -74,6 +84,34 @@ defmodule XpressbusWeb.AgentPwaTest do
       assert email.subject =~ "received your Komiuta Agent application"
       assert email.to == [{"Jane Agent", "jane.agent@example.com"}]
     end)
+  end
+
+  test "agent sign-up lets the applicant choose a bus operator (partner)", %{conn: conn} do
+    {:ok, bus_operator} =
+      BusOperators.create_bus_operator(%{name: "Coast Partner", active: true})
+
+    {:ok, view, _html} = live(conn, ~p"/agent")
+
+    html = render(view)
+    assert html =~ "Bus operator / partner you represent"
+    assert html =~ "Coast Partner"
+
+    view
+    |> element("#agent-application-form")
+    |> render_submit(%{
+      "agent_application" => %{
+        "full_name" => "Partner Agent",
+        "business_name" => "Partner Travel",
+        "email" => "partner.agent@example.com",
+        "phone" => "0711223344",
+        "city" => "Mombasa",
+        "payout_method" => "mpesa",
+        "bus_operator_id" => bus_operator.id
+      }
+    })
+
+    application = Repo.get_by!(Agents.AgentApplication, email: "partner.agent@example.com")
+    assert application.bus_operator_id == bus_operator.id
   end
 
   test "agent app validates missing sign-up fields", %{conn: conn} do

@@ -228,18 +228,28 @@
                   />
                 </div>
 
+                <%= if @bus_operator_options != [] do %>
+                  <.input
+                    field={@form[:bus_operator_id]}
+                    label="Bus operator / partner you represent"
+                    type="select"
+                    prompt="Select a bus operator"
+                    options={@bus_operator_options}
+                    required
+                    class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-sm font-bold outline-none transition focus:border-[#FF4C00] focus:bg-white"
+                  />
+                <% else %>
+                  <p class="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-[10px] font-bold leading-relaxed text-slate-400">
+                    The bus operator list is being set up. Submit your application and our team will
+                    assign you to the right partner.
+                  </p>
+                <% end %>
+
                 <.input
                   field={@form[:routes]}
                   label="Routes or region you mainly serve (optional)"
                   type="text"
                   placeholder="e.g. Nairobi - Mombasa"
-                  class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-sm font-bold outline-none transition focus:border-[#FF4C00] focus:bg-white"
-                />
-                <.input
-                  field={@form[:notes]}
-                  label="Anything else we should know? (optional)"
-                  type="textarea"
-                  rows="3"
                   class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-sm font-bold outline-none transition focus:border-[#FF4C00] focus:bg-white"
                 />
                 <button

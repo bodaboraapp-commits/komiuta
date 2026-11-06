@@ -293,7 +293,7 @@ defmodule XpressbusWeb.AgentSessionController do
   defp load_agent(nil), do: :error
 
   defp load_agent(agent_id) do
-    case Agents.get_application(agent_id) do
+    case Agents.get_application_with_bus_operator(agent_id) do
       %{} = application -> {:ok, application}
       _ -> :error
     end

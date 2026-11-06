@@ -78,6 +78,9 @@
                     OPERATOR NAME
                   </th>
                   <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    AGENT
+                  </th>
+                  <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
                     CONTACT PERSON
                   </th>
                   <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
@@ -97,7 +100,7 @@
               <tbody class="divide-y divide-slate-50">
                 <%= if Enum.empty?(@bus_operators) do %>
                   <tr>
-                    <td colspan="7" class="px-8 py-12 text-center">
+                    <td colspan="8" class="px-8 py-12 text-center">
                       <span class="material-symbols-outlined text-4xl text-slate-200 mb-4">directions_bus</span>
                       <p class="text-sm font-bold text-slate-400">No bus operators found.</p>
                     </td>
@@ -125,6 +128,23 @@
                         </div>
                       </td>
                       <td class="px-8 py-6 text-sm font-black text-slate-900">{operator.name}</td>
+                      <td class="px-8 py-6">
+                        <%= if operator.agents == [] do %>
+                          <span class="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-300">
+                            <span class="material-symbols-outlined !text-[14px]">person_off</span>
+                            Unassigned
+                          </span>
+                        <% else %>
+                          <div class="flex flex-col gap-1">
+                            <%= for agent <- operator.agents do %>
+                              <span class="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-600">
+                                <span class="material-symbols-outlined !text-[14px] text-[#FF4C00]">support_agent</span>
+                                <span class="max-w-32 truncate">{agent.full_name}</span>
+                              </span>
+                            <% end %>
+                          </div>
+                        <% end %>
+                      </td>
                       <td class="px-8 py-6 text-sm font-bold text-slate-500">
                         {operator.contact_person || "—"}
                       </td>

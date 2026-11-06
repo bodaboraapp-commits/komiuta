@@ -19,7 +19,9 @@ defmodule Xpressbus.BusOperators do
   Lists all bus operators.
   """
   def list_bus_operators do
-    Repo.all(BusOperator)
+    BusOperator
+    |> preload(:agents)
+    |> Repo.all()
   end
 
   @doc """
@@ -29,7 +31,8 @@ defmodule Xpressbus.BusOperators do
     from(b in BusOperator,
       order_by: [asc: b.name],
       limit: ^page_size,
-      offset: ^((page - 1) * page_size)
+      offset: ^((page - 1) * page_size),
+      preload: [:agents]
     )
     |> Repo.all()
   end

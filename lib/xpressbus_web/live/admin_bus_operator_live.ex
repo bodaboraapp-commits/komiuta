@@ -112,22 +112,34 @@ defmodule XpressbusWeb.AdminBusOperatorLive do
   def handle_event("confirm_delete", _params, socket) do
     operator = Enum.find(socket.assigns.bus_operators, &(&1.id == socket.assigns.delete_id))
 
-    if operator do
-      Xpressbus.Repo.delete!(operator)
+    cond do
+      operator && operator.agents != [] ->
+        {:noreply,
+         socket
+         |> assign(:show_delete_modal, false)
+         |> assign(:delete_id, nil)
+         |> put_flash(
+           :error,
+           "This bus operator has agents attached. Reassign those agents before deleting it."
+         )}
 
-      {:noreply,
-       socket
-       |> assign(:bus_operators, BusOperators.list_bus_operators())
-       |> assign(:show_delete_modal, false)
-       |> assign(:delete_id, nil)
-       |> assign(:error, nil)
-       |> put_flash(:success, "Bus operator deleted successfully")}
-    else
-      {:noreply,
-       socket
-       |> assign(:show_delete_modal, false)
-       |> assign(:delete_id, nil)
-       |> assign(:error, "Operator not found")}
+      operator ->
+        Xpressbus.Repo.delete!(operator)
+
+        {:noreply,
+         socket
+         |> assign(:bus_operators, BusOperators.list_bus_operators())
+         |> assign(:show_delete_modal, false)
+         |> assign(:delete_id, nil)
+         |> assign(:error, nil)
+         |> put_flash(:success, "Bus operator deleted successfully")}
+
+      true ->
+        {:noreply,
+         socket
+         |> assign(:show_delete_modal, false)
+         |> assign(:delete_id, nil)
+         |> assign(:error, "Operator not found")}
     end
   end
 

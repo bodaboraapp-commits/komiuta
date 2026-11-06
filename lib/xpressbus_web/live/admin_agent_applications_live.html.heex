@@ -109,6 +109,15 @@
                       <span class="material-symbols-outlined !text-[14px] text-slate-300">mail</span>
                       <span class="truncate">{application.email}</span>
                     </span>
+
+                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                      <span class="material-symbols-outlined !text-[14px] text-slate-300">directions_bus</span>
+                      <span class="truncate">
+                        {if application.bus_operator,
+                          do: application.bus_operator.name,
+                          else: "No bus operator"}
+                      </span>
+                    </span>
                   </div>
                 </div>
 
@@ -167,6 +176,54 @@
                             Payout: {payout_label(application.payout_method)}
                           </span>
                         </div>
+                      </div>
+
+                      <div class="rounded-2xl bg-slate-50/80 px-4 py-3 sm:col-span-2">
+                        <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                          Bus operator / partner
+                        </p>
+
+                        <form
+                          id={"assign-bus-operator-#{application.id}"}
+                          phx-submit="assign_bus_operator"
+                          class="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center"
+                        >
+                          <input type="hidden" name="application_id" value={application.id} />
+
+                          <select
+                            name="bus_operator_id"
+                            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-700 outline-none transition focus:border-[#FF4C00] sm:max-w-xs"
+                          >
+                            <option value="" selected={is_nil(application.bus_operator_id)}>
+                              No bus operator
+                            </option>
+
+                            <%= for bus_operator <- @bus_operators do %>
+                              <option
+                                value={bus_operator.id}
+                                selected={bus_operator.id == application.bus_operator_id}
+                              >
+                                {bus_operator.name}{if !bus_operator.active, do: " (inactive)"}
+                              </option>
+                            <% end %>
+                          </select>
+
+                          <button
+                            type="submit"
+                            class="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-600 transition hover:border-[#FF4C00] hover:text-[#FF4C00]"
+                          >
+                            <span class="material-symbols-outlined !text-base">link</span>
+                            Save bus operator
+                          </button>
+                        </form>
+
+                        <p class="mt-2 text-[10px] font-bold text-slate-400">
+                          <%= if Enum.empty?(@bus_operators) do %>
+                            No bus operators yet — add them under Bus → Bus Operator.
+                          <% else %>
+                            Agents are tied to the bus operator selected here.
+                          <% end %>
+                        </p>
                       </div>
 
                       <%= if application.routes do %>

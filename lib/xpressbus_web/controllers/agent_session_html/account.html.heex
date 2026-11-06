@@ -110,15 +110,15 @@
             <dd class="mt-1 text-sm font-bold uppercase">{@agent.payout_method}</dd>
           </div>
 
-          <%= if @agent.partner do %>
+          <%= if @agent.bus_operator do %>
             <div class="sm:col-span-2">
               <dt class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
-                Partner
+                Bus operator / partner
               </dt>
 
               <dd class="mt-1 inline-flex items-center gap-2 text-sm font-bold">
-                <span class="material-symbols-outlined !text-base text-[#FF4C00]">handshake</span>
-                {@agent.partner.name}
+                <span class="material-symbols-outlined !text-base text-[#FF4C00]">directions_bus</span>
+                {@agent.bus_operator.name}
               </dd>
             </div>
           <% end %>
