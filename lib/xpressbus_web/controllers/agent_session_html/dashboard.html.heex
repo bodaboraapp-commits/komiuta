@@ -401,62 +401,7 @@
         </div>
       <% end %>
 
-      <div class="mt-6 grid gap-4 md:grid-cols-2">
-        <div class="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
-          <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
-            Agent account
-          </p>
-
-          <p class="mt-1.5 text-lg font-black text-slate-900">{@agent.business_name}</p>
-
-          <dl class="mt-4 grid gap-3 sm:grid-cols-2">
-            <div>
-              <dt class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
-                Email
-              </dt>
-              <dd class="mt-0.5 break-all text-xs font-bold">{@agent.email}</dd>
-            </div>
-
-            <div>
-              <dt class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
-                Phone
-              </dt>
-              <dd class="mt-0.5 text-xs font-bold">{@agent.phone}</dd>
-            </div>
-
-            <div>
-              <dt class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
-                Payout
-              </dt>
-              <dd class="mt-0.5 text-xs font-bold uppercase">{@agent.payout_method}</dd>
-            </div>
-
-            <div>
-              <dt class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
-                Town / county
-              </dt>
-              <dd class="mt-0.5 text-xs font-bold">{@agent.city}</dd>
-            </div>
-
-            <%= if @agent.routes do %>
-              <div class="sm:col-span-2">
-                <dt class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
-                  Routes
-                </dt>
-                <dd class="mt-0.5 text-xs font-bold">{@agent.routes}</dd>
-              </div>
-            <% end %>
-          </dl>
-
-          <a
-            href="/agent/account"
-            class="mt-4 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[#FF4C00] transition hover:text-orange-700"
-          >
-            View account details
-            <span class="material-symbols-outlined !text-[15px]">chevron_right</span>
-          </a>
-        </div>
-
+      <div class="mt-6">
         <div class="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
           <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
             Keep selling
