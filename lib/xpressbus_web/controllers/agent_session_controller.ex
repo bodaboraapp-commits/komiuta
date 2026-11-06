@@ -356,20 +356,7 @@ defmodule XpressbusWeb.AgentSessionController do
     case get_session(conn, :agent_id) |> load_agent() do
       {:ok, application} ->
         cond do
-          not Agents.email_verified?(application) ->
-            conn
-            |> put_flash(:info, "Verify your email address to continue to your dashboard.")
-            |> redirect(to: "/agent/verify-email")
-
-          application.status != "approved" ->
-            conn
-            |> put_flash(
-              :info,
-              "Your dashboard unlocks when your agent application is approved."
-            )
-            |> redirect(to: "/agent/account")
-
-          true ->
+          application.status == "approved" ->
             dashboard = AgentDashboard.load(application)
 
             render(
@@ -378,6 +365,19 @@ defmodule XpressbusWeb.AgentSessionController do
               [page_title: "KOMIUTA Agent — Dashboard", agent: application, dashboard: dashboard] ++
                 @page_assigns
             )
+
+          not Agents.email_verified?(application) ->
+            conn
+            |> put_flash(:info, "Verify your email address to continue to your dashboard.")
+            |> redirect(to: "/agent/verify-email")
+
+          true ->
+            conn
+            |> put_flash(
+              :info,
+              "Your dashboard unlocks when your agent application is approved."
+            )
+            |> redirect(to: "/agent/account")
         end
 
       :error ->
@@ -436,8 +436,8 @@ defmodule XpressbusWeb.AgentSessionController do
 
   defp next_path(application) do
     cond do
-      not Agents.email_verified?(application) -> "/agent/verify-email"
       application.status == "approved" -> "/agent/dashboard"
+      not Agents.email_verified?(application) -> "/agent/verify-email"
       true -> "/agent/account"
     end
   end

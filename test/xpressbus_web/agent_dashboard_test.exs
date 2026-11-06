@@ -71,8 +71,8 @@ defmodule XpressbusWeb.AgentDashboardTest do
     assert redirected_to(conn) == "/agent/account"
   end
 
-  test "unverified agents must verify email before the dashboard", %{conn: conn} do
-    agent = create_agent("approved", false)
+  test "unverified pending agents must verify email", %{conn: conn} do
+    agent = create_agent("pending", false)
     conn = Plug.Test.init_test_session(conn, %{agent_id: agent.id})
 
     conn = get(conn, "/agent/dashboard")

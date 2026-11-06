@@ -93,8 +93,8 @@ defmodule XpressbusWeb.AgentLive do
     case Agents.get_application_with_bus_operator(agent_id) do
       %AgentApplication{} = application ->
         cond do
-          not Agents.email_verified?(application) -> "/agent/verify-email"
           application.status == "approved" -> "/agent/dashboard"
+          not Agents.email_verified?(application) -> "/agent/verify-email"
           true -> "/agent/account"
         end
 
