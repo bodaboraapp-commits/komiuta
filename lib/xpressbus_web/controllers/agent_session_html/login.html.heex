@@ -9,8 +9,7 @@
             width="146"
             height="40"
             class="h-9 w-auto"
-          />
-          <span class="hidden h-8 w-px bg-slate-200 sm:block"></span>
+          /> <span class="hidden h-8 w-px bg-slate-200 sm:block"></span>
           <span class="hidden text-[10px] font-black uppercase tracking-[0.3em] text-[#FF4C00] sm:block">
             Agent App
           </span>
@@ -25,10 +24,37 @@
         </div>
 
         <h1 class="mt-5 text-2xl font-black tracking-tight">Agent sign in</h1>
+
         <p class="mt-2 text-xs font-bold leading-relaxed text-slate-400">
           Enter the phone number on your agent application. Firebase will text you a
           one-time 6-digit code. No password needed.
         </p>
+
+        <%= if @google_enabled do %>
+          <a
+            href={@google_start_url}
+            class="mt-7 flex w-full items-center justify-center gap-3 rounded-xl border-2 border-slate-100 bg-white px-6 py-4 text-xs font-black tracking-tight text-slate-700 shadow-sm transition hover:bg-slate-50 active:scale-[0.99]"
+          >
+            <img
+              src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png"
+              class="h-5 w-5"
+              alt="Google"
+              width="20"
+              height="20"
+              decoding="async"
+            /> Continue with Google
+          </a>
+
+          <div class="relative my-7">
+            <div class="absolute inset-0 flex items-center">
+              <div class="w-full border-t border-slate-100"></div>
+            </div>
+
+            <div class="relative flex justify-center text-[9px] font-black uppercase tracking-widest">
+              <span class="bg-white px-4 text-slate-400">or use SMS</span>
+            </div>
+          </div>
+        <% end %>
 
         <%= if @firebase_config do %>
           <div
@@ -51,6 +77,7 @@
                 >
                   Phone number
                 </label>
+
                 <input
                   id="firebase-phone"
                   type="tel"
@@ -76,6 +103,10 @@
                 Send SMS code
               </button>
 
+              <p class="text-center text-[10px] font-bold leading-relaxed text-slate-400">
+                If Google shows a security check, complete it to receive your SMS.
+              </p>
+
               <div id="firebase-code-step" class="hidden space-y-3">
                 <div>
                   <label
@@ -84,6 +115,7 @@
                   >
                     SMS code
                   </label>
+
                   <input
                     id="firebase-code"
                     type="text"
@@ -95,6 +127,7 @@
                     class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-center text-xl font-black tracking-[0.4em] outline-none transition focus:border-[#FF4C00] focus:bg-white"
                   />
                 </div>
+
                 <button
                   id="firebase-verify-code"
                   type="submit"
@@ -102,6 +135,7 @@
                 >
                   Verify &amp; sign in
                 </button>
+
                 <button
                   id="firebase-change-number"
                   type="button"
