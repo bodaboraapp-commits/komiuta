@@ -4,7 +4,7 @@
   "short_name": "Komiuta Agent",
   "description": "Install the Komiuta Agent PWA to sell bus tickets, manage bookings and support travellers.",
   "start_url": "/agent",
-  "scope": "/",
+  "scope": "/agent",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait-primary",

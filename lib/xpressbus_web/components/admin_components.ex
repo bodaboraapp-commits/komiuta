@@ -369,6 +369,15 @@ defmodule XpressbusWeb.AdminComponents do
             has_arrow={!@collapsed}
             collapsed={@collapsed}
           />
+          <.nav_item
+            icon="group"
+            label="Agent Applications"
+            id="agents"
+            href="/admin/agent-applications"
+            active={@active_tab}
+            has_arrow={!@collapsed}
+            collapsed={@collapsed}
+          />
         </div>
       </div>
       <%!-- Logout --%>

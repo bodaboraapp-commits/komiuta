@@ -1,21 +1,65 @@
 defmodule XpressbusWeb.AgentPwaTest do
   use XpressbusWeb.ConnCase
 
-  test "agent page exposes the installable Agent PWA", %{conn: conn} do
+  import Phoenix.LiveViewTest
+  import Swoosh.TestAssertions
+
+  alias Xpressbus.Agents
+  alias Xpressbus.Repo
+
+  test "agent app exposes the sign-up experience and Agent PWA manifest", %{conn: conn} do
     html = conn |> get(~p"/agent") |> html_response(200)
 
     assert html =~ "Komiuta Agent"
+    assert html =~ "Create your agent account"
+    assert html =~ "agent-application-form"
     assert html =~ "agent-install-button"
-    assert html =~ "Install Agent App"
     assert html =~ ~s(href="/agent-manifest.json")
-    assert html =~ "Add Komiuta Agent to your home screen"
+    assert html =~ "Submit Agent Application"
     refute html =~ "api.qrserver.com"
+    refute html =~ "Track Ticket"
+  end
 
-    template =
-      File.read!("lib/xpressbus_web/live/agent_live.html.heex")
+  test "agent can submit a sign-up application from the Agent PWA", %{conn: conn} do
+    {:ok, view, _html} = live(conn, ~p"/agent")
 
-    assert template =~ ~s(phx-hook=".AgentInstall")
-    assert template =~ ~s(name=".AgentInstall")
+    view
+    |> element("#agent-application-form")
+    |> render_submit(%{
+      "agent_application" => %{
+        "full_name" => "Jane Agent",
+        "business_name" => "Jane Travel Agency",
+        "email" => "jane.agent@example.com",
+        "phone" => "0712345678",
+        "city" => "Nairobi",
+        "routes" => "Nairobi - Mombasa",
+        "payout_method" => "mpesa",
+        "notes" => "We serve the CBD."
+      }
+    })
+
+    assert render(view) =~ "Application received"
+    assert render(view) =~ "Jane Travel Agency"
+
+    application = Repo.get_by!(Xpressbus.Agents.AgentApplication, email: "jane.agent@example.com")
+    assert application.status == "pending"
+    assert application.reference =~ "AGT-"
+
+    assert_email_sent(fn email ->
+      assert email.subject =~ "received your Komiuta Agent application"
+      assert email.to == [{"Jane Agent", "jane.agent@example.com"}]
+    end)
+  end
+
+  test "agent app validates missing sign-up fields", %{conn: conn} do
+    {:ok, view, _html} = live(conn, ~p"/agent")
+
+    view
+    |> element("#agent-application-form")
+    |> render_submit(%{"agent_application" => %{"full_name" => "Incomplete"}})
+
+    assert render(view) =~ "Please check the highlighted details"
+    assert Agents.list_applications() == []
   end
 
   test "agent manifest is installable and uses the existing app icons", %{conn: conn} do
@@ -28,6 +72,7 @@ defmodule XpressbusWeb.AgentPwaTest do
     assert manifest["id"] == "/agent"
     assert manifest["name"] == "Komiuta Agent"
     assert manifest["start_url"] == "/agent"
+    assert manifest["scope"] == "/agent"
     assert manifest["display"] == "standalone"
 
     for icon <- manifest["icons"] do
