@@ -26,8 +26,9 @@
 
         <h1 class="mt-5 text-2xl font-black tracking-tight">Agent sign in</h1>
         <p class="mt-2 text-xs font-bold leading-relaxed text-slate-400">
-          Sign in with the email address on your agent application. We’ll email you a
-          one-time 6-digit code — no password and no security puzzle.
+          Sign in with the email or phone number on your agent application. We’ll email a
+          one-time 6-digit code to the email on your application — no password and no security
+          puzzle.
         </p>
 
         <%= if @google_enabled do %>
@@ -63,19 +64,22 @@
               for="agent-identifier"
               class="mb-1.5 block text-[10px] font-black uppercase tracking-widest text-slate-500"
             >
-              Email address
+              Email or phone number
             </label>
             <input
               id="agent-identifier"
               name="agent[identifier]"
-              type="email"
+              type="text"
               inputmode="email"
               value={@identifier}
-              autocomplete="email"
-              placeholder="you@example.com"
+              autocomplete="username"
+              placeholder="you@example.com or 07XX XXX XXX"
               required
               class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-sm font-bold outline-none transition focus:border-[#FF4C00] focus:bg-white"
             />
+            <p class="mt-2 text-[10px] font-bold leading-relaxed text-slate-400">
+              The sign-in code is sent to the email address on your agent application.
+            </p>
           </div>
 
           <button
