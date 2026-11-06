@@ -14,6 +14,17 @@
             Agent App
           </span>
         </a>
+
+        <%= if @agent.status == "approved" do %>
+          <a
+            href="/agent/dashboard"
+            aria-current="page"
+            class="inline-flex items-center gap-2 rounded-xl bg-[#FF4C00] px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-orange-200 transition hover:bg-[#E64400]"
+          >
+            <span class="material-symbols-outlined !text-base">dashboard</span>
+            Dashboard
+          </a>
+        <% end %>
       </div>
     </header>
 
