@@ -19,6 +19,7 @@ defmodule Xpressbus.Agents.AgentApplication do
     field(:status, :string, default: "pending")
     field(:admin_notes, :string)
     field(:reviewed_at, :utc_datetime)
+    field(:email_verified_at, :utc_datetime)
 
     belongs_to(:bus_operator, Xpressbus.BusOperators.BusOperator)
 
@@ -40,6 +41,7 @@ defmodule Xpressbus.Agents.AgentApplication do
       :status,
       :admin_notes,
       :reviewed_at,
+      :email_verified_at,
       :bus_operator_id
     ])
     |> update_change(:email, &normalise_email/1)

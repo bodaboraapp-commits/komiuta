@@ -1284,6 +1284,38 @@ mix test test/xpressbus_web/agent_pwa_test.exs   # passes
 mix precommit                                   # full suite
 ```
 
+### 2026-11-06 Session — Phone-first Agent login with mandatory email verification
+
+**Objective:** Make the Agent app simple to sign in to with a phone number, while guaranteeing the
+agent's email address is captured and verified before they reach their dashboard.
+
+**Completed:**
+- **Phone-first login:** the Agent sign-in page now asks only for the phone number on the agent
+  application (`type="tel"`). The one-time code is texted to that phone via `Xpressbus.SMS`
+  (Africa's Talking) **and** emailed to the application email as a fallback when SMS is unavailable or
+  not configured — so login works in every environment. Email identifiers still work for older clients.
+- **Email verification gate:** added `agent_applications.email_verified_at`
+  (`20261106200000_add_email_verified_at_to_agent_applications.exs`). New agents are redirected to
+  `/agent/verify-email` after login (and whenever they try `/agent/account`) until their email is
+  verified. Google sign-in marks the Google-verified email as verified automatically.
+- **Verify-email screen** (`agent_session_html/verify_email.html.heex` + controller actions
+  `verify_email`, `send_email_verification`, `confirm_email_verification`): agents can correct the
+  captured email, receive a 6-digit code via `AgentLoginEmail.deliver_verification/4`, enter it, and the
+  application email + `email_verified_at` are stored. Reuses the hashed one-time-code store with
+  cooldown/rate limits; duplicate emails are rejected.
+- **No SMS configured?** falls back to emailing the same login code, and the flash explains that SMS
+  was unavailable.
+- Tests: `agent_auth_test.exs` covers phone SMS login, email fallback, the verification gate redirect,
+  sending/confirming the email code and account unlock; Google auth test updated for the simplified
+  phone-first login page. `agent_google_auth_test.exs` still covers the Google callback path.
+
+**Verification:**
+```
+mix test test/xpressbus_web/agent_auth_test.exs test/xpressbus_web/agent_google_auth_test.exs test/xpressbus_web/agent_pwa_test.exs
+# 31 passed
+```
+
+
 
 
 

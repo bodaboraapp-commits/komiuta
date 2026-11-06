@@ -44,14 +44,14 @@ defmodule XpressbusWeb.AgentGoogleAuthTest do
     }
   end
 
-  test "agent login shows Google sign-in when Google OAuth is configured", %{conn: conn} do
+  test "agent login is phone-first even when Google OAuth is configured", %{conn: conn} do
     enable_google()
 
     html = conn |> get("/agent/login") |> html_response(200)
 
-    assert html =~ "Continue with Google"
-    assert html =~ ~s(href="http://localhost:4000/agent/google/start")
-    assert html =~ "or use email"
+    assert html =~ "Phone number"
+    assert html =~ ~s(action="/agent/auth")
+    refute html =~ "Continue with Google"
   end
 
   test "Google sign-in is hidden when Google OAuth is not configured", %{conn: conn} do

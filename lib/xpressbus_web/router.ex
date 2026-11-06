@@ -49,6 +49,9 @@ defmodule XpressbusWeb.Router do
     post "/agent/verify/resend", AgentSessionController, :resend_code
     get "/agent/logout", AgentSessionController, :logout
     get "/agent/account", AgentSessionController, :account
+    get "/agent/verify-email", AgentSessionController, :verify_email
+    post "/agent/verify-email/send", AgentSessionController, :send_email_verification
+    post "/agent/verify-email/confirm", AgentSessionController, :confirm_email_verification
     live "/buses/*route", BookingLive, :results
     live "/cities/:slug", CityLive, :show
     live "/operators", OperatorLive, :index
