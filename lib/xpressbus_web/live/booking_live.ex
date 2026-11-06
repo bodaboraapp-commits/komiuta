@@ -1,7 +1,7 @@
 defmodule XpressbusWeb.BookingLive do
   use XpressbusWeb, :live_view
   import XpressbusWeb.BrandComponents
-  alias Xpressbus.Bookings.{Bus, DepartureWindow, Scraper, Search}
+  alias Xpressbus.Bookings.{Bus, DepartureWindow, Pricing, Scraper, Search}
   alias Xpressbus.Tickets
   alias Xpressbus.Repo
   alias Xpressbus.Cities
@@ -271,7 +271,7 @@ defmodule XpressbusWeb.BookingLive do
           {:noreply,
            socket
            |> assign(:selected_bus, bus)
-           |> assign(:seat_layout, generate_seat_layout(Map.get(bus, :occupied_seats, [])))
+           |> assign(:seat_layout, generate_seat_layout(Map.get(bus, :occupied_seats, []), bus))
            |> assign(:selected_seats, selected_seats)
            |> assign(:step, :passenger_info)
            |> assign(
@@ -337,7 +337,7 @@ defmodule XpressbusWeb.BookingLive do
             {:noreply,
              socket
              |> assign(:selected_bus, bus)
-             |> assign(:seat_layout, generate_seat_layout(Map.get(bus, :occupied_seats, [])))
+             |> assign(:seat_layout, generate_seat_layout(Map.get(bus, :occupied_seats, []), bus))
              |> assign(:selected_seats, selected_seats)
              |> assign(:step, :review_and_pay)
              |> assign(
@@ -1431,7 +1431,7 @@ defmodule XpressbusWeb.BookingLive do
      socket
      |> assign(:selected_bus, bus)
      |> assign(:seat_drawer_open, true)
-     |> assign(:seat_layout, generate_seat_layout(Map.get(bus, :occupied_seats, [])))
+     |> assign(:seat_layout, generate_seat_layout(Map.get(bus, :occupied_seats, []), bus))
      |> assign(:selected_seats, [])
      |> update_pricing()}
   end
@@ -1486,23 +1486,26 @@ defmodule XpressbusWeb.BookingLive do
         |> Enum.map(fn seat_id ->
           # Find seat type in layout
           type = find_seat_type(socket.assigns.seat_layout, seat_id)
-          get_price_for_type(bus, type)
+          Pricing.price_for_type(bus, type)
         end)
         |> Enum.sum()
 
       discount_amount =
         if coupon, do: Xpressbus.Coupons.calculate_discount(coupon, total_price), else: 0
 
-      final_price = max(0, total_price - discount_amount)
+      pricing =
+        Pricing.calculate(total_price, discount_amount, booking?: seats != [])
 
       socket
-      |> assign(:total_price, total_price)
-      |> assign(:discount_amount, discount_amount)
-      |> assign(:final_price, final_price)
+      |> assign(:total_price, pricing.base_fare)
+      |> assign(:discount_amount, pricing.discount)
+      |> assign(:convenience_fee, pricing.convenience_fee)
+      |> assign(:final_price, pricing.final_price)
     else
       socket
       |> assign(:total_price, 0)
       |> assign(:discount_amount, 0)
+      |> assign(:convenience_fee, 0)
       |> assign(:final_price, 0)
     end
   end
@@ -1517,36 +1520,6 @@ defmodule XpressbusWeb.BookingLive do
     |> case do
       %{type: type} -> type
       _ -> :normal
-    end
-  end
-
-  defp get_price_for_type(bus, type) do
-    case type do
-      :first_class -> parse_price_value(Map.get(bus, :first_class_price), 1800)
-      :vip -> parse_price_value(Map.get(bus, :vip_price), 2300)
-      :business -> parse_price_value(Map.get(bus, :business_price), 2000)
-      _ -> parse_price_value(Map.get(bus, :price), 1500)
-    end
-  end
-
-  defp parse_price_value(value, default) do
-    case value do
-      nil ->
-        default
-
-      v when is_integer(v) ->
-        v
-
-      v when is_binary(v) ->
-        numeric_str = String.replace(v, ~r/[^0-9.]/, "")
-
-        case Float.parse(numeric_str) do
-          {val, _} -> round(val)
-          :error -> default
-        end
-
-      _ ->
-        default
     end
   end
 
@@ -1576,7 +1549,7 @@ defmodule XpressbusWeb.BookingLive do
       socket.assigns.selected_seats
       |> Enum.map(fn seat_id ->
         type = find_seat_type(socket.assigns.seat_layout, seat_id)
-        get_price_for_type(bus, type)
+        Pricing.price_for_type(bus, type)
       end)
       |> Enum.sum()
 
@@ -1743,14 +1716,7 @@ defmodule XpressbusWeb.BookingLive do
 
   @doc "True when a bus actually offers one of the given seat classes."
   def seat_type_available?(bus, accepted) when is_list(accepted) do
-    accepted = Enum.map(accepted, &String.downcase/1)
-
-    bus
-    |> Map.get(:seat_types, [])
-    |> List.wrap()
-    |> Enum.any?(fn seat_type ->
-      String.downcase(to_string(seat_type)) in accepted
-    end)
+    Pricing.seat_type_available?(bus, accepted)
   end
 
   # --- SEO helpers (programmatic route pages) ------------------------------
@@ -2043,7 +2009,7 @@ defmodule XpressbusWeb.BookingLive do
     end
   end
 
-  defp generate_seat_layout(occupied_seats) do
+  defp generate_seat_layout(occupied_seats, bus \\ nil) do
     [
       [s("1", :first_class, occupied_seats), nil, nil, :driver],
       [
@@ -2113,6 +2079,34 @@ defmodule XpressbusWeb.BookingLive do
         s("40", :normal, occupied_seats)
       ]
     ]
+    |> Enum.map(fn row -> Enum.map(row, &settle_seat_type(&1, bus)) end)
+  end
+
+  defp settle_seat_type(%{type: _} = seat, nil), do: seat
+
+  defp settle_seat_type(%{type: type} = seat, bus) do
+    %{seat | type: effective_seat_type(bus, type)}
+  end
+
+  defp settle_seat_type(other, _bus), do: other
+
+  defp effective_seat_type(_bus, :normal), do: :normal
+
+  defp effective_seat_type(bus, type) do
+    accepted =
+      case type do
+        :first_class -> ["first", "first class", "first_class"]
+        :vip -> ["vip"]
+        :business -> ["business"]
+        _ -> []
+      end
+
+    if Pricing.seat_type_available?(bus, accepted) and
+         Pricing.price_for_type(bus, type) > 0 do
+      type
+    else
+      :normal
+    end
   end
 
   defp s(id, type, occupied_seats) do

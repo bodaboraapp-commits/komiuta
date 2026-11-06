@@ -1446,7 +1446,7 @@
                       TOTAL FARE
                     </div>
 
-                    <div class="text-2xl font-black text-[#FF4C00]">KSH {@final_price}</div>
+                    <div class="text-2xl font-black text-[#FF4C00]">KSH {@total_price}</div>
                   </div>
                 </div>
 
@@ -1810,6 +1810,16 @@
                     <span class="font-black text-slate-900">{Enum.join(@selected_seats, ", ")}</span>
                   </div>
 
+                  <%= if @convenience_fee > 0 do %>
+                    <div class="flex justify-between items-center py-3 border-t border-slate-50">
+                      <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        Convenience fee
+                      </span>
+
+                      <span class="text-sm font-black text-slate-900">KSH {@convenience_fee}</span>
+                    </div>
+                  <% end %>
+
                   <div class="flex justify-between items-center py-8 border-y border-slate-50">
                     <span class="text-xl font-black text-slate-900">Total</span>
                     <span class="text-xl font-black text-slate-900">Ksh {@final_price}</span>
@@ -2113,8 +2123,10 @@
                   <% end %>
 
                   <div class="flex justify-between items-center">
-                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">TAXES & FEES</span>
-                    <span class="text-sm font-black text-slate-900">KSH 0</span>
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      CONVENIENCE FEE
+                    </span>
+                    <span class="text-sm font-black text-slate-900">KSH {@convenience_fee}</span>
                   </div>
                 </div>
                 <%!-- Coupon Form --%>
