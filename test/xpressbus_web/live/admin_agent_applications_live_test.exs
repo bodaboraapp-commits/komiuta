@@ -40,10 +40,18 @@ defmodule XpressbusWeb.AdminAgentApplicationsLiveTest do
     assert html =~ application.reference
 
     assert has_element?(view, "#application-#{application.id}")
+    assert has_element?(view, "a[href='tel:0734567890']") == false
+    assert html =~ "Submitted"
+
+    toggle = "button[phx-click='toggle_application'][phx-value-id='#{application.id}']"
+    assert has_element?(view, toggle)
+    refute has_element?(view, "#application-actions-#{application.id}")
+
+    view |> element(toggle) |> render_click()
+    assert has_element?(view, "#application-actions-#{application.id}")
     assert has_element?(view, "a[href='tel:0734567890']")
     assert has_element?(view, "a[href='mailto:admin.agent@example.com']")
-    assert html =~ "Payout: M-Pesa"
-    assert html =~ "Submitted"
+    assert render(view) =~ "Payout: M-Pesa"
 
     view
     |> element("button[phx-value-id='#{application.id}'][phx-value-status=approved]")
@@ -57,6 +65,10 @@ defmodule XpressbusWeb.AdminAgentApplicationsLiveTest do
   test "rejection requires a reason and sends it to the agent", %{conn: conn} do
     application = create_agent()
     {:ok, view, _html} = live(admin_conn(conn), ~p"/admin/agent-applications")
+
+    view
+    |> element("button[phx-click='toggle_application'][phx-value-id='#{application.id}']")
+    |> render_click()
 
     view
     |> form("#reject-agent-#{application.id}", %{"reason" => ""})
@@ -95,13 +107,28 @@ defmodule XpressbusWeb.AdminAgentApplicationsLiveTest do
     {:ok, view, _html} = live(admin_conn(conn), ~p"/admin/agent-applications")
 
     assert has_element?(view, "#application-#{application.id}")
+    refute has_element?(view, "#application-details-#{application.id}")
+
+    toggle = "button[phx-click='toggle_application'][phx-value-id='#{application.id}']"
+    view |> element(toggle) |> render_click()
+
+    assert has_element?(view, "#application-details-#{application.id}")
 
     html = render(view)
+    # Activity timeline: submission (with reference) and the review outcome.
+    assert html =~ "Application submitted"
+    assert html =~ "Ref #{application.reference}"
+    assert html =~ "Application rejected"
+    assert html =~ "Missing business permit"
+
+    # Contact and application details are inside the expanded card.
     assert html =~ "Kisumu - Nairobi"
     assert html =~ "Two shuttles daily."
-    assert html =~ "Missing business permit"
     assert html =~ "Payout: M-Pesa"
-    assert html =~ "Reviewed"
+
+    # Clicking the summary again collapses the card for a compact list.
+    view |> element(toggle) |> render_click()
+    refute has_element?(view, "#application-details-#{application.id}")
   end
 
   test "redirects non-admin users", %{conn: conn} do

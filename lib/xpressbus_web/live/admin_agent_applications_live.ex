@@ -15,6 +15,7 @@ defmodule XpressbusWeb.AdminAgentApplicationsLive do
         |> assign(:active_tab, "agents")
         |> assign(:page_size, @page_size)
         |> assign(:search, "")
+        |> assign(:expanded_applications, MapSet.new())
         |> assign(:sidebar_collapsed, false)
         |> assign(:bus_expanded, false)
         |> assign(:chyllz_expanded, false)
@@ -35,6 +36,19 @@ defmodule XpressbusWeb.AdminAgentApplicationsLive do
   def handle_event("change_page", %{"page" => page}, socket) do
     page = page |> to_string() |> String.to_integer() |> max(1)
     {:noreply, load_applications(socket, page, socket.assigns.search)}
+  end
+
+  def handle_event("toggle_application", %{"id" => id}, socket) do
+    expanded = socket.assigns.expanded_applications
+
+    expanded =
+      if MapSet.member?(expanded, id) do
+        MapSet.delete(expanded, id)
+      else
+        MapSet.put(expanded, id)
+      end
+
+    {:noreply, assign(socket, :expanded_applications, expanded)}
   end
 
   def handle_event("update_status", %{"id" => id, "status" => status}, socket) do
@@ -94,6 +108,14 @@ defmodule XpressbusWeb.AdminAgentApplicationsLive do
   defp status_message("approved"), do: "Application approved."
   defp status_message("rejected"), do: "Application rejected."
   defp status_message(_status), do: "Application marked pending."
+
+  defp review_title(%{status: "approved"}), do: "Application approved"
+  defp review_title(%{status: "rejected"}), do: "Application rejected"
+  defp review_title(_application), do: "Awaiting review"
+
+  defp review_dot_class("approved"), do: "bg-emerald-500"
+  defp review_dot_class("rejected"), do: "bg-red-500"
+  defp review_dot_class(_status), do: "bg-amber-400"
 
   defp payout_label("mpesa"), do: "M-Pesa"
   defp payout_label("bank"), do: "Bank"
