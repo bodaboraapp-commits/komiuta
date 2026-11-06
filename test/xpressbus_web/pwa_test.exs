@@ -16,7 +16,7 @@ defmodule XpressbusWeb.PWATest do
     assert manifest["scope"] == "/"
     assert manifest["display"] == "standalone"
     assert manifest["theme_color"] == "#FF4C00"
-    assert manifest["background_color"] == "#ffffff"
+    assert manifest["background_color"] == "#FF4C00"
 
     icons = manifest["icons"]
     assert Enum.any?(icons, &(&1["sizes"] == "192x192" and &1["type"] == "image/png"))
@@ -31,6 +31,51 @@ defmodule XpressbusWeb.PWATest do
 
     assert Enum.any?(manifest["shortcuts"], &(&1["url"] == "/tickets"))
     assert "offline.html" in XpressbusWeb.static_paths()
+  end
+
+  test "the two installable PWAs have distinct colour identities" do
+    main = @priv |> Path.join("manifest.json") |> File.read!() |> Jason.decode!()
+    agent = @priv |> Path.join("agent-manifest.json") |> File.read!() |> Jason.decode!()
+
+    # KOMIUTA (main app): brand orange chrome + orange splash/icon.
+    assert main["name"] == "KOMIUTA APP"
+    assert main["theme_color"] == "#FF4C00"
+    assert main["background_color"] == "#FF4C00"
+    assert Enum.any?(main["icons"], &(&1["src"] == "/images/app-icon-192.png"))
+
+    # KOMIUTA Agent: white chrome + white splash/icon so it is easy to tell
+    # the two installed apps apart on a phone home screen.
+    assert agent["name"] == "KOMIUTA Agent"
+    assert agent["start_url"] == "/agent"
+    assert agent["scope"] == "/agent"
+    assert agent["theme_color"] == "#ffffff"
+    assert agent["background_color"] == "#ffffff"
+    assert Enum.any?(agent["icons"], &(&1["src"] == "/images/agent-icon-192.png"))
+
+    for icon <- agent["icons"] do
+      assert File.exists?(Path.join(@priv, String.trim_leading(icon["src"], "/"))),
+             "missing agent manifest icon #{icon["src"]}"
+    end
+
+    # The icon artwork itself differs: orange background vs white background.
+    assert File.read!(Path.join(@priv, "images/app-icon-192.png")) !=
+             File.read!(Path.join(@priv, "images/agent-icon-192.png"))
+
+    assert File.read!(Path.join(@priv, "images/app-icon-512.png")) !=
+             File.read!(Path.join(@priv, "images/agent-icon-512.png"))
+
+    assert File.read!(Path.join(@priv, "images/app-icon-maskable-512.png")) !=
+             File.read!(Path.join(@priv, "images/agent-icon-maskable-512.png"))
+
+    # Agent pages pin the white identity, including the iOS status bar icon.
+    agent_live = source("lib/xpressbus_web/live/agent_live.ex")
+    agent_controller = source("lib/xpressbus_web/controllers/agent_session_controller.ex")
+
+    for agent_source <- [agent_live, agent_controller] do
+      assert agent_source =~ ~s("/agent-manifest.json")
+      assert agent_source =~ ~s("#ffffff")
+      assert agent_source =~ ~s(/images/agent-icon-180.png)
+    end
   end
 
   test "service worker provides an offline shell and leaves HTML uncached" do
