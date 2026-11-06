@@ -11,7 +11,7 @@ defmodule XpressbusWeb.CityLive do
   import Ecto.Query
   import XpressbusWeb.BrandComponents
 
-  alias Xpressbus.Bookings.Bus
+  alias Xpressbus.Bookings.Search
   alias Xpressbus.Repo
   alias XpressbusWeb.Cities
   alias XpressbusWeb.Operators
@@ -78,9 +78,8 @@ defmodule XpressbusWeb.CityLive do
 
   defp routes_from_city(city_name) do
     Repo.all(
-      from(b in Bus,
+      from(b in Search.base_query(),
         where: fragment("LOWER(?) = LOWER(?)", b.from, ^city_name),
-        where: is_nil(b.source) or b.source != "legacy_fallback",
         order_by: [asc: b.travel_date],
         limit: 800
       )

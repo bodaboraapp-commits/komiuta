@@ -3,7 +3,7 @@ defmodule XpressbusWeb.SeoController do
 
   import Ecto.Query
 
-  alias Xpressbus.Bookings.Bus
+  alias Xpressbus.Bookings.Search
   alias Xpressbus.Repo
   alias XpressbusWeb.SEO
 
@@ -34,9 +34,8 @@ defmodule XpressbusWeb.SeoController do
 
     route_urls =
       Repo.all(
-        from(b in Bus,
+        from(b in Search.base_query(),
           where: not is_nil(b.from) and not is_nil(b.to),
-          where: is_nil(b.source) or b.source != "legacy_fallback",
           group_by: [b.from, b.to],
           select: %{from: b.from, to: b.to, count: count(b.id)},
           order_by: [desc: count(b.id)],

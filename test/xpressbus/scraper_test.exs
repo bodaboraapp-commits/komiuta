@@ -2,8 +2,12 @@ defmodule Xpressbus.Bookings.ScraperTest do
   use Xpressbus.DataCase, async: false
 
   alias Xpressbus.Bookings.Bus
-  alias Xpressbus.Bookings.Scraper
+  alias Xpressbus.Bookings.{Scraper, Search}
+  alias Xpressbus.BusOperators.BusOperator
   alias Xpressbus.Repo
+
+  # A future travel date so the 2-hour departure window never removes fixtures.
+  @search_date ~D[2026-11-20]
 
   @sse """
   data: {"provider": "chania", "data": [{"from": "Nairobi", "to": "Ukunda", "departure_date": "2026-11-06", "operator": {"alias": "chania", "name": "Chania Executive Special", "logo": "https://example.com/chania.webp"}, "trip_id": 5, "departure_time": "21:00:00", "arrival_time": "06:00:00", "number_of_available_seats": 38, "fare": 0.0, "bus_capacity": 47, "seats_types": [{"alias": "normal", "fare": 2000, "name": "Normal", "currency": "KSH"}]}], "status": false, "completed": false}
@@ -28,11 +32,36 @@ defmodule Xpressbus.Bookings.ScraperTest do
     legacy = bus_fixture(%{company: "Fake Coach", source: "legacy_fallback"})
     real = bus_fixture(%{company: "Real Coach", source: "buupass_api"})
 
-    buses = Scraper.search("Nairobi", "Ukunda", "2026-11-06")
+    buses = Scraper.search("Nairobi", "Ukunda", @search_date)
 
     ids = Enum.map(buses, & &1.id)
     assert real.id in ids
     refute legacy.id in ids
+  end
+
+  test "the scraper cache and the database search return the same public buses" do
+    approved = bus_operator_fixture("Approved Coach", true)
+    unapproved = bus_operator_fixture("Unapproved Coach", false)
+
+    visible = bus_fixture(%{company: "Approved Coach", bus_operator_id: approved.id})
+    hidden = bus_fixture(%{company: "Unapproved Coach", bus_operator_id: unapproved.id})
+    bus_fixture(%{company: "Sold Out Coach", seats: "0 seats left"})
+
+    search_ids =
+      "Nairobi"
+      |> Search.list_bookable("Ukunda", @search_date)
+      |> Enum.map(& &1.id)
+      |> Enum.sort()
+
+    scraper_ids =
+      "Nairobi"
+      |> Scraper.search("Ukunda", @search_date)
+      |> Enum.map(& &1.id)
+      |> Enum.sort()
+
+    assert visible.id in search_ids
+    refute hidden.id in search_ids
+    assert search_ids == scraper_ids
   end
 
   test "seat_type_available? reflects the classes the operator actually offers" do
@@ -80,6 +109,13 @@ defmodule Xpressbus.Bookings.ScraperTest do
              Scraper.filter_soon_departures(buses, now_utc)
   end
 
+  defp bus_operator_fixture(name, active) do
+    Repo.insert!(%BusOperator{
+      name: "#{name} #{System.unique_integer([:positive])}",
+      active: active
+    })
+  end
+
   defp bus_fixture(attrs) do
     defaults = %{
       company: "Test Coach",
@@ -87,10 +123,10 @@ defmodule Xpressbus.Bookings.ScraperTest do
       arrival: "2:00 PM",
       seats: "20 seats left",
       price: "KSH 1,500",
-      registration: "TEST 001A",
+      registration: "TEST #{System.unique_integer([:positive])}",
       from: "Nairobi",
       to: "Ukunda",
-      travel_date: ~D[2026-11-06],
+      travel_date: @search_date,
       duration: "4h 0m",
       occupied_seats: [],
       total_seats: 40

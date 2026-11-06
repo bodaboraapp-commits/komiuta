@@ -12,7 +12,7 @@
           "Komiuta Bus Booking is a transport technology and booking platform designed for public transit, intercity travel, and matatu/bus fleet management."
       }
     /> <meta name="robots" content={assigns[:page_robots] || "index,follow"} />
-    <meta name="app-release" content="2026-11-06.4-departure-window" />
+    <meta name="app-release" content="2026-11-06.5-search-consistency" />
     <%= if System.get_env("GOOGLE_SITE_VERIFICATION") do %>
       <meta name="google-site-verification" content={System.get_env("GOOGLE_SITE_VERIFICATION")} />
     <% end %>
@@ -80,14 +80,14 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content={assigns[:page_app_name] || "Komiuta"} />
-    <meta name="application-name" content={assigns[:page_app_name] || "Komiuta"} />
+    <meta name="apple-mobile-web-app-title" content={assigns[:page_app_name] || "KOMIUTA"} />
+    <meta name="application-name" content={assigns[:page_app_name] || "KOMIUTA"} />
     <link phx-track-static rel="manifest" href={assigns[:page_manifest] || "/manifest.json"} />
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" href="/images/favicon-32.png" sizes="32x32" />
     <link
       rel="apple-touch-icon"
-      href={assigns[:page_apple_touch_icon] || "/images/apple-touch-icon.png"}
+      href={assigns[:page_apple_touch_icon] || "/images/app-icon-180.png"}
     />
     <link rel="preload" as="font" type="font/otf" crossorigin href="/fonts/Lufga-Bold.otf" />
     <link

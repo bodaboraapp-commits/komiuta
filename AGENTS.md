@@ -1085,6 +1085,41 @@ search.
 mix precommit        # 286/286 tests
 ```
 
+### 2026-11-06 Session — One consistent search API across every public bus surface
+
+**Objective:** Make sure the public bus-visibility rules are identical everywhere a bus can appear —
+booking search, the BuuPass cache fallback, city pages, operator pages and SEO route discovery — and
+prove it with tests.
+
+**Completed:**
+- `Xpressbus.Bookings.Search` is now the single source of truth:
+  - `base_query/0` = public visibility (no `legacy_fallback`, no sold-out `"0 seats left"` — nil seat
+    text allowed, and only buses whose partner operator is approved or absent);
+  - `list_bookable/4` = base query + route/date + 2-hour `DepartureWindow` filter (search results);
+  - `list_route_inventory/3` = base query + route/date without the time window (summary/SEO only).
+- **Removed the duplicate search implementations:**
+  - `Xpressbus.Bookings.Scraper.list_from_db/3` (a second SQL query without the operator-approval
+    filter) is gone; `Scraper.search/4` now reads the cache through `Search.list_bookable/4`, so the
+    live BuuPass path and the DB path return exactly the same rows.
+  - The scraper's private two-hour filter was duplicated (`filter_soon_departures/2`); it now delegates
+    to `DepartureWindow` (kept as a `@doc false` compatibility helper) and judges each bus against its
+    own travel date.
+- Every other public surface now composes `Search.base_query/0` instead of its own copy of the filters:
+  - `XpressbusWeb.CityLive.routes_from_city/1` (city landing pages),
+  - `XpressbusWeb.Operators.top/1`, `routes/1`, `cities/1` (operator pages/sitemap),
+  - `XpressbusWeb.SeoController.sitemap/2` route discovery.
+  Admin screens (`Xpressbus.Buses`) still query all rows directly, intentionally.
+- Tests: new `test/xpressbus_web/search_consistency_test.exs` seeds approved/unapproved/legacy/sold-out
+  buses and asserts the booking results page, `Search.list_bookable`, `Scraper.search`, city pages,
+  operator pages and the sitemap all show/hide the same buses. `scraper_test.exs` now asserts
+  `Search.list_bookable` and `Scraper.search` return identical IDs.
+
+**Verification:**
+```
+mix precommit        # 315/315 tests
+```
+
+
 
 
 

@@ -11,6 +11,7 @@ defmodule Xpressbus.Bookings.Scraper do
   """
 
   alias Xpressbus.Bookings.Bus
+  alias Xpressbus.Bookings.{DepartureWindow, Search}
   alias Xpressbus.BusOperators
   alias Xpressbus.BusOperators.BusOperator
   alias Xpressbus.Repo
@@ -25,53 +26,72 @@ defmodule Xpressbus.Bookings.Scraper do
   @doc """
   Returns live buses for a route/date. Real BuuPass schedules are fetched first
   and persisted; if the API is unavailable the last real cached rows are used.
+
+  The cached rows are read through `Xpressbus.Bookings.Search.list_bookable/4`,
+  so the live path and the database path share the exact same visibility and
+  2-hour departure-window rules.
   """
   def search(from, to, date, _return_date \\ nil) do
     if Application.get_env(:xpressbus, :scraper_enabled, true) do
       search_live(from, to, date)
     else
-      list_from_db(from, to, date)
+      Search.list_bookable(from, to, date)
     end
   end
 
   defp search_live(from, to, date) do
-    buses =
-      case fetch_schedules(from, to, date) do
-        {:ok, []} ->
-          Logger.info("No BuuPass schedules for #{from} -> #{to} on #{date}; using cache.")
-          list_from_db(from, to, date)
+    case fetch_schedules(from, to, date) do
+      {:ok, []} ->
+        Logger.info("No BuuPass schedules for #{from} -> #{to} on #{date}; using cache.")
+        Search.list_bookable(from, to, date)
 
-        {:ok, buses} ->
-          Logger.info(
-            "Fetched #{length(buses)} BuuPass schedules for #{from} -> #{to} on #{date}."
-          )
+      {:ok, buses} ->
+        Logger.info("Fetched #{length(buses)} BuuPass schedules for #{from} -> #{to} on #{date}.")
 
-          save_buses_to_db(buses)
-          list_from_db(from, to, date)
+        save_buses_to_db(buses)
+        Search.list_bookable(from, to, date)
 
-        {:error, reason} ->
-          Logger.warning("BuuPass schedule fetch failed for #{from} -> #{to}: #{inspect(reason)}")
-          list_from_db(from, to, date)
-      end
-
-    filter_soon_departures(buses)
+      {:error, reason} ->
+        Logger.warning("BuuPass schedule fetch failed for #{from} -> #{to}: #{inspect(reason)}")
+        Search.list_bookable(from, to, date)
+    end
   end
 
   @doc false
-  # Hides buses departing in less than two hours (Kenya time), matching
-  # BuuPass' behaviour for same-day search results. `now` is UTC for tests.
+  # Backwards-compatible helper. The visibility rule lives in
+  # `Xpressbus.Bookings.DepartureWindow`; this delegates so the booking search
+  # and the scraper can never disagree. `now` is UTC for tests.
   def filter_soon_departures(buses, now_utc \\ DateTime.utc_now()) do
-    now_eat = DateTime.add(now_utc, 3 * 60 * 60, :second)
-    today = DateTime.to_date(now_eat)
-    cutoff = now_eat.hour * 60 + now_eat.minute + 120
+    now_eat =
+      now_utc
+      |> DateTime.add(3 * 60 * 60, :second)
+      |> DateTime.to_naive()
+      |> NaiveDateTime.truncate(:second)
 
-    Enum.reject(buses, fn bus ->
-      bus.travel_date == today and
-        case departure_minutes(bus.departure) do
-          nil -> true
-          minutes -> minutes < cutoff
-        end
+    cutoff =
+      NaiveDateTime.add(
+        now_eat,
+        DepartureWindow.min_lead_time_hours() * 3_600,
+        :second
+      )
+
+    # Each bus is judged against its own travel date (future dates are always
+    # outside the window; same-day buses departing soon are hidden).
+    Enum.filter(buses, fn bus ->
+      case departure_date(bus) do
+        %Date{} = date -> DepartureWindow.bookable?(bus, date, cutoff)
+        nil -> false
+      end
     end)
+  end
+
+  defp departure_date(bus) do
+    value = Map.get(bus, :travel_date) || Map.get(bus, "travel_date")
+
+    case Date.from_iso8601(to_string(value)) do
+      {:ok, date} -> date
+      _ -> nil
+    end
   end
 
   @doc false
@@ -258,59 +278,6 @@ defmodule Xpressbus.Bookings.Scraper do
 
   defp time_minutes(value) do
     case Time.from_iso8601(to_string(value)) do
-      {:ok, time} -> time.hour * 60 + time.minute
-      _ -> nil
-    end
-  end
-
-  defp list_from_db(from, to, date) do
-    date_obj = Date.from_iso8601!(to_string(date))
-
-    Repo.all(
-      from(b in Bus,
-        where: b.from == ^from and b.to == ^to and b.travel_date == ^date_obj,
-        where: is_nil(b.source) or b.source != "legacy_fallback",
-        where: b.seats != "0 seats left",
-        preload: [:bus_operator]
-      )
-    )
-    |> sort_by_departure()
-  end
-
-  defp sort_by_departure(buses) do
-    Enum.sort_by(buses, fn bus ->
-      case Time.from_iso8601(departure_to_iso(bus.departure)) do
-        {:ok, time} -> time.hour * 60 + time.minute
-        _ -> 9999
-      end
-    end)
-  end
-
-  defp departure_to_iso(value) when is_binary(value) do
-    case Regex.run(~r/^(\d{1,2}):(\d{2})\s*(AM|PM)?/i, value) do
-      [_, hour, minute | rest] ->
-        hour = String.to_integer(hour)
-        minute = String.pad_leading(minute, 2, "0")
-        suffix = List.first(rest) || ""
-
-        hour =
-          cond do
-            String.upcase(suffix) == "PM" and hour < 12 -> hour + 12
-            String.upcase(suffix) == "AM" and hour == 12 -> 0
-            true -> hour
-          end
-
-        "#{String.pad_leading(to_string(hour), 2, "0")}:#{minute}:00"
-
-      _ ->
-        "00:00:00"
-    end
-  end
-
-  defp departure_to_iso(_), do: "00:00:00"
-
-  defp departure_minutes(value) do
-    case Time.from_iso8601(departure_to_iso(value)) do
       {:ok, time} -> time.hour * 60 + time.minute
       _ -> nil
     end
