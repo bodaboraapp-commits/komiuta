@@ -1315,6 +1315,10 @@ mix test test/xpressbus_web/agent_auth_test.exs test/xpressbus_web/agent_google_
 # 31 passed
 ```
 
+**Follow-up:** the login card's `smartphone` Material Symbol is not in the self-hosted icon subset, so it
+fell back to a giant ligature. Swapped it to the bundled `phone_iphone` glyph (release
+`2026-11-06.14-agent-phone-login-icon`).
+
 
 
 
