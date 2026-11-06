@@ -22,6 +22,14 @@ defmodule XpressbusWeb.BrandFooterTest do
     assert html =~ ~s(rel="noopener noreferrer")
   end
 
+  test "header hides the Language button for logged-out visitors", %{conn: conn} do
+    html = conn |> get(~p"/") |> html_response(200)
+
+    refute html =~ "> Language"
+    refute html =~ "Language</button>"
+    assert html =~ "Track Ticket"
+  end
+
   test "brand contact details are consistent" do
     assert Xpressbus.Brand.website() == "https://www.komiuta.com"
     assert Xpressbus.Brand.website_label() == "www.komiuta.com"

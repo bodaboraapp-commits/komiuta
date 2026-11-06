@@ -153,13 +153,6 @@ defmodule XpressbusWeb.BrandComponents do
             >
               <span class="material-symbols-outlined" aria-hidden="true">dashboard</span> Dashboard
             </a>
-          <% else %>
-            <button
-              phx-click="back_to_search"
-              class="flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-[#FF4C00] transition"
-            >
-              <span class="material-symbols-outlined" aria-hidden="true">language</span> Language
-            </button>
           <% end %>
           <%!-- User Auth Links --%>
           <%= if @current_user do %>
