@@ -35,6 +35,14 @@ defmodule Xpressbus.Bookings.ScraperTest do
     refute legacy.id in ids
   end
 
+  test "seat_type_available? reflects the classes the operator actually offers" do
+    bus = %{seat_types: ["Normal"]}
+
+    refute XpressbusWeb.BookingLive.seat_type_available?(bus, ["vip"])
+    refute XpressbusWeb.BookingLive.seat_type_available?(bus, ["first", "first class"])
+    assert XpressbusWeb.BookingLive.seat_type_available?(bus, ["normal"])
+  end
+
   defp bus_fixture(attrs) do
     defaults = %{
       company: "Test Coach",

@@ -1717,6 +1717,18 @@ defmodule XpressbusWeb.BookingLive do
 
   defp current_user_id(_), do: nil
 
+  @doc "True when a bus actually offers one of the given seat classes."
+  def seat_type_available?(bus, accepted) when is_list(accepted) do
+    accepted = Enum.map(accepted, &String.downcase/1)
+
+    bus
+    |> Map.get(:seat_types, [])
+    |> List.wrap()
+    |> Enum.any?(fn seat_type ->
+      String.downcase(to_string(seat_type)) in accepted
+    end)
+  end
+
   # --- SEO helpers (programmatic route pages) ------------------------------
 
   defp popular_routes do
