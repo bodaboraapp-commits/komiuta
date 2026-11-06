@@ -41,6 +41,13 @@ const EXTRA = [
   "menu",
   "payments",
   "travel_explore",
+  "handshake",
+  "badge",
+  "storefront",
+  "looks_one",
+  "rocket_launch",
+  "support_agent",
+  "verified",
 ];
 
 function walk(dir) {

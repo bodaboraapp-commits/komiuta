@@ -8,6 +8,7 @@ analytics
 arrow_forward
 arrow_outward
 arrow_right_alt
+badge
 bed
 bolt
 calendar_month
@@ -49,6 +50,7 @@ forum
 gps_fixed
 group
 group_add
+handshake
 headset_mic
 help
 history
@@ -68,6 +70,7 @@ location_on
 lock
 login
 logout
+looks_one
 luggage
 mail
 mark_email_read
@@ -101,6 +104,7 @@ shield
 sms
 sparkle
 star
+storefront
 support_agent
 sync_alt
 timer

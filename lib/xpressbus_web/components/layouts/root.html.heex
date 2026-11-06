@@ -12,7 +12,7 @@
           "Komiuta Bus Booking is a transport technology and booking platform designed for public transit, intercity travel, and matatu/bus fleet management."
       }
     /> <meta name="robots" content={assigns[:page_robots] || "index,follow"} />
-    <meta name="app-release" content="2026-11-06.6-admin-nav-split" />
+    <meta name="app-release" content="2026-11-06.7-tickets-refunds-split" />
     <%= if System.get_env("GOOGLE_SITE_VERIFICATION") do %>
       <meta name="google-site-verification" content={System.get_env("GOOGLE_SITE_VERIFICATION")} />
     <% end %>
@@ -95,7 +95,7 @@
       as="font"
       type="font/woff2"
       crossorigin
-      href="/fonts/material-symbols-subset.woff2?v=2"
+      href="/fonts/material-symbols-subset.woff2?v=3"
     />
     <%= if assigns[:step] in [
       :search,
