@@ -8,26 +8,43 @@ defmodule XpressbusWeb.SeoTest do
   alias Xpressbus.Bookings.Bus
   alias Xpressbus.Repo
 
+  # Search results (and hence the route page's operator mesh) only show buses
+  # outside the two-hour departure window, so fixture a bookable time.
   defp route_bus_fixture do
+    now_eat =
+      NaiveDateTime.utc_now()
+      |> NaiveDateTime.add(3 * 3_600, :second)
+      |> NaiveDateTime.truncate(:second)
+
+    departure = NaiveDateTime.add(now_eat, 4 * 3_600, :second)
+    arrival = NaiveDateTime.add(departure, 4 * 3_600, :second)
+    travel_date = NaiveDateTime.to_date(departure)
+
     {:ok, bus} =
       %Bus{}
       |> Bus.changeset(%{
         company: "SEO Coaches",
-        departure: "10:00 AM",
-        arrival: "2:00 PM",
+        departure: format_time(departure),
+        arrival: format_time(arrival),
         seats: "28 seats left",
         price: "KSH 1,500",
         registration: "SEO 001A",
         from: "seocity",
         to: "seotown",
-        travel_date: Date.utc_today(),
+        travel_date: travel_date,
         duration: "4h 30m",
         occupied_seats: [],
         total_seats: 40
       })
       |> Repo.insert()
 
-    bus
+    {bus, travel_date}
+  end
+
+  defp format_time(%NaiveDateTime{hour: hour, minute: minute}) do
+    suffix = if hour < 12, do: "AM", else: "PM"
+    hour = hour |> rem(12) |> then(&if(&1 == 0, do: 12, else: &1))
+    "#{hour}:#{String.pad_leading(to_string(minute), 2, "0")} #{suffix}"
   end
 
   test "sitemap exposes static pages and route landing URLs", %{conn: conn} do
@@ -180,9 +197,13 @@ defmodule XpressbusWeb.SeoTest do
   end
 
   test "operator pages and route cross-links form a crawlable mesh", %{conn: conn} do
-    _bus = route_bus_fixture()
+    {_bus, travel_date} = route_bus_fixture()
 
-    route_body = get(conn, "/buses/seocity-to-seotown").resp_body
+    route_body =
+      get(
+        conn,
+        "/buses/seocity-to-seotown?fromCityName=seocity&toCityName=seotown&onward=#{travel_date}"
+      ).resp_body
 
     assert route_body =~ "Bus operators on this route"
     assert route_body =~ ~s(href="/operators/seo-coaches")

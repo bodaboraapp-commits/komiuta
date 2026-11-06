@@ -1055,6 +1055,37 @@ mix assets.build
 node scratch/recent_bookings_screenshot.js   # desktop 1440 / mobile 390: row within search-pill width, no overlap, no overflow
 ```
 
+### 2026-11-06 Session — Two-hour departure window sanitizer for bus search
+
+**Objective:** Search results were showing buses departing within minutes/two hours — trips a user cannot
+realistically catch (and can leave them paying for a bus that has already left). Hide those from the
+search.
+
+**Completed:**
+- New `Xpressbus.Bookings.DepartureWindow` (`lib/xpressbus/bookings/departure_window.ex`):
+  - hides buses whose departure on the searched travel date is **less than 2 hours from now** (Kenya
+    time, EAT UTC+3) or already in the past;
+  - parses `"7:00 AM"`, `"7:00am"`, `"07:30"` (24h), `"7 PM"` and rejects unparseable/blank times (hidden
+    rather than shown unverified);
+  - `:now` can be injected for deterministic tests; `now_eat/0` and `min_lead_time_hours/0` are public.
+- New `Xpressbus.Bookings.Search` (`lib/xpressbus/bookings/search.ex`): the DB search query moved out of
+  the LiveView, keeping the existing hygiene filters (no `legacy_fallback`, no `0 seats left`, approved
+  operators only) and applying `DepartureWindow.filter_bookable/3` to the results.
+- `BookingLive` now uses `Search.list_bookable/3` for database results **and** runs the same sanitizer on
+  the async scraper (`BuuPass`) results in `handle_async(:bus_search, ...)`, so live results cannot leak
+  a soon-departing trip either. Removed the now-unused `import Ecto.Query` from the LiveView.
+- Tests: `test/xpressbus/bookings/departure_window_test.exs` (2h boundary, past departures, 24h/compact
+  formats, unparseable times hidden, future dates unaffected, field preservation, parser cases) and
+  `test/xpressbus/bookings/search_test.exs` (window applied on DB search, hygiene filters preserved,
+  future date unaffected, invalid date, route isolation). `search_card_render_test.exs` fixture now uses
+  a dynamic departure outside the window so it keeps testing the results card rendering.
+
+**Verification:**
+```
+mix precommit        # 286/286 tests
+```
+
+
 
 
 
