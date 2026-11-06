@@ -112,6 +112,7 @@ defmodule XpressbusWeb.Router do
 
     post "/auth", UserController, :authenticate
     post "/firebase/verify", UserController, :firebase_verify
+    post "/firebase/verify-signup", UserController, :firebase_verify_signup
   end
 
   scope "/user", XpressbusWeb do

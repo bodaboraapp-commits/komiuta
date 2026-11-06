@@ -103,8 +103,85 @@ defmodule XpressbusWeb.UserController do
     end
   end
 
-  def registration(conn, _params) do
-    render(conn, :registration)
+  def registration(conn, params) do
+    verified_phone = get_session(conn, :verified_signup_phone)
+    phone = verified_phone || params["phone"]
+
+    render(conn, :registration,
+      verified_phone: verified_phone,
+      phone: phone,
+      firebase_config: Xpressbus.Firebase.client_config()
+    )
+  end
+
+  @doc """
+  Verifies a Firebase phone token during signup.
+
+  Existing accounts are signed in immediately. New numbers are kept in the
+  session as verified and the traveller finishes name/email on the signup form.
+  """
+  def firebase_verify_signup(conn, params) do
+    token =
+      params["id_token"] ||
+        get_in(params, ["firebase", "id_token"]) ||
+        ""
+
+    token = if is_binary(token), do: String.trim(token), else: ""
+
+    cond do
+      not Xpressbus.Firebase.configured?() ->
+        conn
+        |> put_status(:service_unavailable)
+        |> json(%{error: "SMS verification is not configured yet."})
+
+      token == "" ->
+        conn
+        |> put_status(:bad_request)
+        |> json(%{error: "Missing SMS verification token."})
+
+      true ->
+        case Xpressbus.Firebase.verify_id_token(token) do
+          {:ok, phone} ->
+            case Xpressbus.Firebase.find_user_by_phone(phone) do
+              %Xpressbus.Accounts.User{} = user ->
+                conn
+                |> configure_session(renew: true)
+                |> put_session(:user_id, user.id)
+                |> put_session(:user_name, user.name)
+                |> json(%{ok: true, redirect: "/dashboard"})
+
+              nil ->
+                redirect_to =
+                  "/user/signup?" <>
+                    URI.encode_query(%{"phone" => phone, "verified" => "1"})
+
+                conn
+                |> configure_session(renew: true)
+                |> put_session(:verified_signup_phone, phone)
+                |> json(%{ok: true, redirect: redirect_to})
+            end
+
+          {:error, :invalid_token} ->
+            conn
+            |> put_status(:unauthorized)
+            |> json(%{error: "That SMS code could not be verified. Please try again."})
+
+          {:error, :no_phone} ->
+            conn
+            |> put_status(:unprocessable_entity)
+            |> json(%{error: "No phone number was found on that Firebase session."})
+
+          {:error, :not_configured} ->
+            conn
+            |> put_status(:service_unavailable)
+            |> json(%{error: "SMS verification is not configured yet."})
+
+          {:error, _reason} ->
+            conn
+            |> put_status(:bad_gateway)
+            |> json(%{error: "SMS verification is temporarily unavailable."})
+        end
+    end
   end
 
   def authenticate(conn, %{"user" => user_params}) do
@@ -260,6 +337,15 @@ defmodule XpressbusWeb.UserController do
   end
 
   def register(conn, %{"user" => user_params}) do
+    user_params =
+      case get_session(conn, :verified_signup_phone) do
+        phone when is_binary(phone) and phone != "" ->
+          Map.put(user_params, "phone", phone)
+
+        _ ->
+          user_params
+      end
+
     case Accounts.register_user(user_params) do
       {:ok, user} ->
         conn =
@@ -267,6 +353,7 @@ defmodule XpressbusWeb.UserController do
           |> configure_session(renew: true)
           |> put_session(:user_id, user.id)
           |> put_session(:user_name, user.name)
+          |> delete_session(:verified_signup_phone)
 
         if Accounts.profile_complete?(user) do
           conn
@@ -281,7 +368,13 @@ defmodule XpressbusWeb.UserController do
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
         |> put_flash(:error, registration_error_message(changeset))
-        |> render(:registration)
+        |> render(:registration,
+          verified_phone: get_session(conn, :verified_signup_phone),
+          phone:
+            get_session(conn, :verified_signup_phone) ||
+              Map.get(user_params, "phone"),
+          firebase_config: Xpressbus.Firebase.client_config()
+        )
     end
   end
 

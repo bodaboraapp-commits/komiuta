@@ -35,6 +35,103 @@
                 <span class="text-sm tracking-tight">Sign up with Gmail</span>
               </a>
 
+              <%= if @firebase_config do %>
+                <div class="relative my-6">
+                  <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-slate-100"></div>
+                  </div>
+                  <div class="relative flex justify-center text-[9px] uppercase font-black tracking-widest">
+                    <span class="bg-white px-4 text-slate-400">or sign up with SMS</span>
+                  </div>
+                </div>
+
+                <div
+                  id="firebase-sms-auth"
+                  data-api-key={@firebase_config.api_key}
+                  data-auth-domain={@firebase_config.auth_domain}
+                  data-project-id={@firebase_config.project_id}
+                  data-storage-bucket={@firebase_config.storage_bucket}
+                  data-messaging-sender-id={@firebase_config.messaging_sender_id}
+                  data-app-id={@firebase_config.app_id}
+                  data-verify-url="/user/firebase/verify-signup"
+                  data-redirect="/user/signup"
+                >
+                  <%!-- This panel verifies the phone; the verified number is then carried into the form below. --%>
+                  <form id="firebase-sms-form" class="space-y-4" novalidate>
+                    <div id="firebase-phone-step">
+                      <input
+                        id="firebase-phone"
+                        type="tel"
+                        inputmode="tel"
+                        autocomplete="tel"
+                        placeholder="07XX XXX XXX"
+                        class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:border-[#FF4C00] transition outline-none"
+                        required
+                      />
+                      <div id="firebase-recaptcha"></div>
+                    </div>
+
+                    <button
+                      id="firebase-send-code"
+                      type="submit"
+                      class="w-full bg-slate-900 text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-black transition active:scale-95"
+                    >
+                      Verify Phone with SMS
+                    </button>
+
+                    <div id="firebase-code-step" class="hidden space-y-3">
+                      <input
+                        id="firebase-code"
+                        type="text"
+                        inputmode="numeric"
+                        autocomplete="one-time-code"
+                        pattern="[0-9]{6}"
+                        maxlength="6"
+                        placeholder="000000"
+                        class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl font-black text-center tracking-[0.4em] focus:bg-white focus:border-[#FF4C00] transition outline-none"
+                      />
+                      <button
+                        id="firebase-verify-code"
+                        type="submit"
+                        class="w-full bg-[#FF4C00] text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#E64400] transition active:scale-95"
+                      >
+                        Verify &amp; Continue
+                      </button>
+                      <button
+                        id="firebase-change-number"
+                        type="button"
+                        class="w-full text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-[#FF4C00]"
+                      >
+                        Use a different number
+                      </button>
+                    </div>
+
+                    <p
+                      id="firebase-status"
+                      class="min-h-[16px] text-[11px] font-bold text-slate-500"
+                      role="status"
+                      aria-live="polite"
+                    >
+                    </p>
+                  </form>
+
+                  <script
+                    defer
+                    phx-track-static
+                    type="text/javascript"
+                    src={~p"/assets/js/firebase_phone_auth.js"}
+                  >
+                  </script>
+                </div>
+              <% end %>
+
+              <%= if @verified_phone do %>
+                <div class="mt-5 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-[11px] font-bold text-emerald-700">
+                  Phone <span class="font-black">{@verified_phone}</span>
+                  is verified. Finish your name and email below.
+                </div>
+              <% end %>
+
               <div class="relative my-6">
                 <div class="absolute inset-0 flex items-center">
                   <div class="w-full border-t border-slate-100"></div>
@@ -63,8 +160,10 @@
                     <input
                       type="tel"
                       name="user[phone]"
+                      value={@phone}
+                      readonly={@verified_phone}
                       placeholder="07XX XXX XXX"
-                      class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:border-[#FF4C00] transition outline-none"
+                      class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:border-[#FF4C00] transition outline-none read-only:text-slate-500"
                       required
                     />
                   </div>
