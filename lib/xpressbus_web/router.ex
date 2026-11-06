@@ -39,6 +39,8 @@ defmodule XpressbusWeb.Router do
     live "/tour-packages/car", ChyllzLive, :car
     live "/tour-packages/events", ChyllzLive, :events
     live "/agent", AgentLive, :index
+    get "/agent/google/start", AgentSessionController, :google_start
+    get "/agent/google/complete", AgentSessionController, :google_complete
     get "/agent/login", AgentSessionController, :login
     post "/agent/auth", AgentSessionController, :request_code
     post "/agent/firebase/verify", AgentSessionController, :firebase_verify

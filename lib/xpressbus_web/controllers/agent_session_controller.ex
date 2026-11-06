@@ -2,6 +2,7 @@ defmodule XpressbusWeb.AgentSessionController do
   use XpressbusWeb, :controller
 
   alias Xpressbus.Agents
+  alias Xpressbus.Integrations
 
   @page_assigns [
     page_manifest: "/agent-manifest.json",
@@ -10,16 +11,50 @@ defmodule XpressbusWeb.AgentSessionController do
     page_theme_color: "#ffffff"
   ]
 
-  def login(conn, _params) do
+  def login(conn, params) do
     if get_session(conn, :agent_id) do
       redirect(conn, to: "/agent/account")
     else
-      render(
-        conn,
-        :login,
-        login_assigns("")
-      )
+      conn
+      |> apply_google_error(params)
+      |> render(:login, login_assigns(""))
     end
+  end
+
+  def google_start(conn, _params) do
+    if String.starts_with?(conn.host, "agent.") do
+      redirect(conn, external: XpressbusWeb.Endpoint.url() <> "/agent/google/start")
+    else
+      conn
+      |> configure_session(renew: true)
+      |> put_session(:agent_google_pending, true)
+      |> redirect(to: "/auth/google")
+    end
+  end
+
+  def google_complete(conn, %{"token" => token}) do
+    case Phoenix.Token.verify(XpressbusWeb.Endpoint, "agent-google-login", token, max_age: 300) do
+      {:ok, agent_id} ->
+        case Agents.get_application(agent_id) do
+          %{} = application ->
+            conn
+            |> configure_session(renew: true)
+            |> delete_session(:agent_login_id)
+            |> put_session(:agent_id, application.id)
+            |> put_flash(:info, "Signed in with Google as #{application.email}.")
+            |> redirect(to: "/agent/account")
+
+          _ ->
+            redirect(conn, to: "/agent/login?" <> URI.encode_query(%{"google_error" => "failed"}))
+        end
+
+      _ ->
+        redirect(conn, to: "/agent/login?" <> URI.encode_query(%{"google_error" => "failed"}))
+    end
+  end
+
+  def google_complete(conn, _params) do
+    redirect(conn, to: "/agent/login?" <> URI.encode_query(%{"google_error" => "failed"}))
   end
 
   @doc """
@@ -80,13 +115,41 @@ defmodule XpressbusWeb.AgentSessionController do
   end
 
   defp login_assigns(identifier) do
+    google_config = Integrations.get_config_by_provider("google")
+
+    google_enabled =
+      case google_config do
+        %{active: true, config: config} when is_map(config) ->
+          String.trim(to_string(config["client_id"] || "")) != "" and
+            String.trim(to_string(config["client_secret"] || "")) != ""
+
+        _ ->
+          false
+      end
+
     [
       page_title: "KOMIUTA Agent — Sign in",
       identifier: identifier,
       firebase_config: Xpressbus.Firebase.client_config(),
-      firebase_configured: Xpressbus.Firebase.configured?()
+      firebase_configured: Xpressbus.Firebase.configured?(),
+      google_enabled: google_enabled,
+      google_start_url: XpressbusWeb.Endpoint.url() <> "/agent/google/start"
     ] ++ @page_assigns
   end
+
+  defp apply_google_error(conn, %{"google_error" => "no_agent"}) do
+    put_flash(
+      conn,
+      :error,
+      "No agent application was found for that Google email. Apply first or use the phone on your application."
+    )
+  end
+
+  defp apply_google_error(conn, %{"google_error" => "failed"}) do
+    put_flash(conn, :error, "Google sign-in could not be completed. Please try again.")
+  end
+
+  defp apply_google_error(conn, _params), do: conn
 
   @doc """
   Emails a one-time sign-in code. The application itself is the agent account,

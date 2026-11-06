@@ -26,6 +26,12 @@ defmodule Xpressbus.Agents do
   end
 
   @doc "Looks up an agent application by UUID."
+  def find_by_email(email) when is_binary(email) do
+    Repo.get_by(AgentApplication, email: email |> String.trim() |> String.downcase())
+  end
+
+  def find_by_email(_email), do: nil
+
   def get_application(id), do: Repo.get(AgentApplication, id)
 
   @doc """
