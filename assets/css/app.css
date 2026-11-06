@@ -838,6 +838,20 @@ body { font-family: "Lufga", "Trebuchet MS", "Segoe UI", sans-serif; font-weight
   }
 }
 
+/* ---- Landing: recent booking pills ----
+   The pills row sits after the hero, below the absolutely positioned search
+   pill. The pill hangs over the hero edge (translate-y), so the row needs
+   enough top clearance on phones, where the stacked pill is tall. */
+#recent-bookings-pills {
+  padding-top: 7rem;
+}
+
+@media (min-width: 768px) {
+  #recent-bookings-pills {
+    padding-top: 3.5rem;
+  }
+}
+
 /* ---- Header track-ticket pill ---- */
 .track-pill-label {
   display: none;

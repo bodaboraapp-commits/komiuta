@@ -198,6 +198,40 @@
             </div>
           </div>
         </div>
+        <%!-- Recent bookings (live DB pills) --%>
+        <%= if @recent_booking_pills != [] do %>
+          <div
+            id="recent-bookings-pills"
+            class="max-w-[1350px] mx-auto px-6"
+          >
+            <div class="flex items-center gap-2 md:gap-2.5 overflow-x-auto no-scrollbar whitespace-nowrap">
+              <span class="shrink-0 flex items-center gap-2 pr-1 text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                <span class="relative flex h-2 w-2">
+                  <span class="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping"></span>
+                  <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+                </span>
+                {if @recent_booking_mode == :live, do: "Live bookings", else: "Popular routes"}
+              </span>
+
+              <%= for pill <- @recent_booking_pills do %>
+                <div
+                  id={"recent-booking-#{pill.from}-#{pill.to}"}
+                  class={[
+                    "shrink-0 flex items-center gap-1.5 md:gap-2 px-3 md:px-3.5 py-1.5 rounded-full border shadow-sm",
+                    pill.live && "bg-emerald-50/70 border-emerald-100",
+                    !pill.live && "bg-white border-slate-100"
+                  ]}
+                >
+                  <span class="material-symbols-outlined !text-[13px] text-[#FF4C00]">route</span>
+                  <span class="text-[10px] md:text-[11px] font-black text-slate-700 uppercase tracking-tight">
+                    {pill.from} <span class="text-slate-300">→</span> {pill.to}
+                  </span>
+                  <span class="text-[9px] md:text-[10px] font-bold text-slate-400">{pill.meta}</span>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
         <%!-- Trusted Operators & Value Propositions Group --%>
         <section class="bg-white pt-20 pb-14 md:pb-16 border-b border-slate-50 relative overflow-hidden">
           <div class="max-w-[1350px] mx-auto">

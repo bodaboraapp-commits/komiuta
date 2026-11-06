@@ -1018,6 +1018,45 @@ mix assets.build     # rebuilt Tailwind/esbuild bundles
 node scratch/return_trip_screenshot.js   # desktop + mobile screenshots, no overflow
 ```
 
+### 2026-11-06 Session — Database-driven "recent booking" pills above the trusted-partner marquee
+
+**Objective:** Show a live/tending booking strip on the landing page, directly above the trusted
+partner logos and outside the search pill, without exceeding the search section's width.
+
+**Completed:**
+- New read-only context `Xpressbus.Trending` (`lib/xpressbus/trending.ex`):
+  - **Live mode:** confirmed tickets from the last 7 days, grouped by `from`/`to`, ordered by booking
+    count then recency (up to 8 pills).
+  - **Popular fallback:** when nothing was booked in the live window, the all-time most booked routes
+    are shown instead (labelled "Popular routes" rather than "Live bookings").
+  - Privacy: only route, count and latest-booking time are selected — no passenger/phone/ticket/price
+    data ever leaves the DB. `relative_time/1` renders "just now", "4m ago", "3h ago", "2d ago".
+- `BookingLive` fetches the pills in parallel with the existing mount queries, assigns
+  `:recent_booking_pills` / `:recent_booking_mode`, and refreshes them every 60s while the landing page
+  is open (`:refresh_trending_bookings`) so the row behaves like a live feed.
+- Landing template (`booking_live.html.heex`): new `#recent-bookings-pills` row rendered **after the
+  hero/search pill and before the trusted-operators section**. It uses the same
+  `max-w-[1350px] mx-auto px-6` width budget as the search pill, with `overflow-x-auto no-scrollbar`
+  so extra pills scroll horizontally instead of widening the page. Pills are compact rounded chips with
+  a live (emerald) or popular (white) style and a pulsing dot; the row is hidden entirely when there are
+  no confirmed bookings.
+- Clearance below the absolutely-positioned search pill is handled by explicit CSS
+  (`#recent-bookings-pills` padding-top `7rem` on phones / `3.5rem` from 768px) in `assets/css/app.css`,
+  because the stacked mobile pill overhangs the hero further than the desktop pill.
+- Tests: `test/xpressbus/trending_test.exs` (live ordering/counts, pending & old bookings excluded,
+  popular fallback, limit, relative time) and `test/xpressbus_web/recent_bookings_pills_test.exs`
+  (row rendered before partners, correct live label/routes, width classes/scroll container, hidden
+  when no bookings).
+
+**Verification:**
+```
+mix precommit        # 274/274 tests
+mix assets.build
+node scratch/recent_bookings_screenshot.js   # desktop 1440 / mobile 390: row within search-pill width, no overlap, no overflow
+```
+
+
+
 
 
 
