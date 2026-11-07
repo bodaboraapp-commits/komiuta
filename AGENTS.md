@@ -1351,6 +1351,17 @@ mix test test/xpressbus_web/agent_auth_test.exs test/xpressbus_web/recent_bookin
 application-status card (release `2026-11-06.16-agent-wallet-first-card`); the wallet render test asserts
 its position on the page.
 
+### 2026-11-07 Session — Bus-results MODIFY button uses the Komiuta theme colour
+
+**Objective:** The MODIFY button on the bus search-results summary bar was magenta (`#d52263`) instead of
+the Komiuta brand orange.
+
+**Completed:**
+- `booking_live.html.heex`: `#modify-search-button` now uses `bg-[#FF4C00]` with `hover:bg-[#E64400]`,
+  a soft `shadow-orange-500/20` and the same scale/active micro-interaction as the other primary buttons
+  (release `2026-11-07.01-modify-theme`).
+
+
 
 
 
