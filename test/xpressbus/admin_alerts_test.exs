@@ -58,6 +58,8 @@ defmodule Xpressbus.AdminAlertsTest do
       assert email.text_body =~ "KES 1,800"
       assert email.text_body =~ "mpesa"
       assert email.html_body =~ "New booking & payment received"
+      assert email.html_body =~ "/images/logo_email.png"
+      assert email.html_body =~ ~s(alt="Komiuta")
       assert email.html_body =~ "PAY-ALERT-1"
     end)
   end

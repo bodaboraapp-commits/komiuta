@@ -170,7 +170,10 @@ defmodule Xpressbus.AdminAlertEmail do
   defp body(heading, content) do
     """
     <div style="font-family:Arial,sans-serif;max-width:620px;margin:0 auto;padding:24px;background:#ffffff;">
-      <div style="background:#FF4C00;color:#ffffff;padding:18px 22px;border-radius:14px 14px 0 0;">
+      <div style="background:#ffffff;padding:16px 22px;border:1px solid #f1f5f9;border-bottom:0;border-radius:14px 14px 0 0;">
+        <img src="#{logo_url()}" alt="Komiuta" width="146" height="40" style="display:block;height:40px;width:auto;border:0;" />
+      </div>
+      <div style="background:#FF4C00;color:#ffffff;padding:18px 22px;">
         <p style="margin:0;font-size:11px;letter-spacing:2px;text-transform:uppercase;opacity:.8;">Komiuta operations</p>
         <h1 style="margin:4px 0 0;font-size:22px;">#{heading}</h1>
       </div>
@@ -212,6 +215,11 @@ defmodule Xpressbus.AdminAlertEmail do
 
   defp from_address do
     Application.get_env(:xpressbus, :mailer_from, "no-reply@komiuta.com")
+  end
+
+  defp logo_url do
+    Application.get_env(:xpressbus, :mailer_logo_url) ||
+      XpressbusWeb.Endpoint.url() <> "/images/logo_email.png"
   end
 
   defp recipients, do: AdminAlerts.recipients()
