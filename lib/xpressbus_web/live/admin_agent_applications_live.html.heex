@@ -236,6 +236,61 @@
                         </p>
                       </div>
 
+                      <div class="rounded-2xl bg-slate-50/80 px-4 py-3">
+                        <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                          Booking visibility
+                        </p>
+
+                        <form
+                          id={"assign-booking-scope-#{application.id}"}
+                          phx-submit="assign_booking_scope"
+                          class="mt-2 space-y-2"
+                        >
+                          <input type="hidden" name="application_id" value={application.id} />
+
+                          <select
+                            name="booking_scope"
+                            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-700 outline-none transition focus:border-[#FF4C00]"
+                          >
+                            <option value="all" selected={application.booking_scope != "route"}>
+                              All partner bookings from the platform
+                            </option>
+                            <option value="route" selected={application.booking_scope == "route"}>
+                              Specific from → to location
+                            </option>
+                          </select>
+
+                          <div class="grid gap-2 sm:grid-cols-2">
+                            <input
+                              type="text"
+                              name="booking_from"
+                              value={application.booking_from}
+                              placeholder="From (e.g. Nairobi)"
+                              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-700 outline-none transition focus:border-[#FF4C00]"
+                            />
+                            <input
+                              type="text"
+                              name="booking_to"
+                              value={application.booking_to}
+                              placeholder="To (e.g. Mombasa)"
+                              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-700 outline-none transition focus:border-[#FF4C00]"
+                            />
+                          </div>
+
+                          <button
+                            type="submit"
+                            class="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-600 transition hover:border-[#FF4C00] hover:text-[#FF4C00]"
+                          >
+                            <span class="material-symbols-outlined !text-base">visibility</span>
+                            Save booking visibility
+                          </button>
+                        </form>
+
+                        <p class="mt-2 text-[10px] font-bold leading-relaxed text-slate-400">
+                          All: the agent sees every partner booking on the platform. Specific: only bookings whose From and To match the two locations above.
+                        </p>
+                      </div>
+
                       <%= if application.admin_notes do %>
                         <div class="rounded-2xl bg-amber-50 px-4 py-3">
                           <p class="text-[9px] font-black uppercase tracking-widest text-amber-500">

@@ -468,6 +468,32 @@ defmodule XpressbusWeb.AgentSessionController do
     end
   end
 
+  def bookings(conn, _params) do
+    case get_session(conn, :agent_id) |> load_agent() do
+      {:ok, %{status: "approved"} = application} ->
+        render(
+          conn,
+          :bookings,
+          [
+            page_title: "KOMIUTA Agent — Partner bookings",
+            agent: application,
+            bookings: AgentDashboard.bookings(application),
+            scope_label: AgentDashboard.scope_label(application)
+          ] ++ @page_assigns
+        )
+
+      {:ok, _application} ->
+        conn
+        |> put_flash(:info, "Partner bookings appear once your agent application is approved.")
+        |> redirect(to: "/agent/account")
+
+      :error ->
+        conn
+        |> put_flash(:error, "Please log in to view partner bookings.")
+        |> redirect(to: "/agent/login")
+    end
+  end
+
   def account(conn, _params) do
     case get_session(conn, :agent_id) |> load_agent() do
       {:ok, application} ->

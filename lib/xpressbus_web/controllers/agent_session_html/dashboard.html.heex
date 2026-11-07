@@ -55,6 +55,9 @@
 
           <p class="mt-2 max-w-xl text-sm font-bold leading-relaxed text-slate-500">
             Live bookings and performance for your partner on Komiuta.
+            <span class="mt-1 block text-[10px] font-black uppercase tracking-widest text-[#FF4C00]">
+              {@dashboard.scope_label}
+            </span>
           </p>
         </div>
 
@@ -282,6 +285,14 @@
             <span class="rounded-full bg-slate-50 px-3 py-1.5 text-[10px] font-black text-slate-500">
               {@dashboard.kpis.total_bookings} total
             </span>
+
+            <a
+              href="/agent/bookings"
+              class="inline-flex items-center gap-1 rounded-full bg-slate-900 px-3.5 py-2 text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-black"
+            >
+              All bookings
+              <span class="material-symbols-outlined !text-[14px]">chevron_right</span>
+            </a>
           </div>
 
           <%= if Enum.empty?(@dashboard.recent_bookings) do %>

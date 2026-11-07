@@ -475,6 +475,41 @@ defmodule Xpressbus.Agents do
 
   def get_application!(id), do: Repo.get!(AgentApplication, id)
 
+  @doc "Sets which partner bookings an agent can see: all, or one from/to route."
+  def assign_booking_scope(%AgentApplication{} = application, scope, from, to) do
+    scope = if scope in ["all", "route"], do: scope, else: "all"
+
+    attrs = %{
+      booking_scope: scope,
+      booking_from: if(scope == "route", do: blank_to_nil(from), else: nil),
+      booking_to: if(scope == "route", do: blank_to_nil(to), else: nil)
+    }
+
+    application
+    |> AgentApplication.changeset(attrs)
+    |> Repo.update()
+  end
+
+  defp blank_to_nil(value) do
+    case to_string(value || "") |> String.trim() do
+      "" -> nil
+      trimmed -> trimmed
+    end
+  end
+
+  @doc "Short admin-facing description of an agent's booking visibility."
+  def scope_description(%AgentApplication{booking_scope: "route"} = application) do
+    case {application.booking_from, application.booking_to} do
+      {from, to} when is_binary(from) and is_binary(to) and from != "" and to != "" ->
+        "specific route #{from} → #{to}"
+
+      _ ->
+        "all partner bookings"
+    end
+  end
+
+  def scope_description(%AgentApplication{}), do: "all partner bookings"
+
   def update_status(%AgentApplication{} = application, status, admin_notes \\ nil)
       when status in ["pending", "approved", "rejected"] do
     application

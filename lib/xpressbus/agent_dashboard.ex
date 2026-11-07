@@ -31,7 +31,7 @@ defmodule Xpressbus.AgentDashboard do
   """
   def load(%AgentApplication{} = agent) do
     operator = operator_for(agent)
-    base = bookings_query(operator)
+    base = bookings_query(operator, agent)
     confirmed = where(base, [t], t.status == "confirmed")
     today = local_date()
 
@@ -55,9 +55,39 @@ defmodule Xpressbus.AgentDashboard do
       recent_bookings: recent_bookings(base),
       chart: chart,
       chart_max: chart |> Enum.map(& &1.bookings) |> Enum.max(fn -> 0 end),
-      routes: recent_routes(confirmed)
+      routes: recent_routes(confirmed),
+      scope_label: scope_label(agent)
     }
   end
+
+  @doc """
+  All partner bookings the agent is allowed to see, newest first.
+
+  Admins can restrict an agent to one from/to route; otherwise this returns the
+  full platform booking history for the agent's partner operator.
+  """
+  def bookings(%AgentApplication{} = agent) do
+    agent
+    |> then(&bookings_query(operator_for(&1), &1))
+    |> order_by([t], desc: t.inserted_at)
+    |> limit(500)
+    |> select_booking_fields()
+    |> Repo.all()
+    |> format_bookings()
+  end
+
+  @doc "Human label describing the booking scope set by the admin."
+  def scope_label(%AgentApplication{booking_scope: "route"} = agent) do
+    case {agent.booking_from, agent.booking_to} do
+      {from, to} when is_binary(from) and is_binary(to) and from != "" and to != "" ->
+        "Route: #{from} → #{to}"
+
+      _ ->
+        "All partner bookings"
+    end
+  end
+
+  def scope_label(%AgentApplication{}), do: "All partner bookings"
 
   @doc "The bus operator (partner) an agent represents, if any."
   def operator_for(%AgentApplication{bus_operator: %BusOperator{} = operator}), do: operator
@@ -104,15 +134,42 @@ defmodule Xpressbus.AgentDashboard do
     |> String.reverse()
   end
 
-  defp bookings_query(nil), do: from(t in Ticket, where: false)
+  defp bookings_query(nil, _agent), do: from(t in Ticket, where: false)
 
-  defp bookings_query(%BusOperator{id: operator_id}) do
+  defp bookings_query(%BusOperator{id: operator_id}, %AgentApplication{} = agent) do
     from(t in Ticket,
       join: b in Bus,
       on: b.id == t.bus_id,
       where: b.bus_operator_id == ^operator_id
     )
+    |> apply_booking_scope(agent)
   end
+
+  defp apply_booking_scope(query, %AgentApplication{booking_scope: "route"} = agent) do
+    from_value = normalise_route(agent.booking_from)
+    to_value = normalise_route(agent.booking_to)
+
+    if from_value && to_value do
+      where(
+        query,
+        [t],
+        fragment("LOWER(TRIM(?)) = ?", t.from, ^from_value) and
+          fragment("LOWER(TRIM(?)) = ?", t.to, ^to_value)
+      )
+    else
+      query
+    end
+  end
+
+  defp apply_booking_scope(query, _agent), do: query
+
+  defp normalise_route(nil), do: nil
+
+  defp normalise_route(value),
+    do: value |> to_string() |> String.trim() |> String.downcase() |> blank_to_nil()
+
+  defp blank_to_nil(""), do: nil
+  defp blank_to_nil(value), do: value
 
   defp count(query), do: Repo.aggregate(query, :count, :id)
 
@@ -158,7 +215,13 @@ defmodule Xpressbus.AgentDashboard do
     query
     |> order_by([t], desc: t.inserted_at)
     |> limit(@recent_limit)
-    |> select([t], %{
+    |> select_booking_fields()
+    |> Repo.all()
+    |> format_bookings()
+  end
+
+  defp select_booking_fields(query) do
+    select(query, [t], %{
       id: t.id,
       ticket_id: t.ticket_id,
       passenger_name: t.passenger_name,
@@ -172,8 +235,10 @@ defmodule Xpressbus.AgentDashboard do
       company: t.company,
       inserted_at: t.inserted_at
     })
-    |> Repo.all()
-    |> Enum.map(fn booking ->
+  end
+
+  defp format_bookings(bookings) do
+    Enum.map(bookings, fn booking ->
       Map.merge(booking, %{
         amount: amount(booking.price),
         amount_label: money(amount(booking.price)),

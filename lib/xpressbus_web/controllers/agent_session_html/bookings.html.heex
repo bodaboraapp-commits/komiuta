@@ -1,0 +1,182 @@
+<Layouts.app flash={@flash}>
+  <div class="min-h-screen bg-[#f8fafc] font-sans text-slate-900">
+    <header class="sticky top-0 z-40 border-b border-slate-200/70 bg-white/90 backdrop-blur">
+      <div class="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3.5 sm:px-6">
+        <a href="/agent/dashboard" class="flex items-center gap-2.5">
+          <img
+            src="/images/logo_brand.png"
+            alt="Komiuta"
+            width="132"
+            height="36"
+            class="h-8 w-auto"
+          />
+          <span class="hidden h-7 w-px bg-slate-200 sm:block"></span>
+          <span class="hidden text-[10px] font-black uppercase tracking-[0.3em] text-[#FF4C00] sm:block">
+            Agent App
+          </span>
+        </a>
+
+        <a
+          href="/agent/dashboard"
+          class="rounded-full border border-slate-200 bg-white px-3.5 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 transition hover:border-slate-300 hover:text-slate-700"
+        >
+          Dashboard
+        </a>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-5xl px-4 py-7 sm:px-6 md:py-10">
+      <p class="text-[10px] font-black uppercase tracking-[0.3em] text-[#FF4C00]">
+        Partner bookings
+      </p>
+
+      <div class="mt-1.5 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h1 class="text-3xl font-black tracking-tight md:text-4xl">All platform bookings</h1>
+          <p class="mt-2 max-w-xl text-sm font-bold leading-relaxed text-slate-500">
+            Bookings made through Komiuta for {@agent.business_name}.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="rounded-full bg-orange-50 px-3.5 py-2 text-[10px] font-black uppercase tracking-widest text-[#FF4C00]">
+            {@scope_label}
+          </span>
+          <span class="rounded-full border border-slate-200 bg-white px-3.5 py-2 font-mono text-[10px] font-black text-slate-500">
+            {@agent.reference}
+          </span>
+        </div>
+      </div>
+
+      <div class="mt-6 overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
+        <div class="flex items-center justify-between gap-3 border-b border-slate-50 px-5 py-4">
+          <div>
+            <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
+              Bookings
+            </p>
+            <p class="mt-0.5 text-sm font-black text-slate-900">
+              {length(@bookings)} booking{if length(@bookings) == 1, do: "", else: "s"}
+            </p>
+          </div>
+
+          <a
+            href="/agent/dashboard"
+            class="text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-[#FF4C00]"
+          >
+            Back to dashboard
+          </a>
+        </div>
+
+        <%= if Enum.empty?(@bookings) do %>
+          <div class="px-5 py-16 text-center">
+            <span class="material-symbols-outlined !text-5xl text-slate-200">confirmation_number</span>
+            <p class="mt-3 text-sm font-black text-slate-500">No bookings yet</p>
+            <p class="mt-1 text-xs font-bold text-slate-400">
+              Bookings for {@agent.business_name} will appear here as travellers book.
+            </p>
+          </div>
+        <% else %>
+          <div class="hidden overflow-x-auto md:block">
+            <table class="w-full text-left">
+              <thead>
+                <tr class="border-b border-slate-50">
+                  <th class="px-5 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    Passenger
+                  </th>
+                  <th class="px-5 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    Trip
+                  </th>
+                  <th class="px-5 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    Travel
+                  </th>
+                  <th class="px-5 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    Amount
+                  </th>
+                  <th class="px-5 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody class="divide-y divide-slate-50">
+                <%= for booking <- @bookings do %>
+                  <tr id={"all-booking-#{booking.ticket_id}"} class="align-top">
+                    <td class="px-5 py-3.5">
+                      <p class="text-xs font-black text-slate-800">
+                        {booking.passenger_name || "Guest"}
+                      </p>
+                      <p class="mt-0.5 text-[10px] font-bold text-slate-400">
+                        {booking.passenger_phone}
+                      </p>
+                    </td>
+                    <td class="px-5 py-3.5">
+                      <p class="text-xs font-black text-slate-700">
+                        {booking.from} <span class="text-slate-300">→</span> {booking.to}
+                      </p>
+                      <p class="mt-0.5 text-[10px] font-bold text-slate-400">{booking.company}</p>
+                    </td>
+                    <td class="px-5 py-3.5">
+                      <p class="text-xs font-bold text-slate-700">{booking.travel_label}</p>
+                      <p class="mt-0.5 text-[10px] font-bold text-slate-400">
+                        {booking.departure}
+                      </p>
+                    </td>
+                    <td class="px-5 py-3.5">
+                      <p class="text-xs font-black text-slate-800">{booking.amount_label}</p>
+                      <p class="mt-0.5 text-[10px] font-bold text-slate-400">
+                        {booking.booked_label}
+                      </p>
+                    </td>
+                    <td class="px-5 py-3.5">
+                      <span class={[
+                        "inline-flex rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-widest",
+                        booking.status == "confirmed" && "bg-emerald-50 text-emerald-700",
+                        booking.status == "cancelled" && "bg-red-50 text-red-600",
+                        booking.status == "pending" && "bg-amber-50 text-amber-700"
+                      ]}>
+                        {booking.status_label}
+                      </span>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="divide-y divide-slate-50 md:hidden">
+            <%= for booking <- @bookings do %>
+              <div id={"all-booking-mobile-#{booking.ticket_id}"} class="px-4 py-4">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <p class="truncate text-xs font-black text-slate-800">
+                      {booking.passenger_name || "Guest"}
+                    </p>
+                    <p class="mt-0.5 text-[10px] font-bold text-slate-400">
+                      {booking.from} → {booking.to}
+                    </p>
+                  </div>
+                  <span class={[
+                    "shrink-0 rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-widest",
+                    booking.status == "confirmed" && "bg-emerald-50 text-emerald-700",
+                    booking.status == "cancelled" && "bg-red-50 text-red-600",
+                    booking.status == "pending" && "bg-amber-50 text-amber-700"
+                  ]}>
+                    {booking.status_label}
+                  </span>
+                </div>
+                <div class="mt-2 flex items-center justify-between gap-3 text-[10px] font-bold text-slate-400">
+                  <span>{booking.travel_label} · {booking.departure}</span>
+                  <span class="font-black text-slate-700">{booking.amount_label}</span>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </main>
+
+    <footer class="px-5 py-8 text-center text-[10px] font-black uppercase tracking-widest text-slate-400">
+      © {DateTime.utc_now().year} Komiuta Agent
+    </footer>
+  </div>
+</Layouts.app>

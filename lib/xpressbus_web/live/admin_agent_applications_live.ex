@@ -91,6 +91,42 @@ defmodule XpressbusWeb.AdminAgentApplicationsLive do
     end
   end
 
+  def handle_event(
+        "assign_booking_scope",
+        %{
+          "application_id" => id,
+          "booking_scope" => scope,
+          "booking_from" => from,
+          "booking_to" => to
+        },
+        socket
+      ) do
+    application = Agents.get_application!(id)
+
+    case Agents.assign_booking_scope(application, scope, from, to) do
+      {:ok, updated} ->
+        {:noreply,
+         socket
+         |> put_flash(
+           :success,
+           "Booking visibility updated: #{Agents.scope_description(updated)}."
+         )
+         |> load_applications(socket.assigns.page, socket.assigns.search)}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        message =
+          changeset.errors
+          |> Keyword.values()
+          |> List.first()
+          |> case do
+            {message, _} -> "Could not save booking visibility: #{message}."
+            _ -> "Could not save booking visibility. Enter both From and To for a specific route."
+          end
+
+        {:noreply, put_flash(socket, :error, message)}
+    end
+  end
+
   def handle_event("toggle_bus", _params, socket) do
     {:noreply, assign(socket, :bus_expanded, !socket.assigns.bus_expanded)}
   end

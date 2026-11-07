@@ -17,6 +17,9 @@ defmodule Xpressbus.Agents.AgentApplication do
     field(:payout_method, :string, default: "mpesa")
     field(:notes, :string)
     field(:status, :string, default: "pending")
+    field(:booking_scope, :string, default: "all")
+    field(:booking_from, :string)
+    field(:booking_to, :string)
     field(:admin_notes, :string)
     field(:reviewed_at, :utc_datetime)
     field(:email_verified_at, :utc_datetime)
@@ -39,6 +42,9 @@ defmodule Xpressbus.Agents.AgentApplication do
       :payout_method,
       :notes,
       :status,
+      :booking_scope,
+      :booking_from,
+      :booking_to,
       :admin_notes,
       :reviewed_at,
       :email_verified_at,
@@ -53,8 +59,22 @@ defmodule Xpressbus.Agents.AgentApplication do
     |> validate_length(:phone, min: 9, max: 18)
     |> validate_inclusion(:payout_method, ["mpesa", "bank", "card"])
     |> validate_inclusion(:status, ["pending", "approved", "rejected"])
+    |> validate_inclusion(:booking_scope, ["all", "route"])
+    |> validate_booking_route()
     |> foreign_key_constraint(:bus_operator_id)
     |> unique_constraint(:email, name: :agent_applications_email_index)
+  end
+
+  defp validate_booking_route(changeset) do
+    case get_field(changeset, :booking_scope) do
+      "route" ->
+        validate_required(changeset, [:booking_from, :booking_to],
+          message: "is required for a specific route"
+        )
+
+      _ ->
+        changeset
+    end
   end
 
   defp normalise_email(nil), do: nil
