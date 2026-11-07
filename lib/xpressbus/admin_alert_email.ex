@@ -6,6 +6,7 @@ defmodule Xpressbus.AdminAlertEmail do
   import Swoosh.Email
 
   alias Xpressbus.AdminAlerts
+  alias Xpressbus.Brand
   alias Xpressbus.Mailer
 
   @doc "Sends a new-booking alert (including payment details when available)."
@@ -77,6 +78,7 @@ defmodule Xpressbus.AdminAlertEmail do
     Booking status: #{ticket.status}
     #{payment_line(payment)}
     Booked: #{datetime(ticket.inserted_at)}
+    #{text_footer()}
     """
   end
 
@@ -104,6 +106,7 @@ defmodule Xpressbus.AdminAlertEmail do
     Payment reference: #{payment.reference}
     Payment status: #{payment.status}
     #{booking_link(ticket)}
+    #{text_footer()}
     """
   end
 
@@ -179,8 +182,45 @@ defmodule Xpressbus.AdminAlertEmail do
       </div>
       <div style="border:1px solid #f1f5f9;border-top:0;border-radius:0 0 14px 14px;padding:22px;">
         #{content}
+        #{html_footer()}
       </div>
     </div>
+    """
+  end
+
+  defp html_footer do
+    social_html =
+      Brand.social_links()
+      |> Enum.map_join(" &nbsp;·&nbsp; ", fn %{name: name, url: url} ->
+        ~s(<a href="#{h(url)}" target="_blank" rel="noopener" style="color:#FF4C00;text-decoration:none;">#{h(name)}</a>)
+      end)
+
+    """
+    <div style="margin-top:22px;padding-top:16px;border-top:1px solid #f1f5f9;text-align:center;font-size:11px;line-height:1.7;color:#94a3b8;">
+      <p style="margin:0 0 6px;">
+        <a href="#{h(Brand.website())}" target="_blank" rel="noopener" style="color:#FF4C00;text-decoration:none;">#{h(Brand.website_label())}</a>
+        &nbsp;·&nbsp;
+        <a href="mailto:#{h(Brand.email())}" style="color:#FF4C00;text-decoration:none;">#{h(Brand.email())}</a>
+        &nbsp;·&nbsp;
+        <a href="#{h(Brand.phone_uri())}" style="color:#FF4C00;text-decoration:none;">#{h(Brand.phone())}</a>
+      </p>
+      <p style="margin:0;">Follow us: #{social_html}</p>
+      <p style="margin:6px 0 0;color:#cbd5e1;">Komiuta · Elevate Your Journey</p>
+    </div>
+    """
+  end
+
+  defp text_footer do
+    social =
+      Enum.map_join(Brand.social_links(), " · ", fn %{name: name, url: url} ->
+        "#{name}: #{url}"
+      end)
+
+    """
+    — Komiuta · Elevate Your Journey
+    Website: #{Brand.website()}
+    Email: #{Brand.email()} · Call: #{Brand.phone()}
+    Follow us: #{social}
     """
   end
 

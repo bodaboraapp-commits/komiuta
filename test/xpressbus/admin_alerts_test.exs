@@ -61,6 +61,12 @@ defmodule Xpressbus.AdminAlertsTest do
       assert email.html_body =~ "/images/logo_email.png"
       assert email.html_body =~ ~s(alt="Komiuta")
       assert email.html_body =~ "PAY-ALERT-1"
+      assert email.html_body =~ "hello@komiuta.com"
+      assert email.html_body =~ "0800 211 211"
+      assert email.html_body =~ "Follow us"
+      assert email.html_body =~ "facebook.com/komiuta"
+      assert email.text_body =~ "Email: hello@komiuta.com"
+      assert email.text_body =~ "Follow us:"
     end)
   end
 
