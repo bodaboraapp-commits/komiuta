@@ -46,6 +46,7 @@ defmodule XpressbusWeb.AgentDashboardTest do
     html = conn |> get("/agent/dashboard") |> html_response(200)
 
     assert html =~ "Agent dashboard"
+    assert html =~ ~r/Good (Morning|Afternoon|Evening), Dash/
     assert html =~ "Dash Agent"
     assert html =~ "Dash Travel"
     assert html =~ "Dash Partner"

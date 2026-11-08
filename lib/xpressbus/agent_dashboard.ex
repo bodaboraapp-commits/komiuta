@@ -290,6 +290,20 @@ defmodule Xpressbus.AgentDashboard do
     end
   end
 
+  @doc "Time-consistent greeting using Kenya time (EAT, UTC+3)."
+  def greeting(now \\ DateTime.utc_now()) do
+    hour =
+      now
+      |> DateTime.add(3 * 3600, :second)
+      |> Map.fetch!(:hour)
+
+    cond do
+      hour < 12 -> "Good Morning"
+      hour < 17 -> "Good Afternoon"
+      true -> "Good Evening"
+    end
+  end
+
   @doc "Kenya local date (EAT, UTC+3)."
   def local_date do
     DateTime.utc_now()

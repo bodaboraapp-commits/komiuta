@@ -509,7 +509,8 @@ defmodule XpressbusWeb.AgentSessionController do
             [
               page_title: "KOMIUTA Agent — Account",
               agent: application,
-              dashboard: dashboard
+              dashboard: dashboard,
+              salutation: AgentDashboard.greeting()
             ] ++ @page_assigns
           )
         else
