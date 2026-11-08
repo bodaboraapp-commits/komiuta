@@ -298,6 +298,7 @@ defmodule Xpressbus.AgentDashboard do
       |> Map.fetch!(:hour)
 
     cond do
+      hour >= 21 -> "Hi"
       hour < 12 -> "Good Morning"
       hour < 17 -> "Good Afternoon"
       true -> "Good Evening"
