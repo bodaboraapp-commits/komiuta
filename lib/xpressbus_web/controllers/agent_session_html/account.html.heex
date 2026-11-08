@@ -14,7 +14,7 @@
             Agent App
           </span>
         </a>
-        
+
         <%= if @agent.status == "approved" do %>
           <a
             href="/agent/dashboard"
@@ -26,21 +26,21 @@
         <% end %>
       </div>
     </header>
-    
+
     <main class="mx-auto max-w-2xl px-5 py-12 md:py-16">
       <p class="text-[10px] font-black uppercase tracking-[0.3em] text-[#FF4C00]">
         Agent account
       </p>
-      
+
       <h1 class="mt-2 text-3xl font-black tracking-tight md:text-4xl">
         {@salutation}, {@agent.full_name |> String.split() |> List.first()}
       </h1>
-      
+
       <p class="mt-3 text-sm font-bold leading-relaxed text-slate-500">
         You are signed in to the KOMIUTA Agent app. Keep this page installed for updates on your
         application and agent account.
       </p>
-       <%!-- Agent wallet: value of confirmed partner ticket sales --%>
+      <%!-- Agent wallet: value of confirmed partner ticket sales --%>
       <%= if @agent.status == "approved" && @dashboard do %>
         <div class="mt-7 overflow-hidden rounded-[2rem] bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 p-6 text-white shadow-xl shadow-slate-900/20 md:p-8">
           <div class="flex flex-wrap items-start justify-between gap-4">
@@ -48,25 +48,25 @@
               <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-white">
                 <span class="material-symbols-outlined !text-2xl">account_balance_wallet</span>
               </div>
-              
+
               <div>
                 <p class="text-[10px] font-black uppercase tracking-[0.3em] text-white/50">
                   Your wallet
                 </p>
-                
+
                 <p class="mt-1 text-lg font-black">Partner ticket sales</p>
               </div>
             </div>
-            
+
             <span class="rounded-full bg-white/10 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-white/80">
               Payout · {String.capitalize(to_string(@agent.payout_method))}
             </span>
           </div>
-          
+
           <p class="mt-6 text-3xl font-black tracking-tight md:text-4xl">
             {Xpressbus.AgentDashboard.money(@dashboard.kpis.sales_total)}
           </p>
-          
+
           <p class="mt-1 text-xs font-bold text-white/60">
             <%= if @dashboard.operator do %>
               Confirmed bookings for {@dashboard.operator.name}
@@ -74,39 +74,39 @@
               No partner linked yet — sales appear once an admin attaches your bus partner.
             <% end %>
           </p>
-          
+
           <div class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
             <div class="rounded-2xl bg-white/5 px-4 py-3">
               <p class="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">
                 Bookings
               </p>
-              
+
               <p class="mt-1 text-xl font-black">{@dashboard.kpis.confirmed}</p>
             </div>
-            
+
             <div class="rounded-2xl bg-white/5 px-4 py-3">
               <p class="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">
                 Upcoming
               </p>
-              
+
               <p class="mt-1 text-xl font-black">{@dashboard.kpis.upcoming}</p>
             </div>
-            
+
             <div class="col-span-2 rounded-2xl bg-white/5 px-4 py-3 sm:col-span-1">
               <p class="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">
                 Routes sold
               </p>
-              
+
               <p class="mt-1 text-xl font-black">{@dashboard.kpis.routes}</p>
             </div>
           </div>
-          
+
           <div class="mt-5 flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
             <p class="max-w-md text-[10px] font-bold leading-relaxed text-white/50">
               This is the value of confirmed tickets sold for your partner. The Komiuta partnerships
               team settles payouts to your {String.capitalize(to_string(@agent.payout_method))} account.
             </p>
-            
+
             <a
               href="/agent/dashboard"
               class="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[#FF4C00] px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-[#E64400]"
@@ -117,7 +117,7 @@
           </div>
         </div>
       <% end %>
-       <%!-- Agent monthly KPI scorecard, synthesised from the partnership KPI model --%>
+      <%!-- Agent monthly KPI scorecard, synthesised from the partnership KPI model --%>
       <%= if @agent.status == "approved" do %>
         <section
           id="agent-kpi-scorecard"
@@ -129,48 +129,48 @@
                 <p class="text-[10px] font-black uppercase tracking-[0.3em] text-white/50">
                   Agent KPI scorecard
                 </p>
-                
+
                 <h2 class="mt-1 text-xl font-black tracking-tight">
                   Your monthly performance targets
                 </h2>
-                
+
                 <p class="mt-2 max-w-xl text-[11px] font-bold leading-relaxed text-white/60">
                   Performance is reviewed monthly on a balanced scorecard. These are the targets that
                   grow your partner network, bookings and payouts.
                 </p>
               </div>
-              
+
               <span class="rounded-full bg-white/10 px-3.5 py-2 text-[10px] font-black uppercase tracking-widest text-white/80">
                 Total weight · 100%
               </span>
             </div>
           </div>
-          
+
           <div class="divide-y divide-slate-100 px-6 md:px-8">
             <div class="flex gap-4 py-4">
               <div class="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-2xl bg-orange-50 text-[#FF4C00]">
                 <span class="text-sm font-black">30%</span>
                 <span class="text-[7px] font-black uppercase tracking-widest">weight</span>
               </div>
-              
+
               <div>
                 <p class="text-xs font-black text-slate-800">New operator onboarding (B2B)</p>
-                
+
                 <p class="mt-1 text-[11px] font-bold leading-relaxed text-slate-500">
                   Monthly target: help onboard <strong class="text-slate-700">2–3 new long-distance bus operators or Matatu Saccos</strong>.
                 </p>
               </div>
             </div>
-            
+
             <div class="flex gap-4 py-4">
               <div class="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-2xl bg-orange-50 text-[#FF4C00]">
                 <span class="text-sm font-black">25%</span>
                 <span class="text-[7px] font-black uppercase tracking-widest">weight</span>
               </div>
-              
+
               <div>
                 <p class="text-xs font-black text-slate-800">Agent network expansion</p>
-                
+
                 <p class="mt-1 text-[11px] font-bold leading-relaxed text-slate-500">
                   Monthly target: recruit
                   <strong class="text-slate-700">15 new active physical ticketing agents</strong>
@@ -178,16 +178,16 @@
                 </p>
               </div>
             </div>
-            
+
             <div class="flex gap-4 py-4">
               <div class="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-2xl bg-orange-50 text-[#FF4C00]">
                 <span class="text-sm font-black">20%</span>
                 <span class="text-[7px] font-black uppercase tracking-widest">weight</span>
               </div>
-              
+
               <div>
                 <p class="text-xs font-black text-slate-800">Ticket booking volume</p>
-                
+
                 <p class="mt-1 text-[11px] font-bold leading-relaxed text-slate-500">
                   Monthly target: deliver
                   <strong class="text-slate-700">consistent month-on-month revenue growth</strong>
@@ -195,18 +195,18 @@
                 </p>
               </div>
             </div>
-            
+
             <div class="flex gap-4 py-4">
               <div class="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-2xl bg-orange-50 text-[#FF4C00]">
                 <span class="text-sm font-black">15%</span>
                 <span class="text-[7px] font-black uppercase tracking-widest">weight</span>
               </div>
-              
+
               <div>
                 <p class="text-xs font-black text-slate-800">
                   App downloads &amp; consumer growth
                 </p>
-                
+
                 <p class="mt-1 text-[11px] font-bold leading-relaxed text-slate-500">
                   Monthly target: secure
                   <strong class="text-slate-700">200 new passenger sign-ups and first-time bookings</strong>
@@ -214,18 +214,18 @@
                 </p>
               </div>
             </div>
-            
+
             <div class="flex gap-4 py-4">
               <div class="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-2xl bg-orange-50 text-[#FF4C00]">
                 <span class="text-sm font-black">10%</span>
                 <span class="text-[7px] font-black uppercase tracking-widest">weight</span>
               </div>
-              
+
               <div>
                 <p class="text-xs font-black text-slate-800">
                   Operator retention &amp; platform adoption
                 </p>
-                
+
                 <p class="mt-1 text-[11px] font-bold leading-relaxed text-slate-500">
                   Monthly target:
                   <strong class="text-slate-700">zero churn among onboarded operators</strong>
@@ -234,7 +234,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="border-t border-slate-100 bg-slate-50/60 px-6 py-3.5 md:px-8">
             <p class="text-[10px] font-bold leading-relaxed text-slate-400">
               Scorecard reviewed monthly with your Komiuta partnerships manager. Weights total 100%.
@@ -242,17 +242,17 @@
           </div>
         </section>
       <% end %>
-      
+
       <div class="mt-6 rounded-[2rem] border border-slate-100 bg-white p-6 shadow-xl shadow-slate-900/5 md:p-8">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p class="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
               Application status
             </p>
-            
+
             <p class="mt-1 text-lg font-black">{@agent.business_name}</p>
           </div>
-          
+
           <span class={[
             "rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-widest",
             @agent.status == "approved" && "bg-emerald-50 text-emerald-700",
@@ -262,15 +262,15 @@
             {@agent.status}
           </span>
         </div>
-        
+
         <div class="mt-6 rounded-2xl border border-slate-100 bg-slate-50 p-5">
           <p class="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400">
             Agent reference
           </p>
-          
+
           <p class="mt-2 text-2xl font-black tracking-wide text-slate-900">{@agent.reference}</p>
         </div>
-        
+
         <%= cond do %>
           <% @agent.status == "approved" -> %>
             <p class="mt-5 rounded-2xl bg-emerald-50 px-5 py-4 text-xs font-bold leading-relaxed text-emerald-800">
@@ -286,20 +286,20 @@
               Your application is under review. We will contact you once verification is complete.
             </p>
         <% end %>
-        
+
         <%= if @agent.status == "approved" do %>
           <div class="mt-4 flex flex-col gap-4 rounded-2xl border border-orange-100 bg-orange-50/60 p-5 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex items-start gap-3">
               <span class="material-symbols-outlined !text-2xl text-[#FF4C00]">badge</span>
               <div>
                 <p class="text-xs font-black text-slate-900">Your verified agent ID is ready</p>
-                
+
                 <p class="mt-1 text-[11px] font-bold leading-relaxed text-slate-500">
                   Print your official lanyard tag with a scannable verification QR code.
                 </p>
               </div>
             </div>
-            
+
             <a
               href="/agent/tag"
               class="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-black"
@@ -308,144 +308,66 @@
             </a>
           </div>
         <% end %>
-        
+
         <%= if @agent.admin_notes do %>
           <p class="mt-3 rounded-2xl border border-amber-100 bg-amber-50 px-5 py-4 text-xs font-bold leading-relaxed text-amber-900">
             <strong>Reason / admin note:</strong> {@agent.admin_notes}
           </p>
         <% end %>
-        
+
         <dl class="mt-6 grid gap-4 sm:grid-cols-2">
           <div>
             <dt class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Email</dt>
-            
+
             <dd class="mt-1 text-sm font-bold break-all">{@agent.email}</dd>
           </div>
-          
+
           <div>
             <dt class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Phone</dt>
-            
+
             <dd class="mt-1 text-sm font-bold">{@agent.phone}</dd>
           </div>
-          
+
           <div>
             <dt class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
               Town / county
             </dt>
-            
+
             <dd class="mt-1 text-sm font-bold">{@agent.city}</dd>
           </div>
-          
+
           <div>
             <dt class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
               Payout
             </dt>
-            
+
             <dd class="mt-1 text-sm font-bold uppercase">{@agent.payout_method}</dd>
           </div>
-          
+
           <%= if @agent.bus_operator do %>
             <div class="sm:col-span-2">
               <dt class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
                 Bus operator / partner
               </dt>
-              
+
               <dd class="mt-1 inline-flex items-center gap-2 text-sm font-bold">
                 <span class="material-symbols-outlined !text-base text-[#FF4C00]">directions_bus</span> {@agent.bus_operator.name}
               </dd>
             </div>
           <% end %>
-          
+
           <%= if @agent.routes do %>
             <div class="sm:col-span-2">
               <dt class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
                 Routes
               </dt>
-              
+
               <dd class="mt-1 text-sm font-bold">{@agent.routes}</dd>
             </div>
           <% end %>
         </dl>
       </div>
-      
-      <%= if @agent.status == "approved" and @dashboard do %>
-        <div class="mt-6 overflow-hidden rounded-[2rem] border border-slate-100 bg-white shadow-xl shadow-slate-900/5">
-          <div class="flex flex-col gap-3 border-b border-slate-50 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p class="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
-                Partner bookings
-              </p>
-              
-              <p class="mt-1 text-lg font-black text-slate-900">
-                Bookings from {@agent.bus_operator && @agent.bus_operator.name}
-              </p>
-              
-              <span class="mt-2 inline-flex rounded-full bg-orange-50 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-[#FF4C00]">
-                {@dashboard.scope_label}
-              </span>
-            </div>
-            
-            <div class="flex flex-wrap items-center gap-2">
-              <span class="rounded-full bg-slate-50 px-3.5 py-2 text-[10px] font-black text-slate-500">
-                {@dashboard.kpis.total_bookings} bookings
-              </span>
-              
-              <a
-                href="/agent/bookings"
-                class="inline-flex items-center gap-1 rounded-full bg-slate-900 px-3.5 py-2 text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-black"
-              >
-                View all <span class="material-symbols-outlined !text-[14px]">chevron_right</span>
-              </a>
-            </div>
-          </div>
-          
-          <%= if Enum.empty?(@dashboard.recent_bookings) do %>
-            <div class="px-6 py-12 text-center">
-              <span class="material-symbols-outlined !text-4xl text-slate-200">confirmation_number</span>
-              <p class="mt-2 text-sm font-black text-slate-500">No partner bookings yet</p>
-              
-              <p class="mt-1 text-xs font-bold text-slate-400">
-                Bookings from {@agent.bus_operator && @agent.bus_operator.name} will appear here.
-              </p>
-            </div>
-          <% else %>
-            <div class="divide-y divide-slate-50">
-              <%= for booking <- @dashboard.recent_bookings do %>
-                <div
-                  id={"account-booking-#{booking.ticket_id}"}
-                  class="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div class="min-w-0">
-                    <p class="truncate text-xs font-black text-slate-800">
-                      {booking.passenger_name || "Guest"}
-                    </p>
-                    
-                    <p class="mt-0.5 text-[10px] font-bold text-slate-400">
-                      {booking.from} → {booking.to} · {booking.company}
-                    </p>
-                  </div>
-                  
-                  <div class="flex shrink-0 flex-wrap items-center gap-3">
-                    <span class="text-[10px] font-bold text-slate-400">
-                      {booking.travel_label} · {booking.departure}
-                    </span>
-                     <span class="text-xs font-black text-slate-800">{booking.amount_label}</span>
-                    <span class={[
-                      "rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-widest",
-                      booking.status == "confirmed" && "bg-emerald-50 text-emerald-700",
-                      booking.status == "cancelled" && "bg-red-50 text-red-600",
-                      booking.status == "pending" && "bg-amber-50 text-amber-700"
-                    ]}>
-                      {booking.status_label}
-                    </span>
-                  </div>
-                </div>
-              <% end %>
-            </div>
-          <% end %>
-        </div>
-      <% end %>
-      
+
       <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
         <%= if @agent.status == "approved" do %>
           <a
@@ -454,7 +376,7 @@
           >
             Open dashboard
           </a>
-          
+
           <a
             href="/agent/tag"
             class="rounded-xl border border-slate-200 bg-white px-5 py-3 text-center text-[10px] font-black uppercase tracking-widest text-slate-600 transition hover:border-slate-300"
@@ -462,14 +384,14 @@
             Agent ID tag
           </a>
         <% end %>
-        
+
         <a
           href="/agent"
           class="rounded-xl border border-slate-200 bg-white px-5 py-3 text-center text-[10px] font-black uppercase tracking-widest text-slate-600 transition hover:border-slate-300"
         >
           Agent home
         </a>
-        
+
         <a
           href="/agent/logout"
           class="rounded-xl bg-slate-900 px-5 py-3 text-center text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-black"
@@ -478,7 +400,7 @@
         </a>
       </div>
     </main>
-    
+
     <footer class="px-5 py-8 text-center text-[10px] font-black uppercase tracking-widest text-slate-400">
       © {DateTime.utc_now().year} Komiuta Agent
     </footer>
