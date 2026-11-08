@@ -443,8 +443,12 @@ defmodule XpressbusWeb.AgentSessionController do
             render(
               conn,
               :dashboard,
-              [page_title: "KOMIUTA Agent — Dashboard", agent: application, dashboard: dashboard] ++
-                @page_assigns
+              [
+                page_title: "KOMIUTA Agent — Dashboard",
+                agent: application,
+                dashboard: dashboard,
+                salutation: AgentDashboard.greeting()
+              ] ++ @page_assigns
             )
 
           not Agents.email_verified?(application) ->
