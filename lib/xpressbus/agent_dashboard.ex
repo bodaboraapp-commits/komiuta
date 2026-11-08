@@ -89,6 +89,33 @@ defmodule Xpressbus.AgentDashboard do
 
   def scope_label(%AgentApplication{}), do: "All partner bookings"
 
+  @doc """
+  Confirmed booking totals for the current and previous month, using the agent's
+  admin-configured booking scope.
+  """
+  def monthly_booking_metrics(%AgentApplication{} = agent, month_start, previous_month_start) do
+    confirmed =
+      agent
+      |> then(&bookings_query(operator_for(&1), &1))
+      |> where([t], t.status == "confirmed")
+
+    current = where(confirmed, [t], t.inserted_at >= ^month_start)
+
+    previous =
+      where(
+        confirmed,
+        [t],
+        t.inserted_at >= ^previous_month_start and t.inserted_at < ^month_start
+      )
+
+    %{
+      current_count: count(current),
+      current_sales: sales_total(current),
+      previous_count: count(previous),
+      previous_sales: sales_total(previous)
+    }
+  end
+
   @doc "The bus operator (partner) an agent represents, if any."
   def operator_for(%AgentApplication{bus_operator: %BusOperator{} = operator}), do: operator
 

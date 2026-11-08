@@ -167,7 +167,9 @@
                     <p class="text-[8px] font-black uppercase tracking-widest text-emerald-600">
                       Achieved
                     </p>
-                    <p class="mt-0.5 text-[11px] font-black text-emerald-700">—</p>
+                    <p class="mt-0.5 text-[11px] font-black text-emerald-700">
+                      {@kpi_achieved.new_operators}
+                    </p>
                   </div>
                   <div class="rounded-xl border border-slate-100 bg-white px-3 py-2">
                     <p class="text-[8px] font-black uppercase tracking-widest text-slate-400">
@@ -201,7 +203,9 @@
                     <p class="text-[8px] font-black uppercase tracking-widest text-emerald-600">
                       Achieved
                     </p>
-                    <p class="mt-0.5 text-[11px] font-black text-emerald-700">—</p>
+                    <p class="mt-0.5 text-[11px] font-black text-emerald-700">
+                      {@kpi_achieved.new_agents}
+                    </p>
                   </div>
                   <div class="rounded-xl border border-slate-100 bg-white px-3 py-2">
                     <p class="text-[8px] font-black uppercase tracking-widest text-slate-400">
@@ -236,7 +240,7 @@
                       Achieved
                     </p>
                     <p class="mt-0.5 text-[11px] font-black text-emerald-700">
-                      {@dashboard.kpis.confirmed} confirmed
+                      {@kpi_achieved.booking_growth}
                     </p>
                   </div>
                   <div class="rounded-xl border border-slate-100 bg-white px-3 py-2">
@@ -273,7 +277,9 @@
                     <p class="text-[8px] font-black uppercase tracking-widest text-emerald-600">
                       Achieved
                     </p>
-                    <p class="mt-0.5 text-[11px] font-black text-emerald-700">—</p>
+                    <p class="mt-0.5 text-[11px] font-black text-emerald-700">
+                      {@kpi_achieved.new_passengers}
+                    </p>
                   </div>
                   <div class="rounded-xl border border-slate-100 bg-white px-3 py-2">
                     <p class="text-[8px] font-black uppercase tracking-widest text-slate-400">
@@ -310,7 +316,7 @@
                       Achieved
                     </p>
                     <p class="mt-0.5 text-[11px] font-black text-emerald-700">
-                      {if @dashboard.operator, do: "Active partner", else: "—"}
+                      {@kpi_achieved.retention}
                     </p>
                   </div>
                   <div class="rounded-xl border border-slate-100 bg-white px-3 py-2">
@@ -328,8 +334,8 @@
 
           <div class="border-t border-slate-100 bg-slate-50/60 px-6 py-3.5 md:px-8">
             <p class="text-[10px] font-bold leading-relaxed text-slate-400">
-              Scorecard reviewed monthly with your Komiuta partnerships manager. Weights total 100%.
-              Achieved values for onboarding, agent recruitment and consumer growth are confirmed by your manager.
+              Scorecard reviewed monthly with your Komiuta partnerships manager. Achieved values are
+              calculated automatically for the current month.
             </p>
           </div>
         </section>

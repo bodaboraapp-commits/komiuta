@@ -3,6 +3,7 @@ defmodule XpressbusWeb.AgentSessionController do
 
   alias Xpressbus.Agents
   alias Xpressbus.AgentDashboard
+  alias Xpressbus.AgentKpis
   alias Xpressbus.AgentTags
   alias Xpressbus.Integrations
   alias XpressbusWeb.Endpoint
@@ -507,6 +508,11 @@ defmodule XpressbusWeb.AgentSessionController do
               AgentDashboard.load(application)
             end
 
+          kpi_achieved =
+            if application.status == "approved" do
+              AgentKpis.for_agent(application)
+            end
+
           render(
             conn,
             :account,
@@ -514,6 +520,7 @@ defmodule XpressbusWeb.AgentSessionController do
               page_title: "KOMIUTA Agent — Account",
               agent: application,
               dashboard: dashboard,
+              kpi_achieved: kpi_achieved,
               salutation: AgentDashboard.greeting()
             ] ++ @page_assigns
           )
