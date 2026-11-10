@@ -9,7 +9,7 @@ defmodule XpressbusWeb.UserController do
 
   use XpressbusWeb, :controller
 
-  alias Xpressbus.Accounts
+  alias Xpressbus.{Accounts, Analytics}
 
   def login(conn, _params) do
     render(conn, :login, login_page_assigns())
@@ -125,6 +125,11 @@ defmodule XpressbusWeb.UserController do
             :verify
           end
 
+        Analytics.track(
+          if(signup_step == :complete, do: "signup_details_viewed", else: "signup_started"),
+          metadata: %{method: params["method"] || if(verified_phone, do: "sms", else: "choose")}
+        )
+
         render(conn, :registration,
           verified_phone: verified_phone,
           phone: phone,
@@ -174,6 +179,8 @@ defmodule XpressbusWeb.UserController do
                 redirect_to =
                   "/user/signup?" <>
                     URI.encode_query(%{"phone" => phone, "verified" => "1"})
+
+                Analytics.track("signup_phone_verified", metadata: %{method: "sms"})
 
                 conn
                 |> configure_session(renew: true)
@@ -368,6 +375,8 @@ defmodule XpressbusWeb.UserController do
 
     case Accounts.register_user(user_params) do
       {:ok, user} ->
+        Analytics.track("signup_completed", user_id: user.id, metadata: %{method: "signup"})
+
         conn =
           conn
           |> configure_session(renew: true)

@@ -72,6 +72,7 @@ defmodule XpressbusWeb.AdminComponents do
           icon="analytics"
           label="Analytics"
           id="analytics"
+          href="/admin/analytics"
           active={@active_tab}
           collapsed={@collapsed}
         />

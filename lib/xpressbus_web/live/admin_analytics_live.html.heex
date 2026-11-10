@@ -1,0 +1,150 @@
+<Layouts.app flash={@flash}>
+  <div class="flex min-h-screen bg-[#f8fafc]">
+    <.sidebar
+      active_tab="analytics"
+      bus_expanded={@bus_expanded}
+      chyllz_expanded={@chyllz_expanded}
+      settings_expanded={@settings_expanded}
+      collapsed={@sidebar_collapsed}
+    />
+
+    <div class={[
+      "flex-1 transition-all duration-300",
+      if(@sidebar_collapsed, do: "lg:pl-20", else: "lg:pl-72")
+    ]}>
+      <header class="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-slate-100 bg-white px-6 md:px-8">
+        <div>
+          <h1 class="text-xl font-black tracking-tight text-slate-900">
+            Analytics &amp; Funnels
+          </h1>
+          <p class="mt-0.5 text-[10px] font-bold text-slate-400">{@period_label}</p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <%= for days <- @periods do %>
+            <button
+              type="button"
+              id={"analytics-period-#{days}"}
+              phx-click="set_period"
+              phx-value-days={days}
+              class={[
+                "rounded-xl border px-3.5 py-2 text-[10px] font-black uppercase tracking-widest transition",
+                @days == days && "border-[#FF4C00] bg-[#FF4C00] text-white",
+                @days != days &&
+                  "border-slate-200 bg-white text-slate-500 hover:border-orange-200 hover:text-[#FF4C00]"
+              ]}
+            >
+              {days}d
+            </button>
+          <% end %>
+        </div>
+      </header>
+
+      <main class="p-5 md:p-8">
+        <div class="grid gap-4 md:grid-cols-[minmax(0,1fr)_320px]">
+          <section class="rounded-[28px] border border-slate-100 bg-white p-5 shadow-sm md:p-7">
+            <p class="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
+              Production funnel
+            </p>
+            <h2 class="mt-1 text-2xl font-black tracking-tight text-slate-900">
+              Where travellers and agents drop off
+            </h2>
+            <p class="mt-2 max-w-2xl text-xs font-bold leading-relaxed text-slate-500">
+              First-party events recorded by Komiuta itself. GA4 receives the same events through
+              <span class="font-black text-slate-700">dataLayer</span>
+              when a measurement ID is configured.
+            </p>
+          </section>
+
+          <section class="rounded-[28px] border border-slate-100 bg-white p-5 shadow-sm">
+            <p class="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
+              GA4 status
+            </p>
+
+            <%= if @ga_measurement_id do %>
+              <div class="mt-3 flex items-center gap-2 rounded-2xl bg-emerald-50 px-3 py-2.5 text-[11px] font-black text-emerald-700">
+                <span class="material-symbols-outlined !text-[18px]" aria-hidden="true">check_circle</span>
+                Connected
+              </div>
+              <p class="mt-2 font-mono text-[11px] font-bold text-slate-500">
+                {@ga_measurement_id}
+              </p>
+              <p class="mt-2 text-[10px] font-bold leading-relaxed text-slate-400">
+                Set <span class="font-mono">GA_MEASUREMENT_ID</span>
+                to override the default production property.
+              </p>
+            <% else %>
+              <div class="mt-3 flex items-center gap-2 rounded-2xl bg-amber-50 px-3 py-2.5 text-[11px] font-black text-amber-700">
+                <span class="material-symbols-outlined !text-[18px]" aria-hidden="true">warning</span>
+                Not configured
+              </div>
+              <p class="mt-2 text-[10px] font-bold leading-relaxed text-slate-400">
+                Set <span class="font-mono">GA_MEASUREMENT_ID</span>
+                in the production environment.
+              </p>
+            <% end %>
+          </section>
+        </div>
+
+        <div id="analytics-funnels" class="mt-6 space-y-5">
+          <%= for funnel <- @funnels do %>
+            <section
+              id={"funnel-#{funnel.key}"}
+              class="overflow-hidden rounded-[28px] border border-slate-100 bg-white shadow-sm"
+            >
+              <div class="flex flex-wrap items-start justify-between gap-3 border-b border-slate-50 px-5 py-4 md:px-7">
+                <div>
+                  <h2 class="text-base font-black tracking-tight text-slate-900">
+                    {funnel.title}
+                  </h2>
+                  <p class="mt-0.5 text-[10px] font-bold text-slate-400">{funnel.description}</p>
+                </div>
+
+                <span class="rounded-full bg-slate-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                  {funnel.total} entered
+                </span>
+              </div>
+
+              <div class="grid gap-3 p-5 md:grid-cols-4 md:p-7">
+                <%= for stage <- funnel.stages do %>
+                  <div class="rounded-2xl border border-slate-100 bg-slate-50/60 p-4">
+                    <div class="flex items-center justify-between gap-2">
+                      <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                        {stage.label}
+                      </p>
+                      <span class="rounded-full bg-white px-2 py-0.5 text-[9px] font-black text-slate-400">
+                        {stage.step_conversion_label}
+                      </span>
+                    </div>
+
+                    <p class="mt-2 text-3xl font-black tracking-tight text-slate-900">
+                      {stage.count}
+                    </p>
+
+                    <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-white">
+                      <div
+                        class="h-full rounded-full bg-[#FF4C00]"
+                        style={"width: #{min(stage.conversion, 100)}%"}
+                      >
+                      </div>
+                    </div>
+
+                    <p class="mt-1.5 text-[9px] font-bold text-slate-400">
+                      {stage.conversion_label} of entrants
+                    </p>
+                  </div>
+                <% end %>
+              </div>
+
+              <%= if funnel.total == 0 do %>
+                <div class="border-t border-slate-50 bg-slate-50/40 px-5 py-3 text-[10px] font-bold text-slate-400 md:px-7">
+                  No events recorded in this period yet. The funnel populates as real users move through this journey.
+                </div>
+              <% end %>
+            </section>
+          <% end %>
+        </div>
+      </main>
+    </div>
+  </div>
+</Layouts.app>

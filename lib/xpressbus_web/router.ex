@@ -147,6 +147,7 @@ defmodule XpressbusWeb.Router do
 
     get "/", AdminController, :dashboard_redirect
     live "/dashboard", AdminDashboardLive, :index
+    live "/analytics", AdminAnalyticsLive, :index
     live "/banners", AdminBannerLive, :index
     live "/buses", AdminFleetLive, :index
     live "/city", AdminCityLive, :index

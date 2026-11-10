@@ -1,7 +1,7 @@
 defmodule XpressbusWeb.TripManageLive do
   use XpressbusWeb, :live_view
 
-  alias Xpressbus.{Accounts, Itineraries, Tickets, TripFinances}
+  alias Xpressbus.{Accounts, Analytics, Itineraries, Tickets, TripFinances}
 
   @tabs [
     {"expenses", "Expenses", "payments"},
@@ -55,6 +55,13 @@ defmodule XpressbusWeb.TripManageLive do
     expenses = TripFinances.list_expenses(finance_scope)
     budget = TripFinances.get_budget(finance_scope)
 
+    if connected?(socket) do
+      Analytics.track("manage_itinerary_opened",
+        user_id: user.id,
+        metadata: %{kind: to_string(context.kind)}
+      )
+    end
+
     socket
     |> assign(:page_title, "Manage itinerary — #{context.trip.title}")
     |> assign(:page_robots, "noindex,nofollow")
@@ -69,6 +76,7 @@ defmodule XpressbusWeb.TripManageLive do
     |> assign(:budget, budget)
     |> assign(:budget_input, "")
     |> assign(:budget_saved, false)
+    |> assign(:budget_tracked, false)
     |> assign(:editing_expense_id, nil)
     |> assign(:pending_delete, nil)
     |> assign(:undo_expense, nil)
@@ -138,10 +146,13 @@ defmodule XpressbusWeb.TripManageLive do
       {:ok, value} ->
         case TripFinances.set_budget(socket.assigns.finance_scope, value) do
           {:ok, stored_budget} ->
+            track_budget_set(socket, stored_budget)
+
             {:noreply,
              socket
              |> assign(:budget, stored_budget)
              |> assign(:budget_saved, true)
+             |> assign(:budget_tracked, true)
              |> assign(:error, nil)
              |> assign_metrics()}
 
@@ -159,11 +170,14 @@ defmodule XpressbusWeb.TripManageLive do
       {:ok, value} ->
         case TripFinances.set_budget(socket.assigns.finance_scope, value) do
           {:ok, stored_budget} ->
+            track_budget_set(socket, stored_budget)
+
             {:noreply,
              socket
              |> assign(:budget, stored_budget)
              |> assign(:budget_form, false)
              |> assign(:budget_saved, false)
+             |> assign(:budget_tracked, true)
              |> assign(:error, nil)
              |> assign_metrics()}
 
@@ -201,6 +215,11 @@ defmodule XpressbusWeb.TripManageLive do
 
         case TripFinances.add_expense(socket.assigns.finance_scope, attrs) do
           {:ok, _expense} ->
+            Analytics.track("manage_itinerary_expense_added",
+              user_id: socket.assigns.user.id,
+              metadata: %{category: category}
+            )
+
             {:noreply,
              socket
              |> assign(:expenses, TripFinances.list_expenses(socket.assigns.finance_scope))
@@ -380,6 +399,15 @@ defmodule XpressbusWeb.TripManageLive do
     |> String.replace(~r/\D/, "")
     |> String.trim_leading("254")
     |> String.trim_leading("0")
+  end
+
+  defp track_budget_set(socket, budget) do
+    unless socket.assigns[:budget_tracked] do
+      Analytics.track("manage_itinerary_budget_set",
+        user_id: socket.assigns.user.id,
+        metadata: %{amount: to_string(budget)}
+      )
+    end
   end
 
   defp parse_amount(value) do

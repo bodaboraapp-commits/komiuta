@@ -43,6 +43,17 @@ config :xpressbus,
        :firebase,
        Application.get_env(:xpressbus, :firebase, %{}) |> Map.merge(firebase_env)
 
+# GA4 measurement id for first-party funnel events. The Firebase measurement id
+# is the same GA4 property, so use it as the safe production default and allow
+# an explicit GA_MEASUREMENT_ID override.
+analytics_measurement_id =
+  case System.get_env("GA_MEASUREMENT_ID") do
+    value when is_binary(value) and value != "" -> value
+    _other -> "G-V9JD71WH4E"
+  end
+
+config :xpressbus, :analytics, measurement_id: analytics_measurement_id
+
 sms_env =
   %{
     provider: System.get_env("SMS_PROVIDER", "africastalking"),

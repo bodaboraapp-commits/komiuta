@@ -16,7 +16,7 @@ defmodule XpressbusWeb.AiTripBuilderLive do
 
   import XpressbusWeb.BrandComponents
 
-  alias Xpressbus.{Accounts, Itineraries, TripItinerary}
+  alias Xpressbus.{Accounts, Analytics, Itineraries, TripItinerary}
 
   import XpressbusWeb.ChyllzAccountArt
 
@@ -482,6 +482,8 @@ defmodule XpressbusWeb.AiTripBuilderLive do
   end
 
   def handle_event("refine", _params, socket) do
+    track_event(socket, "ai_itinerary_refined")
+
     {:noreply,
      socket
      |> assign(:step, 1)
@@ -504,6 +506,16 @@ defmodule XpressbusWeb.AiTripBuilderLive do
       nil -> Itineraries.save(user, socket.assigns.trip, socket.assigns.itinerary)
       saved -> Itineraries.update(saved, socket.assigns.trip, socket.assigns.itinerary)
     end
+  end
+
+  defp track_event(socket, event, metadata \\ %{}) do
+    user_id =
+      case socket.assigns[:current_user] do
+        %{id: id} -> id
+        _other -> nil
+      end
+
+    Analytics.track(event, user_id: user_id, metadata: metadata)
   end
 
   defp current_user_from_session(session) do
@@ -587,6 +599,8 @@ defmodule XpressbusWeb.AiTripBuilderLive do
       user ->
         case persist_itinerary(user, socket) do
           {:ok, saved} ->
+            track_event(socket, "ai_itinerary_saved", %{itinerary_id: saved.id})
+
             {:noreply,
              socket
              |> assign(:saved_itinerary, saved)
@@ -818,6 +832,8 @@ defmodule XpressbusWeb.AiTripBuilderLive do
   end
 
   defp complete_generation(socket, itinerary) do
+    track_event(socket, "ai_itinerary_generated", %{city: itinerary.city})
+
     {:noreply,
      socket
      |> assign(:generating, false)
