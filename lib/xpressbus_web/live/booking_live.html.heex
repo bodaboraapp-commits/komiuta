@@ -52,11 +52,11 @@
                 id="search-form"
                 phx-submit="search"
                 phx-change="search_input"
-                class="flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-3"
+                class="flex min-w-0 flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-3"
               >
-                <div class="flex-1 flex flex-col md:flex-row items-stretch md:items-center gap-1.5 md:gap-2 w-full">
+                <div class="flex-1 flex min-w-0 flex-col md:flex-row items-stretch md:items-center gap-1.5 md:gap-2 w-full">
                   <%!-- From --%>
-                  <div class="flex-1 relative group px-4 md:px-6 py-2 md:py-3 rounded-2xl md:rounded-full hover:bg-slate-50 transition-colors border-b md:border-b-0 md:border-r border-slate-50 last:border-b-0 md:last:border-r-0">
+                  <div class="flex-1 min-w-0 relative group px-4 md:px-6 py-2 md:py-3 rounded-2xl md:rounded-full hover:bg-slate-50 transition-colors border-b md:border-b-0 md:border-r border-slate-50 last:border-b-0 md:last:border-r-0">
                     <label class="block text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-0.5 md:mb-1 ml-6 md:ml-7">From City</label>
                     <div class="flex items-center gap-3">
                       <span class="material-symbols-outlined text-slate-300 group-focus-within:text-[#FF4C00] transition-colors !text-lg md:!text-2xl">my_location</span>
@@ -95,7 +95,7 @@
                     <span class="material-symbols-outlined !text-xl font-black">sync_alt</span>
                   </button>
                   <%!-- To --%>
-                  <div class="flex-1 relative group px-4 md:px-6 py-2 md:py-3 rounded-2xl md:rounded-full hover:bg-slate-50 transition-colors border-b md:border-b-0 md:border-r border-slate-50 last:border-b-0 md:last:border-r-0">
+                  <div class="flex-1 min-w-0 relative group px-4 md:px-6 py-2 md:py-3 rounded-2xl md:rounded-full hover:bg-slate-50 transition-colors border-b md:border-b-0 md:border-r border-slate-50 last:border-b-0 md:last:border-r-0">
                     <label class="block text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-0.5 md:mb-1 ml-6 md:ml-7">To City</label>
                     <div class="flex items-center gap-3">
                       <span class="material-symbols-outlined text-slate-300 group-focus-within:text-[#FF4C00] transition-colors !text-lg md:!text-2xl">location_on</span>
@@ -126,7 +126,7 @@
                     <% end %>
                   </div>
                   <%!-- Date --%>
-                  <div class="flex-1 group px-4 md:px-6 py-2 md:py-3 rounded-2xl md:rounded-full hover:bg-slate-50 transition-colors">
+                  <div class="flex-1 min-w-0 group px-4 md:px-6 py-2 md:py-3 rounded-2xl md:rounded-full hover:bg-slate-50 transition-colors">
                     <label class="block text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-0.5 md:mb-1 ml-6 md:ml-7">Travel Date</label>
                     <div class="flex items-center gap-3">
                       <span class="material-symbols-outlined text-slate-300 group-focus-within:text-[#FF4C00] transition-colors !text-lg md:!text-2xl">calendar_month</span>
@@ -143,7 +143,7 @@
                     <%!-- Return Date (round trip) --%>
                     <div
                       id="return-date-field"
-                      class="flex-1 group px-4 md:px-6 py-2 md:py-3 rounded-2xl md:rounded-full hover:bg-slate-50 transition-colors"
+                      class="flex-1 min-w-0 group px-4 md:px-6 py-2 md:py-3 rounded-2xl md:rounded-full hover:bg-slate-50 transition-colors"
                     >
                       <div class="flex items-center justify-between gap-2">
                         <label class="block text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-0.5 md:mb-1 ml-6 md:ml-7">

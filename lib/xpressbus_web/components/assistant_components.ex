@@ -67,7 +67,7 @@ defmodule XpressbusWeb.AssistantComponents do
       type="button"
       phx-click="assistant_open"
       title="Ask Chyllz AI"
-      class="assistant-launcher fixed bottom-5 right-4 z-[70] grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-800 text-white shadow-2xl shadow-emerald-900/30 transition-all duration-300 hover:-translate-y-0.5 hover:scale-105 hover:shadow-emerald-700/40 sm:bottom-6 sm:right-6"
+      class="assistant-launcher fixed bottom-5 right-4 z-[60] grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-800 text-white shadow-2xl shadow-emerald-900/30 transition-all duration-300 hover:-translate-y-0.5 hover:scale-105 hover:shadow-emerald-700/40 sm:bottom-6 sm:right-6"
       aria-label="Open Chyllz AI travel assistant"
       aria-expanded="false"
     >
@@ -89,7 +89,7 @@ defmodule XpressbusWeb.AssistantComponents do
       id="global-assistant-launcher"
       href="/tour-packages?assistant=1"
       title="Ask Chyllz AI"
-      class="assistant-launcher fixed bottom-5 right-4 z-[70] grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-800 text-white shadow-2xl shadow-emerald-900/30 transition-all duration-300 hover:-translate-y-0.5 hover:scale-105 hover:shadow-emerald-700/40 sm:bottom-6 sm:right-6"
+      class="assistant-launcher fixed bottom-5 right-4 z-[60] grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-800 text-white shadow-2xl shadow-emerald-900/30 transition-all duration-300 hover:-translate-y-0.5 hover:scale-105 hover:shadow-emerald-700/40 sm:bottom-6 sm:right-6"
       aria-label="Open Chyllz AI travel assistant"
       data-track="chat_open"
     >
