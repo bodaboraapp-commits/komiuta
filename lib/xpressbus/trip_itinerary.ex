@@ -575,7 +575,13 @@ defmodule Xpressbus.TripItinerary do
   end
 
   defp places_or_fallback(trip, city, category, limit) do
-    case GooglePlaces.recommendations(city, category, limit) do
+    opts = [
+      latitude: trip.latitude,
+      longitude: trip.longitude,
+      radius: 25_000
+    ]
+
+    case GooglePlaces.recommendations(city, category, limit, opts) do
       {:ok, places} when places != [] ->
         {places, :google_maps}
 

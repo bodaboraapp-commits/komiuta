@@ -18,7 +18,7 @@ defmodule Xpressbus.GooglePlaces do
   @endpoint "https://places.googleapis.com/v1/places:searchText"
   @cache :xpressbus_google_places_cache
   @cache_ttl :timer.hours(6)
-  @field_mask "places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.googleMapsUri,places.photos"
+  @field_mask "places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.googleMapsUri,places.photos,places.location"
   @fallback_images [
     "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
     "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=600&q=80",
@@ -37,21 +37,24 @@ defmodule Xpressbus.GooglePlaces do
 
       %{name, address, rating, reviews, image, maps_url}
   """
-  def recommendations(city, category, limit \\ 8)
+  def recommendations(city, category, limit \\ 8, opts \\ [])
 
-  def recommendations(city, category, limit) when not is_binary(city) or city == "" do
+  def recommendations(city, category, limit, opts) when not is_binary(city) or city == "" do
     _ = category
     _ = limit
+    _ = opts
     {:error, :missing_destination}
   end
 
-  def recommendations(city, category, limit) when category in [:hotels, :restaurants] do
-    cache_key = {category, String.downcase(city)}
+  def recommendations(city, category, limit, opts) when category in [:hotels, :restaurants] do
+    latitude = Keyword.get(opts, :latitude)
+    longitude = Keyword.get(opts, :longitude)
+    cache_key = {category, String.downcase(city), latitude, longitude}
 
-    cached(cache_key, fn -> fetch_recommendations(city, category, limit) end)
+    cached(cache_key, fn -> fetch_recommendations(city, category, limit, opts) end)
   end
 
-  def recommendations(_city, _category, _limit), do: {:error, :unsupported_category}
+  def recommendations(_city, _category, _limit, _opts), do: {:error, :unsupported_category}
 
   @doc """
   A Google Static Maps image URL for the destination, or nil when the integration
@@ -81,19 +84,20 @@ defmodule Xpressbus.GooglePlaces do
     "https://www.google.com/maps/search/?api=1&query=" <> URI.encode_www_form(query)
   end
 
-  defp fetch_recommendations(city, category, limit) do
+  defp fetch_recommendations(city, category, limit, opts) do
     with key when is_binary(key) and key != "" <- api_key(),
-         {:ok, body} <- search_text(key, query(city, category)) do
-      places = body |> Map.get("places", []) |> Enum.map(&parse_place(&1, key))
-
+         {:ok, body} <- search_text(key, query(city, category), opts) do
       places =
-        places
+        body
+        |> Map.get("places", [])
+        |> Enum.map(&parse_place(&1, key))
         |> Enum.reject(&is_nil/1)
+        |> Enum.filter(&within_radius?(&1, opts))
         |> Enum.sort_by(&score/1, :desc)
         |> Enum.take(limit)
 
       if places == [] do
-        {:error, :no_results}
+        {:error, :no_nearby_results}
       else
         {:ok, places}
       end
@@ -108,9 +112,13 @@ defmodule Xpressbus.GooglePlaces do
   defp query(city, :hotels), do: "best hotels and accommodation in #{city}"
   defp query(city, :restaurants), do: "best restaurants in #{city}"
 
-  defp search_text(key, text_query) do
+  defp search_text(key, text_query, opts) do
+    request_body =
+      %{textQuery: text_query, maxResultCount: 10, languageCode: "en"}
+      |> put_location_bias(opts)
+
     request = [
-      json: %{textQuery: text_query, maxResultCount: 10, languageCode: "en"},
+      json: request_body,
       headers: [{"X-Goog-Api-Key", key}, {"X-Goog-FieldMask", @field_mask}],
       receive_timeout: 3_500,
       retry: false
@@ -136,6 +144,50 @@ defmodule Xpressbus.GooglePlaces do
     end
   end
 
+  defp put_location_bias(body, opts) do
+    latitude = Keyword.get(opts, :latitude)
+    longitude = Keyword.get(opts, :longitude)
+
+    if is_number(latitude) and is_number(longitude) do
+      Map.put(body, :locationBias, %{
+        circle: %{
+          center: %{latitude: latitude, longitude: longitude},
+          radius: Keyword.get(opts, :radius, 25_000)
+        }
+      })
+    else
+      body
+    end
+  end
+
+  defp within_radius?(place, opts) do
+    latitude = Keyword.get(opts, :latitude)
+    longitude = Keyword.get(opts, :longitude)
+    radius = Keyword.get(opts, :radius, 25_000)
+
+    if is_number(latitude) and is_number(longitude) and is_number(place.latitude) and
+         is_number(place.longitude) do
+      haversine_meters(place.latitude, place.longitude, latitude, longitude) <= radius
+    else
+      true
+    end
+  end
+
+  defp haversine_meters(latitude1, longitude1, latitude2, longitude2) do
+    earth_radius = 6_371_000
+    lat1 = latitude1 * :math.pi() / 180
+    lat2 = latitude2 * :math.pi() / 180
+
+    delta_lat = (latitude2 - latitude1) * :math.pi() / 180
+    delta_lon = (longitude2 - longitude1) * :math.pi() / 180
+
+    a =
+      :math.sin(delta_lat / 2) ** 2 +
+        :math.cos(lat1) * :math.cos(lat2) * :math.sin(delta_lon / 2) ** 2
+
+    2 * earth_radius * :math.asin(:math.sqrt(a))
+  end
+
   defp parse_place(place, key) when is_map(place) do
     name = get_in(place, ["displayName", "text"])
 
@@ -145,6 +197,8 @@ defmodule Xpressbus.GooglePlaces do
         address: place["formattedAddress"] || "",
         rating: normalize_rating(place["rating"]),
         reviews: place["userRatingCount"] || 0,
+        latitude: get_in(place, ["location", "latitude"]),
+        longitude: get_in(place, ["location", "longitude"]),
         image: photo_url(place, key),
         maps_url:
           place["googleMapsUri"] ||

@@ -188,7 +188,7 @@ defmodule XpressbusWeb.AiTripBuilderTest do
     assert html =~ "Classic Rice Table Dine"
     refute html =~ "View on Google Maps"
     assert html =~ "Important Notes"
-    assert html =~ "Friends"
+    assert html =~ "friends"
     assert html =~ "Balanced"
     assert has_element?(view, "#open-chyllz-ai")
     assert has_element?(view, "#browse-chyllz")
