@@ -159,7 +159,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
           >
             <a
               id="build-with-ai"
-              href="/tour-packages?assistant=1"
+              href="/ai-trip-builder"
               class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#FF4C00] px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-orange-500/20 transition-all hover:-translate-y-0.5 hover:bg-[#E64400] hover:shadow-xl sm:w-auto"
             >
               <.ui_icon name={:sparkles} class="h-4 w-4" /> Build with AI

@@ -14,7 +14,7 @@ defmodule XpressbusWeb.ChyllzAccountArt do
   A stroked UI icon. Supported names: `:compass`, `:ticket`, `:chevron_right`,
   `:arrow_right`, `:pin`, `:calendar`, `:clock`, `:wallet`, `:seat`, `:search`,
   `:refresh`, `:route`, `:bag`, `:star`, `:sparkles`, `:plane`, `:map`, `:check`,
-  `:list`, `:eye`, `:share`.
+  `:list`, `:eye`, `:share`, `:users`, `:sliders`.
   """
   attr :name, :atom, required: true
   attr :class, :string, default: "h-5 w-5"
@@ -100,6 +100,15 @@ defmodule XpressbusWeb.ChyllzAccountArt do
           <circle cx="18" cy="6" r="2.5" />
           <circle cx="18" cy="18" r="2.5" />
           <path d="m8.2 10.8 7.6-3.6M8.2 13.2l7.6 3.6" />
+        <% :users -> %>
+          <circle cx="9" cy="8" r="3.5" />
+          <path d="M3.5 19.5c.7-3.3 2.9-5 5.5-5s4.8 1.7 5.5 5" />
+          <path d="M15.5 5.4a3.4 3.4 0 0 1 0 6.2M17 14.8c2 .6 3.2 2.1 3.6 4.4" />
+        <% :sliders -> %>
+          <path d="M4 7h16M4 12h16M4 17h16" />
+          <circle cx="9" cy="7" r="2" fill="white" />
+          <circle cx="15" cy="12" r="2" fill="white" />
+          <circle cx="7" cy="17" r="2" fill="white" />
         <% _other -> %>
           <circle cx="12" cy="12" r="8.5" />
       <% end %>
