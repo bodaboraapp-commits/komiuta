@@ -307,6 +307,14 @@ defmodule XpressbusWeb.AgentAuthTest do
     assert html =~ "KES 1,800"
     assert html =~ "Confirmed bookings for Coast Partner"
 
+    # The scorecard must clearly separate platform-wide totals from the
+    # agent's own partner results, and name the reporting period.
+    assert html =~ "Achieved · Platform"
+    assert html =~ "Achieved · Partner"
+    assert html =~ "Platform-wide"
+    assert html =~ "Your partner"
+    assert html =~ Calendar.strftime(Date.utc_today(), "%B %Y")
+
     # The wallet is the first card on the account page.
     assert :binary.match(html, "Your wallet") < :binary.match(html, "Application status")
   end

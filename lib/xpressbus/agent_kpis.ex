@@ -18,30 +18,67 @@ defmodule Xpressbus.AgentKpis do
   @doc "Returns the current month's achieved values for an agent."
   def for_agent(%AgentApplication{} = agent) do
     {month_start, previous_month_start} = month_boundaries()
+    today = AgentDashboard.local_date()
+    period_label = Calendar.strftime(today, "%B %Y")
+    previous_period_label = Calendar.strftime(previous_month_start, "%B %Y")
 
     booking_metrics =
       AgentDashboard.monthly_booking_metrics(agent, month_start, previous_month_start)
 
     %{
+      period_label: period_label,
+      previous_period_label: previous_period_label,
       new_operators:
-        count_since(
-          from(o in BusOperator, where: o.inserted_at >= ^month_start),
-          :id
+        metric(
+          count_since(
+            from(o in BusOperator, where: o.inserted_at >= ^month_start),
+            :id
+          ),
+          :platform,
+          "New bus operators added across Komiuta in #{period_label}."
         ),
       new_agents:
-        count_since(
-          from(a in AgentApplication,
-            where: a.status == "approved" and a.reviewed_at >= ^month_start
+        metric(
+          count_since(
+            from(a in AgentApplication,
+              where: a.status == "approved" and a.reviewed_at >= ^month_start
+            ),
+            :id
           ),
-          :id
+          :platform,
+          "Agent applications approved across Komiuta in #{period_label}."
         ),
       new_passengers:
-        count_since(
-          from(u in User, where: u.inserted_at >= ^month_start),
-          :id
+        metric(
+          count_since(
+            from(u in User, where: u.inserted_at >= ^month_start),
+            :id
+          ),
+          :platform,
+          "New traveller accounts created across Komiuta in #{period_label}. Agent code attribution is not tracked yet."
         ),
-      booking_growth: growth_label(booking_metrics.previous_sales, booking_metrics.current_sales),
-      retention: retention_label(agent)
+      booking_growth:
+        metric(
+          growth_label(booking_metrics.previous_sales, booking_metrics.current_sales),
+          :partner,
+          "Confirmed booking revenue for your assigned partner in #{period_label}, compared with #{previous_period_label}."
+        ),
+      retention:
+        metric(
+          retention_label(agent),
+          :partner,
+          "Active status of your assigned bus partner in #{period_label}."
+        )
+    }
+  end
+
+  defp metric(value, scope, definition) do
+    %{
+      value: value,
+      scope: scope,
+      scope_label: if(scope == :platform, do: "Platform-wide", else: "Your partner"),
+      scope_short: if(scope == :platform, do: "Platform", else: "Partner"),
+      definition: definition
     }
   end
 
