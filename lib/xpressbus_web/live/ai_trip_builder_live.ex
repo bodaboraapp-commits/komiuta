@@ -212,6 +212,9 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:error, nil)
      |> assign(:saved_itinerary, nil)
      |> assign(:itinerary, nil)
+     |> assign(:save_state, :unsaved)
+     |> assign(:dirty, false)
+     |> assign(:refining, false)
      |> assign(:generating, false)
      |> assign(:generation_stage, 0)
      |> assign(:generation_total, length(@generation_steps))
@@ -446,6 +449,9 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:query, "")
      |> assign(:error, nil)
      |> assign(:generating, false)
+     |> assign(:save_state, :unsaved)
+     |> assign(:dirty, false)
+     |> assign(:refining, false)
      |> assign(:generation_stage, 0)
      |> assign(:generation_total, length(@generation_steps))
      |> assign(:generation_message, @generation_default.message)
@@ -462,24 +468,29 @@ defmodule XpressbusWeb.AiTripBuilderLive do
   end
 
   def handle_event("save_itinerary", _params, socket) do
-    case socket.assigns[:current_user] do
-      nil ->
+    cond do
+      socket.assigns.save_state == :saving ->
+        {:noreply, socket}
+
+      is_nil(socket.assigns[:current_user]) ->
         {:noreply, put_flash(socket, :error, "Sign in to save this itinerary to My Chyllz.")}
 
-      user ->
-        case persist_itinerary(user, socket) do
-          {:ok, saved} ->
-            {:noreply,
-             socket
-             |> assign(:saved_itinerary, saved)
-             |> put_flash(:info, "Itinerary saved to My Chyllz.")
-             |> push_navigate(to: "/dashboard?tab=chyllz")}
-
-          {:error, _reason} ->
-            {:noreply,
-             put_flash(socket, :error, "Could not save this itinerary. Please try again.")}
-        end
+      true ->
+        send(self(), :persist_itinerary)
+        {:noreply, assign(socket, :save_state, :saving)}
     end
+  end
+
+  def handle_event("refine", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:step, 1)
+     |> assign(:refining, true)
+     |> assign(:error, nil)}
+  end
+
+  def handle_event("cancel_refine", _params, socket) do
+    {:noreply, socket |> assign(:step, 6) |> assign(:refining, false) |> assign(:error, nil)}
   end
 
   defp persist_itinerary(user, socket) do
@@ -503,6 +514,9 @@ defmodule XpressbusWeb.AiTripBuilderLive do
          %{} = saved <- Itineraries.get_for_user(user, saved_id) do
       socket
       |> assign(:saved_itinerary, saved)
+      |> assign(:save_state, :saved)
+      |> assign(:dirty, false)
+      |> assign(:refining, false)
       |> assign(:trip, Itineraries.to_trip(saved))
       |> assign(:itinerary, Itineraries.itinerary(saved))
       |> assign(:query, saved.destination)
@@ -553,6 +567,33 @@ defmodule XpressbusWeb.AiTripBuilderLive do
   end
 
   @impl true
+  def handle_info(:persist_itinerary, socket) do
+    case socket.assigns[:current_user] do
+      nil ->
+        {:noreply,
+         socket
+         |> assign(:save_state, :error)
+         |> put_flash(:error, "Sign in to save this itinerary to My Chyllz.")}
+
+      user ->
+        case persist_itinerary(user, socket) do
+          {:ok, saved} ->
+            {:noreply,
+             socket
+             |> assign(:saved_itinerary, saved)
+             |> assign(:save_state, :saved)
+             |> assign(:dirty, false)
+             |> put_flash(:info, "Itinerary saved to My Chyllz.")}
+
+          {:error, _reason} ->
+            {:noreply,
+             socket
+             |> assign(:save_state, :error)
+             |> put_flash(:error, "Could not save this itinerary. Please try again.")}
+        end
+    end
+  end
+
   def handle_info(:trip_generated, socket) do
     itinerary = TripItinerary.generate(socket.assigns.trip)
 
@@ -561,6 +602,9 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:generating, false)
      |> assign(:generation_ref, nil)
      |> assign(:itinerary, itinerary)
+     |> assign(:save_state, :unsaved)
+     |> assign(:dirty, true)
+     |> assign(:refining, false)
      |> assign(:step, 6)}
   end
 
@@ -771,6 +815,9 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:generation_ref, nil)
      |> assign(:generation_pid, nil)
      |> assign(:itinerary, itinerary)
+     |> assign(:save_state, :unsaved)
+     |> assign(:dirty, true)
+     |> assign(:refining, false)
      |> assign(:step, 6)}
   end
 

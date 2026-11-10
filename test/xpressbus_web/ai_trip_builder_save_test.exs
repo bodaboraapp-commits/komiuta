@@ -40,7 +40,7 @@ defmodule XpressbusWeb.AiTripBuilderSaveTest do
 
     view |> element("#save-itinerary") |> render_click()
 
-    assert_redirect(view, "/dashboard?tab=chyllz")
+    assert has_element?(view, "#itinerary-save-bar", "Saved")
 
     assert [saved] = Itineraries.list_for_user(user)
     assert saved.title =~ "Cox's Bazar"
@@ -96,6 +96,32 @@ defmodule XpressbusWeb.AiTripBuilderSaveTest do
     assert has_element?(reopened, "#step-summary")
     assert has_element?(reopened, "#itinerary-title", saved.title)
     assert has_element?(reopened, "#itinerary-save-bar", "Saved")
+  end
+
+  test "a saved itinerary can be refined without creating a duplicate", %{conn: conn} do
+    user = user_fixture()
+
+    {:ok, view, _html} = live(signed_in(conn, user), ~p"/trip/build-with-ai")
+    complete_wizard(view)
+
+    view |> element("#save-itinerary") |> render_click()
+    assert has_element?(view, "#itinerary-save-bar", "Saved")
+
+    view |> element("#refine-itinerary") |> render_click()
+    assert has_element?(view, "#refine-banner")
+
+    view |> element("#cancel-refine") |> render_click()
+    assert has_element?(view, "#step-summary")
+
+    view |> element("#refine-itinerary") |> render_click()
+    complete_wizard(view)
+
+    assert has_element?(view, "#itinerary-save-bar", "Unsaved changes")
+    assert has_element?(view, "#save-itinerary", "Update saved")
+
+    view |> element("#save-itinerary") |> render_click()
+    assert has_element?(view, "#itinerary-save-bar", "Saved")
+    assert length(Itineraries.list_for_user(user)) == 1
   end
 
   test "the dashboard shows an empty state before the first saved itinerary", %{conn: conn} do

@@ -160,6 +160,7 @@ defmodule XpressbusWeb.AssistantComponents do
               >
                 <span class="material-symbols-outlined !text-xl" aria-hidden="true">chevron_left</span>
               </button>
+
               <button
                 id="assistant-new-chat"
                 type="button"
@@ -176,6 +177,7 @@ defmodule XpressbusWeb.AssistantComponents do
               <span class="grid h-7 w-7 place-items-center rounded-[0.65rem] bg-gradient-to-br from-emerald-600 to-emerald-950 text-white shadow-sm">
                 <.sparkle_icon class="h-4 w-4" />
               </span>
+
               <span class="font-heading text-lg font-black tracking-tight text-slate-950">
                 Chyllz <span class="text-[#FF4C00]">AI</span>
               </span>
@@ -216,8 +218,7 @@ defmodule XpressbusWeb.AssistantComponents do
                 )
               ]}
             >
-              <span class="material-symbols-outlined !text-base" aria-hidden="true">{icon}</span>
-              {label}
+              <span class="material-symbols-outlined !text-base" aria-hidden="true">{icon}</span> {label}
             </button>
           </div>
         </header>
@@ -234,12 +235,14 @@ defmodule XpressbusWeb.AssistantComponents do
             <div class="assistant-avatar mx-auto mb-4 grid h-14 w-14 place-items-center rounded-[1.35rem] bg-gradient-to-br from-emerald-600 via-emerald-800 to-emerald-950 text-white shadow-xl shadow-emerald-950/25">
               <.sparkle_icon class="h-7 w-7" />
             </div>
+
             <h2
               id="assistant-hero-title"
               class="font-heading text-2xl font-black tracking-tight text-slate-950"
             >
               {@hero.title} <span class="assistant-sparkle inline-block">✨</span>
             </h2>
+
             <p
               id="assistant-hero-subtitle"
               class="mx-auto mt-2 max-w-[19rem] text-xs font-bold leading-relaxed text-slate-400"
@@ -270,19 +273,17 @@ defmodule XpressbusWeb.AssistantComponents do
             expense_total={@expense_total}
             ai_enabled={@ai_enabled}
           />
-
           <div class="space-y-4 px-4 pb-6 pt-1">
             <article id="assistant-greeting" class="flex items-start gap-2.5" data-assistant-message>
               <div class="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-950 text-white shadow-sm">
                 <.sparkle_icon class="h-4 w-4" />
               </div>
+
               <div class="max-w-[85%] rounded-[1.35rem] rounded-tl-md border border-slate-100 bg-white px-4 py-3 text-sm font-semibold leading-relaxed text-slate-700 shadow-sm">
                 <p class="whitespace-pre-line">{@greeting.text}</p>
               </div>
             </article>
-
             <.assistant_message :for={message <- @thread} message={message} />
-
             <div
               :if={@pending and @pending_tab == @tab}
               id="assistant-typing"
@@ -291,6 +292,7 @@ defmodule XpressbusWeb.AssistantComponents do
               <div class="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-950 text-white shadow-sm">
                 <.sparkle_icon class="h-4 w-4" />
               </div>
+
               <div class="flex items-center gap-1.5 rounded-[1.35rem] rounded-tl-md border border-slate-100 bg-white px-4 py-3.5 shadow-sm">
                 <span class="assistant-typing-dot"></span>
                 <span class="assistant-typing-dot" style="animation-delay: .15s"></span>
@@ -306,6 +308,7 @@ defmodule XpressbusWeb.AssistantComponents do
               <p class="text-[9px] font-black uppercase tracking-[0.25em] text-slate-300">
                 Try asking
               </p>
+
               <div class="flex flex-wrap justify-center gap-2">
                 <button
                   :for={suggestion <- @suggestions}
@@ -361,8 +364,7 @@ defmodule XpressbusWeb.AssistantComponents do
                 class="h-5 w-5 -rotate-45"
                 aria-hidden="true"
               >
-                <path d="M22 2 11 13" />
-                <path d="M22 2 15 22l-4-9-9-4z" />
+                <path d="M22 2 11 13" /> <path d="M22 2 15 22l-4-9-9-4z" />
               </svg>
             </button>
           </form>
@@ -372,8 +374,9 @@ defmodule XpressbusWeb.AssistantComponents do
             class="mt-2 text-center text-[9px] font-black uppercase tracking-[0.2em] text-slate-300"
           >
             {@engine}
-            <span class="mx-1 text-slate-200">·</span>
-            {if @ai_enabled, do: "AI + live catalogue", else: "Live catalogue guide"}
+            <span class="mx-1 text-slate-200">·</span> {if @ai_enabled,
+              do: "AI + live catalogue",
+              else: "Live catalogue guide"}
           </p>
         </div>
       </section>
@@ -480,6 +483,7 @@ defmodule XpressbusWeb.AssistantComponents do
                 {card_icon(card.kind)}
               </span>
             </span>
+
             <span class="min-w-0 flex-1">
               <span class="block truncate text-xs font-black text-slate-900">{card.title}</span>
               <span class="block truncate text-[10px] font-bold text-slate-400">{card.subtitle}</span>
@@ -487,6 +491,7 @@ defmodule XpressbusWeb.AssistantComponents do
                 {card.price}
               </span>
             </span>
+
             <span
               class="material-symbols-outlined shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-[#FF4C00] !text-lg"
               aria-hidden="true"
@@ -542,11 +547,14 @@ defmodule XpressbusWeb.AssistantComponents do
           <p class="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400">
             {tool_kicker(@tab)}
           </p>
+
           <p class="mt-1 text-sm font-black text-slate-900">{tool_title(@tab)}</p>
+
           <p class="mt-1 text-[11px] font-bold leading-relaxed text-slate-400">
             {tool_hint(@tab, @ai_enabled)}
           </p>
         </div>
+
         <span class="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-white text-[#FF4C00] shadow-sm">
           <span class="material-symbols-outlined !text-xl" aria-hidden="true">
             {if @tab == "lens", do: "image", else: "description"}
@@ -567,14 +575,13 @@ defmodule XpressbusWeb.AssistantComponents do
           <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-orange-50 text-[#FF4C00]">
             <span class="material-symbols-outlined !text-xl" aria-hidden="true">add</span>
           </span>
+
           <span class="min-w-0">
             <span class="block text-xs font-black text-slate-800">Add a photo</span>
             <span class="block text-[10px] font-bold text-slate-400">JPG, PNG or WebP · up to 8 MB</span>
           </span>
         </label>
-
         <.live_file_input upload={@upload} class="assistant-file-input" />
-
         <div :if={@upload.entries != []} class="space-y-2">
           <div
             :for={entry <- @upload.entries}
@@ -583,6 +590,7 @@ defmodule XpressbusWeb.AssistantComponents do
             <.live_img_preview entry={entry} class="h-36 w-full object-cover" />
             <div class="flex items-center justify-between gap-2 px-3 py-2">
               <p class="truncate text-[10px] font-bold text-slate-500">{entry.client_name}</p>
+
               <button
                 type="button"
                 phx-click="assistant_cancel_upload"
@@ -623,15 +631,15 @@ defmodule XpressbusWeb.AssistantComponents do
           class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-orange-300"
           aria-label="Photo note"
         />
-
         <button
           type="submit"
           id="assistant-analyze-photo"
           disabled={@pending or @upload.entries == []}
           class="flex w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
         >
-          <.sparkle_icon class="h-4 w-4" />
-          {if @tab == "lens", do: "Match this photo", else: "Read this receipt"}
+          <.sparkle_icon class="h-4 w-4" /> {if @tab == "lens",
+            do: "Match this photo",
+            else: "Read this receipt"}
         </button>
       </form>
 
@@ -675,14 +683,17 @@ defmodule XpressbusWeb.AssistantComponents do
             <p class="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-700">
               Trip spend logged
             </p>
+
             <p id="assistant-expense-total" class="mt-0.5 text-lg font-black text-emerald-900">
               {@expense_total}
             </p>
           </div>
+
           <div class="text-right">
             <p class="text-[10px] font-bold text-emerald-700">
               {length(@expenses)} {if length(@expenses) == 1, do: "receipt", else: "receipts"}
             </p>
+
             <button
               type="button"
               phx-click="assistant_clear_expenses"

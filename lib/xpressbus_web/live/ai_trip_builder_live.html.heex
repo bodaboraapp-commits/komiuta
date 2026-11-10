@@ -70,6 +70,32 @@
         @step < 6 && "max-w-[1100px]"
       ]}
     >
+      <%= if @refining && @itinerary do %>
+        <div
+          id="refine-banner"
+          class="mb-4 flex flex-col gap-3 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div class="flex items-start gap-2.5">
+            <span class="material-symbols-outlined !text-xl text-[#FF4C00]">edit</span>
+            <div>
+              <p class="text-xs font-black text-slate-800">Refining your itinerary</p>
+
+              <p class="mt-0.5 text-[10px] font-bold text-slate-500">
+                Update the trip details, then generate a fresh version. Your previous saved itinerary stays safe.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            id="cancel-refine"
+            phx-click="cancel_refine"
+            class="shrink-0 rounded-xl border border-orange-200 bg-white px-3.5 py-2 text-[9px] font-black uppercase tracking-widest text-[#FF4C00] transition hover:bg-orange-50"
+          >
+            Back to itinerary
+          </button>
+        </div>
+      <% end %>
       <%!-- Wizard progress --%>
       <section
         :if={@step < 6}
@@ -1000,26 +1026,69 @@
               </div>
 
               <div id="itinerary-save-bar" class="sticky bottom-4 z-20 mt-8">
-                <div class="flex items-center justify-between gap-3 rounded-full border border-slate-100 bg-white/90 px-4 py-2 shadow-xl backdrop-blur">
-                  <span class="flex min-w-0 items-center gap-2 text-[11px] font-black text-slate-700">
-                    <.ui_icon name={:pin} class="h-4 w-4 shrink-0 text-[#FF4C00]" />
-                    <span class="truncate">{@itinerary.city}</span>
-                  </span>
+                <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-white/90 px-4 py-2 shadow-xl backdrop-blur">
+                  <div class="flex min-w-0 items-center gap-2">
+                    <span class="flex min-w-0 items-center gap-2 text-[11px] font-black text-slate-700">
+                      <.ui_icon name={:pin} class="h-4 w-4 shrink-0 text-[#FF4C00]" />
+                      <span class="truncate">{@itinerary.city}</span>
+                    </span>
 
-                  <button
-                    id="save-itinerary"
-                    type="button"
-                    phx-click="save_itinerary"
-                    disabled={not is_nil(@saved_itinerary)}
-                    class={[
-                      "inline-flex shrink-0 items-center gap-1.5 rounded-full px-5 py-2 text-[10px] font-black uppercase tracking-widest transition",
-                      is_nil(@saved_itinerary) && "bg-[#FF4C00] text-white hover:bg-[#E64400]",
-                      not is_nil(@saved_itinerary) && "bg-emerald-500 text-white"
-                    ]}
-                  >
-                    <.ui_icon name={:check} class="h-3.5 w-3.5" />
-                    {if @saved_itinerary, do: "Saved", else: "Save"}
-                  </button>
+                    <%= if @dirty && @save_state != :saving do %>
+                      <span class="rounded-full bg-amber-50 px-2 py-1 text-[8px] font-black uppercase tracking-widest text-amber-700">
+                        Unsaved changes
+                      </span>
+                    <% end %>
+                  </div>
+
+                  <div class="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      id="refine-itinerary"
+                      phx-click="refine"
+                      class="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-3.5 py-2 text-[10px] font-black uppercase tracking-widest text-[#FF4C00] transition hover:bg-orange-100"
+                    >
+                      <.ui_icon name={:edit} class="h-3.5 w-3.5" /> Refine
+                    </button>
+
+                    <%= if @save_state == :saved && !@dirty do %>
+                      <a
+                        href="/dashboard?tab=chyllz"
+                        class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-[10px] font-black uppercase tracking-widest text-slate-600 transition hover:border-slate-300"
+                      >
+                        Open My Chyllz
+                      </a>
+                    <% end %>
+
+                    <button
+                      id="save-itinerary"
+                      type="button"
+                      phx-click="save_itinerary"
+                      disabled={@save_state == :saving || (@save_state == :saved && !@dirty)}
+                      class={[
+                        "inline-flex shrink-0 items-center gap-1.5 rounded-full px-5 py-2 text-[10px] font-black uppercase tracking-widest transition",
+                        @save_state == :saving && "cursor-wait bg-slate-300 text-white",
+                        @save_state == :saved && !@dirty && "bg-emerald-500 text-white",
+                        @save_state == :saved && @dirty &&
+                          "bg-[#FF4C00] text-white hover:bg-[#E64400]",
+                        @save_state == :error && "bg-red-500 text-white hover:bg-red-600",
+                        @save_state == :unsaved && "bg-[#FF4C00] text-white hover:bg-[#E64400]"
+                      ]}
+                    >
+                      <.ui_icon name={:check} class="h-3.5 w-3.5" />
+                      <%= cond do %>
+                        <% @save_state == :saving -> %>
+                          Saving…
+                        <% @save_state == :saved && !@dirty -> %>
+                          Saved
+                        <% !is_nil(@saved_itinerary) && @dirty -> %>
+                          Update saved
+                        <% @save_state == :error -> %>
+                          Retry save
+                        <% true -> %>
+                          Save itinerary
+                      <% end %>
+                    </button>
+                  </div>
                 </div>
               </div>
             </article>
