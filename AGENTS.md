@@ -1361,6 +1361,34 @@ the Komiuta brand orange.
   a soft `shadow-orange-500/20` and the same scale/active micro-interaction as the other primary buttons
   (release `2026-11-07.01-modify-theme`).
 
+### 2026-11-10 Session — WeatherAPI configuration under System Integrations (connected to Chyllz)
+
+**Objective:** Add an admin WeatherAPI Configuration (API key) under Settings → Integrations and make the
+Chyllz account weather widget use it.
+
+**Completed:**
+- **Admin → Settings → System Integrations → WeatherAPI** tab (`admin_integration_live`): API-key form,
+  ON/OFF integration toggle, “Test API” check against WeatherAPI.com for Nairobi, a connected/fallback
+  badge and a link to the WeatherAPI dashboard. Saving or toggling clears the weather cache so Chyllz
+  picks the change up immediately.
+- **Chyllz connection** (`lib/xpressbus/weather.ex`): `provider/0` uses WeatherAPI when the `weather_api`
+  integration is active and has a key, otherwise the existing keyless Open-Meteo API.
+  `parse_weatherapi_forecast/2` converts WeatherAPI current/hourly/3-day data into the same display map the
+  Chyllz widget already renders, and `weatherapi_condition/1` maps WeatherAPI condition codes/text to the
+  existing glyphs. Every request **falls back to Open-Meteo** on a bad key/quota/outage, so the widget never
+  goes blank. Cache keys are provider- and key-scoped.
+- Tests: `weather_test.exs` covers WeatherAPI payload parsing, condition mapping and the fallback shape;
+  `admin_integration_weather_test.exs` covers the Settings → Integrations tab, saving the key (which makes
+  `Weather.provider/0` return `:weatherapi`) and disabling it back to Open-Meteo.
+- Release marker `2026-11-10.01-weatherapi-integration`.
+
+**Verification:**
+```
+mix test test/xpressbus/weather_test.exs test/xpressbus_web/admin_integration_weather_test.exs test/xpressbus_web/live/chyllz_account_live_test.exs
+# 24 passed
+```
+
+
 
 
 

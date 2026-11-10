@@ -3,6 +3,8 @@ defmodule XpressbusWeb.AdminIntegrationLive do
   import XpressbusWeb.AdminComponents
   alias Xpressbus.Integrations
 
+  @weatherapi_base "https://api.weatherapi.com/v1"
+
   @providers %{
     "user_login" => %{
       label: "User Login",
@@ -33,6 +35,11 @@ defmodule XpressbusWeb.AdminIntegrationLive do
       label: "Firebase SMS",
       icon: "sms",
       description: "Firebase Phone Authentication for SMS login codes"
+    },
+    "weather_api" => %{
+      label: "WeatherAPI",
+      icon: "wb_sunny",
+      description: "WeatherAPI.com key for the live Chyllz weather widget"
     }
   }
 
@@ -129,9 +136,15 @@ defmodule XpressbusWeb.AdminIntegrationLive do
 
     case Integrations.upsert_config_by_provider(provider, attrs) do
       {:ok, _config} ->
+        # Chyllz reads this integration on every lookup; drop the 15-minute
+        # forecast cache so a new key or toggle applies immediately.
+        if provider == "weather_api", do: Xpressbus.Weather.clear_cache()
+
+        label = get_in(@providers, [provider, :label]) || String.upcase(provider)
+
         {:noreply,
          socket
-         |> put_flash(:info, "#{String.upcase(provider)} settings saved successfully")
+         |> put_flash(:info, "#{label} settings saved successfully")
          |> assign(:settings, load_settings())}
 
       {:error, _changeset} ->
@@ -155,6 +168,9 @@ defmodule XpressbusWeb.AdminIntegrationLive do
       "firebase" ->
         test_firebase(socket)
 
+      "weather_api" ->
+        test_weather_api(socket, socket.assigns.settings["weather_api"])
+
       _ ->
         {:noreply, put_flash(socket, :info, "Handshake successful! Payment gateway is active.")}
     end
@@ -166,6 +182,8 @@ defmodule XpressbusWeb.AdminIntegrationLive do
 
     case Integrations.upsert_config_by_provider(provider, %{active: !current_active}) do
       {:ok, _result} ->
+        if provider == "weather_api", do: Xpressbus.Weather.clear_cache()
+
         {:noreply, assign(socket, :settings, load_settings())}
 
       {:error, _changeset} ->
@@ -312,6 +330,54 @@ defmodule XpressbusWeb.AdminIntegrationLive do
 
       {:error, reason} ->
         {:noreply, put_flash(socket, :error, "Firebase check failed: #{inspect(reason)}")}
+    end
+  end
+
+  defp test_weather_api(socket, setting) do
+    config =
+      case setting do
+        %{config: config} when is_map(config) -> config
+        _other -> %{}
+      end
+
+    key = Map.get(config, "api_key")
+
+    if is_nil(key) or String.trim(to_string(key)) == "" do
+      {:noreply, put_flash(socket, :error, "Missing WeatherAPI key. Save one first.")}
+    else
+      case Req.get("#{@weatherapi_base}/current.json",
+             params: [key: String.trim(to_string(key)), q: "Nairobi"],
+             retry: false,
+             receive_timeout: 8_000
+           ) do
+        {:ok, %Req.Response{status: 200, body: body}} when is_map(body) ->
+          place = get_in(body, ["location", "name"]) || "Nairobi"
+
+          message =
+            case get_in(body, ["current", "temp_c"]) do
+              temp when is_number(temp) ->
+                "WeatherAPI connection successful — #{place} is #{round(temp)}°C right now."
+
+              _other ->
+                "WeatherAPI connection successful! Chyllz will use this key for live weather."
+            end
+
+          {:noreply, put_flash(socket, :info, message)}
+
+        {:ok, %Req.Response{status: status}} when status in [401, 403] ->
+          {:noreply,
+           put_flash(
+             socket,
+             :error,
+             "WeatherAPI rejected the key (HTTP #{status}). Check it in your WeatherAPI dashboard."
+           )}
+
+        {:ok, %Req.Response{status: status}} ->
+          {:noreply, put_flash(socket, :error, "WeatherAPI connection failed (HTTP #{status}).")}
+
+        {:error, reason} ->
+          {:noreply, put_flash(socket, :error, "WeatherAPI connection error: #{inspect(reason)}")}
+      end
     end
   end
 
