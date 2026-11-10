@@ -139,11 +139,14 @@ defmodule Xpressbus.TripItinerary do
   def generate(trip) do
     city = city_label(trip)
     moscow? = moscow?(trip)
+    {map_tiles, map_link, map_attribution} = map_data(city)
 
     %{
       title: title(trip),
       city: city,
-      map_url: map_url(city),
+      map_tiles: map_tiles,
+      map_link: map_link,
+      map_attribution: map_attribution,
       overview: overview(trip, moscow?),
       hotel: hotel_recommendation(trip, moscow?),
       food: food_recommendation(trip, moscow?),
@@ -169,7 +172,7 @@ defmodule Xpressbus.TripItinerary do
     end
   end
 
-  defp map_url(city) do
+  defp map_data(city) do
     key =
       city
       |> String.split(",")
@@ -178,17 +181,37 @@ defmodule Xpressbus.TripItinerary do
       |> String.trim()
 
     {latitude, longitude} = Map.get(@coordinates, key, {20.0, 20.0})
-    delta = 0.18
+    zoom = 11
+    grid_size = 5
+    tile_count = Integer.pow(2, zoom)
+    radius = div(grid_size, 2)
 
-    bbox = [
-      Float.round(longitude - delta, 4),
-      Float.round(latitude - delta, 4),
-      Float.round(longitude + delta, 4),
-      Float.round(latitude + delta, 4)
-    ]
+    x = floor((longitude + 180.0) / 360.0 * tile_count)
+    latitude_rad = latitude * :math.pi() / 180.0
 
-    "https://www.openstreetmap.org/export/embed.html?bbox=#{Enum.join(bbox, "%2C")}" <>
-      "&layer=mapnik&marker=#{latitude}%2C#{longitude}"
+    y =
+      floor(
+        (1.0 - :math.log(:math.tan(latitude_rad) + 1.0 / :math.cos(latitude_rad)) / :math.pi()) /
+          2.0 * tile_count
+      )
+
+    tiles =
+      for row <- -radius..radius, column <- -radius..radius do
+        tile_x = Integer.mod(x + column, tile_count)
+        tile_y = (y + row) |> max(0) |> min(tile_count - 1)
+
+        %{
+          url: "https://tile.openstreetmap.org/#{zoom}/#{tile_x}/#{tile_y}.png",
+          alt: ""
+        }
+      end
+
+    %{
+      tiles: tiles,
+      link: "https://www.google.com/maps/search/?api=1&query=" <> URI.encode_www_form(city),
+      attribution: "© OpenStreetMap contributors"
+    }
+    |> then(fn map -> {map.tiles, map.link, map.attribution} end)
   end
 
   defp destination(trip) do
