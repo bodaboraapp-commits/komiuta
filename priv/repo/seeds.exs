@@ -196,7 +196,8 @@ cars_data = [
     location: "Nairobi"
   },
   %{car_name: "Range Rover Sport", type: "Luxury SUV", price_per_day: 35000, location: "Mombasa"},
-  %{car_name: "Toyota Rav4", type: "Compact 4x4", price_per_day: 8500, location: "Kisumu"}
+  %{car_name: "Toyota Rav4", type: "Compact 4x4", price_per_day: 8500, location: "Kisumu"},
+  %{car_name: "Toyota Prado", type: "Premium SUV", price_per_day: 12000, location: "Nairobi"}
 ]
 
 for car_attrs <- cars_data do
