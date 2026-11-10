@@ -170,6 +170,50 @@ defmodule XpressbusWeb.UserDashboardLive do
 
   def handle_event("share_trip", _params, socket), do: {:noreply, socket}
 
+  def handle_event("duplicate_itinerary", %{"id" => id}, socket) do
+    user = socket.assigns.user
+
+    with %{} = saved <- Itineraries.get_for_user(user, id),
+         {:ok, _copy} <- Itineraries.duplicate(user, saved) do
+      {:noreply,
+       socket
+       |> assign(:chyllz_itineraries, Itineraries.list_for_user(user))
+       |> put_flash(:info, "Itinerary duplicated. Open it from My Chyllz.")}
+    else
+      {:error, :limit} ->
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           "You can keep up to 3 saved itineraries. Delete one before duplicating."
+         )}
+
+      _other ->
+        {:noreply, put_flash(socket, :error, "That itinerary could not be duplicated.")}
+    end
+  end
+
+  def handle_event("delete_itinerary", %{"id" => id}, socket) do
+    user = socket.assigns.user
+
+    case Itineraries.get_for_user(user, id) do
+      %{} = saved ->
+        case Itineraries.delete(saved) do
+          {:ok, _deleted} ->
+            {:noreply,
+             socket
+             |> assign(:chyllz_itineraries, Itineraries.list_for_user(user))
+             |> put_flash(:info, "Saved itinerary deleted.")}
+
+          {:error, _reason} ->
+            {:noreply, put_flash(socket, :error, "Could not delete that itinerary.")}
+        end
+
+      nil ->
+        {:noreply, put_flash(socket, :error, "That itinerary could not be found.")}
+    end
+  end
+
   def handle_event("update_profile", %{"user" => user_params}, socket) do
     # The email address is deliberately not editable here: changing it requires
     # a code sent to the new address (see request_email_change below).

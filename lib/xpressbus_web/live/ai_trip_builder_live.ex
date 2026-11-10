@@ -509,20 +509,23 @@ defmodule XpressbusWeb.AiTripBuilderLive do
     end
   end
 
-  defp maybe_load_saved_itinerary(socket, %{"saved" => saved_id}) when is_binary(saved_id) do
+  defp maybe_load_saved_itinerary(socket, %{"saved" => saved_id} = params)
+       when is_binary(saved_id) do
     with %{} = user <- socket.assigns[:current_user],
          %{} = saved <- Itineraries.get_for_user(user, saved_id) do
+      edit? = params["edit"] == "1"
+
       socket
       |> assign(:saved_itinerary, saved)
       |> assign(:save_state, :saved)
       |> assign(:dirty, false)
-      |> assign(:refining, false)
+      |> assign(:refining, edit?)
       |> assign(:trip, Itineraries.to_trip(saved))
       |> assign(:itinerary, Itineraries.itinerary(saved))
       |> assign(:query, saved.destination)
       |> assign(:error, nil)
       |> assign(:generating, false)
-      |> assign(:step, 6)
+      |> assign(:step, if(edit?, do: 1, else: 6))
     else
       _other -> socket
     end

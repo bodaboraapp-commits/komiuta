@@ -98,6 +98,7 @@ defmodule XpressbusWeb.ItineraryComponents do
         status_meta: Itineraries.status_meta(itinerary),
         path: path,
         manage_path: Itineraries.manage_path(itinerary),
+        edit_path: Itineraries.edit_path(itinerary),
         share_url: Itineraries.share_url(itinerary),
         art: art_variant(itinerary.art),
         dates: Itineraries.dates_label(itinerary),
@@ -193,6 +194,37 @@ defmodule XpressbusWeb.ItineraryComponents do
           >
             <.ui_icon name={:share} class="h-4 w-4" />
           </a>
+        </div>
+        
+        <div class="mt-2 grid grid-cols-3 gap-1.5 border-t border-slate-100 pt-2">
+          <a
+            id={"edit-itinerary-" <> to_string(@itinerary.id)}
+            href={@edit_path}
+            class="inline-flex items-center justify-center gap-1 rounded-lg px-2 py-2 text-[9px] font-black uppercase tracking-widest text-slate-500 transition hover:bg-slate-50 hover:text-[#FF4C00]"
+          >
+            <.ui_icon name={:edit} class="h-3 w-3" /> Edit
+          </a>
+          
+          <button
+            type="button"
+            id={"duplicate-itinerary-" <> to_string(@itinerary.id)}
+            phx-click="duplicate_itinerary"
+            phx-value-id={@itinerary.id}
+            class="inline-flex items-center justify-center gap-1 rounded-lg px-2 py-2 text-[9px] font-black uppercase tracking-widest text-slate-500 transition hover:bg-slate-50 hover:text-[#FF4C00]"
+          >
+            <.ui_icon name={:content_copy} class="h-3 w-3" /> Duplicate
+          </button>
+          
+          <button
+            type="button"
+            id={"delete-itinerary-" <> to_string(@itinerary.id)}
+            phx-click="delete_itinerary"
+            phx-value-id={@itinerary.id}
+            data-confirm="Delete this saved itinerary? This cannot be undone."
+            class="inline-flex items-center justify-center gap-1 rounded-lg px-2 py-2 text-[9px] font-black uppercase tracking-widest text-slate-400 transition hover:bg-red-50 hover:text-red-600"
+          >
+            <.ui_icon name={:delete} class="h-3 w-3" /> Delete
+          </button>
         </div>
       </div>
     </article>

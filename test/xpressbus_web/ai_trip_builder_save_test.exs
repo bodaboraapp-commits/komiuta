@@ -130,6 +130,64 @@ defmodule XpressbusWeb.AiTripBuilderSaveTest do
     assert length(Itineraries.list_for_user(user)) == 1
   end
 
+  test "saved itineraries can be edited, duplicated and deleted from My Chyllz", %{conn: conn} do
+    user = user_fixture()
+
+    trip = %{
+      destination: "Diani Beach",
+      country: "Kenya",
+      start_date: Date.add(Date.utc_today(), 5),
+      end_date: Date.add(Date.utc_today(), 8),
+      travel_party: "couple",
+      budget: "balanced",
+      preferences: ["Beach Vacations"],
+      latitude: -4.3,
+      longitude: 39.6
+    }
+
+    {:ok, saved} = Itineraries.save(user, trip, TripItinerary.generate(trip))
+
+    {:ok, dashboard, _html} = live(signed_in(conn, user), ~p"/dashboard?tab=chyllz")
+
+    assert has_element?(dashboard, "#edit-itinerary-#{saved.id}")
+    assert element(dashboard, "#edit-itinerary-#{saved.id}") |> render() =~ "edit=1"
+
+    dashboard |> element("#duplicate-itinerary-#{saved.id}") |> render_click()
+
+    assert length(Itineraries.list_for_user(user)) == 2
+    assert Enum.any?(Itineraries.list_for_user(user), &String.starts_with?(&1.title, "Copy of"))
+
+    dashboard |> element("#delete-itinerary-#{saved.id}") |> render_click()
+
+    assert length(Itineraries.list_for_user(user)) == 1
+    assert Itineraries.get_for_user(user, saved.id) == nil
+  end
+
+  test "editing a saved itinerary opens the builder in refine mode", %{conn: conn} do
+    user = user_fixture()
+
+    trip = %{
+      destination: "Diani Beach",
+      country: "Kenya",
+      start_date: Date.add(Date.utc_today(), 5),
+      end_date: Date.add(Date.utc_today(), 8),
+      travel_party: "solo",
+      budget: "cheap",
+      preferences: ["Beach Vacations"],
+      latitude: -4.3,
+      longitude: 39.6
+    }
+
+    {:ok, saved} = Itineraries.save(user, trip, TripItinerary.generate(trip))
+
+    {:ok, view, _html} =
+      live(signed_in(conn, user), ~p"/trip/build-with-ai?saved=#{saved.id}&edit=1")
+
+    assert has_element?(view, "#refine-banner")
+    assert has_element?(view, "#destination-search")
+    refute has_element?(view, "#step-summary")
+  end
+
   test "the dashboard shows an empty state before the first saved itinerary", %{conn: conn} do
     user = user_fixture()
 

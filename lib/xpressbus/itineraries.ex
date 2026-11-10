@@ -48,6 +48,47 @@ defmodule Xpressbus.Itineraries do
 
   def list_for_user(_user), do: []
 
+  @doc "How many itineraries the user has, used to enforce the 3-trip limit."
+  def count_for_user(%{id: user_id}) do
+    Repo.aggregate(
+      from(saved in SavedItinerary, where: saved.user_id == ^user_id),
+      :count,
+      :id
+    )
+  end
+
+  def count_for_user(_user), do: 0
+
+  @doc "Copies an existing itinerary for the same user as a fresh saved trip."
+  def duplicate(%{id: user_id} = user, %SavedItinerary{} = saved_itinerary) do
+    if count_for_user(user) >= @max_per_user do
+      {:error, :limit}
+    else
+      %SavedItinerary{}
+      |> SavedItinerary.changeset(%{
+        user_id: user_id,
+        title: copy_title(saved_itinerary.title),
+        destination: saved_itinerary.destination,
+        country: saved_itinerary.country,
+        start_date: saved_itinerary.start_date,
+        end_date: saved_itinerary.end_date,
+        travel_party: saved_itinerary.travel_party,
+        budget: saved_itinerary.budget,
+        preferences: saved_itinerary.preferences,
+        art: saved_itinerary.art,
+        latitude: saved_itinerary.latitude,
+        longitude: saved_itinerary.longitude,
+        source: saved_itinerary.source
+      })
+      |> Repo.insert()
+    end
+  end
+
+  def duplicate(_user, _saved_itinerary), do: {:error, :not_signed_in}
+
+  @doc "Deletes a saved itinerary owned by the caller."
+  def delete(%SavedItinerary{} = saved_itinerary), do: Repo.delete(saved_itinerary)
+
   @doc "Fetches one saved itinerary only when it belongs to `user`."
   def get_for_user(%{id: user_id}, id) do
     with {saved_id, ""} <- Integer.parse(to_string(id)) do
@@ -189,6 +230,9 @@ defmodule Xpressbus.Itineraries do
   @doc "Path that opens the unified itinerary management page."
   def manage_path(%SavedItinerary{id: id}), do: "/trips/saved/#{id}/manage"
 
+  @doc "Path that re-opens the saved itinerary directly in edit/refine mode."
+  def edit_path(%SavedItinerary{id: id}), do: "/trip/build-with-ai?saved=#{id}&edit=1"
+
   @doc "Path to share the saved itinerary on WhatsApp."
   def share_url(%SavedItinerary{title: title} = saved_itinerary) do
     path = path(saved_itinerary)
@@ -226,6 +270,19 @@ defmodule Xpressbus.Itineraries do
 
   defp source_value(nil), do: nil
   defp source_value(value), do: to_string(value)
+
+  defp copy_title(nil), do: "Copy of itinerary"
+
+  defp copy_title(title) do
+    title = to_string(title) |> String.trim()
+
+    if title == "" do
+      "Copy of itinerary"
+    else
+      copy = "Copy of " <> title
+      String.slice(copy, 0, 160)
+    end
+  end
 
   defp string_value(value, fallback \\ "") do
     case to_string(value || "") |> String.trim() do
