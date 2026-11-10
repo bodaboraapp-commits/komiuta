@@ -45,8 +45,11 @@ defmodule XpressbusWeb.AiTripBuilderSearchTest do
       end
     end)
 
+    Application.put_env(:xpressbus, :places_landmark_override, fn _query -> {:ok, []} end)
+
     on_exit(fn ->
       Places.reset_cache()
+      Application.delete_env(:xpressbus, :places_landmark_override)
 
       if previous == nil do
         Application.delete_env(:xpressbus, :places_search_override)

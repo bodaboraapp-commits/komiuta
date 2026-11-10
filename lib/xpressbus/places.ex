@@ -9,11 +9,14 @@ defmodule Xpressbus.Places do
        (the same provider the weather widget uses). It returns real cities and
        towns with coordinates, country and region, which is what types ahead
        while the traveller types.
-    2. **AI interpretation** — when the geocoder has no match (landmarks,
-       regions, natural-language requests such as "warm beaches in Asia"), the
-       configured Chyllz AI model is asked to map the request to real places.
-       Each suggestion is then checked back against the geocoder, so a place is
-       only offered when it can be resolved to real coordinates.
+    2. **Landmark and region search** — when the city geocoder has no match, the
+       query is sent to OpenStreetMap's Nominatim geocoder, which covers
+       landmarks, regions and addresses (for example "Eiffel Tower").
+    3. **AI interpretation** — if OpenStreetMap also finds nothing (for example
+       "warm beaches in Asia"), the configured Chyllz AI model is asked to map
+       the request to real places. Each suggestion is then checked back against
+       the geocoder, so a place is only offered when it can be resolved to real
+       coordinates.
 
   Results are cached in `:persistent_term` for an hour; HTTP failures never
   raise and are returned as `{:error, reason}`. Tests can inject results through
@@ -30,6 +33,12 @@ defmodule Xpressbus.Places do
   @max_query_length 80
   @cache_ttl_ms 60 * 60 * 1000
   @http_timeout_ms 4_000
+
+  # OpenStreetMap's Nominatim geocoder covers landmarks, regions and addresses
+  # that the city-only geocoder cannot match. Their usage policy requires a
+  # descriptive User-Agent and caching, which this module provides.
+  @osm_url "https://nominatim.openstreetmap.org/search"
+  @osm_user_agent "KomiutaTripBuilder/1.0 (+https://www.komiuta.com)"
 
   @ai_system_prompt """
   You resolve travel requests to real places on Earth.
@@ -49,7 +58,7 @@ defmodule Xpressbus.Places do
           optional(:longitude) => number() | nil,
           optional(:timezone) => String.t() | nil,
           optional(:population) => integer() | nil,
-          optional(:source) => :geocoding | :ai | :curated
+          optional(:source) => :geocoding | :osm | :ai | :curated
         }
 
   @doc """
@@ -92,7 +101,7 @@ defmodule Xpressbus.Places do
       true ->
         case search(query, opts) do
           {:ok, [first | _] = results} -> {:ok, first, results}
-          {:ok, []} -> ai_resolve(query, opts)
+          {:ok, []} -> landmark_resolve(query, opts)
           {:error, _reason} = error -> error
         end
     end
@@ -120,6 +129,130 @@ defmodule Xpressbus.Places do
     |> Enum.uniq()
     |> Enum.join(", ")
   end
+
+  # -------------------------------------------------------- OpenStreetMap fallback
+
+  defp landmark_resolve(query, opts) do
+    case Application.get_env(:xpressbus, :places_landmark_override) do
+      override when is_function(override, 1) -> override_landmark(override, query, opts)
+      _other -> lookup_landmark(query, opts)
+    end
+  end
+
+  defp override_landmark(override, query, opts) do
+    case override.(query) do
+      {:ok, [first | _] = results} -> {:ok, first, results}
+      _other -> ai_resolve(query, opts)
+    end
+  end
+
+  defp lookup_landmark(query, opts) do
+    case request_osm(query, opts) do
+      {:ok, [first | _] = results} -> {:ok, first, results}
+      {:ok, []} -> ai_resolve(query, opts)
+      {:error, _reason} -> ai_resolve(query, opts)
+    end
+  end
+
+  defp request_osm(query, opts) do
+    params = [q: query, format: "jsonv2", limit: 5, addressdetails: 1, "accept-language": "en"]
+
+    request_options =
+      [
+        params: params,
+        headers: [{"user-agent", @osm_user_agent}, {"accept", "application/json"}],
+        receive_timeout: Keyword.get(opts, :timeout, @http_timeout_ms),
+        connect_options: [timeout: 3_000],
+        retry: false
+      ]
+      |> Keyword.merge(Keyword.get(opts, :req_options, []))
+
+    case Req.get(@osm_url, request_options) do
+      {:ok, %Req.Response{status: 200, body: body}} ->
+        {:ok, parse_osm(body)}
+
+      {:ok, %Req.Response{status: status}} ->
+        {:error, {:http_status, status}}
+
+      {:error, exception} ->
+        {:error, {:request_failed, exception}}
+    end
+  rescue
+    exception ->
+      {:error, {:client_failed, exception}}
+  end
+
+  defp parse_osm(results) when is_list(results) do
+    results
+    |> Enum.flat_map(&normalize_osm/1)
+    |> Enum.uniq_by(&{&1.name, &1.country})
+    |> Enum.take(5)
+  end
+
+  defp parse_osm(_body), do: []
+
+  defp normalize_osm(%{} = result) do
+    address = result["address"] || %{}
+
+    name =
+      case text(result["name"]) do
+        "" -> first_display_part(result["display_name"])
+        name -> name
+      end
+
+    if name == "" do
+      []
+    else
+      country = text(address["country"])
+      region = osm_region(address)
+      latitude = parse_coord(result["lat"])
+      longitude = parse_coord(result["lon"])
+
+      [
+        %{
+          name: name,
+          country: country,
+          region: region,
+          label: label(%{name: name, region: region, country: country}),
+          latitude: latitude,
+          longitude: longitude,
+          timezone: nil,
+          population: nil,
+          source: :osm
+        }
+      ]
+    end
+  end
+
+  defp normalize_osm(_result), do: []
+
+  defp first_display_part(display_name) when is_binary(display_name) do
+    display_name
+    |> String.split(",", parts: 2)
+    |> List.first()
+    |> text()
+  end
+
+  defp first_display_part(_display_name), do: ""
+
+  defp osm_region(address) do
+    [address["state"], address["region"], address["county"], address["city"]]
+    |> Enum.map(&text/1)
+    |> Enum.reject(&(&1 == ""))
+    |> List.first()
+    |> blank_to_nil()
+  end
+
+  defp parse_coord(value) when is_number(value), do: value
+
+  defp parse_coord(value) when is_binary(value) do
+    case Float.parse(value) do
+      {number, _rest} -> number
+      :error -> nil
+    end
+  end
+
+  defp parse_coord(_value), do: nil
 
   # ------------------------------------------------------------------ AI fallback
 

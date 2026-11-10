@@ -146,6 +146,10 @@ defmodule Xpressbus.PlacesTest do
               Req.Test.json(conn, %{"results" => []})
             end
 
+          "/search" ->
+            # Nominatim has no match for this query; the AI fallback takes over.
+            Req.Test.json(conn, [])
+
           "/v1/chat/completions" ->
             Req.Test.json(conn, %{
               "choices" => [
@@ -167,6 +171,45 @@ defmodule Xpressbus.PlacesTest do
       assert place.name == "Paris"
       assert place.country == "France"
       assert place.source == :ai
+    end
+
+    test "falls back to OpenStreetMap for landmarks the city geocoder cannot match" do
+      Req.Test.stub(__MODULE__, fn conn ->
+        case conn.request_path do
+          "/v1/search" ->
+            Req.Test.json(conn, %{"results" => []})
+
+          "/search" ->
+            assert conn.query_string =~ "eiffel"
+
+            assert Plug.Conn.get_req_header(conn, "user-agent") == [
+                     "KomiutaTripBuilder/1.0 (+https://www.komiuta.com)"
+                   ]
+
+            Req.Test.json(conn, [
+              %{
+                "name" => "Eiffel Tower",
+                "display_name" => "Eiffel Tower, 5, Avenue Anatole France, Paris, France",
+                "lat" => "48.8582599",
+                "lon" => "2.2945006",
+                "address" => %{
+                  "country" => "France",
+                  "state" => "Île-de-France",
+                  "city" => "Paris"
+                }
+              }
+            ])
+        end
+      end)
+
+      assert {:ok, place, _all} =
+               Places.resolve("eiffel tower", req_options: [plug: {Req.Test, __MODULE__}])
+
+      assert place.name == "Eiffel Tower"
+      assert place.country == "France"
+      assert place.region == "Île-de-France"
+      assert place.source == :osm
+      assert place.latitude == 48.8582599
     end
 
     test "returns :not_found when AI is not configured and geocoding finds nothing" do
