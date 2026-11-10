@@ -147,60 +147,126 @@
         <% end %>
 
         <%= if @step == 2 do %>
-          <div id="step-dates" class="mx-auto max-w-xl">
-            <p class="text-[10px] font-black uppercase tracking-[0.24em] text-[#FF4C00]">
-              Step 02 · Dates
-            </p>
-            <h1 class="mt-2 text-2xl font-black tracking-tight text-slate-900 md:text-3xl">
-              When are you travelling to {@trip.destination}?
-            </h1>
-            <p class="mt-2 text-sm font-bold text-slate-400">
-              Give us a rough window — Chyllz AI can adjust the plan later.
-            </p>
-
-            <form id="dates-form" phx-submit="dates" class="mt-6 grid gap-4 sm:grid-cols-2">
-              <label class="block">
-                <span class="mb-2 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
-                  Departure
-                </span>
-                <input
-                  id="start-date"
-                  type="date"
-                  name="start_date"
-                  value={date_input(@trip.start_date)}
-                  class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#FF4C00] focus:bg-white"
-                  required
-                />
-              </label>
-              <label class="block">
-                <span class="mb-2 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
-                  Return
-                </span>
-                <input
-                  id="end-date"
-                  type="date"
-                  name="end_date"
-                  value={date_input(@trip.end_date)}
-                  class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#FF4C00] focus:bg-white"
-                  required
-                />
-              </label>
-              <div class="flex gap-2 sm:col-span-2">
+          <div id="step-dates" class="mx-auto max-w-3xl">
+            <div class="flex justify-center">
+              <div class="inline-flex max-w-full items-center gap-2 rounded-full border border-orange-200 bg-orange-50/70 px-3 py-1.5 text-[10px] font-black text-slate-700">
+                <.ui_icon name={:pin} class="h-3.5 w-3.5 shrink-0 text-[#FF4C00]" />
+                <span class="max-w-[190px] truncate">{@trip.destination}</span>
                 <button
+                  id="change-destination"
                   type="button"
-                  phx-click="back"
-                  class="rounded-xl border border-slate-200 px-5 py-3 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:border-slate-300"
+                  phx-click="change_destination"
+                  class="inline-flex shrink-0 items-center gap-1 rounded-full bg-white px-2 py-1 text-[9px] font-black uppercase tracking-widest text-[#FF4C00] shadow-sm"
                 >
-                  Back
-                </button>
-                <button
-                  type="submit"
-                  class="flex-1 rounded-xl bg-[#FF4C00] px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white hover:bg-[#E64400]"
-                >
-                  Continue
+                  <.ui_icon name={:search} class="h-3 w-3" /> Change
                 </button>
               </div>
-            </form>
+            </div>
+
+            <h1 class="mt-4 text-center text-2xl font-black tracking-tight text-slate-900 md:text-3xl">
+              When will you want to go? <span aria-hidden="true">🗓️</span>
+            </h1>
+            <p class="mt-1 text-center text-sm font-bold leading-relaxed text-slate-400">
+              Select your start and end dates to construct a well-timed daily itinerary.
+            </p>
+
+            <div class="mt-4 flex justify-center">
+              <span
+                id="date-range-label"
+                class="rounded-full border border-orange-200 bg-orange-50 px-4 py-1.5 text-[10px] font-black text-[#FF4C00]"
+              >
+                {range_label(@trip)}
+              </span>
+            </div>
+
+            <div class="mt-5">
+              <div class="flex items-center justify-between px-2">
+                <button
+                  id="calendar-prev"
+                  type="button"
+                  phx-click="calendar_shift"
+                  phx-value-shift="-2"
+                  aria-label="Previous months"
+                  class="grid h-9 w-9 place-items-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-[#FF4C00] hover:text-[#FF4C00]"
+                >
+                  <.ui_icon name={:chevron_right} class="h-4 w-4 rotate-180" />
+                </button>
+                <span class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-300">
+                  Two-month view
+                </span>
+                <button
+                  id="calendar-next"
+                  type="button"
+                  phx-click="calendar_shift"
+                  phx-value-shift="2"
+                  aria-label="Next months"
+                  class="grid h-9 w-9 place-items-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-[#FF4C00] hover:text-[#FF4C00]"
+                >
+                  <.ui_icon name={:chevron_right} class="h-4 w-4" />
+                </button>
+              </div>
+
+              <div class="mt-2 grid grid-cols-1 gap-6 md:grid-cols-2">
+                <%= for month <- calendar_months(@calendar_month) do %>
+                  <div>
+                    <p class="text-center text-sm font-black text-slate-800">{month.label}</p>
+                    <div class="mt-3 grid grid-cols-7 gap-y-1 text-center">
+                      <%= for weekday <- ~w(SU MO TU WE TH FR SA) do %>
+                        <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                          {weekday}
+                        </span>
+                      <% end %>
+
+                      <%= for day <- List.flatten(month.weeks) do %>
+                        <%= if day do %>
+                          <button
+                            type="button"
+                            id={"calendar-day-" <> Date.to_iso8601(day)}
+                            phx-click="pick_date"
+                            phx-value-date={Date.to_iso8601(day)}
+                            aria-label={"Select " <> Date.to_iso8601(day)}
+                            class={[
+                              "mx-auto grid h-8 w-8 place-items-center text-[11px] font-bold transition",
+                              calendar_day_class(day, @trip, @today)
+                            ]}
+                          >
+                            {day.day}
+                          </button>
+                        <% else %>
+                          <span class="h-8 w-8"></span>
+                        <% end %>
+                      <% end %>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+
+            <div class="mt-7 flex items-center justify-between border-t border-slate-100 pt-4">
+              <button
+                type="button"
+                phx-click="back"
+                class="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-600 transition hover:border-slate-300"
+              >
+                <.ui_icon name={:chevron_right} class="h-3.5 w-3.5 rotate-180" /> Previous
+              </button>
+              <span class="text-[10px] font-bold text-slate-400">Step 2 of 5</span>
+              <button
+                id="dates-next"
+                type="button"
+                phx-click="dates_next"
+                disabled={is_nil(@trip.start_date) or is_nil(@trip.end_date)}
+                class={[
+                  "inline-flex items-center gap-1 rounded-xl px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-white transition",
+                  !is_nil(@trip.start_date) && !is_nil(@trip.end_date) &&
+                    "bg-[#FF4C00] shadow-lg shadow-orange-500/25 hover:bg-[#E64400]",
+                  (is_nil(@trip.start_date) || is_nil(@trip.end_date)) &&
+                    "cursor-not-allowed bg-slate-200 text-slate-400"
+                ]}
+              >
+                Next <.ui_icon name={:arrow_right} class="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
         <% end %>
 

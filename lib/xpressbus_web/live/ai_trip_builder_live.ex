@@ -55,6 +55,8 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:step, 1)
      |> assign(:query, "")
      |> assign(:error, nil)
+     |> assign(:today, Date.utc_today())
+     |> assign(:calendar_month, Date.beginning_of_month(Date.utc_today()))
      |> reset_trip()}
   end
 
@@ -84,17 +86,35 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> choose_destination(%{destination: destination, country: country})}
   end
 
-  def handle_event("dates", %{"start_date" => start_date, "end_date" => end_date}, socket) do
-    with {:ok, start} <- parse_date(start_date),
-         {:ok, finish} <- parse_date(end_date),
-         :ok <- validate_dates(start, finish) do
-      {:noreply,
-       socket
-       |> assign(:error, nil)
-       |> assign(:trip, %{socket.assigns.trip | start_date: start, end_date: finish})
-       |> assign(:step, 3)}
+  def handle_event("pick_date", %{"date" => value}, socket) do
+    case Date.from_iso8601(to_string(value)) do
+      {:ok, date} ->
+        {:noreply,
+         socket
+         |> assign(:error, nil)
+         |> assign(:trip, select_date(socket.assigns.trip, date))}
+
+      _other ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event("calendar_shift", %{"shift" => shift}, socket) do
+    shift = to_int(shift, 0)
+    {:noreply, assign(socket, :calendar_month, shift_month(socket.assigns.calendar_month, shift))}
+  end
+
+  def handle_event("change_destination", _params, socket) do
+    {:noreply, assign(socket, :step, 1)}
+  end
+
+  def handle_event("dates_next", _params, socket) do
+    trip = socket.assigns.trip
+
+    if trip.start_date && trip.end_date do
+      {:noreply, socket |> assign(:error, nil) |> assign(:step, 3)}
     else
-      {:error, message} -> {:noreply, assign(socket, :error, message)}
+      {:noreply, assign(socket, :error, "Pick a start and end date to continue.")}
     end
   end
 
@@ -152,6 +172,8 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:step, 1)
      |> assign(:query, "")
      |> assign(:error, nil)
+     |> assign(:today, Date.utc_today())
+     |> assign(:calendar_month, Date.beginning_of_month(Date.utc_today()))
      |> reset_trip()}
   end
 
@@ -180,20 +202,79 @@ defmodule XpressbusWeb.AiTripBuilderLive do
     |> assign(:step, 2)
   end
 
-  defp parse_date(value) do
-    case Date.from_iso8601(to_string(value)) do
-      {:ok, date} -> {:ok, date}
-      _other -> {:error, "Choose both travel dates to continue."}
+  defp select_date(trip, date) do
+    cond do
+      is_nil(trip.start_date) ->
+        %{trip | start_date: date, end_date: nil}
+
+      is_nil(trip.end_date) and Date.compare(date, trip.start_date) == :lt ->
+        %{trip | start_date: date, end_date: trip.start_date}
+
+      is_nil(trip.end_date) ->
+        %{trip | end_date: date}
+
+      true ->
+        %{trip | start_date: date, end_date: nil}
     end
   end
 
-  defp validate_dates(%Date{} = start_date, %Date{} = end_date) do
-    if Date.compare(end_date, start_date) == :lt do
-      {:error, "The return date can't be before the departure date."}
-    else
-      :ok
+  defp shift_month(%Date{} = date, months) do
+    total = date.year * 12 + date.month - 1 + months
+    year = div(total, 12)
+    month = rem(rem(total, 12) + 12, 12) + 1
+    Date.new!(year, month, 1)
+  end
+
+  defp calendar_months(cursor) do
+    first = Date.beginning_of_month(cursor)
+    [first, shift_month(first, 1)] |> Enum.map(&calendar_month/1)
+  end
+
+  defp calendar_month(first) do
+    offset = Date.day_of_week(first, :sunday) - 1
+    dates = for day <- 1..Date.days_in_month(first), do: Date.add(first, day - 1)
+    cells = List.duplicate(nil, offset) ++ dates
+    padding = rem(7 - rem(length(cells), 7), 7)
+
+    %{
+      first: first,
+      label: Calendar.strftime(first, "%B %Y"),
+      weeks: (cells ++ List.duplicate(nil, padding)) |> Enum.chunk_every(7)
+    }
+  end
+
+  defp calendar_day_class(date, trip, today) do
+    selected = date == trip.start_date or date == trip.end_date
+
+    cond do
+      selected ->
+        "rounded-full bg-[#FF4C00] font-black text-white shadow-lg shadow-orange-500/25"
+
+      in_range?(date, trip.start_date, trip.end_date) ->
+        "rounded-full bg-orange-50 font-black text-[#FF4C00]"
+
+      date == today ->
+        "rounded-full bg-amber-100 font-black text-amber-900 ring-1 ring-amber-200"
+
+      true ->
+        "rounded-full text-slate-700 hover:bg-slate-100"
     end
   end
+
+  defp in_range?(_date, nil, _end_date), do: false
+  defp in_range?(_date, _start_date, nil), do: false
+
+  defp in_range?(date, start_date, end_date) do
+    Date.compare(date, start_date) == :gt and Date.compare(date, end_date) == :lt
+  end
+
+  defp range_label(%{start_date: nil}), do: "Please select a date range"
+
+  defp range_label(%{start_date: start_date, end_date: nil}),
+    do: "#{format_date(start_date)} — now pick your return date"
+
+  defp range_label(%{start_date: start_date, end_date: end_date}),
+    do: "#{format_date(start_date)} → #{format_date(end_date)}"
 
   defp toggle_value(list, value) do
     if value in list, do: List.delete(list, value), else: list ++ [value]
@@ -209,10 +290,6 @@ defmodule XpressbusWeb.AiTripBuilderLive do
   end
 
   defp format_date(%Date{} = date), do: Calendar.strftime(date, "%d %b %Y")
-
-  defp date_input(nil), do: ""
-
-  defp date_input(%Date{} = date), do: Date.to_iso8601(date)
 
   defp travel_label(%{start_date: nil}), do: "Dates to be confirmed"
 
