@@ -170,6 +170,7 @@
                           <button
                             type="button"
                             phx-click="delete_car"
+                            phx-disable-with="Deleting..."
                             phx-value-id={car.id}
                             data-confirm={"Delete #{car.car_name}? This removes it from the website."}
                             class="flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-red-500 transition hover:bg-red-500 hover:text-white"
@@ -315,6 +316,7 @@
               </button>
               <button
                 type="submit"
+                phx-disable-with="Saving..."
                 class="flex-1 rounded-2xl bg-[#FF4C00] py-4 text-sm font-black text-white shadow-lg shadow-orange-200 transition hover:bg-[#E64400]"
               >
                 {if @editing_car, do: "Update vehicle", else: "Add vehicle"}

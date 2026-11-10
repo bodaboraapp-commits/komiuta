@@ -127,6 +127,7 @@
                   <div class="pt-2 flex flex-wrap gap-4">
                     <button
                       type="submit"
+                      phx-disable-with="Saving..."
                       class="flex-1 min-w-[220px] bg-[#FF4C00] text-white py-4 rounded-[1.5rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-orange-100 hover:bg-[#E64400] transition-all transform active:scale-95"
                     >
                       Save Login Setting
@@ -165,6 +166,7 @@
                       <input
                         type="checkbox"
                         phx-click="toggle_active"
+                        phx-disable-with="Saving..."
                         phx-value-provider="mpesa"
                         checked={Map.get(@settings["mpesa"], :active, true)}
                         class="sr-only peer"
@@ -303,6 +305,7 @@
                   <div class="pt-6 flex gap-4">
                     <button
                       type="submit"
+                      phx-disable-with="Saving..."
                       class="flex-1 bg-[#FF4C00] text-white py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-orange-100 hover:bg-[#E64400] transition-all transform active:scale-95"
                     >
                       Update M-PESA Link
@@ -340,6 +343,7 @@
                       <input
                         type="checkbox"
                         phx-click="toggle_active"
+                        phx-disable-with="Saving..."
                         phx-value-provider="flutterwave"
                         checked={Map.get(@settings["flutterwave"], :active, true)}
                         class="sr-only peer"
@@ -448,6 +452,7 @@
                   <div class="pt-6 flex gap-4">
                     <button
                       type="submit"
+                      phx-disable-with="Saving..."
                       class="flex-1 bg-[#FF4C00] text-white py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-orange-100 hover:bg-[#E64400] transition-all transform active:scale-95"
                     >
                       Update Flutterwave Link
@@ -485,6 +490,7 @@
                       <input
                         type="checkbox"
                         phx-click="toggle_active"
+                        phx-disable-with="Saving..."
                         phx-value-provider="paystack"
                         checked={Map.get(@settings["paystack"], :active, true)}
                         class="sr-only peer"
@@ -582,6 +588,7 @@
                   <div class="pt-6 flex gap-4">
                     <button
                       type="submit"
+                      phx-disable-with="Saving..."
                       class="flex-1 bg-[#FF4C00] text-white py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-orange-100 hover:bg-[#E64400] transition-all transform active:scale-95"
                     >
                       Update Paystack Link
@@ -619,6 +626,7 @@
                       <input
                         type="checkbox"
                         phx-click="toggle_active"
+                        phx-disable-with="Saving..."
                         phx-value-provider="google"
                         checked={Map.get(@settings["google"], :active, true)}
                         class="sr-only peer"
@@ -676,6 +684,7 @@
                   <div class="pt-8 flex gap-4">
                     <button
                       type="submit"
+                      phx-disable-with="Saving..."
                       class="flex-1 bg-[#FF4C00] text-white py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-orange-100 hover:bg-[#E64400] transition-all transform active:scale-95"
                     >
                       Update Google Auth Link
@@ -843,6 +852,7 @@
                       <input
                         type="checkbox"
                         phx-click="toggle_active"
+                        phx-disable-with="Saving..."
                         phx-value-provider="weather_api"
                         checked={Map.get(@settings["weather_api"], :active, true)}
                         class="sr-only peer"
@@ -915,6 +925,7 @@
                   <div class="pt-2 flex flex-wrap gap-4">
                     <button
                       type="submit"
+                      phx-disable-with="Saving..."
                       class="flex-1 min-w-[220px] bg-[#FF4C00] text-white py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-orange-100 hover:bg-[#E64400] transition-all transform active:scale-95"
                     >
                       Update WeatherAPI Link
@@ -957,6 +968,7 @@
                       <input
                         type="checkbox"
                         phx-click="toggle_active"
+                        phx-disable-with="Saving..."
                         phx-value-provider="google_maps"
                         checked={Map.get(@settings["google_maps"], :active, true)}
                         class="sr-only peer"
@@ -1091,6 +1103,7 @@
                   <div class="pt-2 flex flex-wrap gap-4">
                     <button
                       type="submit"
+                      phx-disable-with="Saving..."
                       class="flex-1 min-w-[220px] bg-[#FF4C00] text-white py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-orange-100 hover:bg-[#E64400] transition-all transform active:scale-95"
                     >
                       Save Google Maps Keys
@@ -1139,6 +1152,7 @@
                       <input
                         type="checkbox"
                         phx-click="toggle_active"
+                        phx-disable-with="Saving..."
                         phx-value-provider="ai"
                         checked={Map.get(@settings["ai"], :active, true)}
                         class="sr-only peer"
@@ -1307,6 +1321,7 @@
                   <div class="pt-2 flex flex-wrap gap-4">
                     <button
                       type="submit"
+                      phx-disable-with="Saving..."
                       class="flex-1 min-w-[220px] bg-[#FF4C00] text-white py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-orange-100 hover:bg-[#E64400] transition-all transform active:scale-95"
                     >
                       Save AI Settings
