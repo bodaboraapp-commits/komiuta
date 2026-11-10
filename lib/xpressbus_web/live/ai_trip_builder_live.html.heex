@@ -775,14 +775,14 @@
               </div>
             </article>
 
-            <aside class="relative min-h-[420px] border-t border-slate-100 lg:border-l lg:border-t-0">
+            <aside class="relative h-[420px] border-t border-slate-100 lg:sticky lg:top-20 lg:h-[calc(100vh-6rem)] lg:self-start lg:border-l lg:border-t-0">
               <iframe
                 id="itinerary-map"
                 src={@itinerary.map_url}
                 title={"Map of " <> @itinerary.city}
-                loading="lazy"
+                loading="eager"
                 referrerpolicy="no-referrer-when-downgrade"
-                class="h-[420px] w-full lg:h-full lg:min-h-[720px]"
+                class="h-[420px] w-full border-0 lg:h-full"
               ></iframe>
 
               <div class="absolute inset-x-3 bottom-3 flex items-center justify-between gap-2 rounded-full bg-white/95 px-4 py-2 shadow-lg backdrop-blur">
