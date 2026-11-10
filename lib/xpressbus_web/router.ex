@@ -78,6 +78,7 @@ defmodule XpressbusWeb.Router do
     # query string (guest/post-payment flow) or by the signed-in passenger.
     get "/tickets/:ticket_id/download", UserController, :ticket_download
     live "/dashboard", UserDashboardLive, :index
+    live "/trips/:ticket_id/manage", TripManageLive, :show
     live "/payment-processing/:ticket_id", PaymentProcessingLive, :index
     live "/partner/add-fleet", PartnerRegistrationLive, :index
     live "/terms", LegalLive, :terms

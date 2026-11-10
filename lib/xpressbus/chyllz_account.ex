@@ -282,7 +282,7 @@ defmodule Xpressbus.ChyllzAccount do
       fare: format_money(ticket.price),
       seats: format_seats(ticket.seats),
       art: art_variant(ticket),
-      href: "/dashboard"
+      href: "/trips/#{ticket.ticket_id}/manage"
     }
   end
 
