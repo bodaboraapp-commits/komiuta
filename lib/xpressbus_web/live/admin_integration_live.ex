@@ -600,42 +600,21 @@ defmodule XpressbusWeb.AdminIntegrationLive do
 
     key = config |> Map.get("api_key") |> to_string() |> String.trim()
 
-    if key == "" do
-      {:noreply, put_flash(socket, :error, "Missing Google Maps API key. Save one first.")}
-    else
-      case Req.get("https://maps.googleapis.com/maps/api/geocode/json",
-             params: [address: "Nairobi", key: key],
-             retry: false,
-             receive_timeout: 8_000
-           ) do
-        {:ok, %Req.Response{status: 200, body: body}} when is_map(body) ->
-          case body["status"] do
-            "OK" ->
-              {:noreply,
-               put_flash(
-                 socket,
-                 :info,
-                 "Google Maps connection successful — Geocoding API accepted this key."
-               )}
+    cond do
+      key == "" ->
+        {:noreply, put_flash(socket, :error, "Missing Google Maps API key. Save one first.")}
 
-            status ->
-              message = body["error_message"] || "Google Maps returned #{status}."
+      not String.starts_with?(key, "AIza") ->
+        {:noreply,
+         put_flash(socket, :error, "That does not look like a Google Maps platform key.")}
 
-              {:noreply,
-               put_flash(
-                 socket,
-                 :error,
-                 "Google Maps rejected this key: #{message}"
-               )}
-          end
-
-        {:ok, %Req.Response{status: status}} ->
-          {:noreply,
-           put_flash(socket, :error, "Google Maps returned HTTP #{status}. Check the key.")}
-
-        {:error, reason} ->
-          {:noreply, put_flash(socket, :error, "Google Maps check failed: #{inspect(reason)}")}
-      end
+      true ->
+        {:noreply,
+         put_flash(
+           socket,
+           :info,
+           "Google Maps key is saved. It is browser/referrer restricted, so it cannot be tested from the server — open a map page on the Komiuta domain to confirm it."
+         )}
     end
   end
 end

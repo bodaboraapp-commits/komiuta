@@ -7,7 +7,6 @@
       settings_expanded={@settings_expanded}
       collapsed={@sidebar_collapsed}
     />
-
     <div class={[
       "flex-1 transition-all duration-300",
       if(@sidebar_collapsed, do: "lg:pl-20", else: "lg:pl-72")
@@ -16,26 +15,28 @@
         <h2 class="text-xl font-black text-slate-900 tracking-tight uppercase tracking-widest">
           System Integrations
         </h2>
-
+        
         <div class="flex items-center gap-6">
           <button class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-[#FF4C00] transition-colors relative">
             <span class="material-symbols-outlined">notifications</span>
             <div class="absolute top-2.5 right-2.5 w-2 h-2 bg-[#FF4C00] rounded-full border-2 border-white">
             </div>
           </button>
-
+          
           <div class="flex items-center gap-4 border-l border-slate-100 pl-6">
             <div class="text-right hidden sm:block">
               <p class="text-[11px] font-black text-slate-900 leading-none">Admin User</p>
+              
               <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">Super Admin</p>
             </div>
+            
             <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-[#FF4C00] font-black text-xs border-2 border-white shadow-sm">
               AD
             </div>
           </div>
         </div>
       </header>
-
+      
       <main class="p-6 md:p-10">
         <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
           <div class="p-6 md:p-10">
@@ -52,13 +53,11 @@
                       "border-transparent text-slate-400 hover:text-slate-600"
                   ]}
                 >
-                  <span class="material-symbols-outlined text-lg mr-2 align-middle">{provider_info.icon}</span>
-                  {provider_info.label}
+                  <span class="material-symbols-outlined text-lg mr-2 align-middle">{provider_info.icon}</span> {provider_info.label}
                 </button>
               <% end %>
             </div>
-
-            <%!-- User Login Method --%>
+             <%!-- User Login Method --%>
             <%= if @current_provider == "user_login" do %>
               <% selected_method = @login_method_choice %>
               <div class="animate-fade-in-up space-y-8">
@@ -69,16 +68,16 @@
                   class="space-y-8"
                 >
                   <input type="hidden" name="provider" value="user_login" />
-
                   <div>
                     <h4 class="font-black text-slate-900 text-sm uppercase tracking-widest">
                       Traveller login method
                     </h4>
+                    
                     <p class="text-[11px] font-bold text-slate-400 mt-1">
                       Choose how travellers sign in to their Komiuta accounts. Google sign-in remains available on all options.
                     </p>
                   </div>
-
+                  
                   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <%= for {value, label, description, icon} <- [
                       {"email", "Email code", "Sends a 6-digit login code to the account email address.", "mail"},
@@ -107,7 +106,7 @@
                       </label>
                     <% end %>
                   </div>
-
+                  
                   <%= if selected_method in ["sms", "both"] do %>
                     <%= if @firebase_config do %>
                       <div class="rounded-[1.5rem] bg-emerald-50 border border-emerald-100 p-5">
@@ -124,7 +123,7 @@
                       </div>
                     <% end %>
                   <% end %>
-
+                  
                   <div class="pt-2 flex flex-wrap gap-4">
                     <button
                       type="submit"
@@ -132,6 +131,7 @@
                     >
                       Save Login Setting
                     </button>
+                    
                     <button
                       type="button"
                       phx-click="switch_provider"
@@ -144,23 +144,23 @@
                 </form>
               </div>
             <% end %>
-
-            <%!-- MPESA Integration Form --%>
+             <%!-- MPESA Integration Form --%>
             <%= if @current_provider == "mpesa" do %>
               <% mpesa_config = provider_config(@settings, "mpesa") %>
               <div class="animate-fade-in-up">
                 <form phx-submit="save" class="space-y-6">
                   <input type="hidden" name="provider" value="mpesa" />
-
                   <div class="flex items-center justify-between p-4 bg-slate-50 rounded-[2rem] border border-slate-100">
                     <div>
                       <h4 class="font-black text-slate-900 text-sm uppercase tracking-widest">
                         Active Status
                       </h4>
+                      
                       <p class="text-[11px] font-bold text-slate-400">
                         Toggle M-PESA payment availability during checkout
                       </p>
                     </div>
+                    
                     <label class="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
@@ -181,7 +181,7 @@
                       </div>
                     </label>
                   </div>
-
+                  
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Environment Mode</label>
@@ -192,12 +192,13 @@
                         <option value="sandbox" selected={mpesa_config["mode"] == "sandbox"}>
                           Sandbox / Test
                         </option>
+                        
                         <option value="production" selected={mpesa_config["mode"] == "production"}>
                           Live Production
                         </option>
                       </select>
                     </div>
-
+                    
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Service Type</label>
                       <select
@@ -207,12 +208,13 @@
                         <option value="paybill" selected={mpesa_config["type"] == "paybill"}>
                           Lipa Na M-PESA Paybill
                         </option>
+                        
                         <option value="till" selected={mpesa_config["type"] == "till"}>
                           Lipa Na M-PESA Buy Goods (Till)
                         </option>
                       </select>
                     </div>
-
+                    
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Short Code / Till Number</label>
                       <input
@@ -224,7 +226,7 @@
                         required
                       />
                     </div>
-
+                    
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Party B / Store Number (Buy Goods)</label>
                       <input
@@ -235,7 +237,7 @@
                         class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
                       />
                     </div>
-
+                    
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Initiator Name (HQ/HO)</label>
                       <input
@@ -246,7 +248,7 @@
                         class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
                       />
                     </div>
-
+                    
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Consumer Key</label>
                       <input
@@ -258,7 +260,7 @@
                         required
                       />
                     </div>
-
+                    
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Consumer Secret</label>
                       <input
@@ -270,7 +272,7 @@
                         required
                       />
                     </div>
-
+                    
                     <div class="md:col-span-2">
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Passkey (Online Checkout)</label>
                       <input
@@ -281,7 +283,7 @@
                         class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
                       />
                     </div>
-
+                    
                     <div class="md:col-span-2">
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Callback URL (Webhook)</label>
                       <div class="relative">
@@ -297,7 +299,7 @@
                       </div>
                     </div>
                   </div>
-
+                  
                   <div class="pt-6 flex gap-4">
                     <button
                       type="submit"
@@ -305,6 +307,7 @@
                     >
                       Update M-PESA Link
                     </button>
+                    
                     <button
                       type="button"
                       phx-click="test_connection"
@@ -316,23 +319,23 @@
                 </form>
               </div>
             <% end %>
-
-            <%!-- Flutterwave Integration Form --%>
+             <%!-- Flutterwave Integration Form --%>
             <%= if @current_provider == "flutterwave" do %>
               <% flutterwave_config = provider_config(@settings, "flutterwave") %>
               <div class="animate-fade-in-up">
                 <form phx-submit="save" class="space-y-6">
                   <input type="hidden" name="provider" value="flutterwave" />
-
                   <div class="flex items-center justify-between p-4 bg-slate-50 rounded-[2rem] border border-slate-100">
                     <div>
                       <h4 class="font-black text-slate-900 text-sm uppercase tracking-widest">
                         Active Status
                       </h4>
+                      
                       <p class="text-[11px] font-bold text-slate-400">
                         Toggle Flutterwave card payments during checkout
                       </p>
                     </div>
+                    
                     <label class="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
@@ -353,7 +356,7 @@
                       </div>
                     </label>
                   </div>
-
+                  
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Environment</label>
@@ -367,6 +370,7 @@
                         >
                           Sandbox / Test
                         </option>
+                        
                         <option
                           value="production"
                           selected={flutterwave_config["environment"] == "production"}
@@ -375,7 +379,7 @@
                         </option>
                       </select>
                     </div>
-
+                    
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Public Key</label>
                       <input
@@ -387,7 +391,7 @@
                         required
                       />
                     </div>
-
+                    
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Secret Key</label>
                       <input
@@ -399,7 +403,7 @@
                         required
                       />
                     </div>
-
+                    
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Encryption Key</label>
                       <input
@@ -410,7 +414,7 @@
                         class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
                       />
                     </div>
-
+                    
                     <div class="md:col-span-2">
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Callback URL</label>
                       <div class="relative">
@@ -425,7 +429,7 @@
                         />
                       </div>
                     </div>
-
+                    
                     <div class="md:col-span-2">
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Webhook URL</label>
                       <div class="relative">
@@ -440,7 +444,7 @@
                       </div>
                     </div>
                   </div>
-
+                  
                   <div class="pt-6 flex gap-4">
                     <button
                       type="submit"
@@ -448,6 +452,7 @@
                     >
                       Update Flutterwave Link
                     </button>
+                    
                     <button
                       type="button"
                       phx-click="test_connection"
@@ -459,23 +464,23 @@
                 </form>
               </div>
             <% end %>
-
-            <%!-- Paystack Integration Form --%>
+             <%!-- Paystack Integration Form --%>
             <%= if @current_provider == "paystack" do %>
               <% paystack_config = provider_config(@settings, "paystack") %>
               <div class="animate-fade-in-up">
                 <form phx-submit="save" class="space-y-6">
                   <input type="hidden" name="provider" value="paystack" />
-
                   <div class="flex items-center justify-between p-4 bg-slate-50 rounded-[2rem] border border-slate-100">
                     <div>
                       <h4 class="font-black text-slate-900 text-sm uppercase tracking-widest">
                         Active Status
                       </h4>
+                      
                       <p class="text-[11px] font-bold text-slate-400">
                         Toggle Paystack card payments during checkout
                       </p>
                     </div>
+                    
                     <label class="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
@@ -496,7 +501,7 @@
                       </div>
                     </label>
                   </div>
-
+                  
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Environment</label>
@@ -510,6 +515,7 @@
                         >
                           Sandbox / Test
                         </option>
+                        
                         <option
                           value="production"
                           selected={paystack_config["environment"] == "production"}
@@ -518,7 +524,7 @@
                         </option>
                       </select>
                     </div>
-
+                    
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Public Key</label>
                       <input
@@ -530,7 +536,7 @@
                         required
                       />
                     </div>
-
+                    
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Secret Key</label>
                       <input
@@ -542,7 +548,7 @@
                         required
                       />
                     </div>
-
+                    
                     <div class="md:col-span-2">
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Callback URL</label>
                       <div class="relative">
@@ -557,7 +563,7 @@
                         />
                       </div>
                     </div>
-
+                    
                     <div class="md:col-span-2">
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Webhook URL</label>
                       <div class="relative">
@@ -572,7 +578,7 @@
                       </div>
                     </div>
                   </div>
-
+                  
                   <div class="pt-6 flex gap-4">
                     <button
                       type="submit"
@@ -580,6 +586,7 @@
                     >
                       Update Paystack Link
                     </button>
+                    
                     <button
                       type="button"
                       phx-click="test_connection"
@@ -591,23 +598,23 @@
                 </form>
               </div>
             <% end %>
-
-            <%!-- Google Integration Form --%>
+             <%!-- Google Integration Form --%>
             <%= if @current_provider == "google" do %>
               <% google_config = provider_config(@settings, "google") %>
               <div class="animate-fade-in-up">
                 <form phx-submit="save" class="space-y-8">
                   <input type="hidden" name="provider" value="google" />
-
                   <div class="flex items-center justify-between p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
                     <div>
                       <h4 class="font-black text-slate-900 text-sm uppercase tracking-widest">
                         OAuth Status
                       </h4>
+                      
                       <p class="text-[11px] font-bold text-slate-400">
                         Enable or disable Google Sign-In for travelers
                       </p>
                     </div>
+                    
                     <label class="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
@@ -624,7 +631,7 @@
                       </div>
                     </label>
                   </div>
-
+                  
                   <div class="grid grid-cols-1 gap-y-12">
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Client ID</label>
@@ -637,7 +644,7 @@
                         required
                       />
                     </div>
-
+                    
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Client Secret</label>
                       <input
@@ -649,7 +656,7 @@
                         required
                       />
                     </div>
-
+                    
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Authorized Redirect URI</label>
                       <div class="relative">
@@ -665,7 +672,7 @@
                       </div>
                     </div>
                   </div>
-
+                  
                   <div class="pt-8 flex gap-4">
                     <button
                       type="submit"
@@ -673,6 +680,7 @@
                     >
                       Update Google Auth Link
                     </button>
+                    
                     <button
                       type="button"
                       phx-click="test_connection"
@@ -684,8 +692,7 @@
                 </form>
               </div>
             <% end %>
-
-            <%!-- Firebase Phone Auth (SMS OTP) Integration --%>
+             <%!-- Firebase Phone Auth (SMS OTP) Integration --%>
             <%= if @current_provider == "firebase" do %>
               <div class="animate-fade-in-up space-y-8">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
@@ -693,10 +700,12 @@
                     <h4 class="font-black text-slate-900 text-sm uppercase tracking-widest">
                       Firebase Phone Authentication
                     </h4>
+                    
                     <p class="text-[11px] font-bold text-slate-400 mt-1">
                       Sends SMS one-time codes from the user login page. Email OTP remains the fallback.
                     </p>
                   </div>
+                  
                   <span class={[
                     "inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest",
                     @firebase_config &&
@@ -708,11 +717,10 @@
                       "w-2 h-2 rounded-full",
                       @firebase_config && "bg-emerald-500",
                       is_nil(@firebase_config) && "bg-amber-500"
-                    ]}></span>
-                    {if @firebase_config, do: "Configured", else: "Not configured"}
+                    ]}></span> {if @firebase_config, do: "Configured", else: "Not configured"}
                   </span>
                 </div>
-
+                
                 <%= if @firebase_config do %>
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -721,18 +729,21 @@
                         {@firebase_config.project_id}
                       </div>
                     </div>
+                    
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-[0.2em]">Auth Domain</label>
                       <div class="p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700">
                         {@firebase_config.auth_domain}
                       </div>
                     </div>
+                    
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-[0.2em]">Web App ID</label>
                       <div class="p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 break-all">
                         {@firebase_config.app_id}
                       </div>
                     </div>
+                    
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-[0.2em]">Web API Key</label>
                       <div class="p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700">
@@ -744,31 +755,36 @@
                       </div>
                     </div>
                   </div>
-
+                  
                   <div class="rounded-[1.5rem] bg-orange-50 border border-orange-100 p-6">
                     <h4 class="text-xs font-black text-slate-900 uppercase tracking-widest mb-3">
                       Firebase Console checklist
                     </h4>
+                    
                     <ul class="space-y-2 text-[11px] font-bold text-slate-600">
                       <li class="flex gap-2">
                         <span class="material-symbols-outlined !text-base text-[#FF4C00]">check_circle</span>
                         Enable <strong>Authentication → Sign-in method → Phone</strong>.
                       </li>
+                      
                       <li class="flex gap-2">
                         <span class="material-symbols-outlined !text-base text-[#FF4C00]">check_circle</span>
                         Add authorized domains <strong>www.komiuta.com</strong>,
                         <strong>komiuta.com</strong>
                         and <strong>localhost</strong>.
                       </li>
+                      
                       <li class="flex gap-2">
                         <span class="material-symbols-outlined !text-base text-[#FF4C00]">check_circle</span>
                         Allow the Kenya (+254) SMS region. Firebase may require the Blaze plan for production SMS volume.
                       </li>
+                      
                       <li class="flex gap-2">
                         <span class="material-symbols-outlined !text-base text-[#FF4C00]">check_circle</span>
                         Only existing Komiuta accounts can use SMS login; new users must sign up with email first.
                       </li>
                     </ul>
+                    
                     <a
                       href="https://console.firebase.google.com/project/komiuta/authentication/providers"
                       target="_blank"
@@ -779,7 +795,7 @@
                       <span class="material-symbols-outlined !text-sm">open_in_new</span>
                     </a>
                   </div>
-
+                  
                   <div class="pt-2 flex gap-4">
                     <button
                       type="button"
@@ -796,6 +812,7 @@
                       <code class="font-black">FIREBASE_*</code>
                       environment variables (or in <code class="font-black">config/config.exs</code>), then redeploy.
                     </p>
+                    
                     <p class="mt-3 text-[11px] font-bold text-slate-500">
                       Required values: API key, auth domain, project ID, app ID and messaging sender ID.
                     </p>
@@ -803,24 +820,25 @@
                 <% end %>
               </div>
             <% end %>
-            <%!-- WeatherAPI (Chyllz weather) Integration --%>
+             <%!-- WeatherAPI (Chyllz weather) Integration --%>
             <%= if @current_provider == "weather_api" do %>
-              <% weather_config = provider_config(@settings, "weather_api") %>
-              <% weather_key = Map.get(weather_config, "api_key") %>
-              <% weather_connected = is_binary(weather_key) and String.trim(weather_key) != "" %>
+              <% weather_config = provider_config(@settings, "weather_api") %> <% weather_key =
+                Map.get(weather_config, "api_key") %> <% weather_connected =
+                is_binary(weather_key) and String.trim(weather_key) != "" %>
               <div class="animate-fade-in-up space-y-8">
                 <form id="weather-api-form" phx-submit="save" class="space-y-8">
                   <input type="hidden" name="provider" value="weather_api" />
-
                   <div class="flex items-center justify-between p-4 bg-slate-50 rounded-[2rem] border border-slate-100">
                     <div>
                       <h4 class="font-black text-slate-900 text-sm uppercase tracking-widest">
                         WeatherAPI Configuration
                       </h4>
+                      
                       <p class="text-[11px] font-bold text-slate-400">
                         Live current conditions and forecast for the Chyllz account page
                       </p>
                     </div>
+                    
                     <label class="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
@@ -841,7 +859,7 @@
                       </div>
                     </label>
                   </div>
-
+                  
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
                     <div class="md:col-span-2">
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">API Key</label>
@@ -864,7 +882,7 @@
                       </p>
                     </div>
                   </div>
-
+                  
                   <span class={[
                     "inline-flex items-center gap-2 rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-widest",
                     weather_connected &&
@@ -876,16 +894,16 @@
                       "w-2 h-2 rounded-full",
                       weather_connected && "bg-emerald-500",
                       !weather_connected && "bg-amber-500"
-                    ]}></span>
-                    {if weather_connected,
+                    ]}></span> {if weather_connected,
                       do: "WeatherAPI connected to Chyllz",
                       else: "Chyllz is using the free Open-Meteo fallback"}
                   </span>
-
+                  
                   <div class="rounded-[1.5rem] bg-orange-50 border border-orange-100 p-6">
                     <h4 class="text-xs font-black text-slate-900 uppercase tracking-widest mb-2">
                       How Chyllz uses this
                     </h4>
+                    
                     <p class="text-[11px] font-bold leading-relaxed text-slate-600">
                       When this integration is ON and has a key, the Chyllz weather card loads live conditions and the 3-day forecast
                       from WeatherAPI.com. If the key is missing, the integration is OFF, or WeatherAPI is unreachable, Chyllz
@@ -893,7 +911,7 @@
                       forecasts immediately.
                     </p>
                   </div>
-
+                  
                   <div class="pt-2 flex flex-wrap gap-4">
                     <button
                       type="submit"
@@ -901,6 +919,7 @@
                     >
                       Update WeatherAPI Link
                     </button>
+                    
                     <button
                       type="button"
                       phx-click="test_connection"
@@ -912,25 +931,25 @@
                 </form>
               </div>
             <% end %>
-
-            <%!-- Google Maps Platform Integration --%>
+             <%!-- Google Maps Platform Integration --%>
             <%= if @current_provider == "google_maps" do %>
-              <% maps_config = provider_config(@settings, "google_maps") %>
-              <% maps_key = Map.get(maps_config, "api_key") %>
-              <% maps_connected = is_binary(maps_key) and String.trim(maps_key) != "" %>
+              <% maps_config = provider_config(@settings, "google_maps") %> <% maps_key =
+                Map.get(maps_config, "api_key") %> <% maps_connected =
+                is_binary(maps_key) and String.trim(maps_key) != "" %>
               <div class="animate-fade-in-up space-y-8">
                 <form id="google-maps-form" phx-submit="save" class="space-y-8">
                   <input type="hidden" name="provider" value="google_maps" />
-
                   <div class="flex items-center justify-between p-4 bg-slate-50 rounded-[2rem] border border-slate-100">
                     <div>
                       <h4 class="font-black text-slate-900 text-sm uppercase tracking-widest">
                         Google Maps Configuration
                       </h4>
+                      
                       <p class="text-[11px] font-bold text-slate-400">
                         Maps, places and route geocoding for the Komiuta platform
                       </p>
                     </div>
+                    
                     <label class="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
@@ -951,12 +970,13 @@
                       </div>
                     </label>
                   </div>
-
+                  
                   <div class="grid grid-cols-1 gap-6">
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">
                         Google Maps API Key
                       </label>
+                      
                       <input
                         type="password"
                         name="config[api_key]"
@@ -966,12 +986,16 @@
                       />
                       <p class="mt-3 text-[10px] font-bold leading-relaxed text-slate-400">
                         Create a key in Google Cloud Console → APIs &amp; Services → Credentials.
-                        Enable Maps JavaScript API, Places API and Geocoding API as needed. The key
-                        is stored in the integrations table and is never rendered on the public site.
+                        This key is browser/referrer restricted, so add
+                        <strong class="text-slate-600">www.komiuta.com</strong>
+                        and <strong class="text-slate-600">agent.komiuta.com</strong>
+                        as allowed
+                        referrers and enable Maps JavaScript API / Places API. It is stored in the
+                        integrations table and is never rendered on public pages.
                       </p>
                     </div>
                   </div>
-
+                  
                   <span class={[
                     "inline-flex items-center gap-2 rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-widest",
                     maps_connected &&
@@ -983,24 +1007,25 @@
                       "w-2 h-2 rounded-full",
                       maps_connected && "bg-emerald-500",
                       !maps_connected && "bg-amber-500"
-                    ]}></span>
-                    {if maps_connected,
+                    ]}></span> {if maps_connected,
                       do: "Google Maps key saved",
                       else: "Google Maps key not configured"}
                   </span>
-
+                  
                   <div class="rounded-[1.5rem] bg-orange-50 border border-orange-100 p-6">
                     <h4 class="text-xs font-black text-slate-900 uppercase tracking-widest mb-2">
                       Where this key is used
                     </h4>
+                    
                     <p class="text-[11px] font-bold leading-relaxed text-slate-600">
                       The saved key is available to the backend through
                       <code class="font-mono text-[10px]">Xpressbus.Integrations.google_maps_api_key/0</code>
-                      for maps, route geocoding and place search. Restrict the key to the Komiuta
-                      website origins and the required Google Maps APIs.
+                      for browser map views and place search. It is referrer-restricted and must
+                      allow the Komiuta website origins. Server-side geocoding needs a separate
+                      unrestricted server key.
                     </p>
                   </div>
-
+                  
                   <div class="pt-2 flex flex-wrap gap-4">
                     <button
                       type="submit"
@@ -1008,6 +1033,7 @@
                     >
                       Save Google Maps Key
                     </button>
+                    
                     <button
                       type="button"
                       phx-click="test_connection"
@@ -1019,16 +1045,13 @@
                 </form>
               </div>
             <% end %>
-
-            <%!-- Chyllz AI provider (Chat / Lens / Receipt / Food) --%>
+             <%!-- Chyllz AI provider (Chat / Lens / Receipt / Food) --%>
             <%= if @current_provider == "ai" do %>
-              <% ai_config = provider_config(@settings, "ai") %>
-              <% ai_status = @ai_status %>
-              <% ai_model = ai_config["model"] || ai_status.model %>
-              <% ai_vision_model = ai_config["vision_model"] || ai_status.vision_model %>
-              <% ai_base_url = ai_config["base_url"] || ai_status.base_url %>
-              <% ai_timeout = ai_config["timeout"] || "20000" %>
-              <% ai_status_label =
+              <% ai_config = provider_config(@settings, "ai") %> <% ai_status = @ai_status %> <% ai_model =
+                ai_config["model"] || ai_status.model %> <% ai_vision_model =
+                ai_config["vision_model"] || ai_status.vision_model %> <% ai_base_url =
+                ai_config["base_url"] || ai_status.base_url %> <% ai_timeout =
+                ai_config["timeout"] || "20000" %> <% ai_status_label =
                 case ai_status.source do
                   :integration -> "Connected via admin"
                   :environment -> "Using environment key"
@@ -1039,16 +1062,17 @@
               <div class="animate-fade-in-up space-y-8">
                 <form id="ai-integration-form" phx-submit="save" class="space-y-8">
                   <input type="hidden" name="provider" value="ai" />
-
                   <div class="flex items-center justify-between p-4 bg-slate-50 rounded-[2rem] border border-slate-100">
                     <div>
                       <h4 class="font-black text-slate-900 text-sm uppercase tracking-widest">
                         Chyllz AI Configuration
                       </h4>
+                      
                       <p class="text-[11px] font-bold text-slate-400">
                         OpenAI-compatible provider for the travel assistant
                       </p>
                     </div>
+                    
                     <label class="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
@@ -1069,12 +1093,13 @@
                       </div>
                     </label>
                   </div>
-
+                  
                   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="rounded-[1.5rem] border border-slate-100 bg-slate-50 p-5">
                       <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
                         Connection
                       </p>
+                      
                       <span class={[
                         "mt-3 inline-flex items-center gap-2 rounded-full px-3 py-2 text-[9px] font-black uppercase tracking-widest",
                         ai_status.configured &&
@@ -1086,35 +1111,37 @@
                           "w-2 h-2 rounded-full",
                           ai_status.configured && "bg-emerald-500",
                           !ai_status.configured && "bg-amber-500"
-                        ]}></span>
-                        {ai_status_label}
+                        ]}></span> {ai_status_label}
                       </span>
                     </div>
-
+                    
                     <div class="rounded-[1.5rem] border border-slate-100 bg-white p-5">
                       <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
                         Chat model
                       </p>
+                      
                       <p class="mt-2 break-words text-xs font-black text-slate-900">
                         {ai_model}
                       </p>
                     </div>
-
+                    
                     <div class="rounded-[1.5rem] border border-slate-100 bg-white p-5">
                       <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
                         Vision model
                       </p>
+                      
                       <p class="mt-2 break-words text-xs font-black text-slate-900">
                         {ai_vision_model}
                       </p>
                     </div>
                   </div>
-
+                  
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
                     <div class="md:col-span-2">
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">
                         API Key
                       </label>
+                      
                       <input
                         type="password"
                         name="config[api_key]"
@@ -1133,16 +1160,18 @@
                         <% else %>
                           Add an OpenAI, OpenRouter, Groq, Together or other OpenAI-compatible key. The key stays server-side.
                         <% end %>
+                        
                         <%= if ai_status.has_env_key and !ai_status.has_integration_key do %>
                           The server also has an environment key configured; it is used until you save a key here.
                         <% end %>
                       </p>
                     </div>
-
+                    
                     <div class="md:col-span-2">
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">
                         Base URL
                       </label>
+                      
                       <input
                         type="url"
                         name="config[base_url]"
@@ -1155,11 +1184,12 @@
                         base. For OpenRouter use <code class="font-black">https://openrouter.ai/api/v1</code>.
                       </p>
                     </div>
-
+                    
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">
                         Chat model
                       </label>
+                      
                       <input
                         type="text"
                         name="config[model]"
@@ -1168,11 +1198,12 @@
                         class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
                       />
                     </div>
-
+                    
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">
                         Vision model
                       </label>
+                      
                       <input
                         type="text"
                         name="config[vision_model]"
@@ -1181,11 +1212,12 @@
                         class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
                       />
                     </div>
-
+                    
                     <div>
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">
                         Request timeout (ms)
                       </label>
+                      
                       <input
                         type="number"
                         name="config[timeout]"
@@ -1197,18 +1229,19 @@
                       />
                     </div>
                   </div>
-
+                  
                   <div class="rounded-[1.5rem] bg-orange-50 border border-orange-100 p-6">
                     <h4 class="text-xs font-black text-slate-900 uppercase tracking-widest mb-2">
                       How Chyllz uses this
                     </h4>
+                    
                     <p class="text-[11px] font-bold leading-relaxed text-slate-600">
                       When this integration is ON and a key is saved, the Chyllz assistant uses the provider for Chat and Food,
                       and the vision model for Lens and Receipt photos. With no key, the assistant stays in its live-catalogue
                       guide mode and still answers, plans trips and reads pasted receipts. AI errors always fall back to the guide.
                     </p>
                   </div>
-
+                  
                   <div class="pt-2 flex flex-wrap gap-4">
                     <button
                       type="submit"
@@ -1216,6 +1249,7 @@
                     >
                       Save AI Settings
                     </button>
+                    
                     <button
                       type="button"
                       phx-click="test_connection"
@@ -1223,6 +1257,7 @@
                     >
                       Test Connection
                     </button>
+                    
                     <button
                       :if={ai_status.has_integration_key}
                       type="button"
