@@ -113,11 +113,18 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
 
               <div class="mt-5 flex flex-wrap items-center gap-2.5">
                 <a
-                  id="plan-new-trip"
-                  href="/tour-packages"
+                  id="build-with-ai"
+                  href="/tour-packages?assistant=1"
                   class="inline-flex items-center gap-2 rounded-full bg-[#FF4C00] px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-orange-500/20 transition-all hover:-translate-y-0.5 hover:bg-[#E64400] hover:shadow-xl"
                 >
-                  <.ui_icon name={:compass} class="h-4 w-4" /> Plan a New Trip
+                  <.ui_icon name={:sparkles} class="h-4 w-4" /> Build with AI
+                </a>
+                <a
+                  id="create-new-trip"
+                  href="/tour-packages"
+                  class="inline-flex items-center gap-2 rounded-full border-2 border-[#FF4C00] bg-orange-50 px-5 py-3 text-[10px] font-black uppercase tracking-widest text-[#FF4C00] transition-all hover:-translate-y-0.5 hover:bg-[#FF4C00] hover:text-white"
+                >
+                  <.ui_icon name={:compass} class="h-4 w-4" /> Create New Trip
                 </a>
                 <a
                   id="view-my-trips"

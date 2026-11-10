@@ -145,7 +145,8 @@ defmodule XpressbusWeb.DashboardChyllzTabTest do
 
     assert html =~ "Welcome back,"
     assert has_element?(view, "#chyllz-welcome")
-    assert has_element?(view, "#plan-new-trip")
+    assert has_element?(view, "#build-with-ai")
+    assert has_element?(view, "#create-new-trip")
     assert has_element?(view, "#view-my-trips")
 
     assert has_element?(view, "#stat-total-trips-value", "2")
