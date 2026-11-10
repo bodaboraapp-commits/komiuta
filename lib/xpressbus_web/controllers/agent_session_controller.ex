@@ -160,16 +160,17 @@ defmodule XpressbusWeb.AgentSessionController do
   defp apply_google_error(conn, _params), do: conn
 
   @doc """
-  Starts an agent login. Agents normally sign in with the phone number on their
-  application (we text a one-time code; if SMS is unavailable we email it).
-  Email identifiers keep working for anyone who still types their email.
+  Starts an agent login from the phone form.
+
+  Email sign-in is handled by Google (Gmail); the phone form only accepts the
+  phone number on the agent application.
   """
   def request_code(conn, %{"agent" => params}) do
     identifier = String.trim(to_string(params["identifier"] || ""))
 
     result =
       if String.contains?(identifier, "@") do
-        Agents.request_login_code(identifier)
+        {:error, :use_google_for_email}
       else
         Agents.request_phone_login_code(identifier)
       end
@@ -639,7 +640,11 @@ defmodule XpressbusWeb.AgentSessionController do
     do: "That email is already linked to another agent account."
 
   defp error_message(:not_found),
-    do: "No agent application was found for that email or phone number."
+    do: "No agent application was found for that phone number."
+
+  defp error_message(:use_google_for_email),
+    do:
+      "Use Sign in with Gmail for email sign-in. This form is for the phone number on your application."
 
   defp error_message(:missing_email),
     do: "That agent application does not have an email address for a sign-in code."
