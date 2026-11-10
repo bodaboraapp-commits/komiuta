@@ -157,6 +157,17 @@ defmodule XpressbusWeb.UserDashboardLive do
      |> assign(:download_url, nil)}
   end
 
+  def handle_event("share_trip", %{"url" => url, "title" => title}, socket) do
+    # The share sheet itself runs in the browser; the server only sanitises the
+    # values and pushes them back through a `phx:share_trip` window event.
+    url = url |> to_string() |> String.slice(0, 500)
+    title = title |> to_string() |> String.slice(0, 120)
+
+    {:noreply, push_event(socket, "share_trip", %{url: url, title: title})}
+  end
+
+  def handle_event("share_trip", _params, socket), do: {:noreply, socket}
+
   def handle_event("update_profile", %{"user" => user_params}, socket) do
     # The email address is deliberately not editable here: changing it requires
     # a code sent to the new address (see request_email_change below).

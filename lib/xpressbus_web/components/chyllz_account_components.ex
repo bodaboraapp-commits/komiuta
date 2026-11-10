@@ -358,20 +358,37 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                       <% end %>
                     </div>
 
-                    <div class="mt-3.5 flex items-center justify-between gap-3">
+                    <div class="mt-3.5 flex items-center gap-2">
                       <a
                         href={trip.href}
-                        class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-slate-900 transition group-hover:text-[#FF4C00]"
+                        id={"manage-itinerary-" <> to_string(trip.id)}
+                        class="flex min-w-0 flex-1 items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-[11px] font-black text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100"
                       >
-                        View Details <.ui_icon name={:arrow_right} class="h-3.5 w-3.5" />
+                        <.ui_icon name={:list} class="h-4 w-4 shrink-0" /> Manage Itinerary
                       </a>
-                      <a
-                        href={trip.href}
-                        aria-label={"Open trip " <> to_string(trip.title)}
-                        class="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-slate-100 text-slate-400 transition group-hover:border-[#FF4C00] group-hover:bg-[#FF4C00] group-hover:text-white"
+                      <button
+                        type="button"
+                        id={"preview-trip-" <> to_string(trip.id)}
+                        phx-click="view_ticket"
+                        phx-value-ticket_id={trip.id}
+                        aria-label={"Preview itinerary for " <> to_string(trip.title)}
+                        title="Preview itinerary"
+                        class="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-emerald-100 bg-white text-emerald-600 transition hover:border-emerald-300 hover:bg-emerald-50"
                       >
-                        <.ui_icon name={:chevron_right} class="h-4 w-4" />
-                      </a>
+                        <.ui_icon name={:eye} class="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        id={"share-trip-" <> to_string(trip.id)}
+                        phx-click="share_trip"
+                        phx-value-url={trip.href}
+                        phx-value-title={trip.title}
+                        aria-label={"Share trip " <> to_string(trip.title)}
+                        title="Share itinerary"
+                        class="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-emerald-100 bg-white text-emerald-600 transition hover:border-emerald-300 hover:bg-emerald-50"
+                      >
+                        <.ui_icon name={:share} class="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
                 </article>

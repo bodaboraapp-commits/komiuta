@@ -67,6 +67,29 @@ topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
 window.addEventListener("phx:page-loading-start", _info => topbar.show(300))
 window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
 
+// Trip share buttons in the Chyllz account tab: use the native share sheet
+// where available and fall back to copying the itinerary URL.
+window.addEventListener("phx:share_trip", async ({detail}) => {
+  if (!detail || !detail.url) return
+
+  let url = detail.url
+  try {
+    url = new URL(detail.url, window.location.origin).toString()
+  } catch (_error) {
+    return
+  }
+
+  try {
+    if (navigator.share) {
+      await navigator.share({title: detail.title || document.title, url})
+    } else if (navigator.clipboard) {
+      await navigator.clipboard.writeText(url)
+    }
+  } catch (_error) {
+    // A dismissed share sheet is not an error worth surfacing.
+  }
+})
+
 // connect if there are any LiveViews on the page
 liveSocket.connect()
 

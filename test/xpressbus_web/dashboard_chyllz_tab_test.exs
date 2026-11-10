@@ -156,6 +156,14 @@ defmodule XpressbusWeb.DashboardChyllzTabTest do
     assert has_element?(view, "#recent-trips")
     assert has_element?(view, "#trip-card-#{upcoming.ticket_id}")
     assert has_element?(view, "#trip-card-#{completed.ticket_id}")
+    assert has_element?(view, "#manage-itinerary-#{upcoming.ticket_id}", "Manage Itinerary")
+    assert has_element?(view, "#preview-trip-#{upcoming.ticket_id}")
+    assert has_element?(view, "#share-trip-#{upcoming.ticket_id}")
+
+    # The eye button previews the itinerary in the existing ticket modal.
+    view |> element("#preview-trip-#{upcoming.ticket_id}") |> render_click()
+    assert has_element?(view, "#ticket-qr")
+    view |> element("button", "close") |> render_click()
     refute has_element?(view, "#no-trips")
 
     assert has_element?(view, "#weather-card")
