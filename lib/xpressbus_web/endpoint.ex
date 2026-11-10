@@ -53,6 +53,7 @@ defmodule XpressbusWeb.Endpoint do
 
   plug Plug.MethodOverride
   plug Plug.Head
+  plug XpressbusWeb.Plugs.EnsureViewport
   plug Plug.Session, @session_options
   plug XpressbusWeb.Plugs.AgentHost
   plug XpressbusWeb.Router

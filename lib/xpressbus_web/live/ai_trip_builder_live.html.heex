@@ -118,11 +118,11 @@
               </span>
 
               <span class={[
-                "text-[8px] font-black uppercase tracking-[0.14em] sm:text-[9px]",
+                "text-[7px] font-black uppercase leading-tight tracking-[0.02em] sm:text-[9px] sm:tracking-[0.14em]",
                 @step >= step.key && "text-slate-900",
                 @step < step.key && "text-slate-400"
               ]}>
-                <span class="block text-[9px] font-black text-slate-400">
+                <span class="block text-[8px] font-black text-slate-400 sm:text-[9px]">
                   {String.pad_leading(to_string(step.key), 2, "0")}
                 </span>
                 {step.title}
