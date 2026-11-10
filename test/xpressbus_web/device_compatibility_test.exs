@@ -5,7 +5,7 @@
     conn = get(conn, ~p"/")
     html = html_response(conn, 200)
 
-    assert html =~ ~s(content="width=device-width, initial-scale=1, viewport-fit=cover")
-    refute html =~ "content=\"2026-11-10.38-stays-before-itineraries\""
+    assert html =~ ~s(<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover")
+    refute html =~ ~r/<meta name="viewport" content="20\d{2}-/
   end
 end
