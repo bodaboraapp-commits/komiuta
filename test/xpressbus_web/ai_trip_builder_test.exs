@@ -127,13 +127,18 @@ defmodule XpressbusWeb.AiTripBuilderTest do
     send(view.pid, :trip_generated)
 
     assert has_element?(view, "#step-summary")
+    assert has_element?(view, "#trip-itinerary")
+    assert has_element?(view, "#itinerary-map")
+    assert has_element?(view, "#save-itinerary")
     html = render(view)
     assert html =~ "Cox"
-    assert html =~ Calendar.strftime(start_date, "%d %b %Y")
-    assert html =~ Calendar.strftime(end_date, "%d %b %Y")
+    assert html =~ "Hotel Recommendation"
+    assert html =~ "Food"
+    assert html =~ "Recommended Restaurants"
+    assert html =~ "Classic Rice Table Dine"
+    assert html =~ "Important Notes"
     assert html =~ "Friends"
     assert html =~ "Balanced"
-    assert html =~ "Beach Vacations · Food Tourism"
     assert has_element?(view, "#open-chyllz-ai")
     assert has_element?(view, "#browse-chyllz")
   end

@@ -33,9 +33,19 @@
   <% end %>
 
   <div class="min-h-screen bg-[#f8fafc] px-4 py-8 sm:px-6 md:py-10">
-    <main id="ai-trip-builder" class="mx-auto max-w-[1100px]">
+    <main
+      id="ai-trip-builder"
+      class={[
+        "mx-auto",
+        @step >= 6 && "max-w-[1500px]",
+        @step < 6 && "max-w-[1100px]"
+      ]}
+    >
       <%!-- Wizard progress --%>
-      <section class="rounded-[28px] border border-slate-100 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] md:p-6">
+      <section
+        :if={@step < 6}
+        class="rounded-[28px] border border-slate-100 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] md:p-6"
+      >
         <ol class="relative grid grid-cols-5 gap-1">
           <span
             class="pointer-events-none absolute left-[10%] right-[10%] top-5 border-t border-dashed border-slate-200"
@@ -68,7 +78,11 @@
       </section>
 
       <%!-- Step content --%>
-      <section class="mt-5 rounded-[28px] border border-slate-100 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] md:p-8">
+      <section class={[
+        "mt-5 rounded-[28px] border border-slate-100 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)]",
+        @step >= 6 && "overflow-hidden",
+        @step < 6 && "p-5 md:p-8"
+      ]}>
         <%= if @error do %>
           <div
             id="builder-error"
@@ -629,87 +643,163 @@
           </div>
         <% end %>
 
-        <%= if @step >= 6 do %>
-          <div id="step-summary" class="mx-auto max-w-xl text-center">
-            <span class="mx-auto grid h-14 w-14 place-items-center rounded-full bg-orange-50 text-[#FF4C00]">
-              <.ui_icon name={:sparkles} class="h-7 w-7" />
-            </span>
-            <h1 class="mt-4 text-2xl font-black tracking-tight text-slate-900 md:text-3xl">
-              Your trip brief is ready
-            </h1>
-            <p class="mt-2 text-sm font-bold text-slate-400">
-              Chyllz AI will use this brief to build a day-by-day plan, routes and local tips.
-            </p>
+        <%= if @step >= 6 && @itinerary do %>
+          <div id="step-summary" class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_46%]">
+            <article id="trip-itinerary" class="min-w-0 p-5 md:p-8">
+              <p class="flex items-center gap-2 text-[11px] font-bold text-slate-500">
+                <.ui_icon name={:sparkles} class="h-4 w-4 text-[#FF4C00]" /> Powered by AI
+              </p>
 
-            <dl class="mt-6 space-y-2 rounded-2xl border border-slate-100 bg-slate-50/60 p-4 text-left">
-              <div class="flex items-start justify-between gap-4 border-b border-slate-100 pb-2">
-                <dt class="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
-                  Destination
-                </dt>
-                <dd class="text-right text-sm font-black text-slate-800">
-                  {@trip.destination}
-                  <%= if @trip.country != "" do %>
-                    <span class="block text-[10px] font-bold text-slate-400">{@trip.country}</span>
+              <p class="mt-8 text-xs font-bold text-slate-500">
+                Review our recommendations for your trip
+              </p>
+              <h1
+                id="itinerary-title"
+                class="mt-2 text-2xl font-black tracking-tight text-slate-900"
+              >
+                {@itinerary.title}
+              </h1>
+              <p class="mt-4 text-sm font-bold leading-relaxed text-slate-500">
+                {@itinerary.overview}
+              </p>
+
+              <section class="mt-7 border-t border-slate-100 pt-5">
+                <h2 class="text-lg font-black tracking-tight text-slate-900">
+                  Hotel Recommendation
+                </h2>
+                <p class="mt-2 text-sm font-bold leading-relaxed text-slate-500">
+                  {@itinerary.hotel}
+                </p>
+              </section>
+
+              <section class="mt-7 border-t border-slate-100 pt-5">
+                <h2 class="text-lg font-black tracking-tight text-slate-900">Food</h2>
+                <p class="mt-2 text-sm font-bold leading-relaxed text-slate-500">
+                  {@itinerary.food}
+                </p>
+              </section>
+
+              <section class="mt-7 border-t border-slate-100 pt-5">
+                <h2 class="text-lg font-black tracking-tight text-slate-900">
+                  Recommended Restaurants
+                </h2>
+
+                <div class="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
+                  <%= for restaurant <- @itinerary.restaurants do %>
+                    <div class="min-w-0">
+                      <img
+                        src={restaurant.image}
+                        alt={restaurant.name}
+                        loading="lazy"
+                        decoding="async"
+                        class="h-24 w-full rounded-xl object-cover md:h-28"
+                      />
+                      <p class="mt-2 line-clamp-2 text-xs font-black leading-snug text-slate-900">
+                        {restaurant.name}
+                      </p>
+                      <p class="mt-1 flex items-center gap-1.5 text-[10px] font-bold text-slate-400">
+                        <span class="tracking-[0.1em] text-amber-400">☆☆☆☆☆</span>
+                        <span>({restaurant.rating})</span>
+                      </p>
+                    </div>
                   <% end %>
-                </dd>
-              </div>
-              <div class="flex items-start justify-between gap-4 border-b border-slate-100 pb-2">
-                <dt class="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
-                  Dates
-                </dt>
-                <dd class="text-right text-sm font-black text-slate-800">
-                  {travel_label(@trip)}
-                </dd>
-              </div>
-              <div class="flex items-start justify-between gap-4 border-b border-slate-100 pb-2">
-                <dt class="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
-                  Travellers
-                </dt>
-                <dd class="text-right text-sm font-black text-slate-800">
-                  {companion_label(@trip)}{pets_label(@trip)}
-                </dd>
-              </div>
-              <div class="flex items-start justify-between gap-4 border-b border-slate-100 pb-2">
-                <dt class="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
-                  Budget
-                </dt>
-                <dd class="text-right text-sm font-black text-slate-800">
-                  {budget_label(@trip)}
-                </dd>
-              </div>
-              <div class="flex items-start justify-between gap-4">
-                <dt class="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
-                  Preferences
-                </dt>
-                <dd class="max-w-[60%] text-right text-sm font-black text-slate-800">
-                  {preference_label(@trip.preferences)}
-                </dd>
-              </div>
-            </dl>
+                </div>
+              </section>
 
-            <div class="mt-6 flex flex-col gap-2 sm:flex-row">
-              <a
-                id="open-chyllz-ai"
-                href="/tour-packages?assistant=1"
-                class="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#FF4C00] px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white hover:bg-[#E64400]"
-              >
-                <.ui_icon name={:sparkles} class="h-4 w-4" /> Build with Chyllz AI
-              </a>
-              <a
-                id="browse-chyllz"
-                href="/tour-packages"
-                class="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 py-3 text-[10px] font-black uppercase tracking-widest text-slate-700 hover:border-[#FF4C00] hover:text-[#FF4C00]"
-              >
-                Browse Chyllz
-              </a>
-            </div>
-            <button
-              type="button"
-              phx-click="restart"
-              class="mt-4 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-[#FF4C00]"
-            >
-              Start over
-            </button>
+              <section id="itinerary-days" class="mt-7 border-t border-slate-100 pt-5">
+                <%= for day <- @itinerary.days do %>
+                  <div class="mt-5 first:mt-0">
+                    <h3 class="text-base font-black tracking-tight text-slate-900">
+                      {day.date}: {day.title}
+                    </h3>
+
+                    <dl class="mt-3 space-y-3">
+                      <%= for {label, text} <- [
+                            {"Morning activity", day.morning},
+                            {"Afternoon lunch short description", day.lunch},
+                            {"Afternoon activity", day.afternoon},
+                            {"Evening activity", day.evening},
+                            {"Dinner short description", day.dinner}
+                          ] do %>
+                        <div>
+                          <dt class="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+                            {label}
+                          </dt>
+                          <dd class="mt-1 text-sm font-bold leading-relaxed text-slate-500">
+                            {text}
+                          </dd>
+                        </div>
+                      <% end %>
+                    </dl>
+                  </div>
+                <% end %>
+              </section>
+
+              <section class="mt-7 border-t border-slate-100 pt-5">
+                <h2 class="text-lg font-black tracking-tight text-slate-900">Important Notes</h2>
+
+                <ul class="mt-3 space-y-3">
+                  <%= for note <- @itinerary.notes do %>
+                    <li>
+                      <p class="text-xs font-black text-slate-900">{note.title}:</p>
+                      <p class="mt-1 text-sm font-bold leading-relaxed text-slate-500">
+                        {note.text}
+                      </p>
+                    </li>
+                  <% end %>
+                </ul>
+              </section>
+
+              <div class="mt-7 flex flex-col gap-2 border-t border-slate-100 pt-5 sm:flex-row">
+                <a
+                  id="open-chyllz-ai"
+                  href="/tour-packages?assistant=1"
+                  class="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#FF4C00] px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white hover:bg-[#E64400]"
+                >
+                  <.ui_icon name={:sparkles} class="h-4 w-4" /> Build with Chyllz AI
+                </a>
+                <a
+                  id="browse-chyllz"
+                  href="/tour-packages"
+                  class="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 py-3 text-[10px] font-black uppercase tracking-widest text-slate-700 hover:border-[#FF4C00] hover:text-[#FF4C00]"
+                >
+                  Browse Chyllz
+                </a>
+                <button
+                  type="button"
+                  phx-click="restart"
+                  class="rounded-xl px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-[#FF4C00]"
+                >
+                  Start over
+                </button>
+              </div>
+            </article>
+
+            <aside class="relative min-h-[420px] border-t border-slate-100 lg:border-l lg:border-t-0">
+              <iframe
+                id="itinerary-map"
+                src={@itinerary.map_url}
+                title={"Map of " <> @itinerary.city}
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+                class="h-[420px] w-full lg:h-full lg:min-h-[720px]"
+              ></iframe>
+
+              <div class="absolute inset-x-3 bottom-3 flex items-center justify-between gap-2 rounded-full bg-white/95 px-4 py-2 shadow-lg backdrop-blur">
+                <span class="flex min-w-0 items-center gap-2 text-[11px] font-black text-slate-700">
+                  <.ui_icon name={:pin} class="h-4 w-4 shrink-0 text-[#FF4C00]" />
+                  <span class="truncate">{@itinerary.city}</span>
+                </span>
+                <button
+                  id="save-itinerary"
+                  type="button"
+                  phx-click="save_itinerary"
+                  class="shrink-0 rounded-full bg-[#FF4C00] px-5 py-2 text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-[#E64400]"
+                >
+                  Save
+                </button>
+              </div>
+            </aside>
           </div>
         <% end %>
       </section>

@@ -12,6 +12,8 @@ defmodule XpressbusWeb.AiTripBuilderLive do
 
   use XpressbusWeb, :live_view
 
+  alias Xpressbus.TripItinerary
+
   import XpressbusWeb.ChyllzAccountArt
 
   @steps [
@@ -281,11 +283,18 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> reset_trip()}
   end
 
+  def handle_event("save_itinerary", _params, socket) do
+    {:noreply, put_flash(socket, :info, "Itinerary saved to your trips.")}
+  end
+
   @impl true
   def handle_info(:trip_generated, socket) do
+    itinerary = TripItinerary.generate(socket.assigns.trip)
+
     {:noreply,
      socket
      |> assign(:generating, false)
+     |> assign(:itinerary, itinerary)
      |> assign(:step, 6)}
   end
 
@@ -419,36 +428,4 @@ defmodule XpressbusWeb.AiTripBuilderLive do
       :error -> default
     end
   end
-
-  defp format_date(%Date{} = date), do: Calendar.strftime(date, "%d %b %Y")
-
-  defp travel_label(%{start_date: nil}), do: "Dates to be confirmed"
-
-  defp travel_label(%{start_date: start_date, end_date: nil}),
-    do: format_date(start_date)
-
-  defp travel_label(%{start_date: start_date, end_date: end_date}) do
-    "#{format_date(start_date)} → #{format_date(end_date)}"
-  end
-
-  defp companion_label(%{travel_party: nil}), do: "Who's coming"
-  defp companion_label(%{travel_party: "solo"}), do: "Only me"
-  defp companion_label(%{travel_party: "couple"}), do: "A couple"
-  defp companion_label(%{travel_party: "family"}), do: "Family"
-  defp companion_label(%{travel_party: "friends"}), do: "Friends"
-
-  defp pets_label(%{pets: true}), do: " · with pets"
-  defp pets_label(_trip), do: ""
-
-  defp budget_label(%{budget: nil}), do: "Not set"
-
-  defp budget_label(%{budget: key}) do
-    case Enum.find(@budgets, &(&1.key == key)) do
-      %{title: title} -> title
-      nil -> key
-    end
-  end
-
-  defp preference_label([]), do: "No preferences selected"
-  defp preference_label(preferences), do: Enum.join(preferences, " · ")
 end
