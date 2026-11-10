@@ -23,11 +23,36 @@ defmodule XpressbusWeb.AiTripBuilderLive do
   @generation_deadline_ms 10_000
 
   @generation_steps [
-    "Building your itinerary...",
-    "Searching top-rated hotels on Google Maps...",
-    "Finding restaurants with the best reviews...",
-    "Mapping your day-by-day plan...",
-    "Adding local tips and important notes..."
+    %{
+      label: "Trip brief",
+      message: "Building your itinerary...",
+      detail: "Reading your destination, dates, companions, budget and preferences."
+    },
+    %{
+      label: "Hotel Recommendation",
+      message: "Searching top-rated hotels on Google Maps...",
+      detail: "Reviewing Google ratings and guest reviews for the Hotels & Stays list."
+    },
+    %{
+      label: "Food · Restaurants",
+      message: "Finding restaurants with the best reviews...",
+      detail: "Ranking Recommended Restaurants under Food by Google rating and review volume."
+    },
+    %{
+      label: "Day-by-day plan",
+      message: "Mapping your day-by-day plan...",
+      detail: "Adding morning, lunch, afternoon, evening and dinner activities for every date."
+    },
+    %{
+      label: "Important Notes",
+      message: "Adding local tips and important notes...",
+      detail: "Preparing visa, currency, language, transport and safety guidance."
+    },
+    %{
+      label: "Final check",
+      message: "Finalising your itinerary...",
+      detail: "Checking your map, hotel picks, restaurant picks and travel notes."
+    }
   ]
 
   @steps [
@@ -203,7 +228,10 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:error, nil)
      |> assign(:generating, false)
      |> assign(:generation_stage, 0)
-     |> assign(:generation_message, hd(@generation_steps))
+     |> assign(:generation_total, length(@generation_steps))
+     |> assign(:generation_message, generation_step(0).message)
+     |> assign(:generation_detail, generation_step(0).detail)
+     |> assign(:generation_task_label, generation_step(0).label)
      |> assign(:generation_ref, nil)
      |> assign(:generation_pid, nil)
      |> assign(:generation_started_at, nil)
@@ -404,7 +432,10 @@ defmodule XpressbusWeb.AiTripBuilderLive do
        |> assign(:error, nil)
        |> assign(:generating, true)
        |> assign(:generation_stage, 0)
-       |> assign(:generation_message, hd(@generation_steps))
+       |> assign(:generation_total, length(@generation_steps))
+       |> assign(:generation_message, generation_step(0).message)
+       |> assign(:generation_detail, generation_step(0).detail)
+       |> assign(:generation_task_label, generation_step(0).label)
        |> assign(:generation_ref, ref)
        |> assign(:generation_pid, pid)
        |> assign(:generation_started_at, System.monotonic_time(:millisecond))}
@@ -423,7 +454,10 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:error, nil)
      |> assign(:generating, false)
      |> assign(:generation_stage, 0)
-     |> assign(:generation_message, hd(@generation_steps))
+     |> assign(:generation_total, length(@generation_steps))
+     |> assign(:generation_message, generation_step(0).message)
+     |> assign(:generation_detail, generation_step(0).detail)
+     |> assign(:generation_task_label, generation_step(0).label)
      |> assign(:generation_ref, nil)
      |> assign(:generation_pid, nil)
      |> assign(:generation_started_at, nil)
@@ -487,21 +521,19 @@ defmodule XpressbusWeb.AiTripBuilderLive do
 
   def handle_info(:generation_tick, socket) do
     if socket.assigns.generating do
-      next_stage = socket.assigns.generation_stage + 1
+      next_stage = min(socket.assigns.generation_stage + 1, length(@generation_steps) - 1)
+      step = generation_step(next_stage)
 
-      {stage, message} =
-        if next_stage < length(@generation_steps) do
-          {next_stage, Enum.at(@generation_steps, next_stage)}
-        else
-          {0, hd(@generation_steps)}
-        end
-
-      Process.send_after(self(), :generation_tick, 1_400)
+      if next_stage < length(@generation_steps) - 1 do
+        Process.send_after(self(), :generation_tick, 1_600)
+      end
 
       {:noreply,
        socket
-       |> assign(:generation_stage, stage)
-       |> assign(:generation_message, message)}
+       |> assign(:generation_stage, next_stage)
+       |> assign(:generation_message, step.message)
+       |> assign(:generation_detail, step.detail)
+       |> assign(:generation_task_label, step.label)}
     else
       {:noreply, socket}
     end
@@ -564,6 +596,10 @@ defmodule XpressbusWeb.AiTripBuilderLive do
     else
       {:noreply, socket}
     end
+  end
+
+  defp generation_step(index) do
+    Enum.at(@generation_steps, min(index, length(@generation_steps) - 1))
   end
 
   defp complete_generation(socket, itinerary) do
