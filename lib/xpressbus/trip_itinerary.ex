@@ -32,14 +32,14 @@ defmodule Xpressbus.TripItinerary do
   ]
 
   @restaurant_images [
-    "/images/room_1.webp",
-    "/images/room_2.webp",
-    "/images/room_3.webp",
-    "/images/chyllz_hero.png",
-    "/images/chyllz_account_hero.webp",
-    "/images/hero_bg-640.webp",
-    "/images/room_1.webp",
-    "/images/room_2.webp"
+    "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
+    "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=600&q=80",
+    "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80",
+    "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80",
+    "https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=600&q=80",
+    "https://images.unsplash.com/photo-1559314809-0d155014e29e?auto=format&fit=crop&w=600&q=80",
+    "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=600&q=80",
+    "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=600&q=80"
   ]
 
   @moscow_days [
