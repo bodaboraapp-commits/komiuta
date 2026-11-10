@@ -85,6 +85,22 @@ defmodule Xpressbus.TripFinances do
     |> Repo.insert()
   end
 
+  @doc "Updates one expense belonging to the scope."
+  def update_expense(%{user_id: _user_id} = scope, id, attrs) do
+    with {expense_id, ""} <- Integer.parse(to_string(id)),
+         %TripExpense{} = expense <-
+           TripExpense
+           |> scoped(scope)
+           |> where([expense], expense.id == ^expense_id)
+           |> Repo.one() do
+      expense
+      |> TripExpense.changeset(attrs)
+      |> Repo.update()
+    else
+      _other -> {:error, :not_found}
+    end
+  end
+
   @doc "Deletes one expense from the scope (never another user's row)."
   def delete_expense(%{user_id: _user_id} = scope, id) do
     with {expense_id, ""} <- Integer.parse(to_string(id)) do

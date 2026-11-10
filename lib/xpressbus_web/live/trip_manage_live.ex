@@ -12,6 +12,7 @@ defmodule XpressbusWeb.TripManageLive do
 
   @expense_categories ["Food", "Transport", "Stay", "Activities", "Shopping", "Other"]
 
+  @impl true
   def mount(%{"ticket_id" => ticket_id}, session, socket) do
     case load_user(session) do
       nil ->
@@ -32,6 +33,7 @@ defmodule XpressbusWeb.TripManageLive do
     end
   end
 
+  @impl true
   def mount(%{"saved_itinerary_id" => saved_itinerary_id}, session, socket) do
     case load_user(session) do
       nil ->
@@ -64,6 +66,11 @@ defmodule XpressbusWeb.TripManageLive do
     |> assign(:categories, @expense_categories)
     |> assign(:expenses, expenses)
     |> assign(:budget, budget)
+    |> assign(:budget_input, "")
+    |> assign(:budget_saved, false)
+    |> assign(:editing_expense_id, nil)
+    |> assign(:pending_delete, nil)
+    |> assign(:undo_expense, nil)
     |> assign(:budget_form, false)
     |> assign(:expense_form, false)
     |> assign(:expense_category, "Food")
@@ -100,6 +107,7 @@ defmodule XpressbusWeb.TripManageLive do
     }
   end
 
+  @impl true
   def handle_event("set_tab", %{"tab" => tab}, socket) do
     if tab in Enum.map(@tabs, &elem(&1, 0)) do
       {:noreply, assign(socket, :active_tab, tab)}
@@ -109,11 +117,40 @@ defmodule XpressbusWeb.TripManageLive do
   end
 
   def handle_event("toggle_budget", _params, socket) do
-    {:noreply, assign(socket, :budget_form, not socket.assigns.budget_form)}
+    budget_form = not socket.assigns.budget_form
+
+    {:noreply,
+     socket
+     |> assign(:budget_form, budget_form)
+     |> assign(:budget_input, if(budget_form, do: amount_input(socket.assigns.budget), else: ""))
+     |> assign(:budget_saved, false)}
   end
 
   def handle_event("toggle_expense", _params, socket) do
     {:noreply, assign(socket, :expense_form, not socket.assigns.expense_form)}
+  end
+
+  def handle_event("autosave_budget", %{"budget" => %{"amount" => amount}}, socket) do
+    socket = assign(socket, :budget_input, to_string(amount || ""))
+
+    case parse_amount(amount) do
+      {:ok, value} ->
+        case TripFinances.set_budget(socket.assigns.finance_scope, value) do
+          {:ok, stored_budget} ->
+            {:noreply,
+             socket
+             |> assign(:budget, stored_budget)
+             |> assign(:budget_saved, true)
+             |> assign(:error, nil)
+             |> assign_metrics()}
+
+          {:error, _changeset} ->
+            {:noreply, socket}
+        end
+
+      :error ->
+        {:noreply, assign(socket, :budget_saved, false)}
+    end
   end
 
   def handle_event("save_budget", %{"budget" => %{"amount" => amount}}, socket) do
@@ -125,6 +162,7 @@ defmodule XpressbusWeb.TripManageLive do
              socket
              |> assign(:budget, stored_budget)
              |> assign(:budget_form, false)
+             |> assign(:budget_saved, false)
              |> assign(:error, nil)
              |> assign_metrics()}
 
@@ -175,13 +213,98 @@ defmodule XpressbusWeb.TripManageLive do
     end
   end
 
-  def handle_event("delete_expense", %{"id" => id}, socket) do
-    :ok = TripFinances.delete_expense(socket.assigns.finance_scope, id)
+  def handle_event("edit_expense", %{"id" => id}, socket) do
+    {:noreply, assign(socket, :editing_expense_id, to_string(id))}
+  end
 
-    {:noreply,
-     socket
-     |> assign(:expenses, TripFinances.list_expenses(socket.assigns.finance_scope))
-     |> assign_metrics()}
+  def handle_event("cancel_expense_edit", _params, socket) do
+    {:noreply, assign(socket, :editing_expense_id, nil)}
+  end
+
+  def handle_event("autosave_expense", %{"expense_id" => id, "expense" => attrs}, socket) do
+    {:noreply, persist_expense_edit(socket, id, attrs, true)}
+  end
+
+  def handle_event("save_expense_edit", %{"expense_id" => id, "expense" => attrs}, socket) do
+    {:noreply, persist_expense_edit(socket, id, attrs, false)}
+  end
+
+  def handle_event("confirm_delete_expense", %{"id" => id}, socket) do
+    case Enum.find(socket.assigns.expenses, &(to_string(&1.id) == to_string(id))) do
+      nil ->
+        {:noreply, socket}
+
+      expense ->
+        {:noreply,
+         assign(socket, :pending_delete, %{
+           id: expense.id,
+           label: expense.label,
+           amount_label: money(expense.amount)
+         })}
+    end
+  end
+
+  def handle_event("cancel_delete_expense", _params, socket) do
+    {:noreply, assign(socket, :pending_delete, nil)}
+  end
+
+  def handle_event("delete_expense", %{"id" => id}, socket) do
+    case Enum.find(socket.assigns.expenses, &(to_string(&1.id) == to_string(id))) do
+      nil ->
+        {:noreply, assign(socket, :pending_delete, nil)}
+
+      expense ->
+        :ok = TripFinances.delete_expense(socket.assigns.finance_scope, expense.id)
+
+        token = System.unique_integer([:positive])
+        Process.send_after(self(), {:expire_undo_expense, token}, 8_000)
+
+        {:noreply,
+         socket
+         |> assign(:expenses, TripFinances.list_expenses(socket.assigns.finance_scope))
+         |> assign(:pending_delete, nil)
+         |> assign(:editing_expense_id, nil)
+         |> assign(:undo_expense, Map.put(expense, :token, token))
+         |> assign_metrics()}
+    end
+  end
+
+  def handle_event("undo_delete_expense", _params, socket) do
+    case socket.assigns.undo_expense do
+      nil ->
+        {:noreply, socket}
+
+      expense ->
+        attrs = %{
+          label: expense.label,
+          category: expense.category,
+          amount: expense.amount,
+          spent_on: expense.date
+        }
+
+        case TripFinances.add_expense(socket.assigns.finance_scope, attrs) do
+          {:ok, _expense} ->
+            {:noreply,
+             socket
+             |> assign(:expenses, TripFinances.list_expenses(socket.assigns.finance_scope))
+             |> assign(:undo_expense, nil)
+             |> assign_metrics()}
+
+          {:error, _changeset} ->
+            {:noreply, socket}
+        end
+    end
+  end
+
+  @impl true
+  def handle_info({:expire_undo_expense, token}, socket) do
+    socket =
+      case socket.assigns[:undo_expense] do
+        %{token: ^token} -> assign(socket, :undo_expense, nil)
+        _other -> socket
+      end
+
+    {:noreply, socket}
   end
 
   defp assign_metrics(socket) do
@@ -312,6 +435,53 @@ defmodule XpressbusWeb.TripManageLive do
   defp status_label(:upcoming), do: "Upcoming"
   defp status_label(:ongoing), do: "Ongoing"
   defp status_label(:completed), do: "Completed"
+
+  defp persist_expense_edit(socket, id, attrs, keep_editing?) do
+    amount = parse_amount(attrs["amount"] || "")
+    label = String.trim(to_string(attrs["label"] || ""))
+    category = if attrs["category"] in @expense_categories, do: attrs["category"], else: "Other"
+
+    with {:ok, value} <- amount,
+         false <- label == "",
+         {:ok, _expense} <-
+           TripFinances.update_expense(socket.assigns.finance_scope, id, %{
+             label: label,
+             category: category,
+             amount: value
+           }) do
+      socket
+      |> assign(:expenses, TripFinances.list_expenses(socket.assigns.finance_scope))
+      |> assign(
+        :editing_expense_id,
+        if(keep_editing?, do: socket.assigns.editing_expense_id, else: nil)
+      )
+      |> assign_metrics()
+    else
+      _other -> socket
+    end
+  end
+
+  defp amount_input(value) when is_number(value) and value == trunc(value) and value > 0 do
+    Integer.to_string(trunc(value))
+  end
+
+  defp amount_input(value) when value == 0, do: ""
+
+  defp amount_input(value) when is_number(value) and value > 0 do
+    :erlang.float_to_binary(value * 1.0, decimals: 2)
+  end
+
+  defp amount_input(_value), do: ""
+
+  defp expense_amount_input(value) when is_number(value) and value == trunc(value) do
+    Integer.to_string(trunc(value))
+  end
+
+  defp expense_amount_input(value) when is_number(value) do
+    :erlang.float_to_binary(value * 1.0, decimals: 2)
+  end
+
+  defp expense_amount_input(_value), do: ""
 
   defp trip_meta(ticket) do
     date = ticket.travel_date || Date.utc_today()

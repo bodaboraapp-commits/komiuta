@@ -171,4 +171,90 @@ defmodule XpressbusWeb.TripManageLiveTest do
     assert {:error, {:redirect, %{to: "/dashboard?tab=chyllz"}}} =
              live(session, ~p"/trips/saved/#{saved.id}/manage")
   end
+
+  test "budget autosaves and survives a refresh", %{conn: conn} do
+    user = user_fixture()
+    ticket = ticket_fixture(user, %{})
+    session = Plug.Test.init_test_session(conn, %{user_id: user.id})
+
+    {:ok, view, _html} = live(session, ~p"/trips/#{ticket.ticket_id}/manage")
+
+    view |> element("button", "Add Trip Budget") |> render_click()
+
+    view
+    |> element("form[phx-submit='save_budget']")
+    |> render_change(%{"budget" => %{"amount" => "32000"}})
+
+    assert has_element?(view, "#budget-autosave-status", "Saved automatically")
+
+    {:ok, _reloaded, html} = live(session, ~p"/trips/#{ticket.ticket_id}/manage")
+    assert html =~ "KES 32,000"
+  end
+
+  test "editing an expense autosaves and survives a refresh", %{conn: conn} do
+    user = user_fixture()
+    ticket = ticket_fixture(user, %{})
+    session = Plug.Test.init_test_session(conn, %{user_id: user.id})
+    scope = Xpressbus.TripFinances.scope(user, :ticket, ticket.ticket_id)
+
+    {:ok, expense} =
+      Xpressbus.TripFinances.add_expense(scope, %{
+        label: "Lunch",
+        category: "Food",
+        amount: 850,
+        spent_on: Date.utc_today()
+      })
+
+    {:ok, view, _html} = live(session, ~p"/trips/#{ticket.ticket_id}/manage")
+
+    view |> element("#edit-expense-#{expense.id}") |> render_click()
+
+    view
+    |> element("form[phx-submit='save_expense_edit']")
+    |> render_change(%{
+      "expense_id" => to_string(expense.id),
+      "expense" => %{"label" => "Dinner", "category" => "Food", "amount" => "1500"}
+    })
+
+    {:ok, _reloaded, html} = live(session, ~p"/trips/#{ticket.ticket_id}/manage")
+    assert html =~ "Dinner"
+    assert html =~ "KES 1,500"
+  end
+
+  test "deleting an expense asks for confirmation and can be undone", %{conn: conn} do
+    user = user_fixture()
+    ticket = ticket_fixture(user, %{})
+    session = Plug.Test.init_test_session(conn, %{user_id: user.id})
+    scope = Xpressbus.TripFinances.scope(user, :ticket, ticket.ticket_id)
+
+    {:ok, expense} =
+      Xpressbus.TripFinances.add_expense(scope, %{
+        label: "Taxi",
+        category: "Transport",
+        amount: 1200,
+        spent_on: Date.utc_today()
+      })
+
+    {:ok, view, _html} = live(session, ~p"/trips/#{ticket.ticket_id}/manage")
+
+    view |> element("#delete-expense-#{expense.id}") |> render_click()
+    assert has_element?(view, "#confirm-delete-expense")
+
+    view |> element("#cancel-delete-expense") |> render_click()
+    refute has_element?(view, "#confirm-delete-expense")
+
+    view |> element("#delete-expense-#{expense.id}") |> render_click()
+    view |> element("#delete-expense-confirm") |> render_click()
+
+    assert has_element?(view, "#undo-delete-expense-toast")
+    assert Xpressbus.TripFinances.list_expenses(scope) == []
+
+    view |> element("#undo-delete-expense") |> render_click()
+
+    assert Xpressbus.TripFinances.list_expenses(scope) != []
+    refute has_element?(view, "#undo-delete-expense-toast")
+
+    {:ok, _reloaded, html} = live(session, ~p"/trips/#{ticket.ticket_id}/manage")
+    assert html =~ "Taxi"
+  end
 end
