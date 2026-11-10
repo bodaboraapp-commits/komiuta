@@ -4,7 +4,7 @@ defmodule XpressbusWeb.AiTripBuilderTest do
   import Phoenix.LiveViewTest
 
   test "renders the destination step with search and trending destinations", %{conn: conn} do
-    {:ok, view, html} = live(conn, ~p"/ai-trip-builder")
+    {:ok, view, html} = live(conn, ~p"/trip/build-with-ai")
 
     assert html =~ "Find your dream destination"
     assert has_element?(view, "#destination-search-form")
@@ -15,7 +15,7 @@ defmodule XpressbusWeb.AiTripBuilderTest do
   end
 
   test "searching a destination continues to the date-range calendar", %{conn: conn} do
-    {:ok, view, _html} = live(conn, ~p"/ai-trip-builder")
+    {:ok, view, _html} = live(conn, ~p"/trip/build-with-ai")
 
     view
     |> form("#destination-search-form", %{"query" => "Zanzibar"})
@@ -30,7 +30,7 @@ defmodule XpressbusWeb.AiTripBuilderTest do
   end
 
   test "a trending destination can be selected", %{conn: conn} do
-    {:ok, view, _html} = live(conn, ~p"/ai-trip-builder")
+    {:ok, view, _html} = live(conn, ~p"/trip/build-with-ai")
 
     view |> element("#destination-bangkok") |> render_click()
 
@@ -39,7 +39,7 @@ defmodule XpressbusWeb.AiTripBuilderTest do
   end
 
   test "the companions step offers travel-party cards and a pet toggle", %{conn: conn} do
-    {:ok, view, _html} = live(conn, ~p"/ai-trip-builder")
+    {:ok, view, _html} = live(conn, ~p"/trip/build-with-ai")
     today = Date.utc_today()
 
     view |> element("#destination-rome") |> render_click()
@@ -65,7 +65,7 @@ defmodule XpressbusWeb.AiTripBuilderTest do
   end
 
   test "the full wizard produces a trip brief", %{conn: conn} do
-    {:ok, view, _html} = live(conn, ~p"/ai-trip-builder")
+    {:ok, view, _html} = live(conn, ~p"/trip/build-with-ai")
 
     today = Date.utc_today()
     start_date = Date.add(today, 1)

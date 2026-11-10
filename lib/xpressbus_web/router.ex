@@ -38,7 +38,7 @@ defmodule XpressbusWeb.Router do
 
     get "/sitemap.xml", SeoController, :sitemap
     live "/", BookingLive, :index
-    live "/ai-trip-builder", AiTripBuilderLive, :index
+    live "/trip/build-with-ai", AiTripBuilderLive, :index
     live "/tour-packages", ChyllzLive, :index
     live "/tour-packages/insurance", InsuranceLive, :index
     live "/tour-packages/hotels", ChyllzLive, :hotels
