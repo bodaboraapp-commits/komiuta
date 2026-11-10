@@ -4,10 +4,12 @@ defmodule XpressbusWeb.AiTripBuilderLive do
   budget and preferences) that turns a short brief into an itinerary the Chyllz AI
   assistant can expand.
 
-  The first step is the destination picker: travellers can search any city,
-  country or landmark or tap one of the trending destinations. The remaining
-  steps collect the trip brief, and the final screen summarises it with links to
-  the Chyllz assistant and catalogue.
+  The first step is the destination picker: every search is resolved against the
+  real geocoding API (Open-Meteo) and, for landmarks or natural-language
+  requests, interpreted by the Chyllz AI model before it is accepted. Travellers
+  can also start from a trending destination. The remaining steps collect the
+  trip brief, and the final screen summarises it with links to the Chyllz
+  assistant and catalogue.
   """
 
   use XpressbusWeb, :live_view
@@ -15,6 +17,8 @@ defmodule XpressbusWeb.AiTripBuilderLive do
   alias Xpressbus.TripItinerary
 
   import XpressbusWeb.ChyllzAccountArt
+
+  alias Xpressbus.Places
 
   @steps [
     %{key: 1, title: "Destination", icon: :pin},
@@ -25,13 +29,62 @@ defmodule XpressbusWeb.AiTripBuilderLive do
   ]
 
   @destinations [
-    %{name: "Cox's Bazar", country: "Bangladesh", art: :coast, tag: "cox"},
-    %{name: "Saint Martins", country: "Bangladesh", art: :coast, tag: "saint-martins"},
-    %{name: "Rome", country: "Italy", art: :mountains, tag: "rome"},
-    %{name: "Bangkok", country: "Thailand", art: :mountains, tag: "bangkok"},
-    %{name: "New York", country: "United States", art: :savanna, tag: "new-york"},
-    %{name: "Las Vegas", country: "United States", art: :savanna, tag: "las-vegas"},
-    %{name: "Istanbul", country: "Turkey", art: :coast, tag: "istanbul"}
+    %{
+      name: "Cox's Bazar",
+      country: "Bangladesh",
+      art: :coast,
+      tag: "cox",
+      latitude: 21.4272,
+      longitude: 92.0058
+    },
+    %{
+      name: "Saint Martins",
+      country: "Bangladesh",
+      art: :coast,
+      tag: "saint-martins",
+      latitude: 20.6000,
+      longitude: 92.3200
+    },
+    %{
+      name: "Rome",
+      country: "Italy",
+      art: :mountains,
+      tag: "rome",
+      latitude: 41.9028,
+      longitude: 12.4964
+    },
+    %{
+      name: "Bangkok",
+      country: "Thailand",
+      art: :mountains,
+      tag: "bangkok",
+      latitude: 13.7563,
+      longitude: 100.5018
+    },
+    %{
+      name: "New York",
+      country: "United States",
+      art: :savanna,
+      tag: "new-york",
+      latitude: 40.7128,
+      longitude: -74.0060
+    },
+    %{
+      name: "Las Vegas",
+      country: "United States",
+      art: :savanna,
+      tag: "las-vegas",
+      latitude: 36.1699,
+      longitude: -115.1398
+    },
+    %{
+      name: "Istanbul",
+      country: "Turkey",
+      art: :coast,
+      tag: "istanbul",
+      latitude: 41.0082,
+      longitude: 28.9784
+    }
   ]
 
   @preferences [
@@ -134,6 +187,9 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:budgets, @budgets)
      |> assign(:step, 1)
      |> assign(:query, "")
+     |> assign(:suggestions, [])
+     |> assign(:searching, false)
+     |> assign(:search_empty, false)
      |> assign(:error, nil)
      |> assign(:generating, false)
      |> assign(:today, Date.utc_today())
@@ -142,29 +198,84 @@ defmodule XpressbusWeb.AiTripBuilderLive do
   end
 
   @impl true
-  def handle_event("search_destination", %{"query" => query}, socket) do
-    query = query |> to_string() |> String.trim() |> String.slice(0, 80)
+  def handle_event("destination_query", %{"query" => query}, socket) do
+    query = sanitize_query(query)
 
-    if query == "" do
-      {:noreply, assign(socket, :error, "Type a city, country or landmark to continue.")}
+    if String.length(query) < 2 do
+      {:noreply,
+       socket
+       |> assign(:query, query)
+       |> assign(:suggestions, [])
+       |> assign(:searching, false)
+       |> assign(:search_empty, false)}
     else
       {:noreply,
        socket
-       |> assign(:error, nil)
        |> assign(:query, query)
-       |> choose_destination(%{destination: query, country: ""})}
+       |> assign(:error, nil)
+       |> assign(:suggestions, [])
+       |> assign(:searching, true)
+       |> assign(:search_empty, false)
+       |> start_async(:destination_search, fn -> Places.search(query) end)}
+    end
+  end
+
+  def handle_event("search_destination", %{"query" => query}, socket) do
+    query = sanitize_query(query)
+
+    cond do
+      query == "" ->
+        {:noreply, assign(socket, :error, "Type a city, country or landmark to continue.")}
+
+      socket.assigns.searching ->
+        {:noreply, socket}
+
+      place = List.first(socket.assigns.suggestions) ->
+        {:noreply, choose_place(socket, place)}
+
+      true ->
+        {:noreply,
+         socket
+         |> assign(:query, query)
+         |> assign(:error, nil)
+         |> assign(:searching, true)
+         |> assign(:search_empty, false)
+         |> start_async(:destination_resolve, fn -> Places.resolve(query) end)}
+    end
+  end
+
+  def handle_event("choose_suggestion", params, socket) do
+    place = %{
+      name: to_string(params["name"] || ""),
+      country: to_string(params["country"] || ""),
+      region: params["region"],
+      latitude: parse_number(params["latitude"]),
+      longitude: parse_number(params["longitude"]),
+      source: :geocoding
+    }
+
+    if place.name == "" do
+      {:noreply, socket}
+    else
+      {:noreply, choose_place(socket, place)}
     end
   end
 
   def handle_event(
         "choose_destination",
-        %{"destination" => destination, "country" => country},
+        %{"destination" => destination, "country" => country} = params,
         socket
       ) do
-    {:noreply,
-     socket
-     |> assign(:error, nil)
-     |> choose_destination(%{destination: destination, country: country})}
+    place = %{
+      name: to_string(destination),
+      country: to_string(country || ""),
+      region: nil,
+      latitude: parse_number(params["latitude"]),
+      longitude: parse_number(params["longitude"]),
+      source: :curated
+    }
+
+    {:noreply, socket |> assign(:error, nil) |> choose_place(place)}
   end
 
   def handle_event("pick_date", %{"date" => value}, socket) do
@@ -186,7 +297,13 @@ defmodule XpressbusWeb.AiTripBuilderLive do
   end
 
   def handle_event("change_destination", _params, socket) do
-    {:noreply, assign(socket, :step, 1)}
+    {:noreply,
+     socket
+     |> assign(:step, 1)
+     |> assign(:query, socket.assigns.trip.destination || "")
+     |> assign(:suggestions, [])
+     |> assign(:searching, false)
+     |> assign(:search_empty, false)}
   end
 
   def handle_event("dates_next", _params, socket) do
@@ -288,6 +405,43 @@ defmodule XpressbusWeb.AiTripBuilderLive do
   end
 
   @impl true
+  def handle_async(:destination_search, {:ok, {:ok, results}}, socket) do
+    {:noreply,
+     socket
+     |> assign(:suggestions, results)
+     |> assign(:searching, false)
+     |> assign(:search_empty, results == [])}
+  end
+
+  def handle_async(:destination_search, {:ok, {:error, _reason}}, socket) do
+    {:noreply,
+     socket
+     |> assign(:suggestions, [])
+     |> assign(:searching, false)
+     |> assign(:search_empty, true)}
+  end
+
+  def handle_async(:destination_search, {:exit, _reason}, socket) do
+    {:noreply,
+     socket
+     |> assign(:suggestions, [])
+     |> assign(:searching, false)
+     |> assign(:search_empty, true)}
+  end
+
+  def handle_async(:destination_resolve, {:ok, {:ok, place, _results}}, socket) do
+    {:noreply, choose_place(socket, place)}
+  end
+
+  def handle_async(:destination_resolve, {:ok, {:error, _reason}}, socket) do
+    {:noreply, destination_not_found(socket)}
+  end
+
+  def handle_async(:destination_resolve, {:exit, _reason}, socket) do
+    {:noreply, destination_not_found(socket)}
+  end
+
+  @impl true
   def handle_info(:trip_generated, socket) do
     itinerary = TripItinerary.generate(socket.assigns.trip)
 
@@ -302,6 +456,10 @@ defmodule XpressbusWeb.AiTripBuilderLive do
     assign(socket, :trip, %{
       destination: nil,
       country: nil,
+      region: nil,
+      latitude: nil,
+      longitude: nil,
+      place_source: nil,
       start_date: nil,
       end_date: nil,
       travel_party: nil,
@@ -311,17 +469,56 @@ defmodule XpressbusWeb.AiTripBuilderLive do
     })
   end
 
-  defp choose_destination(socket, %{destination: destination, country: country}) do
+  defp choose_place(socket, place) do
     trip = %{
       socket.assigns.trip
-      | destination: destination |> to_string() |> String.trim() |> String.slice(0, 80),
-        country: to_string(country)
+      | destination: place.name |> to_string() |> String.trim() |> String.slice(0, 80),
+        country: to_string(Map.get(place, :country) || ""),
+        region: Map.get(place, :region),
+        latitude: Map.get(place, :latitude),
+        longitude: Map.get(place, :longitude),
+        place_source: Map.get(place, :source)
     }
 
     socket
     |> assign(:trip, trip)
     |> assign(:step, 2)
+    |> assign(:query, trip.destination)
+    |> assign(:suggestions, [])
+    |> assign(:searching, false)
+    |> assign(:search_empty, false)
+    |> assign(:error, nil)
   end
+
+  defp destination_not_found(socket) do
+    socket
+    |> assign(:searching, false)
+    |> assign(:suggestions, [])
+    |> assign(
+      :error,
+      "We couldn't find that place. Search for a real city or country - e.g. Nairobi, Paris or " <>
+        "Bali - or describe the vibe and let Chyllz AI pinpoint the nearest real place."
+    )
+  end
+
+  defp sanitize_query(query) do
+    query
+    |> to_string()
+    |> String.replace(~r/\s+/, " ")
+    |> String.trim()
+    |> String.slice(0, 80)
+  end
+
+  defp parse_number(value) when is_number(value), do: value
+
+  defp parse_number(value) when is_binary(value) do
+    case Float.parse(value) do
+      {number, _rest} -> number
+      :error -> nil
+    end
+  end
+
+  defp parse_number(_value), do: nil
 
   defp select_date(trip, date) do
     cond do

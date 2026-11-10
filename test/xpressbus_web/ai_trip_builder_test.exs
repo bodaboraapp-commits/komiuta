@@ -3,6 +3,44 @@ defmodule XpressbusWeb.AiTripBuilderTest do
 
   import Phoenix.LiveViewTest
 
+
+alias Xpressbus.Places
+
+setup do
+  previous = Application.get_env(:xpressbus, :places_search_override)
+  Places.reset_cache()
+
+  Application.put_env(:xpressbus, :places_search_override, fn query ->
+    case String.downcase(query) do
+      "zanzibar" ->
+        [
+          %{
+            name: "Zanzibar City",
+            country: "Tanzania",
+            region: "Zanzibar Urban/West",
+            latitude: -6.1659,
+            longitude: 39.2026
+          }
+        ]
+
+      _other ->
+        []
+    end
+  end)
+
+  on_exit(fn ->
+    Places.reset_cache()
+
+    if previous == nil do
+      Application.delete_env(:xpressbus, :places_search_override)
+    else
+      Application.put_env(:xpressbus, :places_search_override, previous)
+    end
+  end)
+
+  :ok
+end
+
   test "renders the destination step with search and trending destinations", %{conn: conn} do
     {:ok, view, html} = live(conn, ~p"/trip/build-with-ai")
 
@@ -20,6 +58,8 @@ defmodule XpressbusWeb.AiTripBuilderTest do
     view
     |> form("#destination-search-form", %{"query" => "Zanzibar"})
     |> render_submit()
+
+    render_async(view)
 
     assert has_element?(view, "#step-dates")
     assert has_element?(view, "#date-range-label", "Please select a date range")
