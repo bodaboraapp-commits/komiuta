@@ -794,6 +794,67 @@
                 <p class="mt-2 text-sm font-bold leading-relaxed text-slate-500">
                   {@itinerary.hotel}
                 </p>
+
+                <div id="itinerary-hotels" class="mt-6 border-t border-slate-100 pt-5">
+                  <div class="flex flex-wrap items-end justify-between gap-2">
+                    <div>
+                      <h3 class="text-base font-black tracking-tight text-slate-900">
+                        Hotels &amp; Stays
+                      </h3>
+
+                      <p class="mt-1 text-[10px] font-bold text-slate-400">
+                        <%= if @itinerary.hotel_source == :google_maps do %>
+                          Top-rated accommodation from Google Maps reviews
+                        <% else %>
+                          Popular stays — open Google Maps for live ratings and reviews
+                        <% end %>
+                      </p>
+                    </div>
+
+                    <a
+                      href={@itinerary.hotels_search_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-[10px] font-black uppercase tracking-widest text-[#FF4C00] hover:underline"
+                    >
+                      See all on Google Maps
+                    </a>
+                  </div>
+
+                  <div class="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
+                    <%= for hotel <- @itinerary.hotels do %>
+                      <div class="min-w-0">
+                        <img
+                          src={hotel.image}
+                          alt={hotel.name}
+                          loading="lazy"
+                          decoding="async"
+                          class="h-24 w-full rounded-xl object-cover md:h-28"
+                        />
+                        <p class="mt-2 line-clamp-2 text-xs font-black leading-snug text-slate-900">
+                          {hotel.name}
+                        </p>
+
+                        <p class="mt-1 line-clamp-1 text-[9px] font-bold text-slate-400">
+                          {hotel.address}
+                        </p>
+
+                        <%= if hotel.rating do %>
+                          <p class="mt-1 flex items-center gap-1.5 text-[10px] font-bold text-slate-500">
+                            <span class="text-amber-400">★</span> <span>{hotel.rating}</span>
+                            <span class="text-slate-400">
+                              ({hotel.reviews} reviews)
+                            </span>
+                          </p>
+                        <% else %>
+                          <p class="mt-1 text-[9px] font-bold text-slate-400">
+                            Live ratings on Google Maps
+                          </p>
+                        <% end %>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
               </section>
 
               <section class="mt-7 border-t border-slate-100 pt-5">
@@ -802,127 +863,66 @@
                 <p class="mt-2 text-sm font-bold leading-relaxed text-slate-500">
                   {@itinerary.food}
                 </p>
-              </section>
 
-              <section id="itinerary-hotels" class="mt-7 border-t border-slate-100 pt-5">
-                <div class="flex flex-wrap items-end justify-between gap-2">
-                  <div>
-                    <h2 class="text-lg font-black tracking-tight text-slate-900">
-                      Hotels &amp; Stays
-                    </h2>
+                <div id="itinerary-restaurants" class="mt-6 border-t border-slate-100 pt-5">
+                  <div class="flex flex-wrap items-end justify-between gap-2">
+                    <div>
+                      <h3 class="text-base font-black tracking-tight text-slate-900">
+                        Recommended Restaurants
+                      </h3>
 
-                    <p class="mt-1 text-[10px] font-bold text-slate-400">
-                      <%= if @itinerary.hotel_source == :google_maps do %>
-                        Top-rated accommodation from Google Maps reviews
-                      <% else %>
-                        Popular stays — open Google Maps for live ratings and reviews
-                      <% end %>
-                    </p>
+                      <p class="mt-1 text-[10px] font-bold text-slate-400">
+                        <%= if @itinerary.restaurant_source == :google_maps do %>
+                          Ranked by Google Maps reviews
+                        <% else %>
+                          Popular local favourites — open Google Maps for live ratings
+                        <% end %>
+                      </p>
+                    </div>
+
+                    <a
+                      href={@itinerary.restaurants_search_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-[10px] font-black uppercase tracking-widest text-[#FF4C00] hover:underline"
+                    >
+                      See all on Google Maps
+                    </a>
                   </div>
 
-                  <a
-                    href={@itinerary.hotels_search_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="text-[10px] font-black uppercase tracking-widest text-[#FF4C00] hover:underline"
-                  >
-                    See all on Google Maps
-                  </a>
-                </div>
-
-                <div class="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
-                  <%= for hotel <- @itinerary.hotels do %>
-                    <div class="min-w-0">
-                      <img
-                        src={hotel.image}
-                        alt={hotel.name}
-                        loading="lazy"
-                        decoding="async"
-                        class="h-24 w-full rounded-xl object-cover md:h-28"
-                      />
-                      <p class="mt-2 line-clamp-2 text-xs font-black leading-snug text-slate-900">
-                        {hotel.name}
-                      </p>
-
-                      <p class="mt-1 line-clamp-1 text-[9px] font-bold text-slate-400">
-                        {hotel.address}
-                      </p>
-
-                      <%= if hotel.rating do %>
-                        <p class="mt-1 flex items-center gap-1.5 text-[10px] font-bold text-slate-500">
-                          <span class="text-amber-400">★</span> <span>{hotel.rating}</span>
-                          <span class="text-slate-400">
-                            ({hotel.reviews} reviews)
-                          </span>
+                  <div class="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
+                    <%= for restaurant <- @itinerary.restaurants do %>
+                      <div class="min-w-0">
+                        <img
+                          src={restaurant.image}
+                          alt={restaurant.name}
+                          loading="lazy"
+                          decoding="async"
+                          class="h-24 w-full rounded-xl object-cover md:h-28"
+                        />
+                        <p class="mt-2 line-clamp-2 text-xs font-black leading-snug text-slate-900">
+                          {restaurant.name}
                         </p>
-                      <% else %>
-                        <p class="mt-1 text-[9px] font-bold text-slate-400">
-                          Live ratings on Google Maps
+
+                        <p class="mt-1 line-clamp-1 text-[9px] font-bold text-slate-400">
+                          {restaurant.address}
                         </p>
-                      <% end %>
-                    </div>
-                  <% end %>
-                </div>
-              </section>
 
-              <section id="itinerary-restaurants" class="mt-7 border-t border-slate-100 pt-5">
-                <div class="flex flex-wrap items-end justify-between gap-2">
-                  <div>
-                    <h2 class="text-lg font-black tracking-tight text-slate-900">
-                      Recommended Restaurants
-                    </h2>
-
-                    <p class="mt-1 text-[10px] font-bold text-slate-400">
-                      <%= if @itinerary.restaurant_source == :google_maps do %>
-                        Ranked by Google Maps reviews
-                      <% else %>
-                        Popular local favourites — open Google Maps for live ratings
-                      <% end %>
-                    </p>
+                        <%= if restaurant.rating do %>
+                          <p class="mt-1 flex items-center gap-1.5 text-[10px] font-bold text-slate-500">
+                            <span class="text-amber-400">★</span> <span>{restaurant.rating}</span>
+                            <span class="text-slate-400">
+                              ({restaurant.reviews} reviews)
+                            </span>
+                          </p>
+                        <% else %>
+                          <p class="mt-1 text-[9px] font-bold text-slate-400">
+                            Live ratings on Google Maps
+                          </p>
+                        <% end %>
+                      </div>
+                    <% end %>
                   </div>
-
-                  <a
-                    href={@itinerary.restaurants_search_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="text-[10px] font-black uppercase tracking-widest text-[#FF4C00] hover:underline"
-                  >
-                    See all on Google Maps
-                  </a>
-                </div>
-
-                <div class="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
-                  <%= for restaurant <- @itinerary.restaurants do %>
-                    <div class="min-w-0">
-                      <img
-                        src={restaurant.image}
-                        alt={restaurant.name}
-                        loading="lazy"
-                        decoding="async"
-                        class="h-24 w-full rounded-xl object-cover md:h-28"
-                      />
-                      <p class="mt-2 line-clamp-2 text-xs font-black leading-snug text-slate-900">
-                        {restaurant.name}
-                      </p>
-
-                      <p class="mt-1 line-clamp-1 text-[9px] font-bold text-slate-400">
-                        {restaurant.address}
-                      </p>
-
-                      <%= if restaurant.rating do %>
-                        <p class="mt-1 flex items-center gap-1.5 text-[10px] font-bold text-slate-500">
-                          <span class="text-amber-400">★</span> <span>{restaurant.rating}</span>
-                          <span class="text-slate-400">
-                            ({restaurant.reviews} reviews)
-                          </span>
-                        </p>
-                      <% else %>
-                        <p class="mt-1 text-[9px] font-bold text-slate-400">
-                          Live ratings on Google Maps
-                        </p>
-                      <% end %>
-                    </div>
-                  <% end %>
                 </div>
               </section>
 
