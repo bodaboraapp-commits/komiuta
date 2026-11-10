@@ -271,10 +271,31 @@ defmodule XpressbusWeb.AiTripBuilderLive do
   defp range_label(%{start_date: nil}), do: "Please select a date range"
 
   defp range_label(%{start_date: start_date, end_date: nil}),
-    do: "#{format_date(start_date)} — now pick your return date"
+    do: "Selected: #{Date.to_iso8601(start_date)} — now pick your return date"
 
-  defp range_label(%{start_date: start_date, end_date: end_date}),
-    do: "#{format_date(start_date)} → #{format_date(end_date)}"
+  defp range_label(%{start_date: start_date, end_date: end_date}) do
+    "Selected: #{Date.to_iso8601(start_date)} to #{Date.to_iso8601(end_date)} (#{duration_days(start_date, end_date)} Days)"
+  end
+
+  defp duration_days(%Date{} = start_date, %Date{} = end_date) do
+    Date.diff(end_date, start_date) + 1
+  end
+
+  defp estimated_credits(%Date{} = start_date, %Date{} = end_date) do
+    duration_days(start_date, end_date) * credits_per_day()
+  end
+
+  defp credits_per_day do
+    :xpressbus
+    |> Application.get_env(:ai_trip_builder, [])
+    |> Keyword.get(:credits_per_day, 20)
+  end
+
+  defp credit_balance do
+    :xpressbus
+    |> Application.get_env(:ai_trip_builder, [])
+    |> Keyword.get(:credit_balance, "2.00")
+  end
 
   defp toggle_value(list, value) do
     if value in list, do: List.delete(list, value), else: list ++ [value]

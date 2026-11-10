@@ -51,7 +51,18 @@ defmodule XpressbusWeb.AiTripBuilderTest do
     view |> element("#calendar-day-#{Date.to_iso8601(start_date)}") |> render_click()
     view |> element("#calendar-day-#{Date.to_iso8601(end_date)}") |> render_click()
 
-    assert has_element?(view, "#date-range-label", Calendar.strftime(start_date, "%d %b %Y"))
+    days = Date.diff(end_date, start_date) + 1
+
+    assert has_element?(
+             view,
+             "#date-range-label",
+             "Selected: #{Date.to_iso8601(start_date)} to #{Date.to_iso8601(end_date)} (#{days} Days)"
+           )
+
+    assert has_element?(view, "#date-range-summary")
+    assert has_element?(view, "#estimated-credits", "#{days * 20} Credits")
+    assert has_element?(view, "#credit-balance", "2.00 Credits")
+    refute has_element?(view, "#dates-next[disabled]")
 
     view |> element("#dates-next") |> render_click()
     assert has_element?(view, "#step-companions")
