@@ -104,22 +104,34 @@ defmodule XpressbusWeb.UserController do
   end
 
   def registration(conn, params) do
-    verified_phone = get_session(conn, :verified_signup_phone)
-    phone = verified_phone || params["phone"]
+    case signed_in_user(conn) do
+      %Accounts.User{} = user ->
+        # Signed-in Google travellers must finish the Details step before they
+        # can start (or re-enter) the signup flow.
+        if Accounts.profile_complete?(user) do
+          redirect(conn, to: ~p"/dashboard")
+        else
+          redirect(conn, to: ~p"/user/complete-profile")
+        end
 
-    signup_step =
-      if verified_phone || params["method"] == "email" do
-        :complete
-      else
-        :verify
-      end
+      _ ->
+        verified_phone = get_session(conn, :verified_signup_phone)
+        phone = verified_phone || params["phone"]
 
-    render(conn, :registration,
-      verified_phone: verified_phone,
-      phone: phone,
-      signup_step: signup_step,
-      firebase_config: Xpressbus.Firebase.client_config()
-    )
+        signup_step =
+          if verified_phone || params["method"] == "email" do
+            :complete
+          else
+            :verify
+          end
+
+        render(conn, :registration,
+          verified_phone: verified_phone,
+          phone: phone,
+          signup_step: signup_step,
+          firebase_config: Xpressbus.Firebase.client_config()
+        )
+    end
   end
 
   @doc """

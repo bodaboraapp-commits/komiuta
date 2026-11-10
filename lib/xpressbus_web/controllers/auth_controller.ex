@@ -49,6 +49,7 @@ defmodule XpressbusWeb.AuthController do
       {:ok, user} ->
         conn =
           conn
+          |> configure_session(renew: true)
           |> put_session(:user_id, user.id)
           |> put_session(:user_name, user.name)
 
