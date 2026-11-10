@@ -470,7 +470,8 @@ defmodule XpressbusWeb.AiTripBuilderLive do
             {:noreply,
              socket
              |> assign(:saved_itinerary, saved)
-             |> put_flash(:info, "Itinerary saved to My Chyllz.")}
+             |> put_flash(:info, "Itinerary saved to My Chyllz.")
+             |> push_navigate(to: "/dashboard?tab=chyllz")}
 
           {:error, _reason} ->
             {:noreply,

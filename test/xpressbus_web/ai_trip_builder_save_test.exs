@@ -4,7 +4,7 @@ defmodule XpressbusWeb.AiTripBuilderSaveTest do
   import Phoenix.LiveViewTest
   import Xpressbus.AccountsFixtures
 
-  alias Xpressbus.Itineraries
+  alias Xpressbus.{Itineraries, TripItinerary}
   alias Xpressbus.Itineraries.SavedItinerary
   alias Xpressbus.Repo
 
@@ -40,8 +40,7 @@ defmodule XpressbusWeb.AiTripBuilderSaveTest do
 
     view |> element("#save-itinerary") |> render_click()
 
-    assert render(view) =~ "Itinerary saved to My Chyllz"
-    assert has_element?(view, "#save-itinerary", "Saved")
+    assert_redirect(view, "/dashboard?tab=chyllz")
 
     assert [saved] = Itineraries.list_for_user(user)
     assert saved.title =~ "Cox's Bazar"
@@ -75,11 +74,21 @@ defmodule XpressbusWeb.AiTripBuilderSaveTest do
   test "a saved itinerary can be re-opened from the dashboard link", %{conn: conn} do
     user = user_fixture()
 
-    {:ok, view, _html} = live(signed_in(conn, user), ~p"/trip/build-with-ai")
-    complete_wizard(view)
-    view |> element("#save-itinerary") |> render_click()
+    today = Date.utc_today()
 
-    assert [saved] = Itineraries.list_for_user(user)
+    trip = %{
+      destination: "Cox's Bazar",
+      country: "Bangladesh",
+      start_date: Date.add(today, 1),
+      end_date: Date.add(today, 2),
+      travel_party: "couple",
+      budget: "luxury",
+      preferences: ["Beach Vacations"],
+      latitude: 21.4272,
+      longitude: 92.0058
+    }
+
+    {:ok, saved} = Itineraries.save(user, trip, TripItinerary.generate(trip))
 
     {:ok, reopened, _html} =
       live(signed_in(conn, user), ~p"/trip/build-with-ai?saved=#{saved.id}")

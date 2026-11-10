@@ -261,6 +261,8 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
           </a>
         </div>
 
+        <ItineraryComponents.saved_itineraries itineraries={@itineraries} />
+
         <%!-- Hotel / accommodation bookings --%>
         <section id="hotel-bookings" aria-labelledby="hotel-bookings-heading">
           <div class="mb-3.5 flex items-center justify-between gap-3 px-1">
@@ -371,8 +373,6 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
             <% end %>
           </div>
         </section>
-
-        <ItineraryComponents.saved_itineraries itineraries={@itineraries} />
 
         <section aria-labelledby="recent-trips-heading">
           <div class="mb-3.5 flex items-center justify-between gap-3 px-1">
