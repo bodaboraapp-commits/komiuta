@@ -44,6 +44,7 @@ function initSmsLogin(root) {
   let verifier
   let confirmationResult = null
   let otpAbortController = null
+  let visibleRecaptcha = false
 
   try {
     const app = initializeApp(config, "komiuta-sms")
@@ -93,7 +94,10 @@ function initSmsLogin(root) {
     listenForSmsOtp(phone)
 
     try {
-      await resetVerifier()
+      if (!visibleRecaptcha) {
+        await resetVerifier()
+      }
+
       confirmationResult = await signInWithPhoneNumber(auth, phone, verifier)
 
       codeStep.classList.remove("hidden")
@@ -103,8 +107,13 @@ function initSmsLogin(root) {
       codeInput.focus()
     } catch (error) {
       stopSmsOtpListener()
-      setStatus(friendlyError(error), "error")
-      await resetVerifier()
+
+      if (isSecurityError(error)) {
+        await enableVisibleRecaptcha()
+      } else {
+        setStatus(friendlyError(error), "error")
+        await resetVerifier()
+      }
     } finally {
       setBusy(false)
     }
@@ -218,9 +227,45 @@ function initSmsLogin(root) {
     }
 
     const container = document.getElementById("firebase-recaptcha")
-    if (container) container.innerHTML = ""
+    if (container) {
+      container.innerHTML = ""
+      container.classList.remove("recaptcha-visible")
+    }
 
     verifier = new RecaptchaVerifier(auth, "firebase-recaptcha", {size: "invisible", badge: "bottomright"})
+  }
+
+  async function enableVisibleRecaptcha() {
+    try {
+      if (verifier) verifier.clear()
+    } catch (_error) {
+      // Ignore cleanup errors and render a fresh visible challenge.
+    }
+
+    const container = document.getElementById("firebase-recaptcha")
+    if (!container) return
+
+    container.innerHTML = ""
+    container.classList.add("recaptcha-visible")
+    visibleRecaptcha = true
+    verifier = new RecaptchaVerifier(auth, "firebase-recaptcha", {size: "normal", badge: "bottomright"})
+
+    try {
+      await verifier.render()
+    } catch (_error) {
+      // The widget still renders on the next sign-in attempt.
+    }
+
+    setStatus(
+      "Please complete the security check below, then tap Send Login Code again.",
+      "error"
+    )
+  }
+
+  function isSecurityError(error) {
+    const code = (error && error.code) || ""
+    const message = (error && error.message) || ""
+    return /captcha|security|recaptcha/i.test(code) || /security check failed/i.test(message)
   }
 
   function setBusy(busy) {
@@ -265,7 +310,8 @@ function friendlyError(error) {
     "auth/invalid-phone-number": "That phone number looks invalid. Use the format +254 7XX XXX XXX.",
     "auth/too-many-requests": "Too many SMS attempts. Please wait a few minutes and try again.",
     "auth/quota-exceeded": "The SMS quota has been reached. Please use the email login code instead.",
-    "auth/captcha-check-failed": "The security check failed. Please refresh the page and try again.",
+    "auth/captcha-check-failed": "The security check failed. Please complete the check shown and tap Send Login Code again.",
+    "auth/security": "The security check failed. Please complete the check shown and tap Send Login Code again.",
     "auth/invalid-verification-code": "That code is not correct. Please check the SMS and try again.",
     "auth/code-expired": "That code has expired. Request a new SMS code.",
     "auth/missing-verification-code": "Enter the 6-digit code from the SMS.",
