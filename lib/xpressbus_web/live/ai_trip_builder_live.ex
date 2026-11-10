@@ -20,6 +20,14 @@ defmodule XpressbusWeb.AiTripBuilderLive do
 
   alias Xpressbus.Places
 
+  @generation_steps [
+    "Building your itinerary...",
+    "Searching top-rated hotels on Google Maps...",
+    "Finding restaurants with the best reviews...",
+    "Mapping your day-by-day plan...",
+    "Adding local tips and important notes..."
+  ]
+
   @steps [
     %{key: 1, title: "Destination", icon: :pin},
     %{key: 2, title: "Dates", icon: :calendar},
@@ -192,6 +200,10 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:search_empty, false)
      |> assign(:error, nil)
      |> assign(:generating, false)
+     |> assign(:generation_stage, 0)
+     |> assign(:generation_message, hd(@generation_steps))
+     |> assign(:generation_ref, nil)
+     |> assign(:generation_started_at, nil)
      |> assign(:today, Date.utc_today())
      |> assign(:calendar_month, Date.beginning_of_month(Date.utc_today()))
      |> reset_trip()}
@@ -375,12 +387,22 @@ defmodule XpressbusWeb.AiTripBuilderLive do
       {:noreply,
        assign(socket, :error, "Pick at least one preference so the AI can shape your trip.")}
     else
-      Process.send_after(self(), :trip_generated, 2_200)
+      parent = self()
+      trip = socket.assigns.trip
+
+      {_pid, ref} =
+        spawn_monitor(fn -> send(parent, {:generation_done, TripItinerary.generate(trip)}) end)
+
+      Process.send_after(self(), :generation_tick, 1_800)
 
       {:noreply,
        socket
        |> assign(:error, nil)
-       |> assign(:generating, true)}
+       |> assign(:generating, true)
+       |> assign(:generation_stage, 0)
+       |> assign(:generation_message, hd(@generation_steps))
+       |> assign(:generation_ref, ref)
+       |> assign(:generation_started_at, System.monotonic_time(:millisecond))}
     end
   end
 
@@ -395,6 +417,10 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:query, "")
      |> assign(:error, nil)
      |> assign(:generating, false)
+     |> assign(:generation_stage, 0)
+     |> assign(:generation_message, hd(@generation_steps))
+     |> assign(:generation_ref, nil)
+     |> assign(:generation_started_at, nil)
      |> assign(:today, Date.utc_today())
      |> assign(:calendar_month, Date.beginning_of_month(Date.utc_today()))
      |> reset_trip()}
@@ -448,6 +474,74 @@ defmodule XpressbusWeb.AiTripBuilderLive do
     {:noreply,
      socket
      |> assign(:generating, false)
+     |> assign(:generation_ref, nil)
+     |> assign(:itinerary, itinerary)
+     |> assign(:step, 6)}
+  end
+
+  def handle_info(:generation_tick, socket) do
+    if socket.assigns.generating do
+      next_stage = socket.assigns.generation_stage + 1
+
+      {stage, message} =
+        if next_stage < length(@generation_steps) do
+          {next_stage, Enum.at(@generation_steps, next_stage)}
+        else
+          {0, hd(@generation_steps)}
+        end
+
+      Process.send_after(self(), :generation_tick, 2_400)
+
+      {:noreply,
+       socket
+       |> assign(:generation_stage, stage)
+       |> assign(:generation_message, message)}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_info({:generation_done, itinerary}, socket) do
+    if socket.assigns.generation_ref do
+      Process.demonitor(socket.assigns.generation_ref, [:flush])
+    end
+
+    started_at = socket.assigns.generation_started_at || System.monotonic_time(:millisecond)
+    remaining = max(2_200 - (System.monotonic_time(:millisecond) - started_at), 0)
+
+    if remaining > 0 do
+      Process.send_after(self(), {:generation_complete, itinerary}, remaining)
+      {:noreply, assign(socket, :generation_ref, nil)}
+    else
+      complete_generation(socket, itinerary)
+    end
+  end
+
+  def handle_info({:generation_complete, itinerary}, socket) do
+    complete_generation(socket, itinerary)
+  end
+
+  def handle_info({:DOWN, ref, :process, _pid, reason}, socket) do
+    if socket.assigns.generation_ref == ref and socket.assigns.generating do
+      require Logger
+      Logger.error("Trip generation failed: #{inspect(reason)}")
+
+      {:noreply,
+       socket
+       |> assign(:generating, false)
+       |> assign(:generation_ref, nil)
+       |> assign(:generation_message, hd(@generation_steps))
+       |> assign(:error, "We couldn't finish your itinerary. Please try again.")}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  defp complete_generation(socket, itinerary) do
+    {:noreply,
+     socket
+     |> assign(:generating, false)
+     |> assign(:generation_ref, nil)
      |> assign(:itinerary, itinerary)
      |> assign(:step, 6)}
   end

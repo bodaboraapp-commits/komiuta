@@ -15,7 +15,7 @@ defmodule XpressbusWeb.ChyllzAccountArt do
   `:arrow_right`, `:pin`, `:calendar`, `:clock`, `:wallet`, `:seat`, `:search`,
   `:refresh`, `:route`, `:bag`, `:star`, `:sparkles`, `:plane`, `:map`, `:check`,
   `:list`, `:eye`, `:share`, `:users`, `:sliders`, `:user`, `:heart`, `:paw`,
-  `:money`, `:gem`, `:rocket`.
+  `:money`, `:gem`, `:rocket`, `:bot`.
   """
   attr :name, :atom, required: true
   attr :class, :string, default: "h-5 w-5"
@@ -51,21 +51,17 @@ defmodule XpressbusWeb.ChyllzAccountArt do
         <% :clock -> %>
           <circle cx="12" cy="12" r="8.5" /> <path d="M12 7.5V12l3 2" />
         <% :wallet -> %>
-          <rect x="3" y="6" width="18" height="13" rx="3" />
-          <path d="M3 10h18" />
+          <rect x="3" y="6" width="18" height="13" rx="3" /> <path d="M3 10h18" />
           <circle cx="16.5" cy="14.5" r="1.2" fill="currentColor" stroke="none" />
         <% :seat -> %>
-          <path d="M6 4v9.5A2.5 2.5 0 0 0 8.5 16H17" />
-          <path d="M17 8v6a2 2 0 0 1-2 2H8" />
+          <path d="M6 4v9.5A2.5 2.5 0 0 0 8.5 16H17" /> <path d="M17 8v6a2 2 0 0 1-2 2H8" />
           <path d="M6 17v3M18 17v3" />
         <% :search -> %>
           <circle cx="11" cy="11" r="6.5" /> <path d="m16 16 4 4" />
         <% :drop -> %>
           <path d="M12 3.5c3.2 4 5 6.6 5 9a5 5 0 0 1-10 0c0-2.4 1.8-5 5-9z" />
         <% :wind -> %>
-          <path d="M3 8h10a3 3 0 1 0-3-3" />
-          <path d="M3 12h14a3 3 0 1 1-3 3" />
-          <path d="M3 16h6" />
+          <path d="M3 8h10a3 3 0 1 0-3-3" /> <path d="M3 12h14a3 3 0 1 1-3 3" /> <path d="M3 16h6" />
         <% :refresh -> %>
           <path d="M20 11a8 8 0 1 0-2.3 6.2" /> <path d="M20 4.5V11h-6" />
         <% :route -> %>
@@ -73,46 +69,35 @@ defmodule XpressbusWeb.ChyllzAccountArt do
           <path d="M8.5 18h4a3 3 0 0 0 3-3V8.5" stroke-dasharray="3 3" />
         <% :bag -> %>
           <rect x="4" y="7" width="16" height="13" rx="3" />
-          <path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7" />
-          <path d="M4 12h16" />
+          <path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7" /> <path d="M4 12h16" />
         <% :star -> %>
           <path d="m12 3.5 2.6 5.3 5.9.9-4.2 4.1 1 5.8-5.3-2.8-5.3 2.8 1-5.8-4.2-4.1 5.9-.9z" />
         <% :sparkles -> %>
-          <path d="M12 4v5M9.5 6.5h5" />
-          <path d="M18 13v4M16 15h4" />
-          <path d="M6 14v3M4.5 15.5h3" />
+          <path d="M12 4v5M9.5 6.5h5" /> <path d="M18 13v4M16 15h4" /> <path d="M6 14v3M4.5 15.5h3" />
         <% :plane -> %>
           <path d="m3 13 18-7-6 15-3.5-6z" /> <path d="M13 12 21 6" />
         <% :map -> %>
-          <path d="m3 6.5 6-2.5 6 2.5 6-2.5v13l-6 2.5-6-2.5-6 2.5z" />
-          <path d="M9 4v13M15 7v13" />
+          <path d="m3 6.5 6-2.5 6 2.5 6-2.5v13l-6 2.5-6-2.5-6 2.5z" /> <path d="M9 4v13M15 7v13" />
         <% :check -> %>
           <path d="m5 12.5 4.5 4.5L19 7.5" />
         <% :list -> %>
-          <path d="M4 7h9M4 12h13M4 17h7" />
-          <circle cx="16.5" cy="7" r="1.6" />
-          <circle cx="20" cy="12" r="1.6" />
-          <circle cx="14.5" cy="17" r="1.6" />
+          <path d="M4 7h9M4 12h13M4 17h7" /> <circle cx="16.5" cy="7" r="1.6" />
+          <circle cx="20" cy="12" r="1.6" /> <circle cx="14.5" cy="17" r="1.6" />
         <% :eye -> %>
           <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" />
           <circle cx="12" cy="12" r="3" />
         <% :share -> %>
-          <circle cx="6" cy="12" r="2.5" />
-          <circle cx="18" cy="6" r="2.5" />
-          <circle cx="18" cy="18" r="2.5" />
-          <path d="m8.2 10.8 7.6-3.6M8.2 13.2l7.6 3.6" />
+          <circle cx="6" cy="12" r="2.5" /> <circle cx="18" cy="6" r="2.5" />
+          <circle cx="18" cy="18" r="2.5" /> <path d="m8.2 10.8 7.6-3.6M8.2 13.2l7.6 3.6" />
         <% :users -> %>
-          <circle cx="9" cy="8" r="3.5" />
-          <path d="M3.5 19.5c.7-3.3 2.9-5 5.5-5s4.8 1.7 5.5 5" />
+          <circle cx="9" cy="8" r="3.5" /> <path d="M3.5 19.5c.7-3.3 2.9-5 5.5-5s4.8 1.7 5.5 5" />
           <path d="M15.5 5.4a3.4 3.4 0 0 1 0 6.2M17 14.8c2 .6 3.2 2.1 3.6 4.4" />
         <% :user -> %>
-          <circle cx="12" cy="8" r="3.6" />
-          <path d="M4.5 20c.9-3.8 3.6-5.8 7.5-5.8s6.6 2 7.5 5.8" />
+          <circle cx="12" cy="8" r="3.6" /> <path d="M4.5 20c.9-3.8 3.6-5.8 7.5-5.8s6.6 2 7.5 5.8" />
         <% :heart -> %>
           <path d="M12 20.5S3.5 15 3.5 8.9A4.6 4.6 0 0 1 12 6a4.6 4.6 0 0 1 8.5 2.9c0 6.1-8.5 11.6-8.5 11.6z" />
         <% :paw -> %>
-          <ellipse cx="7" cy="9" rx="2" ry="2.6" />
-          <ellipse cx="17" cy="9" rx="2" ry="2.6" />
+          <ellipse cx="7" cy="9" rx="2" ry="2.6" /> <ellipse cx="17" cy="9" rx="2" ry="2.6" />
           <ellipse cx="4.5" cy="14" rx="1.8" ry="2.1" />
           <ellipse cx="19.5" cy="14" rx="1.8" ry="2.1" />
           <path d="M12 13.2c3.1 0 5.5 2.9 5.5 5.1 0 1.7-1.3 2.7-2.9 2.4-1.7-.3-3.4-.3-5.1 0-1.7.3-3-.7-3-2.4 0-2.2 2.4-5.1 5.5-5.1z" />
@@ -126,10 +111,15 @@ defmodule XpressbusWeb.ChyllzAccountArt do
           <path d="M13.5 5.5c3-3 6.5-2.8 6.5-2.8s.2 3.5-2.8 6.5l-3.7 3.7-4.2-1.1-1.2-4.2z" />
           <path d="M9 13 6 16M11 17l-1 3M7 15H3.5L6 12.5M9 9 6.5 6.5 8 3l3 2.5" />
         <% :sliders -> %>
-          <path d="M4 7h16M4 12h16M4 17h16" />
-          <circle cx="9" cy="7" r="2" fill="white" />
-          <circle cx="15" cy="12" r="2" fill="white" />
-          <circle cx="7" cy="17" r="2" fill="white" />
+          <path d="M4 7h16M4 12h16M4 17h16" /> <circle cx="9" cy="7" r="2" fill="white" />
+          <circle cx="15" cy="12" r="2" fill="white" /> <circle cx="7" cy="17" r="2" fill="white" />
+        <% :bot -> %>
+          <rect x="5" y="8" width="14" height="10.5" rx="3" />
+          <path d="M12 4v4M9 18.5v2M15 18.5v2M3.5 10v5M20.5 10v5" />
+          <circle cx="12" cy="3.4" r="1" fill="currentColor" stroke="none" />
+          <circle cx="9.5" cy="12.5" r="1.1" fill="currentColor" stroke="none" />
+          <circle cx="14.5" cy="12.5" r="1.1" fill="currentColor" stroke="none" />
+          <path d="M9.5 15.5h5" />
         <% _other -> %>
           <circle cx="12" cy="12" r="8.5" />
       <% end %>
@@ -197,8 +187,7 @@ defmodule XpressbusWeb.ChyllzAccountArt do
           <path
             d="M15 28a6.5 6.5 0 0 1-.6-13 8.5 8.5 0 0 1 16.4 1.6A5.7 5.7 0 0 1 30.5 28z"
             fill="#94A3B8"
-          />
-          <path d="M25 30l-5 9h5l-2 7 8-10h-5l2-6z" fill="#FFB020" />
+          /> <path d="M25 30l-5 9h5l-2 7 8-10h-5l2-6z" fill="#FFB020" />
         <% _other -> %>
           <path
             d="M15 34a6.5 6.5 0 0 1-.6-13 8.5 8.5 0 0 1 16.4 1.6A5.7 5.7 0 0 1 30.5 34z"
@@ -236,6 +225,7 @@ defmodule XpressbusWeb.ChyllzAccountArt do
             <linearGradient id={"trip-sky-mountains-" <> @key} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stop-color="#FFEEDD" /> <stop offset="1" stop-color="#FFD9B0" />
             </linearGradient>
+
             <linearGradient id={"trip-lake-mountains-" <> @key} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stop-color="#7DD3FC" /> <stop offset="1" stop-color="#38BDF8" />
             </linearGradient>
@@ -257,8 +247,7 @@ defmodule XpressbusWeb.ChyllzAccountArt do
             stroke-width="3"
             stroke-linecap="round"
             opacity="0.85"
-          />
-          <path d="M40 174l10-18 10 18zM64 178l8-14 8 14zM268 176l9-16 9 16z" fill="#14532D" />
+          /> <path d="M40 174l10-18 10 18zM64 178l8-14 8 14zM268 176l9-16 9 16z" fill="#14532D" />
           <path
             d="M196 98q6-7 13 0M216 92q6-7 13 0"
             stroke="#7C2D12"
@@ -271,6 +260,7 @@ defmodule XpressbusWeb.ChyllzAccountArt do
             <linearGradient id={"trip-sky-coast-" <> @key} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stop-color="#FFE9CE" /> <stop offset="1" stop-color="#FFC9A0" />
             </linearGradient>
+
             <linearGradient id={"trip-sea-coast-" <> @key} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stop-color="#22D3EE" /> <stop offset="1" stop-color="#0E7490" />
             </linearGradient>
@@ -283,8 +273,7 @@ defmodule XpressbusWeb.ChyllzAccountArt do
             d="M0 132c46-10 90 10 138 0 48-10 96 10 182-2v10c-84 12-134-8-182 2-48 10-92-10-138 0z"
             fill="#E0F2FE"
             opacity="0.55"
-          />
-          <path d="M0 178c52-10 98 8 150 0 52-8 106 12 170 0v42H0Z" fill="#FDE68A" />
+          /> <path d="M0 178c52-10 98 8 150 0 52-8 106 12 170 0v42H0Z" fill="#FDE68A" />
           <path
             d="M0 186c52-8 98 6 150 0 52-6 106 8 170 0v6c-64 8-118-6-170 0-52 6-98-8-150 0z"
             fill="#FCD34D"
