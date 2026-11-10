@@ -23,6 +23,8 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
   attr :user, :map, required: true
   attr :overview, :map, required: true
   attr :trips, :list, required: true
+  attr :picks, :list, default: []
+  attr :story_cards, :list, default: []
   attr :member_since, :string, default: nil
   attr :weather, :map, default: nil
   attr :weather_error, :string, default: nil
@@ -58,7 +60,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
           >
           </div>
 
-          <div class="relative grid grid-cols-1 items-center gap-6 md:grid-cols-[auto_minmax(0,1fr)] lg:grid-cols-[auto_minmax(0,1fr)_auto]">
+          <div class="relative grid grid-cols-1 items-center gap-6 md:grid-cols-[auto_minmax(0,1fr)] xl:grid-cols-[auto_minmax(0,1fr)_auto]">
             <%!-- Photo collage --%>
             <div
               class="relative mx-auto hidden h-[152px] w-[172px] shrink-0 md:block"
@@ -102,14 +104,14 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                 <% end %>
               </div>
 
-              <h1 class="mt-3 text-2xl font-black leading-tight tracking-tight md:text-[32px]">
+              <h1 class="mt-3 text-2xl font-black leading-tight tracking-tight md:text-[28px] 2xl:text-[32px]">
                 Welcome back, {first_name(@user)}!
               </h1>
               <p class="mt-2 max-w-md text-sm font-bold leading-relaxed text-slate-400">
                 Ready to explore the world? Plan your next adventure or manage your trips.
               </p>
 
-              <div class="mt-5 flex flex-wrap items-center gap-3">
+              <div class="mt-5 flex flex-wrap items-center gap-2.5">
                 <a
                   id="plan-new-trip"
                   href="/tour-packages"
@@ -129,10 +131,10 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
 
             <%!-- Hand-lettered tagline --%>
             <div
-              class="relative hidden w-[210px] shrink-0 select-none lg:block"
+              class="relative hidden w-[176px] shrink-0 select-none xl:block"
               aria-hidden="true"
             >
-              <svg viewBox="0 0 230 102" class="h-[102px] w-[230px]" fill="none">
+              <svg viewBox="0 0 230 102" class="h-[92px] w-[196px]" fill="none">
                 <path
                   d="M6 68c30-46 62 22 96-16 22-25 46-26 74-8 16 10 26 26 30 44"
                   stroke="#FF4C00"
@@ -269,16 +271,18 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
             <%= if @trips == [] do %>
               <div
                 id="no-trips"
-                class="flex flex-col items-center gap-3 rounded-[24px] border border-dashed border-slate-200 bg-white p-8 text-center"
+                class="flex flex-col items-center gap-4 rounded-[24px] border border-dashed border-slate-200 bg-white p-6 text-center sm:flex-row sm:items-center sm:text-left"
               >
-                <span class="grid h-14 w-14 place-items-center rounded-2xl bg-orange-50 text-[#FF4C00]">
-                  <.ui_icon name={:bag} class="h-7 w-7" />
+                <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-50 text-[#FF4C00]">
+                  <.ui_icon name={:bag} class="h-6 w-6" />
                 </span>
-                <h3 class="text-base font-black text-slate-900">No trips yet</h3>
-                <p class="max-w-xs text-xs font-bold leading-relaxed text-slate-400">
-                  Book a bus or plan a Chyllz escape and your journeys will appear here.
-                </p>
-                <div class="mt-1 flex flex-wrap justify-center gap-2">
+                <div class="min-w-0 flex-1">
+                  <h3 class="text-base font-black text-slate-900">No trips yet</h3>
+                  <p class="mt-1 text-xs font-bold leading-relaxed text-slate-400">
+                    Book a bus or plan a Chyllz escape and your journeys will appear here.
+                  </p>
+                </div>
+                <div class="flex shrink-0 flex-wrap justify-center gap-2">
                   <a
                     href="/"
                     class="rounded-full bg-[#FF4C00] px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-[#E64400]"
@@ -368,6 +372,105 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
             <% end %>
           </div>
         </section>
+
+        <%!-- Chyllz suggestions for accounts without trip history, so the page
+        still feels complete and the columns stay balanced. --%>
+        <%= if @trips == [] and @picks != [] do %>
+          <section id="chyllz-picks" aria-labelledby="chyllz-picks-heading">
+            <div class="mb-3.5 flex items-center justify-between gap-3 px-1">
+              <h2
+                id="chyllz-picks-heading"
+                class="flex items-center gap-2.5 text-lg font-black tracking-tight text-slate-900"
+              >
+                <span class="grid h-8 w-8 place-items-center rounded-full bg-orange-50 text-[#FF4C00]">
+                  <.ui_icon name={:sparkles} class="h-4 w-4" />
+                </span>
+                Chyllz picks for you
+              </h2>
+              <a
+                id="view-all-picks"
+                href="/tour-packages"
+                class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-[#FF4C00] transition hover:underline"
+              >
+                Explore Chyllz <.ui_icon name={:arrow_right} class="h-3.5 w-3.5" />
+              </a>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <%= for pick <- @picks do %>
+                <a
+                  id={pick.id}
+                  href={pick.href}
+                  class="group flex flex-col rounded-[20px] border border-slate-100 bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all hover:-translate-y-0.5 hover:border-orange-200 hover:shadow-lg"
+                >
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-orange-50 text-[#FF4C00]">
+                      <.ui_icon name={pick.icon} class="h-5 w-5" />
+                    </span>
+                    <span class="truncate text-[9px] font-black text-[#FF4C00]">{pick.meta}</span>
+                  </div>
+                  <span class="mt-2.5 block text-[8px] font-black uppercase tracking-[0.16em] text-slate-400">
+                    {pick.kind}
+                  </span>
+                  <span class="mt-1 line-clamp-2 text-xs font-black leading-snug text-slate-900 transition group-hover:text-[#FF4C00]">
+                    {pick.title}
+                  </span>
+                  <span class="mt-auto flex items-center justify-between gap-2 pt-2.5 text-[10px] font-bold text-slate-400">
+                    <span class="truncate">{pick.location}</span>
+                    <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-slate-50 text-slate-300 transition group-hover:bg-[#FF4C00] group-hover:text-white">
+                      <.ui_icon name={:chevron_right} class="h-3 w-3" />
+                    </span>
+                  </span>
+                </a>
+              <% end %>
+            </div>
+          </section>
+        <% end %>
+
+        <%!-- Travel stories from the curated blog. Rendered for accounts without
+        trips so the main column matches the height of the weather sidebar. --%>
+        <%= if @trips == [] and @story_cards != [] do %>
+          <section id="chyllz-stories" aria-labelledby="chyllz-stories-heading">
+            <div class="mb-3.5 flex items-center justify-between gap-3 px-1">
+              <h2
+                id="chyllz-stories-heading"
+                class="flex items-center gap-2.5 text-lg font-black tracking-tight text-slate-900"
+              >
+                <span class="grid h-8 w-8 place-items-center rounded-full bg-orange-50 text-[#FF4C00]">
+                  <.ui_icon name={:map} class="h-4 w-4" />
+                </span>
+                Travel stories
+              </h2>
+              <a
+                id="view-all-stories"
+                href="/blog"
+                class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-[#FF4C00] transition hover:underline"
+              >
+                Read all <.ui_icon name={:arrow_right} class="h-3.5 w-3.5" />
+              </a>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <%= for story <- @story_cards do %>
+                <a
+                  id={story.id}
+                  href={story.href}
+                  class="group flex flex-col rounded-[20px] border border-slate-100 bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all hover:-translate-y-0.5 hover:border-orange-200 hover:shadow-lg"
+                >
+                  <span class="inline-flex w-fit items-center rounded-full bg-orange-50 px-2 py-1 text-[8px] font-black uppercase tracking-[0.14em] text-[#FF4C00]">
+                    {story.category}
+                  </span>
+                  <span class="mt-2 line-clamp-2 text-xs font-black leading-snug text-slate-900 transition group-hover:text-[#FF4C00]">
+                    {story.title}
+                  </span>
+                  <span class="mt-auto flex items-center justify-between pt-3 text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">
+                    {story.read_minutes} min read <.ui_icon name={:arrow_right} class="h-3 w-3" />
+                  </span>
+                </a>
+              <% end %>
+            </div>
+          </section>
+        <% end %>
       </div>
 
       <%!-- ─────────────────────────── Sidebar ─────────────────────────── --%>

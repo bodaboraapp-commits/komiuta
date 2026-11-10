@@ -16,6 +16,7 @@ defmodule Xpressbus.ChyllzAccount do
 
   import Ecto.Query
 
+  alias Xpressbus.Chyllz
   alias Xpressbus.Repo
   alias Xpressbus.Tickets
   alias Xpressbus.Tickets.Ticket
@@ -24,6 +25,8 @@ defmodule Xpressbus.ChyllzAccount do
 
   @recent_trip_limit 3
   @destination_limit 6
+  @pick_limit 3
+  @story_preview_limit 3
 
   # Most popular first: the order travellers actually search for.
   @destination_order ~w(mombasa nairobi kisumu eldoret nakuru kitale)
@@ -43,6 +46,8 @@ defmodule Xpressbus.ChyllzAccount do
     * `:next_trip` - the next upcoming trip card (or `nil`)
     * `:destinations` - popular destination chips
     * `:stories` - number of published travel stories
+    * `:picks` - Chyllz catalogue suggestions, only for accounts without trips
+      (keeps the page useful and balanced instead of leaving a bare column)
   """
   def overview(user, opts \\ []) do
     limit = Keyword.get(opts, :recent_trips, @recent_trip_limit)
@@ -54,9 +59,92 @@ defmodule Xpressbus.ChyllzAccount do
       default_city: default_city(trips),
       next_trip: Enum.find(trips, &(&1.status_key in [:ongoing, :upcoming])),
       destinations: destinations(),
-      stories: story_count()
+      stories: story_count(),
+      picks: if(trips == [], do: picks(), else: []),
+      story_cards: if(trips == [], do: story_cards(), else: [])
     }
   end
+
+  @doc """
+  A few published travel stories (from the curated blog) used to keep the
+  account page balanced and useful for travellers without trip history yet.
+  """
+  def story_cards(limit \\ @story_preview_limit) do
+    limit = limit |> to_int(@story_preview_limit) |> min(6)
+
+    Blog.all()
+    |> Enum.take(limit)
+    |> Enum.map(fn post ->
+      %{
+        id: "chyllz-story-" <> to_string(post.slug),
+        title: post.title,
+        category: post.category,
+        read_minutes: post.read_minutes,
+        href: "/blog/" <> to_string(post.slug)
+      }
+    end)
+  end
+
+  @doc """
+  Suggests a few real Chyllz catalogue entries for travellers with no booking
+  history yet. Prefers stays, then hidden gems, then upcoming events.
+
+  Each pick is a display-ready map: `:id`, `:kind`, `:icon`, `:title`,
+  `:location`, `:meta` and `:href`.
+  """
+  def picks(limit \\ @pick_limit) do
+    limit = limit |> to_int(@pick_limit) |> min(6)
+
+    case Chyllz.hotels(limit: limit) do
+      [] ->
+        case Chyllz.hidden_gems(limit: limit) do
+          [] -> Chyllz.upcoming_events(limit: limit) |> Enum.map(&event_pick/1)
+          gems -> Enum.map(gems, &gem_pick/1)
+        end
+
+      hotels ->
+        Enum.map(hotels, &hotel_pick/1)
+    end
+  end
+
+  defp hotel_pick(hotel) do
+    %{
+      id: "chyllz-pick-hotel-" <> to_string(hotel.id),
+      kind: "Stay",
+      icon: :bag,
+      title: blank_to(hotel.name, "Chyllz stay"),
+      location: blank_to(hotel.location, "East Africa"),
+      meta: format_money(hotel.price_per_night) <> "/night",
+      href: "/tour-packages/hotels?q=" <> URI.encode_www_form(to_string(hotel.name))
+    }
+  end
+
+  defp gem_pick(gem) do
+    %{
+      id: "chyllz-pick-gem-" <> to_string(gem.id),
+      kind: "Hidden gem",
+      icon: :map,
+      title: blank_to(gem.title, "Hidden gem"),
+      location: blank_to(gem.location, "East Africa"),
+      meta: "Explore",
+      href: "/our-packages/hidden-gems?q=" <> URI.encode_www_form(to_string(gem.title))
+    }
+  end
+
+  defp event_pick(event) do
+    %{
+      id: "chyllz-pick-event-" <> to_string(event.id),
+      kind: "Event",
+      icon: :calendar,
+      title: blank_to(event.title, "Chyllz event"),
+      location: blank_to(event.location, "East Africa"),
+      meta: format_short_date(event.date),
+      href: "/tour-packages/events?q=" <> URI.encode_www_form(to_string(event.title))
+    }
+  end
+
+  defp format_short_date(%Date{} = date), do: Calendar.strftime(date, "%d %b")
+  defp format_short_date(_date), do: "Explore"
 
   @doc """
   Counts the traveller's trips, upcoming trips and distinct places visited.

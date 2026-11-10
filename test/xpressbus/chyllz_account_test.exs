@@ -2,6 +2,7 @@ defmodule Xpressbus.ChyllzAccountTest do
   use Xpressbus.DataCase
 
   import Xpressbus.AccountsFixtures
+  import Xpressbus.CatalogueFixtures
 
   alias Xpressbus.ChyllzAccount
   alias Xpressbus.Repo
@@ -126,6 +127,73 @@ defmodule Xpressbus.ChyllzAccountTest do
 
       assert overview.default_city == "Nairobi"
       assert overview.next_trip == nil
+    end
+
+    test "suggests catalogue picks only when there is no trip history" do
+      hotel_fixture()
+      hotel_fixture()
+      hotel_fixture()
+
+      empty_overview = ChyllzAccount.overview(user_fixture())
+      assert length(empty_overview.picks) == 3
+      assert length(empty_overview.story_cards) == 3
+
+      user = user_fixture()
+      ticket_fixture(user, %{to: "Kisumu", travel_date: Date.add(Date.utc_today(), 2)})
+
+      trip_overview = ChyllzAccount.overview(user)
+      assert trip_overview.picks == []
+      assert trip_overview.story_cards == []
+    end
+  end
+
+  describe "story_cards/1" do
+    test "returns published travel stories that link to the blog" do
+      stories = ChyllzAccount.story_cards()
+
+      assert length(stories) == 3
+      assert Enum.all?(stories, &String.starts_with?(&1.href, "/blog/"))
+      assert Enum.all?(stories, &is_binary(&1.title))
+      assert Enum.all?(stories, &is_integer(&1.read_minutes))
+      assert Enum.all?(stories, &is_binary(&1.category))
+    end
+  end
+
+  describe "picks/1" do
+    test "prefers active stays and links into the hotel catalogue" do
+      hotel = hotel_fixture(%{name: "Diani Beach House", price_per_night: "12500"})
+
+      [pick] = ChyllzAccount.picks(1)
+
+      assert pick.kind == "Stay"
+      assert pick.icon == :bag
+      assert pick.title == hotel.name
+      assert pick.location == hotel.location
+      assert pick.meta =~ "/night"
+      assert pick.href == "/tour-packages/hotels?q=" <> URI.encode_www_form(hotel.name)
+    end
+
+    test "falls back to hidden gems when the stay catalogue is empty" do
+      gem = hidden_gem_fixture(%{title: "Shela Dhow Sunset"})
+
+      [pick] = ChyllzAccount.picks(1)
+
+      assert pick.kind == "Hidden gem"
+      assert pick.icon == :map
+      assert pick.title == gem.title
+      assert String.starts_with?(pick.href, "/our-packages/hidden-gems?q=")
+    end
+
+    test "falls back to upcoming events when there are no stays or gems" do
+      event = event_fixture(%{title: "Lamu Cultural Festival"})
+
+      [pick] = ChyllzAccount.picks(1)
+
+      assert pick.kind == "Event"
+      assert pick.icon == :calendar
+      assert pick.title == event.title
+      assert String.starts_with?(pick.href, "/tour-packages/events?q=")
+      assert pick.meta =~ Calendar.strftime(event.date, "%d %b")
     end
   end
 

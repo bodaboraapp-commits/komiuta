@@ -44,9 +44,9 @@
         </div>
       </section>
 
-      <%!-- Tab Navigation --%>
+      <%!-- Tab Navigation: one row that scrolls horizontally on narrow screens --%>
       <nav class="relative z-20 -mt-14 max-w-[1350px] mx-auto px-6 mb-12">
-        <div class="bg-white rounded-2xl shadow-xl border border-slate-100 p-2 flex flex-wrap gap-2">
+        <div class="flex flex-nowrap gap-2 overflow-x-auto no-scrollbar rounded-2xl border border-slate-100 bg-white p-2 shadow-xl">
           <.user_tab_link
             id="bus"
             label="My Bus"
@@ -150,6 +150,8 @@
               user={@user}
               overview={@chyllz_overview}
               trips={@chyllz_trips}
+              picks={@chyllz_overview.picks}
+              story_cards={@chyllz_overview.story_cards}
               member_since={@member_since}
               weather={@weather}
               weather_error={@weather_error}

@@ -3,6 +3,7 @@ defmodule XpressbusWeb.DashboardChyllzTabTest do
 
   import Phoenix.LiveViewTest
   import Xpressbus.AccountsFixtures
+  import Xpressbus.CatalogueFixtures
 
   alias Xpressbus.Repo
   alias Xpressbus.Tickets.Ticket
@@ -172,6 +173,23 @@ defmodule XpressbusWeb.DashboardChyllzTabTest do
 
     assert has_element?(view, "#no-trips")
     assert has_element?(view, "#stat-total-trips-value", "0")
+    # No catalogue fixtures in this test, so no suggestions are rendered.
+    refute has_element?(view, "#chyllz-picks")
+  end
+
+  test "accounts without trips get Chyllz suggestions to fill the layout", %{conn: conn} do
+    hotel = hotel_fixture(%{name: "Diani Beach House"})
+    user = user_fixture()
+
+    {:ok, view, _html} = live(signed_in(conn, user), ~p"/dashboard?tab=chyllz")
+
+    assert has_element?(view, "#no-trips")
+    assert has_element?(view, "#chyllz-picks")
+    assert has_element?(view, "#chyllz-picks-heading", "Chyllz picks for you")
+    assert has_element?(view, "#chyllz-pick-hotel-#{hotel.id}")
+    assert has_element?(view, "#chyllz-stories")
+    assert has_element?(view, "#chyllz-stories-heading", "Travel stories")
+    assert has_element?(view, "#chyllz-story-nairobi-to-kisumu-bus-guide")
   end
 
   test "weather search updates the widget inside the tab", %{conn: conn} do
