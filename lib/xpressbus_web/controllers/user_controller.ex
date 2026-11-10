@@ -107,9 +107,17 @@ defmodule XpressbusWeb.UserController do
     verified_phone = get_session(conn, :verified_signup_phone)
     phone = verified_phone || params["phone"]
 
+    signup_step =
+      if verified_phone || params["method"] == "email" do
+        :complete
+      else
+        :verify
+      end
+
     render(conn, :registration,
       verified_phone: verified_phone,
       phone: phone,
+      signup_step: signup_step,
       firebase_config: Xpressbus.Firebase.client_config()
     )
   end
@@ -373,6 +381,7 @@ defmodule XpressbusWeb.UserController do
           phone:
             get_session(conn, :verified_signup_phone) ||
               Map.get(user_params, "phone"),
+          signup_step: :complete,
           firebase_config: Xpressbus.Firebase.client_config()
         )
     end

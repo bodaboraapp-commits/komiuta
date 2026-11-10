@@ -139,7 +139,7 @@ defmodule XpressbusWeb.AssistantComponents do
         aria-hidden="true"
       >
       </div>
-
+      
       <section
         id="chyllz-assistant-panel"
         class="absolute inset-x-0 bottom-0 top-0 flex max-h-none flex-col overflow-hidden bg-white shadow-[0_0_80px_rgba(15,23,42,0.35)] sm:inset-y-0 sm:left-auto sm:right-0 sm:w-[450px] sm:rounded-l-[2rem]"
@@ -160,7 +160,7 @@ defmodule XpressbusWeb.AssistantComponents do
               >
                 <span class="material-symbols-outlined !text-xl" aria-hidden="true">chevron_left</span>
               </button>
-
+              
               <button
                 id="assistant-new-chat"
                 type="button"
@@ -172,17 +172,17 @@ defmodule XpressbusWeb.AssistantComponents do
                 <span class="material-symbols-outlined !text-lg" aria-hidden="true">edit_square</span>
               </button>
             </div>
-
+            
             <div class="flex items-center justify-center gap-2">
               <span class="grid h-7 w-7 place-items-center rounded-[0.65rem] bg-gradient-to-br from-emerald-600 to-emerald-950 text-white shadow-sm">
                 <.sparkle_icon class="h-4 w-4" />
               </span>
-
+              
               <span class="font-heading text-lg font-black tracking-tight text-slate-950">
                 Chyllz <span class="text-[#FF4C00]">AI</span>
               </span>
             </div>
-
+            
             <div class="flex justify-end">
               <button
                 id="assistant-close"
@@ -195,7 +195,7 @@ defmodule XpressbusWeb.AssistantComponents do
               </button>
             </div>
           </div>
-
+          
           <div
             id="assistant-tabs"
             class="mt-4 flex items-center gap-1 rounded-full bg-slate-100 p-1.5"
@@ -222,7 +222,7 @@ defmodule XpressbusWeb.AssistantComponents do
             </button>
           </div>
         </header>
-
+        
         <div
           id="assistant-scroll"
           class="assistant-scroll flex-1 overflow-y-auto overscroll-contain bg-white"
@@ -235,14 +235,14 @@ defmodule XpressbusWeb.AssistantComponents do
             <div class="assistant-avatar mx-auto mb-4 grid h-14 w-14 place-items-center rounded-[1.35rem] bg-gradient-to-br from-emerald-600 via-emerald-800 to-emerald-950 text-white shadow-xl shadow-emerald-950/25">
               <.sparkle_icon class="h-7 w-7" />
             </div>
-
+            
             <h2
               id="assistant-hero-title"
               class="font-heading text-2xl font-black tracking-tight text-slate-950"
             >
               {@hero.title} <span class="assistant-sparkle inline-block">✨</span>
             </h2>
-
+            
             <p
               id="assistant-hero-subtitle"
               class="mx-auto mt-2 max-w-[19rem] text-xs font-bold leading-relaxed text-slate-400"
@@ -250,7 +250,7 @@ defmodule XpressbusWeb.AssistantComponents do
               {@hero.subtitle}
             </p>
           </div>
-
+          
           <div
             :if={@error}
             id="assistant-error"
@@ -261,7 +261,7 @@ defmodule XpressbusWeb.AssistantComponents do
               <p>{@error}</p>
             </div>
           </div>
-
+          
           <.assistant_tools
             :if={@tab in ["lens", "receipt"]}
             tab={@tab}
@@ -278,12 +278,12 @@ defmodule XpressbusWeb.AssistantComponents do
               <div class="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-950 text-white shadow-sm">
                 <.sparkle_icon class="h-4 w-4" />
               </div>
-
+              
               <div class="max-w-[85%] rounded-[1.35rem] rounded-tl-md border border-slate-100 bg-white px-4 py-3 text-sm font-semibold leading-relaxed text-slate-700 shadow-sm">
                 <p class="whitespace-pre-line">{@greeting.text}</p>
               </div>
             </article>
-            <.assistant_message :for={message <- @thread} message={message} />
+             <.assistant_message :for={message <- @thread} message={message} />
             <div
               :if={@pending and @pending_tab == @tab}
               id="assistant-typing"
@@ -292,14 +292,14 @@ defmodule XpressbusWeb.AssistantComponents do
               <div class="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-950 text-white shadow-sm">
                 <.sparkle_icon class="h-4 w-4" />
               </div>
-
+              
               <div class="flex items-center gap-1.5 rounded-[1.35rem] rounded-tl-md border border-slate-100 bg-white px-4 py-3.5 shadow-sm">
                 <span class="assistant-typing-dot"></span>
                 <span class="assistant-typing-dot" style="animation-delay: .15s"></span>
                 <span class="assistant-typing-dot" style="animation-delay: .3s"></span>
               </div>
             </div>
-
+            
             <div
               :if={@thread == [] and @suggestions != []}
               id="assistant-suggestions"
@@ -308,7 +308,7 @@ defmodule XpressbusWeb.AssistantComponents do
               <p class="text-[9px] font-black uppercase tracking-[0.25em] text-slate-300">
                 Try asking
               </p>
-
+              
               <div class="flex flex-wrap justify-center gap-2">
                 <button
                   :for={suggestion <- @suggestions}
@@ -322,12 +322,12 @@ defmodule XpressbusWeb.AssistantComponents do
               </div>
             </div>
           </div>
-
+          
           <p class="px-6 pb-5 text-center text-[9px] font-bold leading-relaxed text-slate-300">
             Chyllz AI can make mistakes. Confirm prices and availability before booking.
           </p>
         </div>
-
+        
         <div class="shrink-0 border-t border-slate-100 bg-white px-4 pb-[max(0.9rem,env(safe-area-inset-bottom))] pt-3">
           <form id="assistant-chat-form" phx-submit="assistant_send" class="flex items-end gap-2">
             <div class="flex-1 rounded-[1.45rem] border border-slate-200 bg-slate-50 px-4 py-1 transition focus-within:border-orange-300 focus-within:bg-white focus-within:shadow-sm">
@@ -345,7 +345,7 @@ defmodule XpressbusWeb.AssistantComponents do
                 aria-label="Type your message"
               />
             </div>
-
+            
             <button
               id="assistant-send"
               type="submit"
@@ -368,7 +368,7 @@ defmodule XpressbusWeb.AssistantComponents do
               </svg>
             </button>
           </form>
-
+          
           <p
             id="assistant-engine-label"
             class="mt-2 text-center text-[9px] font-black uppercase tracking-[0.2em] text-slate-300"
@@ -451,7 +451,7 @@ defmodule XpressbusWeb.AssistantComponents do
       >
         <.sparkle_icon class="h-4 w-4" />
       </div>
-
+      
       <div class={[
         "max-w-[85%] rounded-[1.35rem] px-4 py-3 text-sm font-semibold leading-relaxed shadow-sm",
         if(@message.role == :user,
@@ -460,7 +460,7 @@ defmodule XpressbusWeb.AssistantComponents do
         )
       ]}>
         <p class="whitespace-pre-line">{@message.text}</p>
-
+        
         <div :if={@message.cards != []} class="mt-3 space-y-2">
           <a
             :for={card <- @message.cards}
@@ -483,7 +483,7 @@ defmodule XpressbusWeb.AssistantComponents do
                 {card_icon(card.kind)}
               </span>
             </span>
-
+            
             <span class="min-w-0 flex-1">
               <span class="block truncate text-xs font-black text-slate-900">{card.title}</span>
               <span class="block truncate text-[10px] font-bold text-slate-400">{card.subtitle}</span>
@@ -491,7 +491,7 @@ defmodule XpressbusWeb.AssistantComponents do
                 {card.price}
               </span>
             </span>
-
+            
             <span
               class="material-symbols-outlined shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-[#FF4C00] !text-lg"
               aria-hidden="true"
@@ -500,7 +500,7 @@ defmodule XpressbusWeb.AssistantComponents do
             </span>
           </a>
         </div>
-
+        
         <div :if={@message.action} class="mt-3">
           <button
             :if={@message.action[:tab]}
@@ -512,7 +512,7 @@ defmodule XpressbusWeb.AssistantComponents do
             {@message.action.label}
             <span class="material-symbols-outlined !text-sm" aria-hidden="true">arrow_forward</span>
           </button>
-
+          
           <a
             :if={!@message.action[:tab]}
             href={@message.action.href}
@@ -547,21 +547,21 @@ defmodule XpressbusWeb.AssistantComponents do
           <p class="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400">
             {tool_kicker(@tab)}
           </p>
-
+          
           <p class="mt-1 text-sm font-black text-slate-900">{tool_title(@tab)}</p>
-
+          
           <p class="mt-1 text-[11px] font-bold leading-relaxed text-slate-400">
             {tool_hint(@tab, @ai_enabled)}
           </p>
         </div>
-
+        
         <span class="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-white text-[#FF4C00] shadow-sm">
           <span class="material-symbols-outlined !text-xl" aria-hidden="true">
             {if @tab == "lens", do: "image", else: "description"}
           </span>
         </span>
       </div>
-
+      
       <form
         id="assistant-photo-form"
         phx-submit="assistant_analyze"
@@ -575,13 +575,13 @@ defmodule XpressbusWeb.AssistantComponents do
           <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-orange-50 text-[#FF4C00]">
             <span class="material-symbols-outlined !text-xl" aria-hidden="true">add</span>
           </span>
-
+          
           <span class="min-w-0">
             <span class="block text-xs font-black text-slate-800">Add a photo</span>
             <span class="block text-[10px] font-bold text-slate-400">JPG, PNG or WebP · up to 8 MB</span>
           </span>
         </label>
-        <.live_file_input upload={@upload} class="assistant-file-input" />
+         <.live_file_input upload={@upload} class="assistant-file-input" />
         <div :if={@upload.entries != []} class="space-y-2">
           <div
             :for={entry <- @upload.entries}
@@ -590,7 +590,7 @@ defmodule XpressbusWeb.AssistantComponents do
             <.live_img_preview entry={entry} class="h-36 w-full object-cover" />
             <div class="flex items-center justify-between gap-2 px-3 py-2">
               <p class="truncate text-[10px] font-bold text-slate-500">{entry.client_name}</p>
-
+              
               <button
                 type="button"
                 phx-click="assistant_cancel_upload"
@@ -601,14 +601,14 @@ defmodule XpressbusWeb.AssistantComponents do
               </button>
             </div>
           </div>
-
+          
           <p
             :for={error <- upload_errors(@upload)}
             class="text-[10px] font-bold text-red-600"
           >
             {upload_error_text(error)}
           </p>
-
+          
           <div :for={entry <- @upload.entries}>
             <p
               :for={error <- upload_errors(@upload, entry)}
@@ -618,7 +618,7 @@ defmodule XpressbusWeb.AssistantComponents do
             </p>
           </div>
         </div>
-
+        
         <input
           id="assistant-caption"
           type="text"
@@ -642,7 +642,7 @@ defmodule XpressbusWeb.AssistantComponents do
             else: "Read this receipt"}
         </button>
       </form>
-
+      
       <form
         :if={@tab == "receipt"}
         id="assistant-receipt-form"
@@ -655,7 +655,7 @@ defmodule XpressbusWeb.AssistantComponents do
         >
           Prefer typing?
         </label>
-        <textarea
+         <textarea
           id="assistant-receipt-text"
           name="receipt_text"
           rows="3"
@@ -672,7 +672,7 @@ defmodule XpressbusWeb.AssistantComponents do
           Read pasted receipt
         </button>
       </form>
-
+      
       <div
         :if={@tab == "receipt" and @expenses != []}
         id="assistant-expense-log"
@@ -683,17 +683,17 @@ defmodule XpressbusWeb.AssistantComponents do
             <p class="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-700">
               Trip spend logged
             </p>
-
+            
             <p id="assistant-expense-total" class="mt-0.5 text-lg font-black text-emerald-900">
               {@expense_total}
             </p>
           </div>
-
+          
           <div class="text-right">
             <p class="text-[10px] font-bold text-emerald-700">
               {length(@expenses)} {if length(@expenses) == 1, do: "receipt", else: "receipts"}
             </p>
-
+            
             <button
               type="button"
               phx-click="assistant_clear_expenses"

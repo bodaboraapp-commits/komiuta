@@ -225,12 +225,12 @@ defmodule XpressbusWeb.ChyllzAccountArt do
             <linearGradient id={"trip-sky-mountains-" <> @key} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stop-color="#FFEEDD" /> <stop offset="1" stop-color="#FFD9B0" />
             </linearGradient>
-
+            
             <linearGradient id={"trip-lake-mountains-" <> @key} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stop-color="#7DD3FC" /> <stop offset="1" stop-color="#38BDF8" />
             </linearGradient>
           </defs>
-          <rect width="320" height="220" fill={"url(#trip-sky-mountains-#{@key})"} />
+           <rect width="320" height="220" fill={"url(#trip-sky-mountains-#{@key})"} />
           <circle cx="250" cy="62" r="34" fill="#FF8A00" opacity="0.16" />
           <circle cx="250" cy="62" r="22" fill="#FF8A00" opacity="0.9" />
           <path d="M-20 152 70 66 122 124 172 62 258 152Z" fill="#475569" opacity="0.45" />
@@ -260,12 +260,12 @@ defmodule XpressbusWeb.ChyllzAccountArt do
             <linearGradient id={"trip-sky-coast-" <> @key} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stop-color="#FFE9CE" /> <stop offset="1" stop-color="#FFC9A0" />
             </linearGradient>
-
+            
             <linearGradient id={"trip-sea-coast-" <> @key} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stop-color="#22D3EE" /> <stop offset="1" stop-color="#0E7490" />
             </linearGradient>
           </defs>
-          <rect width="320" height="220" fill={"url(#trip-sky-coast-#{@key})"} />
+           <rect width="320" height="220" fill={"url(#trip-sky-coast-#{@key})"} />
           <circle cx="252" cy="54" r="30" fill="#FF8A00" opacity="0.16" />
           <circle cx="252" cy="54" r="19" fill="#FF8A00" opacity="0.9" />
           <rect y="124" width="320" height="96" fill={"url(#trip-sea-coast-#{@key})"} />
@@ -286,7 +286,7 @@ defmodule XpressbusWeb.ChyllzAccountArt do
             <path d="M232 96c12-18 4-36-10-42 4 16 4 28 10 42z" />
             <path d="M232 96c6-16 22-26 36-22-12 10-22 16-36 22z" />
           </g>
-          <path d="M70 120 88 120 79 102Z" fill="#F8FAFC" />
+           <path d="M70 120 88 120 79 102Z" fill="#F8FAFC" />
           <path d="M48 132h84l-10 8H58Z" fill="#F8FAFC" opacity="0.9" />
           <path
             d="M120 92q6-7 13 0M144 84q6-7 13 0"
@@ -301,7 +301,7 @@ defmodule XpressbusWeb.ChyllzAccountArt do
               <stop offset="0" stop-color="#FFEDB8" /> <stop offset="1" stop-color="#FFB86B" />
             </linearGradient>
           </defs>
-          <rect width="320" height="220" fill={"url(#trip-sky-savanna-#{@key})"} />
+           <rect width="320" height="220" fill={"url(#trip-sky-savanna-#{@key})"} />
           <circle cx="170" cy="116" r="62" fill="#FF8A00" opacity="0.18" />
           <circle cx="170" cy="116" r="46" fill="#FF8A00" opacity="0.92" />
           <path d="M0 158c62-16 112 10 168 0 56-10 102 10 152-4v66H0Z" fill="#D97706" />

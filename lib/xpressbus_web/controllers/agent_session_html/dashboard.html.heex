@@ -14,7 +14,7 @@
             Agent App
           </span>
         </a>
-
+        
         <div class="flex items-center gap-2">
           <a
             href="/agent/tag"
@@ -23,14 +23,14 @@
             <span class="material-symbols-outlined !text-[15px]">badge</span>
             <span class="hidden sm:inline">ID tag</span>
           </a>
-
+          
           <a
             href="/agent/account"
             class="rounded-full border border-slate-200 bg-white px-3.5 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 transition hover:border-slate-300 hover:text-slate-700"
           >
             Account
           </a>
-
+          
           <a
             href="/agent/logout"
             class="inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-3.5 py-2 text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-black"
@@ -41,18 +41,18 @@
         </div>
       </div>
     </header>
-
+    
     <main class="mx-auto max-w-5xl px-4 py-7 sm:px-6 md:py-10">
       <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <p class="text-[10px] font-black uppercase tracking-[0.3em] text-[#FF4C00]">
             Agent dashboard
           </p>
-
+          
           <h1 class="mt-1.5 text-3xl font-black tracking-tight md:text-4xl">
             {@salutation}, {@agent.full_name |> String.split() |> List.first()}
           </h1>
-
+          
           <p class="mt-2 max-w-xl text-sm font-bold leading-relaxed text-slate-500">
             Live bookings and performance for your partner on Komiuta.
             <span class="mt-1 block text-[10px] font-black uppercase tracking-widest text-[#FF4C00]">
@@ -60,7 +60,7 @@
             </span>
           </p>
         </div>
-
+        
         <div class="flex flex-wrap items-center gap-2">
           <span class={[
             "inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[10px] font-black uppercase tracking-widest",
@@ -70,20 +70,20 @@
           ]}>
             <span class="h-1.5 w-1.5 rounded-full bg-current"></span> {@agent.status}
           </span>
-
+          
           <span class="rounded-full border border-slate-200 bg-white px-3.5 py-2 font-mono text-[10px] font-black text-slate-500">
             {@agent.reference}
           </span>
         </div>
       </div>
-
+      
       <%= if @agent.status != "approved" do %>
         <div class="mt-5 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-xs font-bold leading-relaxed text-amber-900">
           Your agent account is <strong>{@agent.status}</strong>. You can preview the dashboard, but
           bookings for your partner start appearing once your account is approved.
         </div>
       <% end %>
-
+      
       <%= if @dashboard.operator do %>
         <div class="mt-6 flex flex-col gap-4 rounded-3xl border border-slate-100 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
           <div class="flex min-w-0 items-center gap-3.5">
@@ -98,16 +98,16 @@
                 <span class="material-symbols-outlined !text-2xl">handshake</span>
               <% end %>
             </div>
-
+            
             <div class="min-w-0">
               <p class="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400">
                 Your partner
               </p>
-
+              
               <p class="truncate text-base font-black text-slate-900">
                 {@dashboard.operator.name}
               </p>
-
+              
               <%= if @dashboard.operator.contact_person || @dashboard.operator.phone do %>
                 <p class="mt-0.5 truncate text-[11px] font-bold text-slate-400">
                   {Enum.reject(
@@ -119,81 +119,81 @@
               <% end %>
             </div>
           </div>
-
+          
           <span class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-emerald-700">
             <span class="material-symbols-outlined !text-[14px]">check_circle</span>
             Linked partner
           </span>
         </div>
-
+        
         <div class="mt-5 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <div class="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm sm:p-5">
             <div class="flex items-center justify-between gap-2">
               <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
                 Bookings
               </p>
-
+              
               <span class="material-symbols-outlined !text-lg text-slate-300">confirmation_number</span>
             </div>
-
+            
             <p class="mt-2 text-3xl font-black tracking-tight text-slate-900">
               {@dashboard.kpis.total_bookings}
             </p>
-
+            
             <p class="mt-1 text-[10px] font-bold text-slate-400">
               {@dashboard.kpis.confirmed} confirmed
             </p>
           </div>
-
+          
           <div class="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm sm:p-5">
             <div class="flex items-center justify-between gap-2">
               <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
                 Upcoming
               </p>
-
+              
               <span class="material-symbols-outlined !text-lg text-slate-300">event_available</span>
             </div>
-
+            
             <p class="mt-2 text-3xl font-black tracking-tight text-slate-900">
               {@dashboard.kpis.upcoming}
             </p>
-
+            
             <p class="mt-1 text-[10px] font-bold text-slate-400">
               {@dashboard.kpis.today} departing today
             </p>
           </div>
-
+          
           <div class="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm sm:p-5">
             <div class="flex items-center justify-between gap-2">
               <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
                 Sales
               </p>
-              <span class="material-symbols-outlined !text-lg text-slate-300">payments</span>
+               <span class="material-symbols-outlined !text-lg text-slate-300">payments</span>
             </div>
-
+            
             <p class="mt-2 text-2xl font-black tracking-tight text-[#FF4C00] sm:text-3xl">
               {Xpressbus.AgentDashboard.money(@dashboard.kpis.sales_total)}
             </p>
-
+            
             <p class="mt-1 text-[10px] font-bold text-slate-400">confirmed ticket value</p>
           </div>
-
+          
           <div class="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm sm:p-5">
             <div class="flex items-center justify-between gap-2">
               <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
                 Routes
               </p>
-              <span class="material-symbols-outlined !text-lg text-slate-300">route</span>
+               <span class="material-symbols-outlined !text-lg text-slate-300">route</span>
             </div>
-
+            
             <p class="mt-2 text-3xl font-black tracking-tight text-slate-900">
               {@dashboard.kpis.routes}
             </p>
-
+            
             <p class="mt-1 text-[10px] font-bold text-slate-400">active routes sold</p>
           </div>
         </div>
-
+        
         <div class="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
           <div class="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
             <div class="flex items-center justify-between gap-3">
@@ -201,14 +201,14 @@
                 <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
                   Bookings this week
                 </p>
-
+                
                 <p class="mt-1 text-lg font-black text-slate-900">
                   {Enum.reduce(@dashboard.chart, 0, &(&1.bookings + &2))} bookings
                 </p>
               </div>
-              <span class="material-symbols-outlined text-slate-300">dashboard</span>
+               <span class="material-symbols-outlined text-slate-300">dashboard</span>
             </div>
-
+            
             <div class="mt-5 flex h-28 items-end gap-2">
               <%= for day <- @dashboard.chart do %>
                 <div class="flex flex-1 flex-col items-center gap-2">
@@ -220,7 +220,7 @@
                     >
                     </div>
                   </div>
-
+                  
                   <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">
                     {day.label}
                   </span>
@@ -228,40 +228,40 @@
               <% end %>
             </div>
           </div>
-
+          
           <div class="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
             <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
               Top routes
             </p>
-
+            
             <div class="mt-3 space-y-2.5">
               <%= if Enum.empty?(@dashboard.routes) do %>
                 <p class="text-xs font-bold text-slate-400">No routes sold yet.</p>
               <% end %>
-
+              
               <%= for route <- @dashboard.routes do %>
                 <div class="flex items-center justify-between gap-2 rounded-xl bg-slate-50 px-3 py-2">
                   <p class="truncate text-[11px] font-black text-slate-700">
                     {route.from} <span class="text-slate-300">→</span> {route.to}
                   </p>
-
+                  
                   <span class="shrink-0 rounded-full bg-white px-2 py-0.5 text-[10px] font-black text-[#FF4C00]">
                     {route.bookings}
                   </span>
                 </div>
               <% end %>
             </div>
-
+            
             <%= if @dashboard.kpis.next_departure do %>
               <div class="mt-4 rounded-2xl border border-orange-100 bg-orange-50/70 px-3.5 py-3">
                 <p class="text-[9px] font-black uppercase tracking-[0.2em] text-[#FF4C00]">
                   Next departure
                 </p>
-
+                
                 <p class="mt-1 text-xs font-black text-slate-800">
                   {@dashboard.kpis.next_departure.from} → {@dashboard.kpis.next_departure.to}
                 </p>
-
+                
                 <p class="mt-0.5 text-[10px] font-bold text-slate-500">
                   {Calendar.strftime(@dashboard.kpis.next_departure.travel_date, "%d %b %Y")} · {@dashboard.kpis.next_departure.departure}
                 </p>
@@ -269,23 +269,23 @@
             <% end %>
           </div>
         </div>
-
+        
         <div class="mt-5 overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
           <div class="flex items-center justify-between gap-3 border-b border-slate-50 px-5 py-4">
             <div>
               <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
                 Recent bookings
               </p>
-
+              
               <p class="mt-0.5 text-sm font-black text-slate-900">
                 Latest bookings for your partner
               </p>
             </div>
-
+            
             <span class="rounded-full bg-slate-50 px-3 py-1.5 text-[10px] font-black text-slate-500">
               {@dashboard.kpis.total_bookings} total
             </span>
-
+            
             <a
               href="/agent/bookings"
               class="inline-flex items-center gap-1 rounded-full bg-slate-900 px-3.5 py-2 text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-black"
@@ -294,12 +294,12 @@
               <span class="material-symbols-outlined !text-[14px]">chevron_right</span>
             </a>
           </div>
-
+          
           <%= if Enum.empty?(@dashboard.recent_bookings) do %>
             <div class="px-5 py-14 text-center">
               <span class="material-symbols-outlined !text-5xl text-slate-200">confirmation_number</span>
               <p class="mt-3 text-sm font-black text-slate-500">No bookings yet</p>
-
+              
               <p class="mt-1 text-xs font-bold text-slate-400">
                 Bookings for {@dashboard.operator.name} will appear here as travellers book.
               </p>
@@ -312,25 +312,25 @@
                     <th class="px-5 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
                       Passenger
                     </th>
-
+                    
                     <th class="px-5 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
                       Trip
                     </th>
-
+                    
                     <th class="px-5 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
                       Travel
                     </th>
-
+                    
                     <th class="px-5 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
                       Amount
                     </th>
-
+                    
                     <th class="px-5 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
                       Status
                     </th>
                   </tr>
                 </thead>
-
+                
                 <tbody class="divide-y divide-slate-50">
                   <%= for booking <- @dashboard.recent_bookings do %>
                     <tr id={"booking-#{booking.ticket_id}"} class="align-top">
@@ -338,38 +338,38 @@
                         <p class="text-xs font-black text-slate-800">
                           {booking.passenger_name || "Guest"}
                         </p>
-
+                        
                         <p class="mt-0.5 text-[10px] font-bold text-slate-400">
                           {booking.passenger_phone}
                         </p>
                       </td>
-
+                      
                       <td class="px-5 py-3.5">
                         <p class="text-xs font-black text-slate-700">
                           {booking.from} <span class="text-slate-300">→</span> {booking.to}
                         </p>
-
+                        
                         <p class="mt-0.5 text-[10px] font-bold text-slate-400">
                           {booking.company}
                         </p>
                       </td>
-
+                      
                       <td class="px-5 py-3.5">
                         <p class="text-xs font-bold text-slate-700">{booking.travel_label}</p>
-
+                        
                         <p class="mt-0.5 text-[10px] font-bold text-slate-400">
                           {booking.departure}
                         </p>
                       </td>
-
+                      
                       <td class="px-5 py-3.5">
                         <p class="text-xs font-black text-slate-800">{booking.amount_label}</p>
-
+                        
                         <p class="mt-0.5 text-[10px] font-bold text-slate-400">
                           {booking.booked_label}
                         </p>
                       </td>
-
+                      
                       <td class="px-5 py-3.5">
                         <span class={[
                           "inline-flex rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-widest",
@@ -385,7 +385,7 @@
                 </tbody>
               </table>
             </div>
-
+            
             <div class="divide-y divide-slate-50 md:hidden">
               <%= for booking <- @dashboard.recent_bookings do %>
                 <div id={"booking-mobile-#{booking.ticket_id}"} class="px-4 py-4">
@@ -394,12 +394,12 @@
                       <p class="truncate text-xs font-black text-slate-800">
                         {booking.passenger_name || "Guest"}
                       </p>
-
+                      
                       <p class="mt-0.5 text-[10px] font-bold text-slate-400">
                         {booking.from} → {booking.to}
                       </p>
                     </div>
-
+                    
                     <span class={[
                       "shrink-0 rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-widest",
                       booking.status == "confirmed" && "bg-emerald-50 text-emerald-700",
@@ -409,7 +409,7 @@
                       {booking.status_label}
                     </span>
                   </div>
-
+                  
                   <div class="mt-2 flex items-center justify-between gap-3 text-[10px] font-bold text-slate-400">
                     <span>{booking.travel_label} · {booking.departure}</span>
                     <span class="font-black text-slate-700">{booking.amount_label}</span>
@@ -423,27 +423,27 @@
         <div class="mt-6 rounded-3xl border border-dashed border-slate-200 bg-white px-6 py-16 text-center">
           <span class="material-symbols-outlined !text-5xl text-slate-200">handshake</span>
           <p class="mt-4 text-base font-black text-slate-600">No partner linked yet</p>
-
+          
           <p class="mx-auto mt-1 max-w-md text-xs font-bold leading-relaxed text-slate-400">
             An admin attaches your agent account to a bus partner. Once linked, the partner's
             bookings and KPIs appear on this dashboard.
           </p>
         </div>
       <% end %>
-
+      
       <div class="mt-6">
         <div class="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
           <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
             Keep selling
           </p>
-
+          
           <p class="mt-1.5 text-lg font-black text-slate-900">Share Komiuta with travellers</p>
-
+          
           <p class="mt-1 text-xs font-bold leading-relaxed text-slate-400">
             Bookings made on Komiuta for your partner show up here. Open the Komiuta app to book
             tickets for your customers.
           </p>
-
+          
           <div class="mt-4 flex flex-wrap gap-2">
             <a
               href={XpressbusWeb.Endpoint.url()}
@@ -458,7 +458,7 @@
         </div>
       </div>
     </main>
-
+    
     <footer class="px-5 py-8 text-center text-[10px] font-black uppercase tracking-widest text-slate-400">
       © {DateTime.utc_now().year} Komiuta Agent
     </footer>

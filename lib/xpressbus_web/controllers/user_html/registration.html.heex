@@ -5,7 +5,7 @@
       <div class="mx-auto max-w-7xl px-6">
         <div class="flex flex-col items-center justify-start min-h-[calc(100vh-140px)] py-8">
           <div class="w-full max-w-lg">
-            <div class="text-center mb-8">
+            <div class="text-center mb-7">
               <div class="w-16 h-16 bg-gradient-to-br from-[#FF4C00] to-[#FF8C00] rounded-2xl flex items-center justify-center text-white text-3xl font-black mx-auto mb-5 shadow-xl shadow-orange-500/10 animate-fade-in-up">
                 <span class="material-symbols-outlined !text-3xl">person_add</span>
               </div>
@@ -15,137 +15,231 @@
               </h1>
 
               <p class="text-xs font-bold text-slate-400 mt-1 tracking-wide">
-                Create your Komiuta account in seconds.
+                Create your Komiuta account in two simple steps.
               </p>
             </div>
 
-            <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
-              <a
-                href="/auth/google"
-                class="flex items-center justify-center gap-3 w-full bg-white border-2 border-slate-100 py-3.5 rounded-xl font-black text-slate-700 hover:bg-slate-50 transition-all shadow-sm group active:scale-95"
-              >
-                <img
-                  src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png"
-                  class="w-5 h-5"
-                  alt="Google"
-                  width="20"
-                  height="20"
-                  decoding="async"
-                />
-                <span class="text-sm tracking-tight">Sign up with Gmail</span>
-              </a>
-
-              <%= if @firebase_config do %>
-                <div class="relative my-6">
-                  <div class="absolute inset-0 flex items-center">
-                    <div class="w-full border-t border-slate-100"></div>
-                  </div>
-                  <div class="relative flex justify-center text-[9px] uppercase font-black tracking-widest">
-                    <span class="bg-white px-4 text-slate-400">or sign up with SMS</span>
-                  </div>
+            <div class="bg-white rounded-[2rem] p-6 md:p-8 shadow-sm border border-slate-100">
+              <%!-- Two-step progress --%>
+              <div class="mb-6 flex items-center gap-3">
+                <div class="flex flex-1 items-center gap-2.5">
+                  <span class={[
+                    "grid h-8 w-8 shrink-0 place-items-center rounded-full text-[11px] font-black",
+                    @signup_step == :verify && "bg-[#FF4C00] text-white",
+                    @signup_step == :complete && "bg-emerald-500 text-white"
+                  ]}>
+                    <%= if @signup_step == :complete do %>
+                      <span class="material-symbols-outlined !text-[16px]">check</span>
+                    <% else %>
+                      1
+                    <% end %>
+                  </span>
+                  <span class="text-[10px] font-black uppercase tracking-widest text-slate-600">
+                    Verify
+                  </span>
                 </div>
 
-                <div
-                  id="firebase-sms-auth"
-                  data-api-key={@firebase_config.api_key}
-                  data-auth-domain={@firebase_config.auth_domain}
-                  data-project-id={@firebase_config.project_id}
-                  data-storage-bucket={@firebase_config.storage_bucket}
-                  data-messaging-sender-id={@firebase_config.messaging_sender_id}
-                  data-app-id={@firebase_config.app_id}
-                  data-verify-url="/user/firebase/verify-signup"
-                  data-redirect="/user/signup"
-                >
-                  <%!-- This panel verifies the phone; the verified number is then carried into the form below. --%>
-                  <form id="firebase-sms-form" class="space-y-4" novalidate>
-                    <div id="firebase-phone-step">
-                      <input
-                        id="firebase-phone"
-                        type="tel"
-                        inputmode="tel"
-                        autocomplete="tel"
-                        placeholder="07XX XXX XXX"
-                        class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:border-[#FF4C00] transition outline-none"
-                        required
-                      />
-                      <div id="firebase-recaptcha"></div>
-                    </div>
+                <div class="h-px flex-1 bg-slate-100"></div>
 
-                    <button
-                      id="firebase-send-code"
-                      type="submit"
-                      class="w-full bg-slate-900 text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-black transition active:scale-95"
-                    >
-                      Verify Phone with SMS
-                    </button>
-
-                    <div id="firebase-code-step" class="hidden space-y-3">
-                      <input
-                        id="firebase-code"
-                        type="text"
-                        inputmode="numeric"
-                        autocomplete="one-time-code"
-                        pattern="[0-9]{6}"
-                        maxlength="6"
-                        placeholder="000000"
-                        class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl font-black text-center tracking-[0.4em] focus:bg-white focus:border-[#FF4C00] transition outline-none"
-                      />
-                      <button
-                        id="firebase-verify-code"
-                        type="submit"
-                        class="w-full bg-[#FF4C00] text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#E64400] transition active:scale-95"
-                      >
-                        Verify &amp; Continue
-                      </button>
-                      <button
-                        id="firebase-change-number"
-                        type="button"
-                        class="w-full text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-[#FF4C00]"
-                      >
-                        Use a different number
-                      </button>
-                    </div>
-
-                    <p
-                      id="firebase-status"
-                      class="min-h-[16px] text-[11px] font-bold text-slate-500"
-                      role="status"
-                      aria-live="polite"
-                    >
-                    </p>
-                  </form>
-
-                  <script
-                    defer
-                    phx-track-static
-                    type="text/javascript"
-                    src={~p"/assets/js/firebase_phone_auth.js"}
-                  >
-                  </script>
-                </div>
-              <% end %>
-
-              <%= if @verified_phone do %>
-                <div class="mt-5 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-[11px] font-bold text-emerald-700">
-                  Phone <span class="font-black">{@verified_phone}</span>
-                  is verified. Finish your name and email below.
-                </div>
-              <% end %>
-
-              <div class="relative my-6">
-                <div class="absolute inset-0 flex items-center">
-                  <div class="w-full border-t border-slate-100"></div>
-                </div>
-                <div class="relative flex justify-center text-[9px] uppercase font-black tracking-widest">
-                  <span class="bg-white px-4 text-slate-400">or continue with</span>
+                <div class="flex flex-1 items-center justify-end gap-2.5">
+                  <span class={[
+                    "grid h-8 w-8 shrink-0 place-items-center rounded-full text-[11px] font-black",
+                    @signup_step == :complete && "bg-[#FF4C00] text-white",
+                    @signup_step == :verify && "bg-slate-100 text-slate-400"
+                  ]}>
+                    2
+                  </span>
+                  <span class={[
+                    "text-[10px] font-black uppercase tracking-widest",
+                    @signup_step == :complete && "text-slate-600",
+                    @signup_step == :verify && "text-slate-400"
+                  ]}>
+                    Details
+                  </span>
                 </div>
               </div>
 
-              <form action={~p"/user/register"} method="post" class="space-y-5">
-                <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div class="md:col-span-2">
-                    <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Full Name</label>
+              <%= if @signup_step == :verify do %>
+                <div>
+                  <p class="text-[9px] font-black uppercase tracking-[0.2em] text-[#FF4C00]">
+                    Step 1 of 2
+                  </p>
+                  <h2 class="mt-1 text-xl font-black tracking-tight text-slate-900">
+                    Verify your account
+                  </h2>
+                  <p class="mt-1.5 text-[11px] font-bold leading-relaxed text-slate-400">
+                    Use Gmail or verify your phone by SMS. We’ll ask for your name and email next.
+                  </p>
+                </div>
+
+                <a
+                  href="/auth/google"
+                  class="mt-5 flex items-center justify-center gap-3 w-full bg-white border-2 border-slate-100 py-3.5 rounded-xl font-black text-slate-700 hover:bg-slate-50 transition-all shadow-sm group active:scale-95"
+                >
+                  <img
+                    src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png"
+                    class="w-5 h-5"
+                    alt="Google"
+                    width="20"
+                    height="20"
+                    decoding="async"
+                  />
+                  <span class="text-sm tracking-tight">Sign up with Gmail</span>
+                </a>
+
+                <%= if @firebase_config do %>
+                  <div class="relative my-6">
+                    <div class="absolute inset-0 flex items-center">
+                      <div class="w-full border-t border-slate-100"></div>
+                    </div>
+                    <div class="relative flex justify-center text-[9px] uppercase font-black tracking-widest">
+                      <span class="bg-white px-4 text-slate-400">or verify with SMS</span>
+                    </div>
+                  </div>
+
+                  <div
+                    id="firebase-sms-auth"
+                    data-api-key={@firebase_config.api_key}
+                    data-auth-domain={@firebase_config.auth_domain}
+                    data-project-id={@firebase_config.project_id}
+                    data-storage-bucket={@firebase_config.storage_bucket}
+                    data-messaging-sender-id={@firebase_config.messaging_sender_id}
+                    data-app-id={@firebase_config.app_id}
+                    data-verify-url="/user/firebase/verify-signup"
+                    data-redirect="/user/signup"
+                  >
+                    <form id="firebase-sms-form" class="space-y-4" novalidate>
+                      <div id="firebase-phone-step">
+                        <label
+                          for="firebase-phone"
+                          class="mb-2 block text-[10px] font-black text-slate-500 uppercase tracking-widest"
+                        >
+                          Phone Number
+                        </label>
+                        <input
+                          id="firebase-phone"
+                          type="tel"
+                          inputmode="tel"
+                          autocomplete="tel"
+                          placeholder="07XX XXX XXX"
+                          class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:border-[#FF4C00] transition outline-none"
+                          required
+                        />
+                        <div id="firebase-recaptcha"></div>
+                        <p class="mt-2 text-[10px] font-bold leading-relaxed text-slate-400">
+                          We’ll text a 6-digit code to this number. It will be locked on the next step.
+                        </p>
+                      </div>
+
+                      <button
+                        id="firebase-send-code"
+                        type="submit"
+                        class="w-full bg-slate-900 text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-black transition active:scale-95"
+                      >
+                        Verify Phone with SMS
+                      </button>
+
+                      <div id="firebase-code-step" class="hidden space-y-3">
+                        <input
+                          id="firebase-code"
+                          type="text"
+                          inputmode="numeric"
+                          autocomplete="one-time-code"
+                          pattern="[0-9]{6}"
+                          maxlength="6"
+                          placeholder="000000"
+                          class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl font-black text-center tracking-[0.4em] focus:bg-white focus:border-[#FF4C00] transition outline-none"
+                        />
+                        <button
+                          id="firebase-verify-code"
+                          type="submit"
+                          class="w-full bg-[#FF4C00] text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#E64400] transition active:scale-95"
+                        >
+                          Verify &amp; Continue
+                        </button>
+                        <button
+                          id="firebase-change-number"
+                          type="button"
+                          class="w-full text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-[#FF4C00]"
+                        >
+                          Use a different number
+                        </button>
+                      </div>
+
+                      <p
+                        id="firebase-status"
+                        class="min-h-[16px] text-[11px] font-bold text-slate-500"
+                        role="status"
+                        aria-live="polite"
+                      >
+                      </p>
+                    </form>
+
+                    <script
+                      defer
+                      phx-track-static
+                      type="text/javascript"
+                      src={~p"/assets/js/firebase_phone_auth.js"}
+                    >
+                    </script>
+                  </div>
+                <% end %>
+
+                <div class="mt-6 rounded-2xl border border-slate-100 bg-slate-50/70 p-4 text-center">
+                  <p class="text-[10px] font-bold text-slate-500">
+                    No Gmail or SMS access?
+                  </p>
+                  <a
+                    id="signup-email-instead"
+                    href={~p"/user/signup?method=email"}
+                    class="mt-1.5 inline-block text-[11px] font-black text-[#FF4C00] hover:underline"
+                  >
+                    Sign up with email instead
+                  </a>
+                </div>
+              <% else %>
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <p class="text-[9px] font-black uppercase tracking-[0.2em] text-[#FF4C00]">
+                      Step 2 of 2
+                    </p>
+                    <h2 class="mt-1 text-xl font-black tracking-tight text-slate-900">
+                      Complete your account
+                    </h2>
+                    <p class="mt-1.5 text-[11px] font-bold leading-relaxed text-slate-400">
+                      <%= if @verified_phone do %>
+                        Your phone is verified. Add your name and email to finish.
+                      <% else %>
+                        Enter your details to finish creating your Komiuta account.
+                      <% end %>
+                    </p>
+                  </div>
+
+                  <%= if !@verified_phone do %>
+                    <a
+                      href={~p"/user/signup"}
+                      class="shrink-0 rounded-xl border border-slate-200 bg-white px-3 py-2 text-[9px] font-black uppercase tracking-widest text-slate-500 transition hover:border-slate-300"
+                    >
+                      Back
+                    </a>
+                  <% end %>
+                </div>
+
+                <%= if @verified_phone do %>
+                  <div class="mt-4 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-[11px] font-bold text-emerald-700">
+                    <span class="material-symbols-outlined !text-[15px] align-middle">verified</span>
+                    Phone <span class="font-black">{@verified_phone}</span>
+                    is verified.
+                  </div>
+                <% end %>
+
+                <form action={~p"/user/register"} method="post" class="mt-5 space-y-4">
+                  <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
+
+                  <div>
+                    <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">
+                      Full Name
+                    </label>
                     <input
                       type="text"
                       name="user[name]"
@@ -155,32 +249,40 @@
                     />
                   </div>
 
-                  <div>
-                    <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Phone Number</label>
-                    <input
-                      type="tel"
-                      name="user[phone]"
-                      value={@phone}
-                      readonly={@verified_phone}
-                      placeholder="07XX XXX XXX"
-                      class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:border-[#FF4C00] transition outline-none read-only:text-slate-500"
-                      required
-                    />
+                  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">
+                        Phone Number
+                      </label>
+                      <input
+                        type="tel"
+                        name="user[phone]"
+                        value={@phone}
+                        readonly={@verified_phone}
+                        placeholder="07XX XXX XXX"
+                        class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:border-[#FF4C00] transition outline-none read-only:text-slate-500"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        name="user[email]"
+                        placeholder="you@example.com"
+                        class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:border-[#FF4C00] transition outline-none"
+                        required
+                      />
+                    </div>
                   </div>
 
                   <div>
-                    <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Email Address</label>
-                    <input
-                      type="email"
-                      name="user[email]"
-                      placeholder="you@example.com"
-                      class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:border-[#FF4C00] transition outline-none"
-                      required
-                    />
-                  </div>
-
-                  <div class="md:col-span-2">
-                    <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Referral Code (Optional)</label>
+                    <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">
+                      Referral Code (Optional)
+                    </label>
                     <div class="relative">
                       <input
                         type="text"
@@ -191,17 +293,15 @@
                       <span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-orange-500 !text-xl">redeem</span>
                     </div>
                   </div>
-                </div>
 
-                <div class="pt-2">
                   <button
                     type="submit"
                     class="w-full bg-[#FF4C00] text-white py-4 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-[#E64400] transition shadow-lg shadow-orange-200 transform active:scale-95"
                   >
                     Create Account
                   </button>
-                </div>
-              </form>
+                </form>
+              <% end %>
             </div>
 
             <p class="text-center mt-6 text-sm font-bold text-slate-400">
