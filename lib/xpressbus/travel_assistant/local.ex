@@ -61,11 +61,16 @@ defmodule Xpressbus.TravelAssistant.Local do
 
   @stopwords ~w(the and for with that this from have has are you your what where when which how can could would should find show tell need want looking look something good best nice great please near around about like just some any into over under)
 
-  @budget_regexes [
-    ~r/(?:under|below|less than|max(?:imum)?|up to|budget(?: of)?|around|for)\s*(?:ksh|kes)?\s*([\d][\d,]*(?:\.\d+)?)\s*(k)?/i,
-    ~r/(?:ksh|kes)\s*([\d][\d,]*(?:\.\d+)?)\s*(k)?/i,
-    ~r/([\d][\d,]*(?:\.\d+)?)\s*(k)?\s*(?:ksh|kes)/i
-  ]
+  # Regexes are built inside a function rather than stored in a module
+  # attribute: the `%Regex{}` struct keeps a compiled reference that Elixir
+  # 1.18 (the production runtime) cannot escape from module attributes.
+  defp budget_regexes do
+    [
+      ~r/(?:under|below|less than|max(?:imum)?|up to|budget(?: of)?|around|for)\s*(?:ksh|kes)?\s*([\d][\d,]*(?:\.\d+)?)\s*(k)?/i,
+      ~r/(?:ksh|kes)\s*([\d][\d,]*(?:\.\d+)?)\s*(k)?/i,
+      ~r/([\d][\d,]*(?:\.\d+)?)\s*(k)?\s*(?:ksh|kes)/i
+    ]
+  end
 
   @doc """
   Answers a typed message for a tab. Returns a reply map with `:text`, `:cards`
@@ -705,7 +710,7 @@ defmodule Xpressbus.TravelAssistant.Local do
 
   @doc "Extracts a KES budget from free text."
   def find_budget(prompt) when is_binary(prompt) do
-    Enum.find_value(@budget_regexes, fn regex ->
+    Enum.find_value(budget_regexes(), fn regex ->
       case Regex.run(regex, prompt, capture: :all_but_first) do
         [amount] -> budget_from_parts(amount, nil)
         [amount, k] -> budget_from_parts(amount, k)

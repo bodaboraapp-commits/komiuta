@@ -10,14 +10,24 @@ defmodule Xpressbus.TravelAssistant.Receipt do
 
   alias Xpressbus.TravelAssistant.Money
 
-  @amount_regex ~r/^(?<label>.+?)\s*[:=]?\s*(?:(?:ksh|kes|kshs)\s*)?(?<amount>\d[\d,]*(?:\.\d{1,2})?)\s*(?:\/-)?$/i
+  # Regexes are built at runtime rather than stored in module attributes. The
+  # `%Regex{}` struct holds a compiled reference that Elixir 1.18 (the Render
+  # runtime) cannot escape from module attributes into functions.
+  defp amount_regex,
+    do:
+      ~r/^(?<label>.+?)\s*[:=]?\s*(?:(?:ksh|kes|kshs)\s*)?(?<amount>\d[\d,]*(?:\.\d{1,2})?)\s*(?:\/-)?$/i
 
-  @date_line_regex ~r/^\s*(?:\d{4}-\d{1,2}-\d{1,2}|\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}|\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})\s*$/
+  defp date_line_regex,
+    do:
+      ~r/^\s*(?:\d{4}-\d{1,2}-\d{1,2}|\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}|\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})\s*$/
 
-  @total_keywords ~r/\b(grand\s+total|total\s+due|total\s+paid|amount\s+due|total)\b/i
-  @grand_total_keywords ~r/\bgrand\s+total\b/i
-  @tax_keywords ~r/\b(vat|tax|service\s+(?:charge|fee)|levy|gst)\b/i
-  @payment_keywords ~r/\b(cash|change|tendered|mpesa|m-pesa|card|balance|paid|payment|deposit|reference|ref\s*#?)\b/i
+  defp total_keywords, do: ~r/\b(grand\s+total|total\s+due|total\s+paid|amount\s+due|total)\b/i
+  defp grand_total_keywords, do: ~r/\bgrand\s+total\b/i
+  defp tax_keywords, do: ~r/\b(vat|tax|service\s+(?:charge|fee)|levy|gst)\b/i
+
+  defp payment_keywords,
+    do:
+      ~r/\b(cash|change|tendered|mpesa|m-pesa|card|balance|paid|payment|deposit|reference|ref\s*#?)\b/i
 
   @category_keywords [
     {"Transport",
@@ -229,10 +239,10 @@ defmodule Xpressbus.TravelAssistant.Receipt do
   defp classify_line(""), do: :skip
 
   defp classify_line(line) do
-    if Regex.match?(@date_line_regex, line) do
+    if Regex.match?(date_line_regex(), line) do
       :skip
     else
-      case Regex.named_captures(@amount_regex, line) do
+      case Regex.named_captures(amount_regex(), line) do
         %{"label" => label, "amount" => amount} ->
           label = clean_label(label)
           decimal = Money.to_decimal(amount)
@@ -240,9 +250,9 @@ defmodule Xpressbus.TravelAssistant.Receipt do
           cond do
             label == "" -> :skip
             not String.match?(label, ~r/[A-Za-z]/) -> :skip
-            Regex.match?(@total_keywords, label) -> {:total, label, decimal}
-            Regex.match?(@tax_keywords, label) -> {:tax, decimal}
-            Regex.match?(@payment_keywords, label) -> :skip
+            Regex.match?(total_keywords(), label) -> {:total, label, decimal}
+            Regex.match?(tax_keywords(), label) -> {:tax, decimal}
+            Regex.match?(payment_keywords(), label) -> :skip
             decimal |> Decimal.equal?(0) -> :skip
             true -> {:item, %{label: label, amount: decimal, category: category_for(label)}}
           end
@@ -273,7 +283,7 @@ defmodule Xpressbus.TravelAssistant.Receipt do
 
       true ->
         grand =
-          Enum.find(totals, fn {label, _amount} -> Regex.match?(@grand_total_keywords, label) end)
+          Enum.find(totals, fn {label, _amount} -> Regex.match?(grand_total_keywords(), label) end)
 
         {_label, amount} = grand || List.last(totals)
         amount
@@ -291,7 +301,7 @@ defmodule Xpressbus.TravelAssistant.Receipt do
   defp merchant(lines) do
     lines
     |> Enum.reject(fn line ->
-      line == "" or Regex.match?(@amount_regex, line) or
+      line == "" or Regex.match?(amount_regex(), line) or
         Regex.match?(
           ~r/^(receipt|invoice|tax invoice|order|table|date|time|cashier|server|tel|phone)\b/i,
           line
