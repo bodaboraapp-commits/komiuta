@@ -336,14 +336,15 @@ defmodule Xpressbus.TripItinerary do
   def refresh_recommendations(trip, itinerary) do
     recommendations = recommendations(trip, itinerary.city, true)
 
-    %{
-      itinerary
-      | hotels: recommendations.hotels,
-        hotel_source: recommendations.hotel_source,
-        restaurants: recommendations.restaurants,
-        restaurant_source: recommendations.restaurant_source,
-        recommendation_errors: recommendations.errors
-    }
+    # Map.merge (not %{itinerary | ...}) because old saved itineraries were
+    # persisted before `recommendation_errors` existed and must still refresh.
+    Map.merge(itinerary, %{
+      hotels: recommendations.hotels,
+      hotel_source: recommendations.hotel_source,
+      restaurants: recommendations.restaurants,
+      restaurant_source: recommendations.restaurant_source,
+      recommendation_errors: recommendations.errors
+    })
   end
 
   defp title(trip) do

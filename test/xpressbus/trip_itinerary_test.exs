@@ -81,4 +81,21 @@ defmodule Xpressbus.TripItineraryTest do
     assert refreshed.hotel_source == :curated
     assert refreshed.restaurant_source == :curated
   end
+
+  test "refreshing recommendations upgrades pre-existing saved itineraries" do
+    itinerary =
+      trip()
+      |> TripItinerary.generate(live_places: false)
+      |> Map.drop([:recommendation_errors])
+
+    refreshed = TripItinerary.refresh_recommendations(trip(), itinerary)
+
+    assert refreshed.title == itinerary.title
+    assert refreshed.hotel_source == :curated
+
+    assert refreshed.recommendation_errors == %{
+             hotels: :not_configured,
+             restaurants: :not_configured
+           }
+  end
 end
