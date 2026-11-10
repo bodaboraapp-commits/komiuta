@@ -9,6 +9,17 @@ defmodule Xpressbus.TripItinerary do
   destinations receive the same structure with destination-aware copy.
   """
 
+  @coordinates %{
+    "moscow" => {55.7558, 37.6173},
+    "cox's bazar" => {21.4272, 92.0058},
+    "saint martins" => {20.6000, 92.3000},
+    "rome" => {41.9028, 12.4964},
+    "bangkok" => {13.7563, 100.5018},
+    "new york" => {40.7128, -74.0060},
+    "las vegas" => {36.1699, -115.1398},
+    "istanbul" => {41.0082, 28.9784}
+  }
+
   @restaurants [
     "Classic Rice Table Dine",
     "Heritage Seafood House Cafe",
@@ -159,7 +170,25 @@ defmodule Xpressbus.TripItinerary do
   end
 
   defp map_url(city) do
-    "https://maps.google.com/maps?q=#{URI.encode_www_form(city)}&z=11&output=embed"
+    key =
+      city
+      |> String.split(",")
+      |> List.first()
+      |> String.downcase()
+      |> String.trim()
+
+    {latitude, longitude} = Map.get(@coordinates, key, {20.0, 20.0})
+    delta = 0.18
+
+    bbox = [
+      Float.round(longitude - delta, 4),
+      Float.round(latitude - delta, 4),
+      Float.round(longitude + delta, 4),
+      Float.round(latitude + delta, 4)
+    ]
+
+    "https://www.openstreetmap.org/export/embed.html?bbox=#{Enum.join(bbox, "%2C")}" <>
+      "&layer=mapnik&marker=#{latitude}%2C#{longitude}"
   end
 
   defp destination(trip) do
