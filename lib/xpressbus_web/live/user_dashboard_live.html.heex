@@ -3,8 +3,7 @@
     <.main_header step={:dashboard} current_user={@current_user} />
     <main class="pt-[72px] md:pt-[80px]">
       <%!-- Dashboard Hero --%>
-      <%= if @active_tab != "chyllz" do %>
-        <section class="px-6 pt-10 pb-4">
+      <section class="px-6 pt-10 pb-4">
           <div class="mx-auto max-w-[1350px]">
             <div
               id="chyllz-welcome"
@@ -143,7 +142,6 @@
             </div>
           </div>
         </section>
-      <% end %>
        <%!-- Tab Navigation: one row that scrolls horizontally on narrow screens --%>
       <nav class="relative z-20 mt-2 max-w-[1350px] mx-auto px-6 mb-12">
         <div class="flex flex-nowrap gap-2 overflow-x-auto no-scrollbar rounded-2xl border border-slate-100 bg-white p-2 shadow-xl">
