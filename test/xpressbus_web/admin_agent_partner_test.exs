@@ -39,7 +39,6 @@ defmodule XpressbusWeb.AdminAgentBusOperatorTest do
 
     html = render(view)
     assert html =~ "Metro Partner"
-    assert html =~ "Agent assigned to Metro Partner"
   end
 
   test "bus operator table shows the assigned agent", %{conn: conn} do

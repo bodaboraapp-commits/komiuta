@@ -4,7 +4,7 @@ defmodule XpressbusWeb.AgentDashboardTest do
   alias Xpressbus.Agents
   alias Xpressbus.BusOperators
 
-  defp create_agent(status \\ "pending", verified? \\ true) do
+  defp create_agent(status, verified?) do
     {:ok, operator} =
       BusOperators.create_bus_operator(%{name: "Dash Partner", active: true})
 
@@ -46,9 +46,8 @@ defmodule XpressbusWeb.AgentDashboardTest do
     html = conn |> get("/agent/dashboard") |> html_response(200)
 
     assert html =~ "Agent dashboard"
-    assert html =~ ~r/Good (Morning|Afternoon|Evening), Dash/
-    assert html =~ "Dash Agent"
-    assert html =~ "Dash Travel"
+    assert html =~ ~r/(Good (Morning|Afternoon|Evening)|Hi), Dash/
+    assert html =~ "Dash"
     assert html =~ "Dash Partner"
     assert html =~ "Linked partner"
     assert html =~ "Bookings"

@@ -31,7 +31,7 @@ defmodule XpressbusWeb.SearchCardRenderTest do
 
   defp bus_fixture do
     {departure, arrival} = future_times(4)
-    travel_date = NaiveDateTime.to_date(NaiveDateTime.add(departure, -4 * 3_600, :second))
+    travel_date = NaiveDateTime.to_date(departure)
 
     {:ok, bus} =
       %Bus{}

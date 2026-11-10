@@ -49,8 +49,9 @@ defmodule XpressbusWeb.AgentGoogleAuthTest do
 
     html = conn |> get("/agent/login") |> html_response(200)
 
-    assert html =~ "Phone number"
-    assert html =~ ~s(action="/agent/auth")
+    assert html =~ "Phone Number"
+    assert html =~ "Sign in with Gmail"
+    refute html =~ ~s(action="/agent/auth")
     refute html =~ "Continue with Google"
   end
 

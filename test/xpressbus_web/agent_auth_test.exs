@@ -33,16 +33,20 @@ defmodule XpressbusWeb.AgentAuthTest do
   end
 
   defp code_from_email do
-    {:email, email} = assert_email_sent()
+    assert_receive {:email, email}, 1_000
     [_, code] = Regex.run(~r/\b(\d{6})\b/, email.text_body)
     code
+  end
+
+  defp request_phone_code(conn, phone \\ "0712345678") do
+    post(conn, ~p"/agent/auth", %{"agent" => %{"identifier" => phone}})
   end
 
   test "agent login page is phone/SMS first with no visible security puzzle", %{conn: conn} do
     html = conn |> get(~p"/agent/login") |> html_response(200)
 
     assert html =~ "Agent sign in"
-    assert html =~ "Phone number"
+    assert html =~ "Phone Number"
 
     assert html =~ "firebase-sms-auth" or html =~ "SMS sign-in is not configured yet"
 
@@ -99,22 +103,18 @@ defmodule XpressbusWeb.AgentAuthTest do
     end
   end
 
-  test "requesting a code emails it and redirects to verification", %{conn: conn} do
-    application = create_application()
+  test "email sign-in is delegated to Google instead of emailing a code", %{conn: conn} do
+    create_application()
 
     conn =
       post(conn, ~p"/agent/auth", %{
         "agent" => %{"identifier" => "jane.login@example.com"}
       })
 
-    assert redirected_to(conn) == "/agent/verify"
-    assert get_session(conn, :agent_login_id) == application.id
+    assert html_response(conn, 200) =~ "Use Sign in with Gmail"
+    assert_no_email_sent()
+    refute get_session(conn, :agent_login_id)
     refute get_session(conn, :agent_id)
-
-    assert_email_sent(fn email ->
-      assert email.subject =~ "KOMIUTA Agent login code"
-      assert email.to == [{"Jane Agent", "jane.login@example.com"}]
-    end)
   end
 
   test "the verification page requires a pending login", %{conn: conn} do
@@ -125,7 +125,7 @@ defmodule XpressbusWeb.AgentAuthTest do
 
   test "a wrong code does not start an agent session", %{conn: conn} do
     _application = create_application()
-    conn = post(conn, ~p"/agent/auth", %{"agent" => %{"identifier" => "jane.login@example.com"}})
+    conn = request_phone_code(conn)
     code = code_from_email()
     wrong = if code == "000000", do: "111111", else: "000000"
 
@@ -137,7 +137,7 @@ defmodule XpressbusWeb.AgentAuthTest do
 
   test "the correct code logs the agent in and consumes the code", %{conn: conn} do
     application = create_application()
-    conn = post(conn, ~p"/agent/auth", %{"agent" => %{"identifier" => "jane.login@example.com"}})
+    conn = request_phone_code(conn)
     code = code_from_email()
 
     conn = post(recycle(conn), ~p"/agent/verify", %{"agent" => %{"code" => code}})
@@ -196,7 +196,7 @@ defmodule XpressbusWeb.AgentAuthTest do
 
   test "email verification gate sends a code and unlocks the account", %{conn: conn} do
     application = create_application()
-    conn = post(conn, ~p"/agent/auth", %{"agent" => %{"identifier" => "jane.login@example.com"}})
+    conn = request_phone_code(conn)
     code = code_from_email()
     conn = post(recycle(conn), ~p"/agent/verify", %{"agent" => %{"code" => code}})
 
@@ -231,10 +231,7 @@ defmodule XpressbusWeb.AgentAuthTest do
   end
 
   test "an unknown agent identifier does not send a code", %{conn: conn} do
-    conn =
-      post(conn, ~p"/agent/auth", %{
-        "agent" => %{"identifier" => "missing.agent@example.com"}
-      })
+    conn = request_phone_code(conn, "0700000000")
 
     assert html_response(conn, 200) =~ "No agent application was found"
     assert_no_email_sent()
