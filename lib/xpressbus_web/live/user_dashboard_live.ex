@@ -3,6 +3,7 @@ defmodule XpressbusWeb.UserDashboardLive do
   import XpressbusWeb.BrandComponents
   import XpressbusWeb.ChyllzAccountComponents
   alias Xpressbus.{Accounts, ChyllzAccount, Repo, Tickets, Weather}
+  alias Xpressbus.Payments.Payment
   alias Xpressbus.Tickets.Ticket
   alias XpressbusWeb.TicketCodes
   import Ecto.Query
@@ -30,7 +31,7 @@ defmodule XpressbusWeb.UserDashboardLive do
 
       if user do
         if Accounts.profile_complete?(user) do
-          tickets = list_user_tickets(user.phone)
+          tickets = list_user_tickets(user)
           transactions = Accounts.list_user_transactions(user.id)
           active_tab = normalize_tab(Map.get(params, "tab"))
 
@@ -314,13 +315,57 @@ defmodule XpressbusWeb.UserDashboardLive do
       (ticket.passenger_phone == identity or ticket.passenger_name == identity)
   end
 
-  defp list_user_tickets(phone) do
+  # All bus bookings that belong to this account. A booking may be linked to the
+  # user either by passenger phone (in any common Kenyan format) or by the
+  # payment attempt that the signed-in user started, which is how bookings made
+  # for a different passenger still show up in the booker's dashboard.
+  defp list_user_tickets(%{id: user_id, phone: phone}) do
+    variants = phone_variants(phone)
+
+    paid_ticket_ids =
+      from(p in Payment,
+        where:
+          fragment(
+            "JSON_UNQUOTE(JSON_EXTRACT(?, '$.booking_context.user_id')) = ?",
+            p.raw_response,
+            ^to_string(user_id)
+          ),
+        select: p.ticket_id
+      )
+      |> Repo.all()
+      |> Enum.reject(&is_nil/1)
+      |> Enum.uniq()
+
     from(t in Ticket,
-      where: t.passenger_phone == ^phone or t.passenger_name == ^phone,
+      where: t.passenger_phone in ^variants or t.ticket_id in ^paid_ticket_ids,
       order_by: [desc: t.inserted_at]
     )
     |> Repo.all()
     |> Enum.map(&Tickets.deserialize_seats/1)
+  end
+
+  defp phone_variants(phone) do
+    digits = String.replace(to_string(phone || ""), ~r/[^0-9]/, "")
+
+    local =
+      cond do
+        String.starts_with?(digits, "254") -> "0" <> String.trim_leading(digits, "254")
+        String.starts_with?(digits, "0") -> digits
+        digits != "" -> "0" <> digits
+        true -> ""
+      end
+
+    international =
+      cond do
+        String.starts_with?(digits, "254") -> digits
+        String.starts_with?(digits, "0") -> "254" <> String.trim_leading(digits, "0")
+        digits != "" -> "254" <> digits
+        true -> ""
+      end
+
+    [phone, digits, local, international, "+" <> international]
+    |> Enum.reject(&(&1 in [nil, "", "+"]))
+    |> Enum.uniq()
   end
 
   defp format_date(nil), do: ""
@@ -402,6 +447,7 @@ defmodule XpressbusWeb.UserDashboardLive do
     socket
     |> assign(:chyllz_overview, overview)
     |> assign(:chyllz_trips, overview.recent_trips)
+    |> assign(:hotel_bookings, overview.hotel_bookings)
     |> assign(:member_since, member_since(user))
     |> assign(:weather_query, overview.default_city)
     |> assign(:weather_city, overview.default_city)

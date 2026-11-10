@@ -1045,7 +1045,15 @@ defmodule XpressbusWeb.ChyllzLive do
         </main>
         <.main_footer footer_tab={@footer_tab} />
         <%= if @selected do %>
-          <.catalogue_modal selected={@selected} />
+          <.catalogue_modal
+            selected={@selected}
+            current_user={@current_user}
+            stay_error={@stay_error}
+            stay_check_in={@stay_check_in}
+            stay_check_out={@stay_check_out}
+            stay_rooms={@stay_rooms}
+            stay_guests={@stay_guests}
+          />
         <% end %>
       </div>
 
@@ -1600,6 +1608,12 @@ defmodule XpressbusWeb.ChyllzLive do
   end
 
   attr :selected, :map, required: true
+  attr :current_user, :any, default: nil
+  attr :stay_error, :string, default: nil
+  attr :stay_check_in, :string, default: ""
+  attr :stay_check_out, :string, default: ""
+  attr :stay_rooms, :string, default: "1"
+  attr :stay_guests, :string, default: "1"
 
   defp catalogue_modal(assigns) do
     assigns = assign(assigns, :details, item_details(assigns.selected))
@@ -1659,7 +1673,10 @@ defmodule XpressbusWeb.ChyllzLive do
           <% end %>
 
           <%= if @selected.kind == "hotel" do %>
-            <div id="stay-booking" class="rounded-[1.75rem] border border-orange-100 bg-orange-50/50 p-5">
+            <div
+              id="stay-booking"
+              class="rounded-[1.75rem] border border-orange-100 bg-orange-50/50 p-5"
+            >
               <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-[#FF4C00]">event_available</span>
                 <h3 class="text-sm font-black uppercase tracking-widest text-slate-900">
@@ -1672,7 +1689,10 @@ defmodule XpressbusWeb.ChyllzLive do
               </p>
 
               <%= if @stay_error do %>
-                <p id="stay-booking-error" class="mt-3 rounded-xl bg-red-50 px-3 py-2 text-xs font-bold text-red-600">
+                <p
+                  id="stay-booking-error"
+                  class="mt-3 rounded-xl bg-red-50 px-3 py-2 text-xs font-bold text-red-600"
+                >
                   {@stay_error}
                 </p>
               <% end %>

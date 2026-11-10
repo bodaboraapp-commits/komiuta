@@ -17,6 +17,7 @@ defmodule Xpressbus.ChyllzAccount do
   import Ecto.Query
 
   alias Xpressbus.Chyllz
+  alias Xpressbus.HotelBookings
   alias Xpressbus.Repo
   alias Xpressbus.Tickets
   alias Xpressbus.Tickets.Ticket
@@ -52,16 +53,18 @@ defmodule Xpressbus.ChyllzAccount do
   def overview(user, opts \\ []) do
     limit = Keyword.get(opts, :recent_trips, @recent_trip_limit)
     trips = recent_trips(user, limit)
+    hotel_bookings = HotelBookings.list_for_user(user.id)
 
     %{
-      stats: stats(user),
+      stats: stats(user) |> Map.put(:stays, length(hotel_bookings)),
       recent_trips: trips,
-      default_city: default_city(trips),
+      hotel_bookings: hotel_bookings,
+      default_city: default_city(trips, hotel_bookings),
       next_trip: Enum.find(trips, &(&1.status_key in [:ongoing, :upcoming])),
       destinations: destinations(),
       stories: story_count(),
-      picks: if(trips == [], do: picks(), else: []),
-      story_cards: if(trips == [], do: story_cards(), else: [])
+      picks: if(trips == [] and hotel_bookings == [], do: picks(), else: []),
+      story_cards: if(trips == [] and hotel_bookings == [], do: story_cards(), else: [])
     }
   end
 
@@ -253,6 +256,12 @@ defmodule Xpressbus.ChyllzAccount do
   defp default_city([%{to: to} | _rest]) when is_binary(to) and to != "", do: to
   defp default_city([%{from: from} | _rest]) when is_binary(from) and from != "", do: from
   defp default_city(_trips), do: "Nairobi"
+
+  defp default_city([], [%{hotel_location: location} | _rest])
+       when is_binary(location) and location != "",
+       do: location
+
+  defp default_city(trips, _bookings), do: default_city(trips)
 
   # --------------------------------------------------------------- trip card
 

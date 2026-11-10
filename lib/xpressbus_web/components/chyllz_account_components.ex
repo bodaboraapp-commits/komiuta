@@ -16,6 +16,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
   use XpressbusWeb, :html
 
   import XpressbusWeb.ChyllzAccountArt
+  import XpressbusWeb.Format, only: [money: 1, short_date: 1]
 
   @trend_points 7
   @city_max_length 60
@@ -23,6 +24,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
   attr :user, :map, required: true
   attr :overview, :map, required: true
   attr :trips, :list, required: true
+  attr :hotel_bookings, :list, default: []
   attr :picks, :list, default: []
   attr :story_cards, :list, default: []
   attr :member_since, :string, default: nil
@@ -255,6 +257,117 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
             </span>
           </a>
         </div>
+
+        <%!-- Hotel / accommodation bookings --%>
+        <section id="hotel-bookings" aria-labelledby="hotel-bookings-heading">
+          <div class="mb-3.5 flex items-center justify-between gap-3 px-1">
+            <h2
+              id="hotel-bookings-heading"
+              class="flex items-center gap-2.5 text-lg font-black tracking-tight text-slate-900"
+            >
+              <span class="grid h-8 w-8 place-items-center rounded-full bg-orange-50 text-[#FF4C00]">
+                <.ui_icon name={:bag} class="h-4 w-4" />
+              </span>
+              Your Stays
+            </h2>
+            <a
+              id="view-chyllz-stays"
+              href="/tour-packages/hotels"
+              class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-[#FF4C00] transition hover:underline"
+            >
+              Book a stay <.ui_icon name={:arrow_right} class="h-3.5 w-3.5" />
+            </a>
+          </div>
+
+          <div id="hotel-bookings-list" class="space-y-3.5">
+            <%= if @hotel_bookings == [] do %>
+              <div
+                id="no-hotel-bookings"
+                class="flex flex-col items-center gap-4 rounded-[24px] border border-dashed border-slate-200 bg-white p-6 text-center sm:flex-row sm:text-left"
+              >
+                <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-50 text-[#FF4C00]">
+                  <.ui_icon name={:bag} class="h-6 w-6" />
+                </span>
+                <div class="min-w-0 flex-1">
+                  <h3 class="text-base font-black text-slate-900">No accommodation bookings yet</h3>
+                  <p class="mt-1 text-xs font-bold leading-relaxed text-slate-400">
+                    Reserve a hotel through Chyllz and every stay will appear here.
+                  </p>
+                </div>
+              </div>
+            <% else %>
+              <%= for booking <- @hotel_bookings do %>
+                <article
+                  id={"hotel-booking-#{booking.reference}"}
+                  class="rounded-[24px] border border-slate-100 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]"
+                >
+                  <div class="flex flex-wrap items-start justify-between gap-3">
+                    <div class="min-w-0">
+                      <p class="text-[10px] font-black uppercase tracking-[0.18em] text-[#FF4C00]">
+                        {booking.reference}
+                      </p>
+                      <h3 class="mt-1 text-base font-black text-slate-900">{booking.hotel_name}</h3>
+                      <p class="mt-1 flex items-center gap-1 text-xs font-bold text-slate-400">
+                        <.ui_icon name={:pin} class="h-3.5 w-3.5" />
+                        {booking.hotel_location || "Location shared on confirmation"}
+                      </p>
+                    </div>
+
+                    <span class={[
+                      "rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest",
+                      booking.status == "confirmed" && "bg-emerald-50 text-emerald-600",
+                      booking.status == "pending" && "bg-amber-50 text-amber-600",
+                      booking.status == "cancelled" && "bg-red-50 text-red-600",
+                      booking.status == "completed" && "bg-slate-100 text-slate-500"
+                    ]}>
+                      {booking.status}
+                    </span>
+                  </div>
+
+                  <dl class="mt-4 grid grid-cols-2 gap-3 border-t border-slate-50 pt-4 sm:grid-cols-4">
+                    <div>
+                      <dt class="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                        Check-in
+                      </dt>
+                      <dd class="mt-0.5 text-xs font-black text-slate-800">
+                        {short_date(booking.check_in)}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt class="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                        Check-out
+                      </dt>
+                      <dd class="mt-0.5 text-xs font-black text-slate-800">
+                        {short_date(booking.check_out)}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt class="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                        Stay
+                      </dt>
+                      <dd class="mt-0.5 text-xs font-black text-slate-800">
+                        {booking.nights} night{if booking.nights == 1, do: "", else: "s"} · {booking.rooms} room{if booking.rooms ==
+                                                                                                                      1,
+                                                                                                                    do:
+                                                                                                                      "",
+                                                                                                                    else:
+                                                                                                                      "s"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt class="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                        Total
+                      </dt>
+                      <dd class="mt-0.5 text-xs font-black text-[#FF4C00]">
+                        KES {money(booking.total_amount)}
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
+              <% end %>
+            <% end %>
+          </div>
+        </section>
 
         <%!-- Recent trips --%>
         <section aria-labelledby="recent-trips-heading">
