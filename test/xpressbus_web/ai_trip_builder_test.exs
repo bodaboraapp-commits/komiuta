@@ -180,7 +180,7 @@ defmodule XpressbusWeb.AiTripBuilderTest do
     assert html =~ "Food"
     assert html =~ "Recommended Restaurants"
     assert html =~ "Classic Rice Table Dine"
-    assert html =~ "View on Google Maps"
+    refute html =~ "View on Google Maps"
     assert html =~ "Important Notes"
     assert html =~ "Friends"
     assert html =~ "Balanced"
