@@ -1,4 +1,37 @@
 <Layouts.app flash={@flash}>
+  <%= if @generating do %>
+    <div
+      id="trip-generating"
+      class="fixed inset-0 z-[90] flex min-h-screen flex-col items-center justify-center bg-[#fff8f3] px-6 text-center"
+    >
+      <div class="relative">
+        <div class="grid h-36 w-36 place-items-center rounded-full bg-orange-100/70 text-[#FF4C00] shadow-inner">
+          <.ui_icon name={:plane} class="h-14 w-14 -rotate-12" />
+        </div>
+        <span class="absolute -bottom-1 left-1/2 -translate-x-1/2 text-2xl" aria-hidden="true">
+          ✨ ✨
+        </span>
+      </div>
+
+      <h1 class="mt-7 text-2xl font-black tracking-tight text-slate-900 md:text-[28px]">
+        Generating Your Trip
+      </h1>
+      <p class="mt-2 text-sm font-bold text-slate-500">Building your custom itinerary...</p>
+
+      <div class="mt-6 flex items-center gap-2" aria-hidden="true">
+        <span class="h-2.5 w-2.5 animate-bounce rounded-full bg-[#FF4C00]"></span>
+        <span
+          class="h-2.5 w-2.5 animate-bounce rounded-full bg-[#FF4C00]"
+          style="animation-delay: .15s"
+        ></span>
+        <span
+          class="h-2.5 w-2.5 animate-bounce rounded-full bg-[#FF4C00]"
+          style="animation-delay: .3s"
+        ></span>
+      </div>
+    </div>
+  <% end %>
+
   <div class="min-h-screen bg-[#f8fafc] px-4 py-8 sm:px-6 md:py-10">
     <main id="ai-trip-builder" class="mx-auto max-w-[1100px]">
       <%!-- Wizard progress --%>

@@ -120,6 +120,12 @@ defmodule XpressbusWeb.AiTripBuilderTest do
     view |> element("#preference-food-tourism") |> render_click()
     view |> element("#build-itinerary") |> render_click()
 
+    assert has_element?(view, "#trip-generating")
+    assert render(view) =~ "Generating Your Trip"
+    assert render(view) =~ "Building your custom itinerary"
+
+    send(view.pid, :trip_generated)
+
     assert has_element?(view, "#step-summary")
     html = render(view)
     assert html =~ "Cox"

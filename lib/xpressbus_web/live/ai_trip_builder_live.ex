@@ -133,6 +133,7 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:step, 1)
      |> assign(:query, "")
      |> assign(:error, nil)
+     |> assign(:generating, false)
      |> assign(:today, Date.utc_today())
      |> assign(:calendar_month, Date.beginning_of_month(Date.utc_today()))
      |> reset_trip()}
@@ -255,7 +256,12 @@ defmodule XpressbusWeb.AiTripBuilderLive do
       {:noreply,
        assign(socket, :error, "Pick at least one preference so the AI can shape your trip.")}
     else
-      {:noreply, socket |> assign(:error, nil) |> assign(:step, 6)}
+      Process.send_after(self(), :trip_generated, 2_200)
+
+      {:noreply,
+       socket
+       |> assign(:error, nil)
+       |> assign(:generating, true)}
     end
   end
 
@@ -269,9 +275,18 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:step, 1)
      |> assign(:query, "")
      |> assign(:error, nil)
+     |> assign(:generating, false)
      |> assign(:today, Date.utc_today())
      |> assign(:calendar_month, Date.beginning_of_month(Date.utc_today()))
      |> reset_trip()}
+  end
+
+  @impl true
+  def handle_info(:trip_generated, socket) do
+    {:noreply,
+     socket
+     |> assign(:generating, false)
+     |> assign(:step, 6)}
   end
 
   defp reset_trip(socket) do
