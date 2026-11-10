@@ -18,6 +18,8 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
   import XpressbusWeb.ChyllzAccountArt
   import XpressbusWeb.Format, only: [money: 1, short_date: 1]
 
+  alias XpressbusWeb.ItineraryComponents
+
   @trend_points 7
   @city_max_length 60
 
@@ -25,6 +27,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
   attr :overview, :map, required: true
   attr :trips, :list, required: true
   attr :hotel_bookings, :list, default: []
+  attr :itineraries, :list, default: []
   attr :picks, :list, default: []
   attr :story_cards, :list, default: []
   attr :member_since, :string, default: nil
@@ -369,7 +372,8 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
           </div>
         </section>
 
-        <%!-- Recent trips --%>
+        <ItineraryComponents.saved_itineraries itineraries={@itineraries} />
+
         <section aria-labelledby="recent-trips-heading">
           <div class="mb-3.5 flex items-center justify-between gap-3 px-1">
             <h2

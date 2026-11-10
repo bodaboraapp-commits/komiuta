@@ -1009,15 +1009,21 @@
                     id="save-itinerary"
                     type="button"
                     phx-click="save_itinerary"
-                    class="shrink-0 rounded-full bg-[#FF4C00] px-5 py-2 text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-[#E64400]"
+                    disabled={not is_nil(@saved_itinerary)}
+                    class={[
+                      "inline-flex shrink-0 items-center gap-1.5 rounded-full px-5 py-2 text-[10px] font-black uppercase tracking-widest transition",
+                      is_nil(@saved_itinerary) && "bg-[#FF4C00] text-white hover:bg-[#E64400]",
+                      not is_nil(@saved_itinerary) && "bg-emerald-500 text-white"
+                    ]}
                   >
-                    Save
+                    <.ui_icon name={:check} class="h-3.5 w-3.5" />
+                    {if @saved_itinerary, do: "Saved", else: "Save"}
                   </button>
                 </div>
               </div>
             </article>
 
-            <aside class="relative h-[420px] border-t border-slate-100 lg:sticky lg:top-20 lg:h-[calc(100vh-6rem)] lg:self-start lg:border-l lg:border-t-0">
+            <aside class="relative h-[420px] border-t border-slate-100 lg:sticky lg:top-0 lg:h-screen lg:self-start lg:border-l lg:border-t-0">
               <div
                 id="itinerary-map"
                 class="relative h-[420px] w-full overflow-hidden bg-[#e8efe6] lg:h-full"

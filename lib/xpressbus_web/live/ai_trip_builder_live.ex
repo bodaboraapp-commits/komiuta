@@ -14,7 +14,7 @@ defmodule XpressbusWeb.AiTripBuilderLive do
 
   use XpressbusWeb, :live_view
 
-  alias Xpressbus.TripItinerary
+  alias Xpressbus.{Accounts, Itineraries, TripItinerary}
 
   import XpressbusWeb.ChyllzAccountArt
 
@@ -190,9 +190,10 @@ defmodule XpressbusWeb.AiTripBuilderLive do
   @budget_keys Enum.map(@budgets, & &1.key)
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(_params, session, socket) do
     {:ok,
      socket
+     |> assign(:current_user, current_user_from_session(session))
      |> assign(:page_title, "Chyllz AI Trip Builder")
      |> assign(:page_description, "Build your dream trip with Chyllz AI.")
      |> assign(:page_robots, "noindex,follow")
@@ -207,6 +208,8 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:searching, false)
      |> assign(:search_empty, false)
      |> assign(:error, nil)
+     |> assign(:saved_itinerary, nil)
+     |> assign(:itinerary, nil)
      |> assign(:generating, false)
      |> assign(:generation_stage, 0)
      |> assign(:generation_total, length(@generation_steps))
@@ -219,6 +222,11 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:today, Date.utc_today())
      |> assign(:calendar_month, Date.beginning_of_month(Date.utc_today()))
      |> reset_trip()}
+  end
+
+  @impl true
+  def handle_params(params, _uri, socket) do
+    {:noreply, maybe_load_saved_itinerary(socket, params)}
   end
 
   @impl true
@@ -445,14 +453,65 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:generation_pid, nil)
      |> assign(:generation_started_at, nil)
      |> assign(:today, Date.utc_today())
+     |> assign(:itinerary, nil)
+     |> assign(:saved_itinerary, nil)
      |> assign(:calendar_month, Date.beginning_of_month(Date.utc_today()))
      |> reset_trip()}
   end
 
   def handle_event("save_itinerary", _params, socket) do
-    {:noreply, put_flash(socket, :info, "Itinerary saved to your trips.")}
+    case socket.assigns[:current_user] do
+      nil ->
+        {:noreply, put_flash(socket, :error, "Sign in to save this itinerary to My Chyllz.")}
+
+      user ->
+        case persist_itinerary(user, socket) do
+          {:ok, saved} ->
+            {:noreply,
+             socket
+             |> assign(:saved_itinerary, saved)
+             |> put_flash(:info, "Itinerary saved to My Chyllz.")}
+
+          {:error, _reason} ->
+            {:noreply,
+             put_flash(socket, :error, "Could not save this itinerary. Please try again.")}
+        end
+    end
   end
 
+  defp persist_itinerary(user, socket) do
+    case socket.assigns[:saved_itinerary] do
+      nil -> Itineraries.save(user, socket.assigns.trip, socket.assigns.itinerary)
+      saved -> Itineraries.update(saved, socket.assigns.trip, socket.assigns.itinerary)
+    end
+  end
+
+  defp current_user_from_session(session) do
+    with user_id when is_binary(user_id) <- session["user_id"],
+         %{} = user <- Accounts.get_user(user_id) do
+      user
+    else
+      _other -> nil
+    end
+  end
+
+  defp maybe_load_saved_itinerary(socket, %{"saved" => saved_id}) when is_binary(saved_id) do
+    with %{} = user <- socket.assigns[:current_user],
+         %{} = saved <- Itineraries.get_for_user(user, saved_id) do
+      socket
+      |> assign(:saved_itinerary, saved)
+      |> assign(:trip, Itineraries.to_trip(saved))
+      |> assign(:itinerary, Itineraries.itinerary(saved))
+      |> assign(:query, saved.destination)
+      |> assign(:error, nil)
+      |> assign(:generating, false)
+      |> assign(:step, 6)
+    else
+      _other -> socket
+    end
+  end
+
+  defp maybe_load_saved_itinerary(socket, _params), do: socket
   @impl true
   def handle_async(:destination_search, {:ok, {:ok, results}}, socket) do
     {:noreply,

@@ -2,7 +2,7 @@ defmodule XpressbusWeb.UserDashboardLive do
   use XpressbusWeb, :live_view
   import XpressbusWeb.BrandComponents
   import XpressbusWeb.ChyllzAccountComponents
-  alias Xpressbus.{Accounts, ChyllzAccount, Repo, Tickets, Weather}
+  alias Xpressbus.{Accounts, ChyllzAccount, Itineraries, Repo, Tickets, Weather}
   alias Xpressbus.Payments.Payment
   alias Xpressbus.Tickets.Ticket
   alias XpressbusWeb.TicketCodes
@@ -443,11 +443,13 @@ defmodule XpressbusWeb.UserDashboardLive do
 
   defp load_chyllz_account(socket, user) do
     overview = ChyllzAccount.overview(user)
+    itineraries = Itineraries.list_for_user(user)
 
     socket
     |> assign(:chyllz_overview, overview)
     |> assign(:chyllz_trips, overview.recent_trips)
     |> assign(:hotel_bookings, overview.hotel_bookings)
+    |> assign(:chyllz_itineraries, itineraries)
     |> assign(:member_since, member_since(user))
     |> assign(:weather_query, overview.default_city)
     |> assign(:weather_city, overview.default_city)
