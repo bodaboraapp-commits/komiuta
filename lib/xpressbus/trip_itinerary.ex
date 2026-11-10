@@ -11,17 +11,6 @@ defmodule Xpressbus.TripItinerary do
 
   alias Xpressbus.GooglePlaces
 
-  @coordinates %{
-    "moscow" => {55.7558, 37.6173},
-    "cox's bazar" => {21.4272, 92.0058},
-    "saint martins" => {20.6000, 92.3000},
-    "rome" => {41.9028, 12.4964},
-    "bangkok" => {13.7563, 100.5018},
-    "new york" => {40.7128, -74.0060},
-    "las vegas" => {36.1699, -115.1398},
-    "istanbul" => {41.0082, 28.9784}
-  }
-
   @hotel_images [
     "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80",
     "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=600&q=80",
@@ -306,14 +295,14 @@ defmodule Xpressbus.TripItinerary do
   def generate(trip) do
     city = city_label(trip)
     moscow? = moscow?(trip)
-    {map_image, map_link, map_attribution, map_source} = map_data(city)
+    {map_embed_url, map_link, map_attribution, map_source} = map_data(city)
     {hotels, hotel_source} = places_or_fallback(trip, city, :hotels, 4)
     {restaurants, restaurant_source} = places_or_fallback(trip, city, :restaurants, 8)
 
     %{
       title: title(trip),
       city: city,
-      map_image: map_image,
+      map_embed_url: map_embed_url,
       map_link: map_link,
       map_attribution: map_attribution,
       map_source: map_source,
@@ -348,40 +337,10 @@ defmodule Xpressbus.TripItinerary do
   end
 
   defp map_data(city) do
-    case GooglePlaces.static_map(city) do
-      url when is_binary(url) ->
-        {url, GooglePlaces.search_url(city, :hotels), "Map data ©2026 Google", :google_maps}
+    embed_url =
+      "https://www.google.com/maps?q=#{URI.encode_www_form(city)}&z=12&output=embed"
 
-      _fallback ->
-        arcgis_map_data(city)
-    end
-  end
-
-  defp arcgis_map_data(city) do
-    key =
-      city
-      |> String.split(",")
-      |> List.first()
-      |> String.downcase()
-      |> String.trim()
-
-    {latitude, longitude} = Map.get(@coordinates, key, {20.0, 20.0})
-    latitude_delta = 0.16
-    longitude_delta = 0.18
-
-    bbox = [
-      Float.round(longitude - longitude_delta, 4),
-      Float.round(latitude - latitude_delta, 4),
-      Float.round(longitude + longitude_delta, 4),
-      Float.round(latitude + latitude_delta, 4)
-    ]
-
-    map_image =
-      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/export" <>
-        "?bbox=#{Enum.join(bbox, ",")}&bboxSR=4326&imageSR=4326&size=800,900&format=png&f=image"
-
-    {map_image, "https://www.google.com/maps/search/?api=1&query=" <> URI.encode_www_form(city),
-     "© Esri, HERE, Garmin, © OpenStreetMap contributors", :fallback}
+    {embed_url, GooglePlaces.search_url(city, :hotels), "Map data ©2026 Google", :google_maps}
   end
 
   defp destination(trip) do
