@@ -24,11 +24,7 @@
       </p>
 
       <div class="mt-6 w-64">
-        <div class="flex items-center justify-between text-[9px] font-black uppercase tracking-[0.18em] text-orange-500/80">
-          <span>Proof of work</span>
-          <span>LVL {@generation_stage + 1}</span>
-        </div>
-        <div class="mt-2 h-2 overflow-hidden rounded-full bg-orange-100">
+        <div class="h-2 overflow-hidden rounded-full bg-orange-100">
           <div
             class="h-full rounded-full bg-gradient-to-r from-[#FF4C00] to-amber-400 transition-all duration-700"
             style={"width: #{min(@generation_stage + 1, 5) * 20}%"}
@@ -1016,7 +1012,7 @@
               </div>
             </article>
 
-            <aside class="relative h-[420px] border-t border-slate-100 lg:sticky lg:top-0 lg:h-screen lg:self-start lg:border-l lg:border-t-0">
+            <aside class="relative h-[420px] border-t border-slate-100 lg:sticky lg:top-20 lg:h-[calc(100vh-6rem)] lg:self-start lg:border-l lg:border-t-0">
               <div
                 id="itinerary-map"
                 class="relative h-[420px] w-full overflow-hidden bg-[#e8efe6] lg:h-full"
