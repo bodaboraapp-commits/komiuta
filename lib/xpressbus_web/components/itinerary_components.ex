@@ -35,7 +35,7 @@ defmodule XpressbusWeb.ItineraryComponents do
           </span>
           Itineraries
         </h2>
-        
+
         <a
           id="plan-new-itinerary"
           href="/trip/build-with-ai"
@@ -44,7 +44,7 @@ defmodule XpressbusWeb.ItineraryComponents do
           Plan a trip <.ui_icon name={:arrow_right} class="h-3.5 w-3.5" />
         </a>
       </div>
-      
+
       <%= if @itineraries == [] do %>
         <div
           id="no-saved-itineraries"
@@ -53,16 +53,16 @@ defmodule XpressbusWeb.ItineraryComponents do
           <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-50 text-[#FF4C00]">
             <.ui_icon name={:sparkles} class="h-6 w-6" />
           </span>
-          
+
           <div class="min-w-0 flex-1">
             <h3 class="text-base font-black text-slate-900">No saved itineraries yet</h3>
-            
+
             <p class="mt-1 text-xs font-bold leading-relaxed text-slate-400">
               Build a trip with Chyllz AI, then press Save on the itinerary to keep every detail
               here.
             </p>
           </div>
-          
+
           <a
             id="start-ai-itinerary"
             href="/trip/build-with-ai"
@@ -97,6 +97,7 @@ defmodule XpressbusWeb.ItineraryComponents do
         status_class: status_class(status),
         status_meta: Itineraries.status_meta(itinerary),
         path: path,
+        manage_path: Itineraries.manage_path(itinerary),
         share_url: Itineraries.share_url(itinerary),
         art: art_variant(itinerary.art),
         dates: Itineraries.dates_label(itinerary),
@@ -119,7 +120,7 @@ defmodule XpressbusWeb.ItineraryComponents do
         ]}>
           <span class="h-1.5 w-1.5 rounded-full bg-current"></span>{@status_label}
         </span>
-        
+
         <a
           id={"itinerary-card-menu-" <> to_string(@itinerary.id)}
           href={@path}
@@ -128,22 +129,22 @@ defmodule XpressbusWeb.ItineraryComponents do
         >
           ...
         </a>
-        
+
         <span class="absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-full bg-slate-950/70 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-white backdrop-blur">
           <.ui_icon name={:clock} class="h-3 w-3" /> {@status_meta}
         </span>
       </div>
-      
+
       <div class="flex flex-1 flex-col p-4">
         <h3 class="line-clamp-2 text-base font-black leading-snug tracking-tight text-slate-900">
           {@itinerary.title}
         </h3>
-        
+
         <p class="mt-1.5 flex items-center gap-1.5 text-[11px] font-bold text-slate-400">
           <.ui_icon name={:pin} class="h-3.5 w-3.5 shrink-0 text-[#FF4C00]" />
           <span class="truncate">{@location}</span>
         </p>
-        
+
         <div class="mt-3 grid grid-cols-3 gap-2">
           <%= for {icon, label, value} <- [
                 {:calendar, "Dates", @dates},
@@ -154,23 +155,23 @@ defmodule XpressbusWeb.ItineraryComponents do
               <span class="flex items-center gap-1 text-[8px] font-black uppercase tracking-[0.12em] text-slate-400">
                 <.ui_icon name={icon} class="h-3 w-3 text-[#FF4C00]" /> {label}
               </span>
-              
+
               <span class="mt-0.5 block truncate text-[10px] font-black text-slate-700">
                 {value}
               </span>
             </div>
           <% end %>
         </div>
-        
+
         <div class="mt-3 flex items-center gap-2">
           <a
             id={"manage-itinerary-" <> to_string(@itinerary.id)}
-            href={@path}
+            href={@manage_path}
             class="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-orange-200 bg-orange-50 px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-[#FF4C00] transition hover:bg-[#FF4C00] hover:text-white"
           >
             <.ui_icon name={:list} class="h-3.5 w-3.5" /> Manage Itinerary
           </a>
-          
+
           <a
             id={"view-itinerary-" <> to_string(@itinerary.id)}
             href={@path}
@@ -181,7 +182,7 @@ defmodule XpressbusWeb.ItineraryComponents do
           >
             <.ui_icon name={:eye} class="h-4 w-4" />
           </a>
-          
+
           <a
             id={"share-itinerary-" <> to_string(@itinerary.id)}
             href={@share_url}

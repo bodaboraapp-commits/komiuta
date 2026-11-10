@@ -4,11 +4,11 @@
       <div class="mx-auto max-w-6xl px-5 pb-5 pt-5 md:px-8">
         <div class="flex items-center justify-between gap-3">
           <a
-            href="/dashboard"
+            href={@back_path}
             class="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-2 text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-white/20"
           >
             <span class="material-symbols-outlined !text-[15px] rotate-180">chevron_right</span>
-            Back to Trips
+            {@back_label}
           </a>
           
           <span class="rounded-full bg-white/15 px-3.5 py-2 text-[10px] font-black uppercase tracking-widest text-white/90">
@@ -33,10 +33,10 @@
           </div>
           
           <a
-            href={"/tickets?ticket_id=#{@ticket.ticket_id}"}
+            href={@view_path}
             class="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-[10px] font-black uppercase tracking-widest text-[#FF4C00] shadow-lg shadow-orange-900/20 transition hover:bg-orange-50"
           >
-            View ticket
+            {@view_label}
           </a>
         </div>
         

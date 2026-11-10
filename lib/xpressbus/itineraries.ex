@@ -186,6 +186,9 @@ defmodule Xpressbus.Itineraries do
   @doc "Path that re-opens the saved itinerary in the trip builder."
   def path(%SavedItinerary{id: id}), do: "/trip/build-with-ai?saved=#{id}"
 
+  @doc "Path that opens the unified itinerary management page."
+  def manage_path(%SavedItinerary{id: id}), do: "/trips/saved/#{id}/manage"
+
   @doc "Path to share the saved itinerary on WhatsApp."
   def share_url(%SavedItinerary{title: title} = saved_itinerary) do
     path = path(saved_itinerary)

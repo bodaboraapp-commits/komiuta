@@ -1,7 +1,7 @@
 defmodule XpressbusWeb.TripManageLive do
   use XpressbusWeb, :live_view
 
-  alias Xpressbus.{Accounts, Tickets}
+  alias Xpressbus.{Accounts, Itineraries, Tickets, TripFinances}
 
   @tabs [
     {"expenses", "Expenses", "payments"},
@@ -24,31 +24,80 @@ defmodule XpressbusWeb.TripManageLive do
 
           ticket ->
             if owns_ticket?(user, ticket) do
-              socket =
-                socket
-                |> assign(:page_title, "Manage itinerary — #{ticket.from} → #{ticket.to}")
-                |> assign(:page_robots, "noindex,nofollow")
-                |> assign(:current_user, user.phone)
-                |> assign(:user, user)
-                |> assign(:ticket, ticket)
-                |> assign(:tabs, @tabs)
-                |> assign(:active_tab, "expenses")
-                |> assign(:categories, @expense_categories)
-                |> assign(:expenses, [])
-                |> assign(:budget, 0)
-                |> assign(:budget_form, false)
-                |> assign(:expense_form, false)
-                |> assign(:expense_category, "Food")
-                |> assign(:error, nil)
-                |> assign(:trip, trip_meta(ticket))
-                |> assign_metrics()
-
-              {:ok, socket}
+              {:ok, start_manage(socket, user, ticket_manage_context(ticket))}
             else
               {:ok, redirect(socket, to: "/dashboard")}
             end
         end
     end
+  end
+
+  def mount(%{"saved_itinerary_id" => saved_itinerary_id}, session, socket) do
+    case load_user(session) do
+      nil ->
+        {:ok, redirect(socket, to: "/user/login")}
+
+      user ->
+        case Itineraries.get_for_user(user, saved_itinerary_id) do
+          nil ->
+            {:ok, redirect(socket, to: "/dashboard?tab=chyllz")}
+
+          saved_itinerary ->
+            {:ok, start_manage(socket, user, itinerary_manage_context(saved_itinerary))}
+        end
+    end
+  end
+
+  defp start_manage(socket, user, context) do
+    finance_scope = TripFinances.scope(user, context.kind, context.finance_id)
+    expenses = TripFinances.list_expenses(finance_scope)
+    budget = TripFinances.get_budget(finance_scope)
+
+    socket
+    |> assign(:page_title, "Manage itinerary — #{context.trip.title}")
+    |> assign(:page_robots, "noindex,nofollow")
+    |> assign(:current_user, user.phone)
+    |> assign(:user, user)
+    |> assign(:finance_scope, finance_scope)
+    |> assign(:tabs, @tabs)
+    |> assign(:active_tab, "expenses")
+    |> assign(:categories, @expense_categories)
+    |> assign(:expenses, expenses)
+    |> assign(:budget, budget)
+    |> assign(:budget_form, false)
+    |> assign(:expense_form, false)
+    |> assign(:expense_category, "Food")
+    |> assign(:error, nil)
+    |> assign(:trip, context.trip)
+    |> assign(:back_path, context.back_path)
+    |> assign(:back_label, context.back_label)
+    |> assign(:view_path, context.view_path)
+    |> assign(:view_label, context.view_label)
+    |> assign_metrics()
+  end
+
+  defp ticket_manage_context(ticket) do
+    %{
+      kind: :ticket,
+      finance_id: ticket.ticket_id,
+      trip: trip_meta(ticket),
+      back_path: "/dashboard",
+      back_label: "Back to Trips",
+      view_path: "/tickets?ticket_id=#{ticket.ticket_id}",
+      view_label: "View ticket"
+    }
+  end
+
+  defp itinerary_manage_context(saved_itinerary) do
+    %{
+      kind: :saved,
+      finance_id: saved_itinerary.id,
+      trip: itinerary_meta(saved_itinerary),
+      back_path: "/dashboard?tab=chyllz",
+      back_label: "Back to itineraries",
+      view_path: "/trip/build-with-ai?saved=#{saved_itinerary.id}",
+      view_label: "View itinerary"
+    }
   end
 
   def handle_event("set_tab", %{"tab" => tab}, socket) do
@@ -70,12 +119,18 @@ defmodule XpressbusWeb.TripManageLive do
   def handle_event("save_budget", %{"budget" => %{"amount" => amount}}, socket) do
     case parse_amount(amount) do
       {:ok, value} ->
-        socket
-        |> assign(:budget, value)
-        |> assign(:budget_form, false)
-        |> assign(:error, nil)
-        |> assign_metrics()
-        |> then(&{:noreply, &1})
+        case TripFinances.set_budget(socket.assigns.finance_scope, value) do
+          {:ok, stored_budget} ->
+            {:noreply,
+             socket
+             |> assign(:budget, stored_budget)
+             |> assign(:budget_form, false)
+             |> assign(:error, nil)
+             |> assign_metrics()}
+
+          {:error, _changeset} ->
+            {:noreply, assign(socket, :error, "Enter a valid budget amount.")}
+        end
 
       :error ->
         {:noreply, assign(socket, :error, "Enter a valid budget amount.")}
@@ -98,26 +153,35 @@ defmodule XpressbusWeb.TripManageLive do
       true ->
         {:ok, value} = amount
 
-        expense = %{
-          id: System.unique_integer([:positive]),
+        attrs = %{
           label: label,
           category: category,
           amount: value,
-          date: Date.utc_today()
+          spent_on: Date.utc_today()
         }
 
-        {:noreply,
-         socket
-         |> assign(:expenses, socket.assigns.expenses ++ [expense])
-         |> assign(:expense_form, false)
-         |> assign(:error, nil)
-         |> assign_metrics()}
+        case TripFinances.add_expense(socket.assigns.finance_scope, attrs) do
+          {:ok, _expense} ->
+            {:noreply,
+             socket
+             |> assign(:expenses, TripFinances.list_expenses(socket.assigns.finance_scope))
+             |> assign(:expense_form, false)
+             |> assign(:error, nil)
+             |> assign_metrics()}
+
+          {:error, _changeset} ->
+            {:noreply, assign(socket, :error, "Could not save that expense.")}
+        end
     end
   end
 
   def handle_event("delete_expense", %{"id" => id}, socket) do
-    expenses = Enum.reject(socket.assigns.expenses, &(Integer.to_string(&1.id) == id))
-    {:noreply, socket |> assign(:expenses, expenses) |> assign_metrics()}
+    :ok = TripFinances.delete_expense(socket.assigns.finance_scope, id)
+
+    {:noreply,
+     socket
+     |> assign(:expenses, TripFinances.list_expenses(socket.assigns.finance_scope))
+     |> assign_metrics()}
   end
 
   defp assign_metrics(socket) do
@@ -201,6 +265,54 @@ defmodule XpressbusWeb.TripManageLive do
     end
   end
 
+  defp itinerary_meta(saved_itinerary) do
+    start_date = saved_itinerary.start_date
+    end_date = saved_itinerary.end_date
+
+    date_label =
+      cond do
+        start_date && end_date ->
+          "#{Calendar.strftime(start_date, "%a %d %b")} – #{Calendar.strftime(end_date, "%a %d %b %Y")}"
+
+        start_date ->
+          Calendar.strftime(start_date, "%a %d %b %Y")
+
+        true ->
+          "Dates to be confirmed"
+      end
+
+    subtitle =
+      case saved_itinerary.country do
+        country when is_binary(country) and country != "" ->
+          "Chyllz AI itinerary · #{country}"
+
+        _other ->
+          "Chyllz AI itinerary"
+      end
+
+    %{
+      title: saved_itinerary.title,
+      subtitle: subtitle,
+      date_label: date_label,
+      days: Itineraries.duration_days(saved_itinerary),
+      party: party_label(saved_itinerary.travel_party),
+      status: status_label(Itineraries.status(saved_itinerary)),
+      from: saved_itinerary.destination,
+      to: saved_itinerary.country || "",
+      reference: "AI-#{saved_itinerary.id}"
+    }
+  end
+
+  defp party_label("solo"), do: "Only Me"
+  defp party_label("couple"), do: "A Couple"
+  defp party_label("family"), do: "Family"
+  defp party_label("friends"), do: "Friends"
+  defp party_label(_party), do: "Travellers"
+
+  defp status_label(:upcoming), do: "Upcoming"
+  defp status_label(:ongoing), do: "Ongoing"
+  defp status_label(:completed), do: "Completed"
+
   defp trip_meta(ticket) do
     date = ticket.travel_date || Date.utc_today()
 
@@ -244,8 +356,11 @@ defmodule XpressbusWeb.TripManageLive do
 
   defp total_spent(expenses), do: expenses |> Enum.map(& &1.amount) |> Enum.sum()
   defp remaining(budget, spent), do: max(budget - spent, 0)
-  defp used_percent(0, _spent), do: 0
-  defp used_percent(budget, spent), do: min(round(spent / budget * 100), 100)
+  defp used_percent(budget, _spent) when budget == 0, do: 0
+
+  defp used_percent(budget, spent) when is_number(budget) and is_number(spent) do
+    min(round(spent / budget * 100), 100)
+  end
 
   defp meal_total(expenses) do
     expenses

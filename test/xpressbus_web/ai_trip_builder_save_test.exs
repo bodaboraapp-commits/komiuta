@@ -52,6 +52,12 @@ defmodule XpressbusWeb.AiTripBuilderSaveTest do
     assert has_element?(dashboard, "#saved-itineraries")
     assert has_element?(dashboard, "#itinerary-card-#{saved.id}")
     assert has_element?(dashboard, "#manage-itinerary-#{saved.id}")
+
+    assert has_element?(
+             dashboard,
+             "#manage-itinerary-#{saved.id}[href='/trips/saved/#{saved.id}/manage']"
+           )
+
     assert has_element?(dashboard, "#itinerary-card-#{saved.id} h3", saved.title)
     assert has_element?(dashboard, "#itinerary-card-#{saved.id}", "Cox's Bazar, Bangladesh")
 

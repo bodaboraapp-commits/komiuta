@@ -4,7 +4,7 @@ defmodule XpressbusWeb.TripManageLiveTest do
   import Phoenix.LiveViewTest
   import Xpressbus.AccountsFixtures
 
-  alias Xpressbus.Repo
+  alias Xpressbus.{Itineraries, Repo, TripItinerary}
   alias Xpressbus.Tickets.Ticket
 
   defp ticket_fixture(user, attrs) do
@@ -77,5 +77,98 @@ defmodule XpressbusWeb.TripManageLiveTest do
 
     assert {:error, {:redirect, %{to: "/dashboard"}}} =
              live(conn, ~p"/trips/#{ticket.ticket_id}/manage")
+  end
+
+  test "budget and expenses persist after reloading the page", %{conn: conn} do
+    user = user_fixture()
+    ticket = ticket_fixture(user, %{})
+    session = Plug.Test.init_test_session(conn, %{user_id: user.id})
+
+    {:ok, view, _html} = live(session, ~p"/trips/#{ticket.ticket_id}/manage")
+
+    view |> element("button", "Add Trip Budget") |> render_click()
+
+    view
+    |> form("form[phx-submit='save_budget']", %{"budget" => %{"amount" => "25000"}})
+    |> render_submit()
+
+    view |> element("button", "+ Add Expense") |> render_click()
+
+    view
+    |> form("form[phx-submit='save_expense']", %{
+      "expense" => %{"label" => "Lunch", "category" => "Food", "amount" => "850"}
+    })
+    |> render_submit()
+
+    {:ok, _reloaded, html} = live(session, ~p"/trips/#{ticket.ticket_id}/manage")
+
+    assert html =~ "KES 850"
+    assert html =~ "Lunch"
+    assert html =~ "KES 25,000"
+  end
+
+  test "a saved AI itinerary uses the same management page and persists expenses", %{conn: conn} do
+    user = user_fixture()
+    today = Date.utc_today()
+
+    trip = %{
+      destination: "Diani Beach",
+      country: "Kenya",
+      start_date: Date.add(today, 2),
+      end_date: Date.add(today, 4),
+      travel_party: "couple",
+      budget: "balanced",
+      preferences: ["Beach Vacations"],
+      latitude: 21.4272,
+      longitude: 92.0058,
+      place_source: :geocoding
+    }
+
+    {:ok, saved} = Itineraries.save(user, trip, TripItinerary.generate(trip))
+    session = Plug.Test.init_test_session(conn, %{user_id: user.id})
+
+    {:ok, view, html} = live(session, ~p"/trips/saved/#{saved.id}/manage")
+
+    assert html =~ saved.title
+    assert has_element?(view, "#trip-tab-expenses")
+
+    view |> element("button", "+ Add Expense") |> render_click()
+
+    view
+    |> form("form[phx-submit='save_expense']", %{
+      "expense" => %{"label" => "Boat ride", "category" => "Activities", "amount" => "2500"}
+    })
+    |> render_submit()
+
+    {:ok, _reloaded, reloaded_html} = live(session, ~p"/trips/saved/#{saved.id}/manage")
+
+    assert reloaded_html =~ "Boat ride"
+    assert reloaded_html =~ "KES 2,500"
+  end
+
+  test "another user cannot open a saved itinerary management page", %{conn: conn} do
+    owner = user_fixture()
+    other = user_fixture()
+    today = Date.utc_today()
+
+    trip = %{
+      destination: "Rome",
+      country: "Italy",
+      start_date: Date.add(today, 1),
+      end_date: Date.add(today, 3),
+      travel_party: "solo",
+      budget: "luxury",
+      preferences: [],
+      latitude: 41.9028,
+      longitude: 12.4964,
+      place_source: :geocoding
+    }
+
+    {:ok, saved} = Itineraries.save(owner, trip, TripItinerary.generate(trip))
+
+    session = Plug.Test.init_test_session(conn, %{user_id: other.id})
+
+    assert {:error, {:redirect, %{to: "/dashboard?tab=chyllz"}}} =
+             live(session, ~p"/trips/saved/#{saved.id}/manage")
   end
 end
