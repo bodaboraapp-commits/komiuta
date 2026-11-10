@@ -328,8 +328,49 @@ defmodule Xpressbus.TripItinerary do
 
   defp title(trip) do
     destination = destination(trip)
+    focus = title_focus(trip)
+    article = if focus =~ ~r/^[aeiou]/i, do: "An", else: "A"
 
-    "#{destination} Grandeur: #{party_title(trip)} #{budget_title(trip)} Escape"
+    "#{destination}: #{article} #{focus} #{budget_title(trip)} Escape"
+  end
+
+  # The title is composed from the traveller's actual choices, so two briefs
+  # never share the same generic headline. Preferences are the primary signal;
+  # when none were chosen, the travel party sets the tone.
+  defp title_focus(trip) do
+    case trip.preferences do
+      [preference | _rest] -> preference_focus(preference)
+      _other -> party_focus(trip)
+    end
+  end
+
+  defp preference_focus("Adventure Travel"), do: "Adventure"
+  defp preference_focus("City Breaks"), do: "City"
+  defp preference_focus("Glamping"), do: "Glamping"
+  defp preference_focus("Beach Vacations"), do: "Beach"
+  defp preference_focus("Relaxing Getaways"), do: "Slow"
+  defp preference_focus("Nature Escapes"), do: "Nature"
+  defp preference_focus("Road Trips"), do: "Road Trip"
+  defp preference_focus("Food Tourism"), do: "Food & Culture"
+  defp preference_focus("Cruise Vacations"), do: "Coastal"
+  defp preference_focus("Wildlife Safaris"), do: "Wildlife"
+  defp preference_focus("Art Galleries"), do: "Art & Culture"
+  defp preference_focus("Horse Riding"), do: "Equestrian"
+  defp preference_focus("Cultural Exploration"), do: "Cultural"
+
+  defp preference_focus(preference) when is_binary(preference) and preference != "",
+    do: preference
+
+  defp preference_focus(_preference), do: "Personal"
+
+  defp party_focus(trip) do
+    case trip.travel_party do
+      "solo" -> "Solo"
+      "couple" -> "Romantic"
+      "family" -> "Family"
+      "friends" -> "Group"
+      _other -> "Personal"
+    end
   end
 
   defp city_label(trip) do
@@ -356,16 +397,6 @@ defmodule Xpressbus.TripItinerary do
   end
 
   defp moscow?(trip), do: String.downcase(destination(trip)) =~ "moscow"
-
-  defp party_title(trip) do
-    case trip.travel_party do
-      "solo" -> "A Solo"
-      "couple" -> "A Couple's"
-      "family" -> "A Family"
-      "friends" -> "A Friends'"
-      _other -> "A Personal"
-    end
-  end
 
   defp party_label(trip) do
     case trip.travel_party do
@@ -455,7 +486,7 @@ defmodule Xpressbus.TripItinerary do
     high-end shopping and fine dining, making it ideal for #{party_label(trip)} desiring convenience and \
     sophistication. Look for properties that offer exceptional concierge services, private car transfers \
     and exclusive amenities such as a luxury spa, indoor pool or a gourmet restaurant with panoramic city \
-    views. Prioritise hotels known for their historical grandeur combined with modern comforts. Book well \
+    views. Prioritise hotels known for their historic character combined with modern comforts. Book well \
     in advance, especially around major events or peak seasons, to secure the best suites and rates. \
     Personalised experiences such as private butlers or tailored tour arrangements make the stay truly \
     indulgent.
