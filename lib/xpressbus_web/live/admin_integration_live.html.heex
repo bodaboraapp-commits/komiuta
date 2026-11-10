@@ -913,6 +913,113 @@
               </div>
             <% end %>
 
+            <%!-- Google Maps Platform Integration --%>
+            <%= if @current_provider == "google_maps" do %>
+              <% maps_config = provider_config(@settings, "google_maps") %>
+              <% maps_key = Map.get(maps_config, "api_key") %>
+              <% maps_connected = is_binary(maps_key) and String.trim(maps_key) != "" %>
+              <div class="animate-fade-in-up space-y-8">
+                <form id="google-maps-form" phx-submit="save" class="space-y-8">
+                  <input type="hidden" name="provider" value="google_maps" />
+
+                  <div class="flex items-center justify-between p-4 bg-slate-50 rounded-[2rem] border border-slate-100">
+                    <div>
+                      <h4 class="font-black text-slate-900 text-sm uppercase tracking-widest">
+                        Google Maps Configuration
+                      </h4>
+                      <p class="text-[11px] font-bold text-slate-400">
+                        Maps, places and route geocoding for the Komiuta platform
+                      </p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        phx-click="toggle_active"
+                        phx-value-provider="google_maps"
+                        checked={Map.get(@settings["google_maps"], :active, true)}
+                        class="sr-only peer"
+                      />
+                      <div class="relative w-20 h-9 bg-[#FF4C00] peer-focus:outline-none rounded-full peer-checked:after:translate-x-[3rem] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-7 after:w-7 after:transition-all peer-checked:bg-green-500">
+                        <span class={[
+                          "absolute inset-0 flex items-center justify-end pr-3 text-[11px] font-black uppercase tracking-wider text-white transition-opacity duration-200 z-10 drop-shadow-sm",
+                          if(Map.get(@settings["google_maps"], :active, true), do: "opacity-0")
+                        ]}>OFF</span>
+                        <span class={[
+                          "absolute inset-0 flex items-center justify-start pl-3 text-[11px] font-black uppercase tracking-wider text-white transition-opacity duration-200 opacity-0 z-10 drop-shadow-sm",
+                          if(Map.get(@settings["google_maps"], :active, true), do: "opacity-100")
+                        ]}>ON</span>
+                      </div>
+                    </label>
+                  </div>
+
+                  <div class="grid grid-cols-1 gap-6">
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">
+                        Google Maps API Key
+                      </label>
+                      <input
+                        type="password"
+                        name="config[api_key]"
+                        value={maps_config["api_key"]}
+                        placeholder="AIza..."
+                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                      />
+                      <p class="mt-3 text-[10px] font-bold leading-relaxed text-slate-400">
+                        Create a key in Google Cloud Console → APIs &amp; Services → Credentials.
+                        Enable Maps JavaScript API, Places API and Geocoding API as needed. The key
+                        is stored in the integrations table and is never rendered on the public site.
+                      </p>
+                    </div>
+                  </div>
+
+                  <span class={[
+                    "inline-flex items-center gap-2 rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-widest",
+                    maps_connected &&
+                      "bg-emerald-50 text-emerald-700 border border-emerald-100",
+                    !maps_connected &&
+                      "bg-amber-50 text-amber-700 border border-amber-100"
+                  ]}>
+                    <span class={[
+                      "w-2 h-2 rounded-full",
+                      maps_connected && "bg-emerald-500",
+                      !maps_connected && "bg-amber-500"
+                    ]}></span>
+                    {if maps_connected,
+                      do: "Google Maps key saved",
+                      else: "Google Maps key not configured"}
+                  </span>
+
+                  <div class="rounded-[1.5rem] bg-orange-50 border border-orange-100 p-6">
+                    <h4 class="text-xs font-black text-slate-900 uppercase tracking-widest mb-2">
+                      Where this key is used
+                    </h4>
+                    <p class="text-[11px] font-bold leading-relaxed text-slate-600">
+                      The saved key is available to the backend through
+                      <code class="font-mono text-[10px]">Xpressbus.Integrations.google_maps_api_key/0</code>
+                      for maps, route geocoding and place search. Restrict the key to the Komiuta
+                      website origins and the required Google Maps APIs.
+                    </p>
+                  </div>
+
+                  <div class="pt-2 flex flex-wrap gap-4">
+                    <button
+                      type="submit"
+                      class="flex-1 min-w-[220px] bg-[#FF4C00] text-white py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-orange-100 hover:bg-[#E64400] transition-all transform active:scale-95"
+                    >
+                      Save Google Maps Key
+                    </button>
+                    <button
+                      type="button"
+                      phx-click="test_connection"
+                      class="px-10 bg-slate-900 text-white py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-slate-200 hover:bg-black transition-all"
+                    >
+                      Test API
+                    </button>
+                  </div>
+                </form>
+              </div>
+            <% end %>
+
             <%!-- Chyllz AI provider (Chat / Lens / Receipt / Food) --%>
             <%= if @current_provider == "ai" do %>
               <% ai_config = provider_config(@settings, "ai") %>

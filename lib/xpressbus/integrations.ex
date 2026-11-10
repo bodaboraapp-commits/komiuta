@@ -71,6 +71,25 @@ defmodule Xpressbus.Integrations do
 
   def login_methods, do: @login_methods
 
+  @doc """
+  Returns the saved Google Maps Platform configuration for the backend.
+
+  The API key is only returned to server-side callers; the admin page reads it
+  directly from the integrations table so it can be replaced by the operator.
+  """
+  def google_maps_config do
+    case get_config_by_provider("google_maps") do
+      %{active: true, config: config} when is_map(config) ->
+        %{api_key: trimmed(config["api_key"])}
+
+      _ ->
+        %{api_key: nil}
+    end
+  end
+
+  @doc "The active Google Maps API key, or nil when the integration is off or empty."
+  def google_maps_api_key, do: google_maps_config().api_key
+
   @ai_default_base_url "https://api.openai.com/v1"
   @ai_default_model "gpt-4o-mini"
   @ai_fields ~w(api_key base_url model vision_model timeout)

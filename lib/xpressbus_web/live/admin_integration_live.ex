@@ -47,6 +47,11 @@ defmodule XpressbusWeb.AdminIntegrationLive do
       label: "WeatherAPI",
       icon: "wb_sunny",
       description: "WeatherAPI.com key for the live Chyllz weather widget"
+    },
+    "google_maps" => %{
+      label: "Google Maps",
+      icon: "location_on",
+      description: "Google Maps Platform key for maps, places and geocoding"
     }
   }
 
@@ -208,6 +213,9 @@ defmodule XpressbusWeb.AdminIntegrationLive do
 
       "weather_api" ->
         test_weather_api(socket, socket.assigns.settings["weather_api"])
+
+      "google_maps" ->
+        test_google_maps(socket, socket.assigns.settings["google_maps"])
 
       "ai" ->
         test_ai(socket)
@@ -580,6 +588,54 @@ defmodule XpressbusWeb.AdminIntegrationLive do
       nil -> %{}
       %{config: config} when is_map(config) -> config
       _ -> %{}
+    end
+  end
+
+  defp test_google_maps(socket, setting) do
+    config =
+      case setting do
+        %{config: config} when is_map(config) -> config
+        _other -> %{}
+      end
+
+    key = config |> Map.get("api_key") |> to_string() |> String.trim()
+
+    if key == "" do
+      {:noreply, put_flash(socket, :error, "Missing Google Maps API key. Save one first.")}
+    else
+      case Req.get("https://maps.googleapis.com/maps/api/geocode/json",
+             params: [address: "Nairobi", key: key],
+             retry: false,
+             receive_timeout: 8_000
+           ) do
+        {:ok, %Req.Response{status: 200, body: body}} when is_map(body) ->
+          case body["status"] do
+            "OK" ->
+              {:noreply,
+               put_flash(
+                 socket,
+                 :info,
+                 "Google Maps connection successful — Geocoding API accepted this key."
+               )}
+
+            status ->
+              message = body["error_message"] || "Google Maps returned #{status}."
+
+              {:noreply,
+               put_flash(
+                 socket,
+                 :error,
+                 "Google Maps rejected this key: #{message}"
+               )}
+          end
+
+        {:ok, %Req.Response{status: status}} ->
+          {:noreply,
+           put_flash(socket, :error, "Google Maps returned HTTP #{status}. Check the key.")}
+
+        {:error, reason} ->
+          {:noreply, put_flash(socket, :error, "Google Maps check failed: #{inspect(reason)}")}
+      end
     end
   end
 end
