@@ -18,7 +18,7 @@ defmodule Xpressbus.GooglePlaces do
   @endpoint "https://places.googleapis.com/v1/places:searchText"
   @cache :xpressbus_google_places_cache
   @cache_ttl :timer.hours(6)
-  @field_mask "places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.googleMapsUri,places.photos,places.location"
+  @field_mask "places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.googleMapsUri,places.photos,places.location,places.types,places.primaryType"
   @fallback_images [
     "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
     "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=600&q=80",
@@ -29,6 +29,12 @@ defmodule Xpressbus.GooglePlaces do
     "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=600&q=80",
     "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=600&q=80"
   ]
+
+  @included_types %{hotels: "lodging", restaurants: "restaurant"}
+
+  @hotel_types ~w(lodging hotel resort_hotel guest_house motel bed_and_breakfast inn extended_stay_hotel campground hostel cottage farmstay)
+
+  @restaurant_types ~w(restaurant cafe bar bakery meal_takeaway meal_delivery coffee_shop food_court ice_cream_shop sandwich_shop)
 
   @doc """
   Returns up to `limit` places ranked by Google rating and review volume.
@@ -86,12 +92,13 @@ defmodule Xpressbus.GooglePlaces do
 
   defp fetch_recommendations(city, category, limit, opts) do
     with key when is_binary(key) and key != "" <- api_key(),
-         {:ok, body} <- search_text(key, query(city, category), opts) do
+         {:ok, body} <- search_text(key, query(city, category), category, opts) do
       places =
         body
         |> Map.get("places", [])
         |> Enum.map(&parse_place(&1, key))
         |> Enum.reject(&is_nil/1)
+        |> Enum.filter(&type_matches?(&1, category))
         |> Enum.filter(&within_radius?(&1, opts))
         |> Enum.sort_by(&score/1, :desc)
         |> Enum.take(limit)
@@ -112,9 +119,15 @@ defmodule Xpressbus.GooglePlaces do
   defp query(city, :hotels), do: "best hotels and accommodation in #{city}"
   defp query(city, :restaurants), do: "best restaurants in #{city}"
 
-  defp search_text(key, text_query, opts) do
+  defp search_text(key, text_query, category, opts) do
     request_body =
-      %{textQuery: text_query, maxResultCount: 10, languageCode: "en"}
+      %{
+        textQuery: text_query,
+        maxResultCount: 10,
+        languageCode: "en",
+        includedType: Map.fetch!(@included_types, category),
+        strictTypeFiltering: true
+      }
       |> put_location_bias(opts)
 
     request = [
@@ -160,6 +173,12 @@ defmodule Xpressbus.GooglePlaces do
     end
   end
 
+  defp type_matches?(place, category) do
+    types = Map.get(place, :types, [])
+    allowed = if category == :hotels, do: @hotel_types, else: @restaurant_types
+    types == [] or Enum.any?(types, &(&1 in allowed))
+  end
+
   defp within_radius?(place, opts) do
     latitude = Keyword.get(opts, :latitude)
     longitude = Keyword.get(opts, :longitude)
@@ -197,6 +216,8 @@ defmodule Xpressbus.GooglePlaces do
         address: place["formattedAddress"] || "",
         rating: normalize_rating(place["rating"]),
         reviews: place["userRatingCount"] || 0,
+        types: place["types"] || [],
+        primary_type: place["primaryType"],
         latitude: get_in(place, ["location", "latitude"]),
         longitude: get_in(place, ["location", "longitude"]),
         image: photo_url(place, key),
