@@ -203,6 +203,7 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:generation_stage, 0)
      |> assign(:generation_message, hd(@generation_steps))
      |> assign(:generation_ref, nil)
+     |> assign(:generation_pid, nil)
      |> assign(:generation_started_at, nil)
      |> assign(:today, Date.utc_today())
      |> assign(:calendar_month, Date.beginning_of_month(Date.utc_today()))
@@ -390,10 +391,11 @@ defmodule XpressbusWeb.AiTripBuilderLive do
       parent = self()
       trip = socket.assigns.trip
 
-      {_pid, ref} =
+      {pid, ref} =
         spawn_monitor(fn -> send(parent, {:generation_done, TripItinerary.generate(trip)}) end)
 
       Process.send_after(self(), :generation_tick, 1_200)
+      Process.send_after(self(), :generation_timeout, 9_500)
 
       {:noreply,
        socket
@@ -402,6 +404,7 @@ defmodule XpressbusWeb.AiTripBuilderLive do
        |> assign(:generation_stage, 0)
        |> assign(:generation_message, hd(@generation_steps))
        |> assign(:generation_ref, ref)
+       |> assign(:generation_pid, pid)
        |> assign(:generation_started_at, System.monotonic_time(:millisecond))}
     end
   end
@@ -420,6 +423,7 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:generation_stage, 0)
      |> assign(:generation_message, hd(@generation_steps))
      |> assign(:generation_ref, nil)
+     |> assign(:generation_pid, nil)
      |> assign(:generation_started_at, nil)
      |> assign(:today, Date.utc_today())
      |> assign(:calendar_month, Date.beginning_of_month(Date.utc_today()))
@@ -502,23 +506,44 @@ defmodule XpressbusWeb.AiTripBuilderLive do
   end
 
   def handle_info({:generation_done, itinerary}, socket) do
-    if socket.assigns.generation_ref do
-      Process.demonitor(socket.assigns.generation_ref, [:flush])
-    end
+    if socket.assigns.generating do
+      if socket.assigns.generation_ref do
+        Process.demonitor(socket.assigns.generation_ref, [:flush])
+      end
 
-    started_at = socket.assigns.generation_started_at || System.monotonic_time(:millisecond)
-    remaining = max(4_500 - (System.monotonic_time(:millisecond) - started_at), 0)
+      started_at = socket.assigns.generation_started_at || System.monotonic_time(:millisecond)
+      remaining = max(5_000 - (System.monotonic_time(:millisecond) - started_at), 0)
 
-    if remaining > 0 do
-      Process.send_after(self(), {:generation_complete, itinerary}, remaining)
-      {:noreply, assign(socket, :generation_ref, nil)}
+      if remaining > 0 do
+        Process.send_after(self(), {:generation_complete, itinerary}, remaining)
+        {:noreply, socket |> assign(:generation_ref, nil) |> assign(:generation_pid, nil)}
+      else
+        complete_generation(socket, itinerary)
+      end
     else
-      complete_generation(socket, itinerary)
+      {:noreply, socket}
     end
   end
 
   def handle_info({:generation_complete, itinerary}, socket) do
-    complete_generation(socket, itinerary)
+    if socket.assigns.generating do
+      complete_generation(socket, itinerary)
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_info(:generation_timeout, socket) do
+    if socket.assigns.generating do
+      if is_pid(socket.assigns.generation_pid) do
+        Process.exit(socket.assigns.generation_pid, :kill)
+      end
+
+      itinerary = TripItinerary.generate(socket.assigns.trip, live_places: false)
+      complete_generation(socket, itinerary)
+    else
+      {:noreply, socket}
+    end
   end
 
   def handle_info({:DOWN, ref, :process, _pid, reason}, socket) do
@@ -542,6 +567,7 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      socket
      |> assign(:generating, false)
      |> assign(:generation_ref, nil)
+     |> assign(:generation_pid, nil)
      |> assign(:itinerary, itinerary)
      |> assign(:step, 6)}
   end

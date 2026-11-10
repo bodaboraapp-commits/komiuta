@@ -291,13 +291,19 @@ defmodule Xpressbus.TripItinerary do
     }
   ]
 
-  @doc "Builds the display-ready itinerary for a trip brief."
-  def generate(trip) do
+  @doc """
+  Builds the display-ready itinerary for a trip brief.
+
+  Pass `live_places: false` to skip Google Places entirely (used when the
+  generation deadline is reached and the page must render immediately).
+  """
+  def generate(trip, opts \\ []) do
     city = city_label(trip)
     moscow? = moscow?(trip)
-    {map_embed_url, map_link, map_attribution, map_source} = map_data(city, trip)
-    {hotels, hotel_source} = places_or_fallback(trip, city, :hotels, 4)
-    {restaurants, restaurant_source} = places_or_fallback(trip, city, :restaurants, 8)
+    {map_embed_url, map_link, map_attribution, map_source} = map_data(city)
+
+    {hotels, hotel_source, restaurants, restaurant_source} =
+      recommendations(trip, city, Keyword.get(opts, :live_places, true))
 
     %{
       title: title(trip),
@@ -336,19 +342,11 @@ defmodule Xpressbus.TripItinerary do
     end
   end
 
-  defp map_data(city, trip) do
+  defp map_data(city) do
     embed_url =
-      case {Map.get(trip, :latitude), Map.get(trip, :longitude)} do
-        {latitude, longitude} when is_number(latitude) and is_number(longitude) ->
-          # A coordinate query renders a clean marker without Google's place info
-          # card, keeping the itinerary map uncluttered.
-          "https://www.google.com/maps?q=#{latitude},#{longitude}&z=12&output=embed"
+      "https://www.google.com/maps?q=#{URI.encode_www_form(city)}&z=12&output=embed"
 
-        _other ->
-          "https://www.google.com/maps?q=#{URI.encode_www_form(city)}&z=12&output=embed"
-      end
-
-    {embed_url, GooglePlaces.search_url(city, :hotels), "Map data (c)2026 Google", :google_maps}
+    {embed_url, GooglePlaces.search_url(city, :hotels), "Map data ©2026 Google", :google_maps}
   end
 
   defp destination(trip) do
@@ -500,6 +498,36 @@ defmodule Xpressbus.TripItinerary do
     cafés and food streets they recommend. Reserve popular tables in advance and leave room for spontaneous \
     stops — the best meals are often the ones you discover while wandering.
     """
+  end
+
+  defp recommendations(trip, city, false) do
+    {hotels, hotel_source} = places_or_fallback(trip, city, :hotels, 4)
+    {restaurants, restaurant_source} = places_or_fallback(trip, city, :restaurants, 8)
+
+    {hotels, hotel_source, restaurants, restaurant_source}
+  end
+
+  defp recommendations(trip, city, true) do
+    results =
+      [{:hotels, 4}, {:restaurants, 8}]
+      |> Task.async_stream(
+        fn {category, limit} -> {category, places_or_fallback(trip, city, category, limit)} end,
+        max_concurrency: 2,
+        timeout: 5_000,
+        on_timeout: :kill_task
+      )
+      |> Enum.reduce(%{}, fn
+        {:ok, {category, result}}, acc -> Map.put(acc, category, result)
+        {:exit, _reason}, acc -> acc
+      end)
+
+    {hotels, hotel_source} =
+      Map.get(results, :hotels, {fallback_places(trip, city, :hotels), :curated})
+
+    {restaurants, restaurant_source} =
+      Map.get(results, :restaurants, {fallback_places(trip, city, :restaurants), :curated})
+
+    {hotels, hotel_source, restaurants, restaurant_source}
   end
 
   defp places_or_fallback(trip, city, category, limit) do

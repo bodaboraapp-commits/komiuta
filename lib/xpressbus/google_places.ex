@@ -112,7 +112,7 @@ defmodule Xpressbus.GooglePlaces do
     request = [
       json: %{textQuery: text_query, maxResultCount: 10, languageCode: "en"},
       headers: [{"X-Goog-Api-Key", key}, {"X-Goog-FieldMask", @field_mask}],
-      receive_timeout: 8_000,
+      receive_timeout: 3_500,
       retry: false
     ]
 
