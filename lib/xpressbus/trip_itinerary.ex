@@ -181,30 +181,22 @@ defmodule Xpressbus.TripItinerary do
       |> String.trim()
 
     {latitude, longitude} = Map.get(@coordinates, key, {20.0, 20.0})
+    latitude_delta = 0.16
+    longitude_delta = 0.18
 
-    {tile_url(latitude, longitude, 12),
-     "https://www.google.com/maps/search/?api=1&query=" <> URI.encode_www_form(city),
-     "© OpenStreetMap contributors"}
-  end
+    bbox = [
+      Float.round(longitude - longitude_delta, 4),
+      Float.round(latitude - latitude_delta, 4),
+      Float.round(longitude + longitude_delta, 4),
+      Float.round(latitude + latitude_delta, 4)
+    ]
 
-  defp tile_url(latitude, longitude, zoom) do
-    tile_count = Integer.pow(2, zoom)
+    map_image =
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/export" <>
+        "?bbox=#{Enum.join(bbox, ",")}&bboxSR=4326&imageSR=4326&size=800,900&format=png&f=image"
 
-    x =
-      round((longitude + 180.0) / 360.0 * tile_count)
-      |> Integer.mod(tile_count)
-
-    latitude_rad = latitude * :math.pi() / 180.0
-
-    y =
-      round(
-        (1.0 - :math.log(:math.tan(latitude_rad) + 1.0 / :math.cos(latitude_rad)) / :math.pi()) /
-          2.0 * tile_count
-      )
-      |> max(0)
-      |> min(tile_count - 1)
-
-    "https://tile.openstreetmap.org/#{zoom}/#{x}/#{y}.png"
+    {map_image, "https://www.google.com/maps/search/?api=1&query=" <> URI.encode_www_form(city),
+     "© Esri, HERE, Garmin, © OpenStreetMap contributors"}
   end
 
   defp destination(trip) do
