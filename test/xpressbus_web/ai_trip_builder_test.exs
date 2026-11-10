@@ -111,9 +111,13 @@ defmodule XpressbusWeb.AiTripBuilderTest do
     view |> element("#budget-next") |> render_click()
 
     assert has_element?(view, "#step-preferences")
+    assert has_element?(view, "#preference-adventure-travel")
+    assert has_element?(view, "#preference-beach-vacations")
+    assert has_element?(view, "#preference-food-tourism")
+    assert has_element?(view, "#preference-cultural-exploration")
 
-    view |> element("#preference-beach") |> render_click()
-    view |> element("#preference-food") |> render_click()
+    view |> element("#preference-beach-vacations") |> render_click()
+    view |> element("#preference-food-tourism") |> render_click()
     view |> element("#build-itinerary") |> render_click()
 
     assert has_element?(view, "#step-summary")
@@ -123,7 +127,7 @@ defmodule XpressbusWeb.AiTripBuilderTest do
     assert html =~ Calendar.strftime(end_date, "%d %b %Y")
     assert html =~ "Friends"
     assert html =~ "Balanced"
-    assert html =~ "Beach · Food"
+    assert html =~ "Beach Vacations · Food Tourism"
     assert has_element?(view, "#open-chyllz-ai")
     assert has_element?(view, "#browse-chyllz")
   end

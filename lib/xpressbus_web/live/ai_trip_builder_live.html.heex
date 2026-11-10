@@ -528,53 +528,69 @@
         <% end %>
 
         <%= if @step == 5 do %>
-          <div id="step-preferences" class="mx-auto max-w-xl">
-            <p class="text-[10px] font-black uppercase tracking-[0.24em] text-[#FF4C00]">
-              Step 05 · Preferences
-            </p>
-            <h1 class="mt-2 text-2xl font-black tracking-tight text-slate-900 md:text-3xl">
-              What do you love doing?
+          <div id="step-preferences" class="mx-auto max-w-3xl">
+            <div class="flex justify-center">
+              <div class="inline-flex max-w-full items-center gap-2 rounded-full border border-orange-200 bg-orange-50/70 px-3 py-1.5 text-[10px] font-black text-slate-700">
+                <.ui_icon name={:pin} class="h-3.5 w-3.5 shrink-0 text-[#FF4C00]" />
+                <span class="max-w-[190px] truncate">{@trip.destination}</span>
+                <button
+                  id="change-destination"
+                  type="button"
+                  phx-click="change_destination"
+                  class="inline-flex shrink-0 items-center gap-1 rounded-full bg-white px-2 py-1 text-[9px] font-black uppercase tracking-widest text-[#FF4C00] shadow-sm"
+                >
+                  <.ui_icon name={:search} class="h-3 w-3" /> Change
+                </button>
+              </div>
+            </div>
+
+            <h1 class="mt-4 text-center text-2xl font-black tracking-tight text-slate-900 md:text-3xl">
+              Select your travel preferences <span aria-hidden="true">🧭</span>
             </h1>
-            <p class="mt-2 text-sm font-bold text-slate-400">
-              Pick as many as you like — this is what Chyllz AI uses to shape your itinerary.
+            <p class="mt-1 text-center text-sm font-bold leading-relaxed text-slate-400">
+              Choose activities and styles you enjoy most to enrich your personalized itinerary.
             </p>
 
-            <div id="preference-chips" class="mt-5 flex flex-wrap gap-2">
+            <div
+              id="preference-chips"
+              class="mx-auto mt-5 flex max-w-2xl flex-wrap justify-center gap-2"
+            >
               <%= for preference <- @preferences do %>
+                <% selected = preference.label in @trip.preferences %>
                 <button
                   type="button"
-                  id={"preference-" <> String.downcase(preference)}
+                  id={"preference-" <> preference.key}
                   phx-click="toggle_preference"
-                  phx-value-preference={preference}
+                  phx-value-preference={preference.label}
                   class={[
-                    "rounded-full border-2 px-4 py-2 text-[10px] font-black uppercase tracking-widest transition",
-                    preference in @trip.preferences &&
-                      "border-[#FF4C00] bg-[#FF4C00] text-white",
-                    preference not in @trip.preferences &&
-                      "border-slate-100 bg-white text-slate-600 hover:border-[#FF4C00] hover:text-[#FF4C00]"
+                    "inline-flex items-center gap-1.5 rounded-xl border-2 bg-white px-3.5 py-2 text-[11px] font-bold text-slate-700 shadow-sm transition",
+                    selected && "border-[#FF4C00] bg-orange-50 text-[#FF4C00]",
+                    !selected &&
+                      "border-slate-100 hover:border-orange-200 hover:bg-orange-50/40 hover:text-[#FF4C00]"
                   ]}
-                  aria-pressed={to_string(preference in @trip.preferences)}
+                  aria-pressed={to_string(selected)}
                 >
-                  {preference}
+                  <span aria-hidden="true">{preference.emoji}</span> {preference.label}
                 </button>
               <% end %>
             </div>
 
-            <div class="mt-6 flex gap-2">
+            <div class="mt-7 flex items-center justify-between border-t border-slate-100 pt-4">
               <button
                 type="button"
                 phx-click="back"
-                class="rounded-xl border border-slate-200 px-5 py-3 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:border-slate-300"
+                class="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-100 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-600 transition hover:border-slate-300"
               >
-                Back
+                <.ui_icon name={:chevron_right} class="h-3.5 w-3.5 rotate-180" /> Previous
               </button>
+              <span class="text-[10px] font-bold text-slate-400">Step 5 of 5</span>
               <button
                 id="build-itinerary"
                 type="button"
                 phx-click="finish"
-                class="flex-1 rounded-xl bg-[#FF4C00] px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white hover:bg-[#E64400]"
+                class="inline-flex items-center gap-1.5 rounded-xl bg-[#FF4C00] px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-orange-500/25 transition hover:bg-[#E64400]"
               >
-                Build My Itinerary
+                Generate Trip with AI <.ui_icon name={:arrow_right} class="h-3.5 w-3.5" />
               </button>
             </div>
           </div>

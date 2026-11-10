@@ -32,7 +32,23 @@ defmodule XpressbusWeb.AiTripBuilderLive do
     %{name: "Istanbul", country: "Turkey", art: :coast, tag: "istanbul"}
   ]
 
-  @preferences ~w(Beach Food Culture Adventure Nature Nightlife Shopping Relaxation)
+  @preferences [
+    %{key: "adventure-travel", label: "Adventure Travel", emoji: "🏔️"},
+    %{key: "city-breaks", label: "City Breaks", emoji: "🏙️"},
+    %{key: "glamping", label: "Glamping", emoji: "🏕️"},
+    %{key: "beach-vacations", label: "Beach Vacations", emoji: "🏖️"},
+    %{key: "relaxing-getaways", label: "Relaxing Getaways", emoji: "🧘"},
+    %{key: "nature-escapes", label: "Nature Escapes", emoji: "🌿"},
+    %{key: "road-trips", label: "Road Trips", emoji: "🚗"},
+    %{key: "food-tourism", label: "Food Tourism", emoji: "🍱"},
+    %{key: "cruise-vacations", label: "Cruise Vacations", emoji: "🛳️"},
+    %{key: "wildlife-safaris", label: "Wildlife Safaris", emoji: "🦁"},
+    %{key: "art-galleries", label: "Art Galleries", emoji: "🎨"},
+    %{key: "horse-riding", label: "Horse Riding", emoji: "🐎"},
+    %{key: "cultural-exploration", label: "Cultural Exploration", emoji: "🏛️"}
+  ]
+
+  @preference_labels Enum.map(@preferences, & &1.label)
 
   @parties [
     %{
@@ -223,7 +239,7 @@ defmodule XpressbusWeb.AiTripBuilderLive do
   end
 
   def handle_event("toggle_preference", %{"preference" => preference}, socket) do
-    if preference in @preferences do
+    if preference in @preference_labels do
       preferences =
         socket.assigns.trip.preferences
         |> toggle_value(preference)
