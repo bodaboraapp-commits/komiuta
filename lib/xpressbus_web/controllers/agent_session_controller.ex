@@ -176,13 +176,6 @@ defmodule XpressbusWeb.AgentSessionController do
       end
 
     case result do
-      {:ok, application} ->
-        conn
-        |> configure_session(renew: true)
-        |> put_session(:agent_login_id, application.id)
-        |> put_flash(:info, "We sent a 6-digit code to #{application.email}.")
-        |> redirect(to: "/agent/verify")
-
       {:ok, application, delivery} ->
         conn
         |> configure_session(renew: true)
@@ -645,9 +638,6 @@ defmodule XpressbusWeb.AgentSessionController do
   defp error_message(:use_google_for_email),
     do:
       "Use Sign in with Gmail for email sign-in. This form is for the phone number on your application."
-
-  defp error_message(:missing_email),
-    do: "That agent application does not have an email address for a sign-in code."
 
   defp error_message(:delivery_failed),
     do: "We could not send the sign-in code. Please try again."

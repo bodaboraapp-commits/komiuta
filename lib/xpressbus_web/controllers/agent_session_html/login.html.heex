@@ -26,7 +26,8 @@
 
         <h1 class="mt-5 text-2xl font-black tracking-tight">Agent sign in</h1>
         <p class="mt-2 text-xs font-bold leading-relaxed text-slate-400">
-          Sign in with Gmail for email, or use the phone number on your agent application.
+          Sign in with Gmail for email, or receive a login code by SMS on the phone number on
+          your agent application.
         </p>
 
         <%= if @google_enabled do %>
@@ -43,51 +44,124 @@
               decoding="async"
             /> Sign in with Gmail
           </a>
+        <% end %>
 
+        <%= if @firebase_config do %>
           <div class="relative my-7">
             <div class="absolute inset-0 flex items-center">
               <div class="w-full border-t border-slate-100"></div>
             </div>
             <div class="relative flex justify-center text-[9px] font-black uppercase tracking-widest">
-              <span class="bg-white px-4 text-slate-400">or use a login code</span>
+              <span class="bg-white px-4 text-slate-400">or use SMS</span>
             </div>
           </div>
-        <% end %>
 
-        <form action="/agent/auth" method="post" class="space-y-4">
-          <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
-
-          <div>
-            <label
-              for="agent-identifier"
-              class="mb-1.5 block text-[10px] font-black uppercase tracking-widest text-slate-500"
-            >
-              Phone Number
-            </label>
-            <input
-              id="agent-identifier"
-              name="agent[identifier]"
-              type="tel"
-              inputmode="tel"
-              value={@identifier}
-              autocomplete="tel"
-              placeholder="07XX XXX XXX"
-              required
-              class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-sm font-bold outline-none transition focus:border-[#FF4C00] focus:bg-white"
-            />
-            <p class="mt-2 text-[10px] font-bold leading-relaxed text-slate-400">
-              We’ll send a 6-digit code by SMS to this phone and email a copy to your agent
-              application address.
-            </p>
-          </div>
-
-          <button
-            type="submit"
-            class="w-full rounded-xl bg-[#FF4C00] px-6 py-4 text-xs font-black uppercase tracking-[0.2em] text-white shadow-xl shadow-orange-200 transition hover:bg-[#E64400] active:scale-[0.99]"
+          <div
+            id="firebase-sms-auth"
+            data-api-key={@firebase_config.api_key}
+            data-auth-domain={@firebase_config.auth_domain}
+            data-project-id={@firebase_config.project_id}
+            data-storage-bucket={@firebase_config.storage_bucket}
+            data-messaging-sender-id={@firebase_config.messaging_sender_id}
+            data-app-id={@firebase_config.app_id}
+            data-verify-url="/agent/firebase/verify"
+            data-redirect="/agent/account"
           >
-            Send Login Code
-          </button>
-        </form>
+            <form id="firebase-sms-form" class="space-y-4" novalidate>
+              <div id="firebase-phone-step">
+                <label
+                  for="firebase-phone"
+                  class="mb-1.5 block text-[10px] font-black uppercase tracking-widest text-slate-500"
+                >
+                  Phone Number
+                </label>
+                <input
+                  id="firebase-phone"
+                  type="tel"
+                  inputmode="tel"
+                  autocomplete="tel"
+                  placeholder="07XX XXX XXX"
+                  class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-sm font-bold outline-none transition focus:border-[#FF4C00] focus:bg-white"
+                  required
+                />
+                <p
+                  id="firebase-phone-hint"
+                  class="mt-2 text-[10px] font-bold leading-relaxed text-slate-400"
+                >
+                  Enter the phone number on your agent application. Firebase will send a 6-digit
+                  code by SMS.
+                </p>
+              </div>
+
+              <div id="firebase-recaptcha"></div>
+
+              <button
+                id="firebase-send-code"
+                type="submit"
+                class="w-full rounded-xl bg-[#FF4C00] px-6 py-4 text-xs font-black uppercase tracking-[0.2em] text-white shadow-xl shadow-orange-200 transition hover:bg-[#E64400] active:scale-[0.99]"
+              >
+                Send Login Code
+              </button>
+
+              <div id="firebase-code-step" class="hidden space-y-3">
+                <div>
+                  <label
+                    for="firebase-code"
+                    class="mb-1.5 block text-[10px] font-black uppercase tracking-widest text-slate-500"
+                  >
+                    SMS Code
+                  </label>
+                  <input
+                    id="firebase-code"
+                    type="text"
+                    inputmode="numeric"
+                    autocomplete="one-time-code"
+                    pattern="[0-9]{6}"
+                    maxlength="6"
+                    placeholder="000000"
+                    class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-center text-xl font-black tracking-[0.4em] outline-none transition focus:border-[#FF4C00] focus:bg-white"
+                  />
+                </div>
+
+                <button
+                  id="firebase-verify-code"
+                  type="submit"
+                  class="w-full rounded-xl bg-slate-900 px-6 py-4 text-xs font-black uppercase tracking-[0.2em] text-white shadow-xl transition hover:bg-black active:scale-[0.99]"
+                >
+                  Verify &amp; Sign In
+                </button>
+
+                <button
+                  id="firebase-change-number"
+                  type="button"
+                  class="w-full text-[10px] font-black uppercase tracking-widest text-slate-400 transition hover:text-[#FF4C00]"
+                >
+                  Use a different number
+                </button>
+              </div>
+
+              <p
+                id="firebase-status"
+                class="min-h-[16px] text-[11px] font-bold text-slate-500"
+                role="status"
+                aria-live="polite"
+              >
+              </p>
+            </form>
+
+            <script
+              defer
+              phx-track-static
+              type="text/javascript"
+              src={~p"/assets/js/firebase_phone_auth.js"}
+            >
+            </script>
+          </div>
+        <% else %>
+          <div class="mt-7 rounded-2xl border border-amber-100 bg-amber-50 p-5 text-xs font-bold leading-relaxed text-amber-800">
+            SMS sign-in is not configured yet. Use Gmail above or contact support on 0800 211 211.
+          </div>
+        <% end %>
 
         <p class="mt-6 text-center text-[11px] font-bold text-slate-400">
           Applying for the first time?
