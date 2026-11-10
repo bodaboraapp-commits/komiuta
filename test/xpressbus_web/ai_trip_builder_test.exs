@@ -162,7 +162,13 @@ defmodule XpressbusWeb.AiTripBuilderTest do
 
     assert has_element?(view, "#trip-generating")
     assert render(view) =~ "Generating Your Trip"
-    assert render(view) =~ "Building your itinerary"
+    assert render(view) =~ "Getting to know your"
+
+    send(view.pid, :generation_tick)
+    assert render(view) =~ "Hand-picking stays"
+
+    send(view.pid, :generation_tick)
+    assert render(view) =~ "Finding tables worth travelling for"
 
     send(view.pid, :trip_generated)
 

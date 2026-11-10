@@ -23,37 +23,18 @@ defmodule XpressbusWeb.AiTripBuilderLive do
   @generation_deadline_ms 10_000
 
   @generation_steps [
-    %{
-      label: "Trip brief",
-      message: "Building your itinerary...",
-      detail: "Reading your destination, dates, companions, budget and preferences."
-    },
-    %{
-      label: "Hotel Recommendation",
-      message: "Searching top-rated hotels on Google Maps...",
-      detail: "Reviewing Google ratings and guest reviews for the Hotels & Stays list."
-    },
-    %{
-      label: "Food · Restaurants",
-      message: "Finding restaurants with the best reviews...",
-      detail: "Ranking Recommended Restaurants under Food by Google rating and review volume."
-    },
-    %{
-      label: "Day-by-day plan",
-      message: "Mapping your day-by-day plan...",
-      detail: "Adding morning, lunch, afternoon, evening and dinner activities for every date."
-    },
-    %{
-      label: "Important Notes",
-      message: "Adding local tips and important notes...",
-      detail: "Preparing visa, currency, language, transport and safety guidance."
-    },
-    %{
-      label: "Final check",
-      message: "Finalising your itinerary...",
-      detail: "Checking your map, hotel picks, restaurant picks and travel notes."
-    }
+    %{key: :brief, label: "Getting to know you"},
+    %{key: :stays, label: "Your stay"},
+    %{key: :table, label: "Your table"},
+    %{key: :days, label: "Your days"},
+    %{key: :care, label: "Your peace of mind"},
+    %{key: :final, label: "Final caring check"}
   ]
+
+  @generation_default %{
+    message: "Getting to know your trip...",
+    detail: "I'm reading your brief and gathering the details that make this trip yours."
+  }
 
   @steps [
     %{key: 1, title: "Destination", icon: :pin},
@@ -229,8 +210,8 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:generating, false)
      |> assign(:generation_stage, 0)
      |> assign(:generation_total, length(@generation_steps))
-     |> assign(:generation_message, generation_step(0).message)
-     |> assign(:generation_detail, generation_step(0).detail)
+     |> assign(:generation_message, @generation_default.message)
+     |> assign(:generation_detail, @generation_default.detail)
      |> assign(:generation_task_label, generation_step(0).label)
      |> assign(:generation_ref, nil)
      |> assign(:generation_pid, nil)
@@ -427,14 +408,16 @@ defmodule XpressbusWeb.AiTripBuilderLive do
       Process.send_after(self(), :generation_tick, 1_200)
       Process.send_after(self(), :generation_timeout, @generation_deadline_ms)
 
+      copy = generation_copy(:brief, trip)
+
       {:noreply,
        socket
        |> assign(:error, nil)
        |> assign(:generating, true)
        |> assign(:generation_stage, 0)
        |> assign(:generation_total, length(@generation_steps))
-       |> assign(:generation_message, generation_step(0).message)
-       |> assign(:generation_detail, generation_step(0).detail)
+       |> assign(:generation_message, copy.message)
+       |> assign(:generation_detail, copy.detail)
        |> assign(:generation_task_label, generation_step(0).label)
        |> assign(:generation_ref, ref)
        |> assign(:generation_pid, pid)
@@ -455,8 +438,8 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:generating, false)
      |> assign(:generation_stage, 0)
      |> assign(:generation_total, length(@generation_steps))
-     |> assign(:generation_message, generation_step(0).message)
-     |> assign(:generation_detail, generation_step(0).detail)
+     |> assign(:generation_message, @generation_default.message)
+     |> assign(:generation_detail, @generation_default.detail)
      |> assign(:generation_task_label, generation_step(0).label)
      |> assign(:generation_ref, nil)
      |> assign(:generation_pid, nil)
@@ -523,6 +506,7 @@ defmodule XpressbusWeb.AiTripBuilderLive do
     if socket.assigns.generating do
       next_stage = min(socket.assigns.generation_stage + 1, length(@generation_steps) - 1)
       step = generation_step(next_stage)
+      copy = generation_copy(step.key, socket.assigns.trip)
 
       if next_stage < length(@generation_steps) - 1 do
         Process.send_after(self(), :generation_tick, 1_600)
@@ -531,8 +515,8 @@ defmodule XpressbusWeb.AiTripBuilderLive do
       {:noreply,
        socket
        |> assign(:generation_stage, next_stage)
-       |> assign(:generation_message, step.message)
-       |> assign(:generation_detail, step.detail)
+       |> assign(:generation_message, copy.message)
+       |> assign(:generation_detail, copy.detail)
        |> assign(:generation_task_label, step.label)}
     else
       {:noreply, socket}
@@ -595,6 +579,122 @@ defmodule XpressbusWeb.AiTripBuilderLive do
        |> assign(:error, "We couldn't finish your itinerary. Please try again.")}
     else
       {:noreply, socket}
+    end
+  end
+
+  defp generation_copy(:brief, trip) do
+    destination = generation_destination(trip)
+    party = generation_party(trip)
+    preferences = generation_preferences(trip)
+
+    %{
+      message: "Getting to know your #{party} trip to #{destination}...",
+      detail:
+        "I'm reading your dates, budget, love of #{preferences} and the little details that make this trip yours."
+    }
+  end
+
+  defp generation_copy(:stays, trip) do
+    destination = generation_destination(trip)
+    party = generation_party(trip)
+
+    %{
+      message: "Hand-picking stays in #{destination} for you...",
+      detail:
+        "I'm comparing Google ratings and recent guest reviews so every Hotels & Stays pick feels right for your #{party} trip."
+    }
+  end
+
+  defp generation_copy(:table, trip) do
+    destination = generation_destination(trip)
+    preferences = generation_preferences(trip)
+
+    %{
+      message: "Finding tables worth travelling for in #{destination}...",
+      detail:
+        "I'm checking Recommended Restaurants against Google ratings and review volume, with your love of #{preferences} in mind."
+    }
+  end
+
+  defp generation_copy(:days, trip) do
+    destination = generation_destination(trip)
+    duration = generation_duration(trip)
+    date_range = generation_date_range(trip)
+
+    %{
+      message: "Shaping your #{duration} days in #{destination}...",
+      detail:
+        "I'm balancing morning, lunch, afternoon, evening and dinner around #{date_range}, so the days flow without feeling rushed."
+    }
+  end
+
+  defp generation_copy(:care, trip) do
+    destination = generation_destination(trip)
+
+    %{
+      message: "Sweating the small stuff so you don't have to...",
+      detail:
+        "I'm adding Important Notes on visas, currency, language, transport and safety for #{destination}."
+    }
+  end
+
+  defp generation_copy(:final, trip) do
+    destination = generation_destination(trip)
+
+    %{
+      message: "Giving your #{destination} itinerary one last caring look...",
+      detail:
+        "Rechecking every stay, table, map stop and note — then it's all yours to enjoy. You've got a trip to look forward to."
+    }
+  end
+
+  defp generation_destination(trip) do
+    value = to_string(trip.destination || "")
+
+    if value == "", do: "your destination", else: value
+  end
+
+  defp generation_party(trip) do
+    case trip.travel_party do
+      "solo" -> "solo"
+      "couple" -> "couple's"
+      "family" -> "family"
+      "friends" -> "friends'"
+      _other -> "personal"
+    end
+  end
+
+  defp generation_preferences(trip) do
+    case trip.preferences do
+      [] ->
+        "the experiences you enjoy"
+
+      preferences ->
+        case preferences do
+          [only] -> only
+          values -> Enum.join(Enum.drop(values, -1), ", ") <> " and " <> List.last(values)
+        end
+    end
+  end
+
+  defp generation_duration(trip) do
+    case {trip.start_date, trip.end_date} do
+      {%Date{} = start_date, %Date{} = end_date} ->
+        days = max(Date.diff(end_date, start_date) + 1, 1)
+        "#{days}-day"
+
+      _other ->
+        "multi-day"
+    end
+  end
+
+  defp generation_date_range(trip) do
+    case {trip.start_date, trip.end_date} do
+      {%Date{} = start_date, %Date{} = end_date} ->
+        "#{Calendar.strftime(start_date, "%d %b")} to #{Calendar.strftime(end_date, "%d %b")}"
+
+      _other ->
+        "your travel dates"
     end
   end
 
