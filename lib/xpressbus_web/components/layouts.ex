@@ -5,6 +5,9 @@ defmodule XpressbusWeb.Layouts do
   """
   use XpressbusWeb, :html
 
+  import XpressbusWeb.AssistantComponents,
+    only: [global_assistant_launcher: 1, show_global_launcher?: 1]
+
   # Embed all files in layouts/* within this module.
   # The default root.html.heex file contains the HTML
   # skeleton of your application, namely HTML headers

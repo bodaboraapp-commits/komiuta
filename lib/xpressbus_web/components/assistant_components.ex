@@ -17,9 +17,48 @@ defmodule XpressbusWeb.AssistantComponents do
     {"food", "Food", "restaurant"}
   ]
 
+  @chyllz_assistant_paths [
+    "/tour-packages",
+    "/tour-packages/hotels",
+    "/our-packages/hidden-gems",
+    "/tour-packages/car",
+    "/tour-packages/events"
+  ]
+
+  @global_launcher_excluded_prefixes [
+    "/admin",
+    "/agent",
+    "/dev",
+    "/payments",
+    "/review-and-pay",
+    "/passenger-details",
+    "/payment-processing"
+  ]
+
+  @doc """
+  True when the site-wide launcher should render for a request path.
+
+  The Chyllz pages already render a live assistant launcher; internal admin/agent
+  areas and checkout/payment flows are excluded so the FAB never covers their
+  primary actions. Every other public page gets the green launcher.
+  """
+  def show_global_launcher?(path) when is_binary(path) do
+    path =
+      path
+      |> String.replace(~r/[?#].*$/, "")
+      |> String.trim_trailing("/")
+
+    path = if path == "", do: "/", else: path
+
+    path not in @chyllz_assistant_paths and
+      not Enum.any?(@global_launcher_excluded_prefixes, &String.starts_with?(path, &1))
+  end
+
+  def show_global_launcher?(_path), do: false
+
+  @doc "Green floating sparkle button used on Chyllz pages."
   attr :open, :boolean, required: true
 
-  @doc "Floating entry point shown on every Chyllz page."
   def assistant_launcher(assigns) do
     ~H"""
     <button
@@ -27,19 +66,36 @@ defmodule XpressbusWeb.AssistantComponents do
       id="chyllz-assistant-launcher"
       type="button"
       phx-click="assistant_open"
-      class="assistant-launcher fixed bottom-5 right-4 z-[60] flex items-center gap-2.5 rounded-full bg-slate-950 py-2.5 pl-3 pr-4 text-white shadow-2xl shadow-slate-950/25 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-orange-500/20 sm:bottom-6 sm:right-6"
+      title="Ask Chyllz AI"
+      class="assistant-launcher fixed bottom-5 right-4 z-[70] grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-800 text-white shadow-2xl shadow-emerald-900/30 transition-all duration-300 hover:-translate-y-0.5 hover:scale-105 hover:shadow-emerald-700/40 sm:bottom-6 sm:right-6"
       aria-label="Open Chyllz AI travel assistant"
       aria-expanded="false"
     >
-      <span class="relative grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-[#FF7A33] to-[#E64400] shadow-lg shadow-orange-900/30">
-        <.sparkle_icon class="h-5 w-5" />
-        <span class="assistant-live-dot absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-slate-950 bg-emerald-400"></span>
-      </span>
-      <span class="text-sm font-black tracking-tight">Ask Chyllz</span>
-      <span class="rounded-full bg-white/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-white/70">
-        AI
-      </span>
+      <.sparkle_icon class="h-7 w-7" />
+      <span class="assistant-live-dot absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-300"></span>
     </button>
+    """
+  end
+
+  @doc """
+  Site-wide green launcher for pages that do not mount the Chyllz LiveView.
+
+  It links to the Chyllz assistant with `?assistant=1`, which opens the same
+  panel on arrival. The button is visually identical to the Chyllz launcher.
+  """
+  def global_assistant_launcher(assigns) do
+    ~H"""
+    <a
+      id="global-assistant-launcher"
+      href="/tour-packages?assistant=1"
+      title="Ask Chyllz AI"
+      class="assistant-launcher fixed bottom-5 right-4 z-[70] grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-800 text-white shadow-2xl shadow-emerald-900/30 transition-all duration-300 hover:-translate-y-0.5 hover:scale-105 hover:shadow-emerald-700/40 sm:bottom-6 sm:right-6"
+      aria-label="Open Chyllz AI travel assistant"
+      data-track="chat_open"
+    >
+      <.sparkle_icon class="h-7 w-7" />
+      <span class="assistant-live-dot absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-300"></span>
+    </a>
     """
   end
 

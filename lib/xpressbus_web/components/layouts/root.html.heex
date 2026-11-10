@@ -187,6 +187,8 @@
 
   <body>
     {@inner_content}
+    <% request_path = assigns[:request_path] %>
+    <.global_assistant_launcher :if={show_global_launcher?(request_path)} />
   </body>
 </html>
 

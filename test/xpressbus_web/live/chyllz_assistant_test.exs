@@ -18,7 +18,28 @@ defmodule XpressbusWeb.ChyllzAssistantTest do
       end
 
       {:ok, _view, html} = live(conn, ~p"/")
+      assert html =~ "global-assistant-launcher"
       refute html =~ "chyllz-assistant-launcher"
+    end
+
+    test "the site-wide launcher appears on public pages and opens the Chyllz assistant", %{
+      conn: conn
+    } do
+      {:ok, _view, html} = live(conn, ~p"/faqs")
+      assert html =~ "global-assistant-launcher"
+      assert html =~ "/tour-packages?assistant=1"
+      refute html =~ "chyllz-assistant-launcher"
+
+      {:ok, view, _html} = live(conn, ~p"/tour-packages?assistant=1")
+      assert has_element?(view, "#chyllz-assistant[data-open='true']")
+    end
+
+    test "the site-wide launcher is hidden on internal and payment pages", %{conn: conn} do
+      {:ok, _view, html} = live(conn, ~p"/tour-packages/insurance")
+      assert html =~ "global-assistant-launcher"
+
+      conn = get(conn, ~p"/admin/login")
+      refute html_response(conn, 200) =~ "global-assistant-launcher"
     end
 
     test "the Chyllz hub hero has an Ask Chyllz AI button", %{conn: conn} do

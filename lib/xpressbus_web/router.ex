@@ -10,9 +10,15 @@ defmodule XpressbusWeb.Router do
     plug :fetch_session
     plug :fetch_live_flash
     plug :put_root_layout, html: {XpressbusWeb.Layouts, :root}
+    plug :put_request_path
     plug :protect_from_forgery
     plug :put_secure_browser_headers
   end
+
+  # Root-layout assigns are copied from the conn for both controller and
+  # LiveView static renders. The assistant launcher uses this path to decide
+  # whether it belongs on the current public page.
+  defp put_request_path(conn, _opts), do: assign(conn, :request_path, conn.request_path)
 
   pipeline :auth_config do
     plug XpressbusWeb.Plugs.GoogleAuthConfig
