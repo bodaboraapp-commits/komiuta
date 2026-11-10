@@ -99,6 +99,24 @@ defmodule Xpressbus.ItinerariesTest do
       refute Enum.any?(other_ids, &(&1 in ids))
     end
 
+    test "shows only the latest three saved itineraries" do
+      user = user_fixture()
+
+      saved =
+        for index <- 1..4 do
+          trip = %{@trip | destination: "Trip #{index}"}
+          {:ok, saved_itinerary} = Itineraries.save(user, trip, itinerary(trip))
+          saved_itinerary
+        end
+
+      listed = Itineraries.list_for_user(user)
+
+      assert length(listed) == 3
+
+      assert Enum.map(listed, & &1.id) ==
+               saved |> Enum.reverse() |> Enum.take(3) |> Enum.map(& &1.id)
+    end
+
     test "fetches one itinerary only for its owner" do
       user = user_fixture()
       other_user = user_fixture()

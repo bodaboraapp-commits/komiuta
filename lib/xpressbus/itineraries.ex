@@ -16,7 +16,7 @@ defmodule Xpressbus.Itineraries do
   alias Xpressbus.Itineraries.SavedItinerary
   alias Xpressbus.{Repo, TripItinerary}
 
-  @max_per_user 30
+  @max_per_user 3
   @art_variants ~w(mountains coast savanna)
 
   @doc "Saves a trip brief for `user`, returning `{:ok, saved_itinerary}`."
@@ -35,7 +35,7 @@ defmodule Xpressbus.Itineraries do
     |> Repo.update()
   end
 
-  @doc "All itineraries saved by `user`, newest first."
+  @doc "The latest three itineraries saved by `user`, newest first."
   def list_for_user(%{id: user_id}) do
     Repo.all(
       from(saved in SavedItinerary,
