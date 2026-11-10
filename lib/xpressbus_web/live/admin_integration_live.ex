@@ -2,6 +2,7 @@ defmodule XpressbusWeb.AdminIntegrationLive do
   use XpressbusWeb, :live_view
   import XpressbusWeb.AdminComponents
   alias Xpressbus.AI
+  alias Xpressbus.GoogleMaps
   alias Xpressbus.Integrations
 
   @weatherapi_base "https://api.weatherapi.com/v1"
@@ -51,7 +52,7 @@ defmodule XpressbusWeb.AdminIntegrationLive do
     "google_maps" => %{
       label: "Google Maps",
       icon: "location_on",
-      description: "Google Maps Platform key for maps, places and geocoding"
+      description: "Browser and server keys for maps, places and geocoding"
     }
   }
 
@@ -598,23 +599,29 @@ defmodule XpressbusWeb.AdminIntegrationLive do
         _other -> %{}
       end
 
-    key = config |> Map.get("api_key") |> to_string() |> String.trim()
+    browser_key = config |> Map.get("browser_key") |> to_string() |> String.trim()
+    server_key = config |> Map.get("server_key") |> to_string() |> String.trim()
 
-    cond do
-      key == "" ->
-        {:noreply, put_flash(socket, :error, "Missing Google Maps API key. Save one first.")}
+    if browser_key == "" and server_key == "" do
+      {:noreply,
+       put_flash(socket, :error, "Missing Google Maps keys. Save a browser key and a server key.")}
+    else
+      result = GoogleMaps.test_keys(browser_key, server_key)
 
-      not String.starts_with?(key, "AIza") ->
-        {:noreply,
-         put_flash(socket, :error, "That does not look like a Google Maps platform key.")}
+      message =
+        "Browser key — #{result_label(result.browser)}: #{result.browser.message} " <>
+          "Server key — #{result_label(result.server)}: #{result.server.message}"
 
-      true ->
-        {:noreply,
-         put_flash(
-           socket,
-           :info,
-           "Google Maps key is saved. It is browser/referrer restricted, so it cannot be tested from the server — open a map page on the KOMIUTA domain to confirm it."
-         )}
+      severity =
+        if result.browser.status == :error or result.server.status == :error,
+          do: :error,
+          else: :info
+
+      {:noreply, put_flash(socket, severity, message)}
     end
   end
+
+  defp result_label(%{status: :ok}), do: "OK"
+  defp result_label(%{status: :warning}), do: "Warning"
+  defp result_label(%{status: :error}), do: "Error"
 end

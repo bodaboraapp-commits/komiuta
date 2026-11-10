@@ -72,23 +72,45 @@ defmodule Xpressbus.Integrations do
   def login_methods, do: @login_methods
 
   @doc """
-  Returns the saved Google Maps Platform configuration for the backend.
+  Returns the saved Google Maps Platform configuration.
 
-  The API key is only returned to server-side callers; the admin page reads it
-  directly from the integrations table so it can be replaced by the operator.
+  Two credentials are kept deliberately separate:
+
+    * `:browser_key` — referrer-restricted, for browser map views;
+    * `:server_key` — unrestricted or IP-restricted, for server-side Places,
+      Geocoding and Static Maps requests.
+
+  The legacy single `api_key` is only used as a server-key fallback for
+  installations that have not run the split-keys migration yet; the browser key
+  must always be a separate referrer-restricted credential.
   """
   def google_maps_config do
     case get_config_by_provider("google_maps") do
       %{active: true, config: config} when is_map(config) ->
-        %{api_key: trimmed(config["api_key"])}
+        %{
+          browser_key: trimmed(config["browser_key"]),
+          server_key: trimmed(config["server_key"]) || trimmed(config["api_key"])
+        }
 
       _ ->
-        %{api_key: nil}
+        %{browser_key: nil, server_key: nil}
     end
   end
 
-  @doc "The active Google Maps API key, or nil when the integration is off or empty."
-  def google_maps_api_key, do: google_maps_config().api_key
+  @doc "The referrer-restricted browser key, or nil."
+  def google_maps_browser_key, do: google_maps_config().browser_key
+
+  @doc "The unrestricted/IP-restricted server key, or nil."
+  def google_maps_server_key, do: google_maps_config().server_key
+
+  @doc "Backwards-compatible alias for the server key."
+  def google_maps_api_key, do: google_maps_server_key()
+
+  @doc "True when both the browser and server keys are configured."
+  def google_maps_configured? do
+    config = google_maps_config()
+    not is_nil(config.browser_key) and not is_nil(config.server_key)
+  end
 
   @ai_default_base_url "https://api.openai.com/v1"
   @ai_default_model "gpt-4o-mini"

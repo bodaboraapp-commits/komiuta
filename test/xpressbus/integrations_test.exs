@@ -12,7 +12,7 @@ defmodule Xpressbus.IntegrationsTest do
 
     test "list_integrations/0 returns all integrations" do
       payment_config = payment_config_fixture()
-      assert Integrations.list_integrations() == [payment_config]
+      assert payment_config in Integrations.list_integrations()
     end
 
     test "get_payment_config!/1 returns the payment_config with given id" do

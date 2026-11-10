@@ -247,7 +247,9 @@ defmodule Xpressbus.GooglePlaces do
 
   defp api_key do
     if Application.get_env(:xpressbus, :google_places_enabled, true) do
-      Xpressbus.Integrations.google_maps_api_key()
+      # Places, photos and Static Maps run from the application server, so they
+      # must use the unrestricted/IP-restricted key, never the browser key.
+      Xpressbus.Integrations.google_maps_server_key()
     end
   rescue
     _error -> nil
