@@ -10,7 +10,7 @@
           <span class="absolute inset-0 animate-ping rounded-full border-2 border-orange-300/50"></span>
           <.ui_icon name={:bot} class="h-16 w-16" />
         </div>
-
+        
         <span
           class="absolute -bottom-1 left-1/2 flex -translate-x-1/2 gap-1 text-amber-400"
           aria-hidden="true"
@@ -19,28 +19,28 @@
           <.ui_icon name={:sparkles} class="h-3 w-3" />
         </span>
       </div>
-
+      
       <h1 class="mt-7 text-2xl font-black tracking-tight text-slate-900 md:text-[28px]">
         Generating Your Trip
       </h1>
-
+      
       <p id="generation-message" class="mt-2 text-sm font-bold text-slate-500">
         {@generation_message}
       </p>
-
+      
       <p
         id="generation-detail"
         class="mt-1 max-w-md text-xs font-bold leading-relaxed text-slate-400"
       >
         {@generation_detail}
       </p>
-
+      
       <div class="mt-4 flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.18em] text-orange-400">
         <span>Task {@generation_stage + 1} of {@generation_total}</span>
         <span class="h-1 w-1 rounded-full bg-orange-300"></span>
         <span>{@generation_task_label}</span>
       </div>
-
+      
       <div class="mt-3 w-64">
         <div class="h-2 overflow-hidden rounded-full bg-orange-100">
           <div
@@ -50,7 +50,7 @@
           </div>
         </div>
       </div>
-
+      
       <div class="mt-6 flex items-center gap-2" aria-hidden="true">
         <span class="h-2.5 w-2.5 animate-bounce rounded-full bg-[#FF4C00]"></span>
         <span
@@ -62,7 +62,7 @@
           style="animation-delay: .3s"
         ></span>
       </div>
-
+      
       <div
         id="generation-slow"
         data-generation-slow
@@ -71,13 +71,13 @@
         class="mt-7 max-w-md rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-left"
       >
         <p class="text-xs font-black text-amber-900">Still working on it</p>
-
+        
         <p class="mt-1 text-[11px] font-bold leading-relaxed text-amber-800">
           Live Google results are taking longer than usual. We'll fall back to curated picks
           automatically — your trip will still be ready.
         </p>
       </div>
-
+      
       <div
         id="generation-network-banner"
         data-network-banner
@@ -86,7 +86,7 @@
         class="mt-7 max-w-md rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left shadow-lg"
       >
         <p class="text-xs font-black text-slate-900">Connection lost</p>
-
+        
         <p
           id="generation-network-status"
           data-network-status
@@ -94,7 +94,7 @@
         >
           We'll reconnect automatically. Your trip is still being prepared.
         </p>
-
+        
         <button
           type="button"
           data-network-retry
@@ -105,7 +105,7 @@
       </div>
     </div>
   <% end %>
-
+  
   <div class="min-h-screen bg-[#f8fafc] px-4 pb-8 pt-20 sm:px-6 md:pb-10 md:pt-24">
     <div
       id="builder-network-banner"
@@ -115,7 +115,7 @@
       class="mx-auto mb-4 max-w-[1100px] rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3"
     >
       <p class="text-xs font-black text-amber-900">You're offline</p>
-
+      
       <p
         id="builder-network-status"
         data-network-status
@@ -124,7 +124,7 @@
         Reconnect to load live destination search and Google recommendations. Your current trip
         details are safe.
       </p>
-
+      
       <button
         type="button"
         data-network-retry
@@ -133,7 +133,7 @@
         Retry now
       </button>
     </div>
-
+    
     <main
       id="ai-trip-builder"
       phx-hook="UnsavedChanges"
@@ -153,13 +153,13 @@
             <span class="material-symbols-outlined !text-xl text-[#FF4C00]">edit</span>
             <div>
               <p class="text-xs font-black text-slate-800">Refining your itinerary</p>
-
+              
               <p class="mt-0.5 text-[10px] font-bold text-slate-500">
                 Update the trip details, then generate a fresh version. Your previous saved itinerary stays safe.
               </p>
             </div>
           </div>
-
+          
           <button
             type="button"
             id="cancel-refine"
@@ -170,7 +170,7 @@
           </button>
         </div>
       <% end %>
-      <%!-- Wizard progress --%>
+       <%!-- Wizard progress --%>
       <section
         :if={@step < 6}
         class="rounded-[28px] border border-slate-100 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] md:p-6"
@@ -190,7 +190,7 @@
               ]}>
                 <.ui_icon name={step.icon} class="h-5 w-5" />
               </span>
-
+              
               <span class={[
                 "text-[7px] font-black uppercase leading-tight tracking-[0.02em] sm:text-[9px] sm:tracking-[0.14em]",
                 @step >= step.key && "text-slate-900",
@@ -199,13 +199,13 @@
                 <span class="block text-[8px] font-black text-slate-400 sm:text-[9px]">
                   {String.pad_leading(to_string(step.key), 2, "0")}
                 </span>
-                {step.title}
+                 {step.title}
               </span>
             </li>
           <% end %>
         </ol>
       </section>
-      <%!-- Step content --%>
+       <%!-- Step content --%>
       <section class={[
         "mt-5 rounded-[28px] border border-slate-100 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)]",
         @step >= 6 && "overflow-clip",
@@ -219,19 +219,19 @@
             {@error}
           </div>
         <% end %>
-
+        
         <%= if @generation_failed do %>
           <div
             id="generation-failed"
             class="mb-5 rounded-2xl border border-red-100 bg-red-50 px-4 py-4"
           >
             <p class="text-sm font-black text-red-800">We couldn't finish your itinerary</p>
-
+            
             <p class="mt-1 text-xs font-bold leading-relaxed text-red-700">
               Your details are safe. This is usually a temporary network or AI hiccup — try again,
               or go back and adjust your preferences.
             </p>
-
+            
             <div class="mt-3 flex flex-wrap gap-2">
               <button
                 type="button"
@@ -241,7 +241,7 @@
               >
                 Try again
               </button>
-
+              
               <button
                 type="button"
                 id="edit-preferences-after-failure"
@@ -253,23 +253,23 @@
             </div>
           </div>
         <% end %>
-
+        
         <%= if @step == 1 do %>
           <div class="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
             <div class="min-w-0">
               <p class="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.24em] text-[#FF4C00]">
                 <.ui_icon name={:sparkles} class="h-4 w-4" /> Where do you want to go?
               </p>
-
+              
               <h1 class="mt-3 text-3xl font-black tracking-tight text-slate-900 md:text-4xl">
                 Find your dream destination
               </h1>
-
+              
               <p class="mt-2 max-w-md text-sm font-bold leading-relaxed text-slate-400">
                 Search any city, country, or landmark. Every match is a real place, and landmarks or
                 vibes are looked up when you press search. Or start from a trending destination.
               </p>
-
+              
               <form
                 id="destination-search-form"
                 phx-submit="search_destination"
@@ -296,7 +296,7 @@
                   <.ui_icon name={:search} class="h-4 w-4" />
                 </button>
               </form>
-
+              
               <div id="destination-search-results" class="mt-3" aria-live="polite">
                 <%= cond do %>
                   <% @searching -> %>
@@ -324,24 +324,24 @@
                           <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-orange-50 text-[#FF4C00]">
                             <.ui_icon name={:pin} class="h-4 w-4" />
                           </span>
-
+                          
                           <span class="min-w-0 flex-1">
                             <span class="block truncate text-sm font-black text-slate-800">
                               {place.name}
                             </span>
-
+                            
                             <span class="block truncate text-[10px] font-bold text-slate-500">
                               {place.label}
                             </span>
                           </span>
-
+                          
                           <span class="shrink-0 text-[9px] font-black uppercase tracking-widest text-[#FF4C00]">
                             Select
                           </span>
                         </button>
                       <% end %>
                     </div>
-
+                    
                     <p class="mt-2 px-1 text-[10px] font-bold text-slate-500">
                       Real places matched by live geocoding. For a landmark or a vibe, press search
                       and we'll pinpoint the nearest real place.
@@ -354,11 +354,11 @@
                       <p class="text-xs font-black text-amber-900">
                         We couldn't reach live destination search
                       </p>
-
+                      
                       <p class="mt-1 text-[11px] font-bold leading-relaxed text-amber-800">
                         Check your connection, then try again. Nothing you've entered has been lost.
                       </p>
-
+                      
                       <button
                         type="button"
                         id="retry-destination-search"
@@ -377,7 +377,7 @@
                         No real place matches "{@query}". Try a nearby city or country, or describe
                         the vibe and let Chyllz AI pinpoint the nearest real place.
                       </p>
-
+                      
                       <button
                         type="button"
                         id="destination-search-empty-retry"
@@ -393,7 +393,7 @@
                     </p>
                 <% end %>
               </div>
-
+              
               <div class="mt-4 flex flex-wrap gap-2">
                 <%= for {icon, label} <- [
                       {:check, "Personalized Day-by-Day Plan"},
@@ -406,23 +406,23 @@
                 <% end %>
               </div>
             </div>
-
+            
             <div class="relative hidden overflow-hidden rounded-[24px] lg:block">
               <.trip_art variant={:mountains} tag="ai-builder-hero" class="h-[252px] w-full" />
               <div class="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-transparent">
               </div>
-
+              
               <p class="absolute bottom-4 left-4 right-4 text-xs font-black text-white">
                 Tell Chyllz AI where you dream of going — it builds the rest around you.
               </p>
             </div>
           </div>
-
+          
           <div class="mt-7">
             <h2 class="flex items-center gap-2 text-base font-black tracking-tight text-slate-900">
               <.ui_icon name={:flame} class="h-4 w-4 text-[#FF4C00]" /> Trending Destinations
             </h2>
-
+            
             <div class="mt-3 grid grid-cols-2 gap-3 md:grid-cols-12">
               <%= for {destination, index} <- Enum.with_index(@destinations) do %>
                 <button
@@ -449,12 +449,12 @@
                     <span class="flex items-center gap-1 text-xs font-black">
                       <.ui_icon name={:pin} class="h-3.5 w-3.5 text-[#FF8A00]" /> {destination.name}
                     </span>
-
+                    
                     <span class="mt-0.5 block text-[9px] font-bold text-white/70">
                       {destination.country}
                     </span>
                   </span>
-
+                  
                   <span class="absolute bottom-3 right-3 grid h-7 w-7 place-items-center rounded-full bg-white/20 text-white backdrop-blur transition group-hover:bg-[#FF4C00]">
                     <.ui_icon name={:chevron_right} class="h-3.5 w-3.5" />
                   </span>
@@ -463,7 +463,7 @@
             </div>
           </div>
         <% end %>
-
+        
         <%= if @step == 2 do %>
           <div id="step-dates" class="mx-auto max-w-3xl">
             <div class="flex justify-center">
@@ -475,7 +475,7 @@
                     {@trip.country}
                   </span>
                 <% end %>
-
+                
                 <button
                   id="change-destination"
                   type="button"
@@ -486,16 +486,16 @@
                 </button>
               </div>
             </div>
-
+            
             <h1 class="mt-4 flex items-center justify-center gap-2 text-center text-2xl font-black tracking-tight text-slate-900 md:text-3xl">
               When will you want to go?
               <.ui_icon name={:calendar} class="h-6 w-6 text-[#FF4C00]" />
             </h1>
-
+            
             <p class="mt-1 text-center text-sm font-bold leading-relaxed text-slate-400">
               Select your start and end dates to construct a well-timed daily itinerary.
             </p>
-
+            
             <div class="mt-4 flex justify-center">
               <span
                 id="date-range-label"
@@ -504,7 +504,7 @@
                 {range_label(@trip)}
               </span>
             </div>
-
+            
             <div class="mt-5">
               <div class="flex items-center justify-between px-2">
                 <button
@@ -517,11 +517,11 @@
                 >
                   <.ui_icon name={:chevron_right} class="h-4 w-4 rotate-180" />
                 </button>
-
+                
                 <span class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-300">
                   Two-month view
                 </span>
-
+                
                 <button
                   id="calendar-next"
                   type="button"
@@ -533,19 +533,19 @@
                   <.ui_icon name={:chevron_right} class="h-4 w-4" />
                 </button>
               </div>
-
+              
               <div class="mt-2 grid grid-cols-1 gap-6 md:grid-cols-2">
                 <%= for month <- calendar_months(@calendar_month) do %>
                   <div>
                     <p class="text-center text-sm font-black text-slate-800">{month.label}</p>
-
+                    
                     <div class="mt-3 grid grid-cols-7 gap-y-1 text-center">
                       <%= for weekday <- ~w(SU MO TU WE TH FR SA) do %>
                         <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">
                           {weekday}
                         </span>
                       <% end %>
-
+                      
                       <%= for day <- List.flatten(month.weeks) do %>
                         <%= if day do %>
                           <button
@@ -569,7 +569,7 @@
                   </div>
                 <% end %>
               </div>
-
+              
               <%= if @trip.start_date && @trip.end_date do %>
                 <% days = duration_days(@trip.start_date, @trip.end_date) %>
                 <div
@@ -580,41 +580,41 @@
                     <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-orange-50 text-[#FF4C00]">
                       <.ui_icon name={:clock} class="h-4 w-4" />
                     </span>
-
+                    
                     <span>
                       <span class="block text-[8px] font-black uppercase tracking-[0.18em] text-slate-400">
                         Duration
                       </span>
-                      <span class="block text-sm font-black text-slate-900">{days} Days</span>
+                       <span class="block text-sm font-black text-slate-900">{days} Days</span>
                     </span>
                   </div>
-
+                  
                   <div class="flex items-center gap-3 px-4 py-3">
                     <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-orange-50 text-[#FF4C00]">
                       <.ui_icon name={:sparkles} class="h-4 w-4" />
                     </span>
-
+                    
                     <span>
                       <span class="block text-[8px] font-black uppercase tracking-[0.18em] text-slate-400">
                         Estimated cost
                       </span>
-
+                      
                       <span id="estimated-credits" class="block text-sm font-black text-slate-900">
                         {estimated_credits(@trip.start_date, @trip.end_date)} Credits
                       </span>
                     </span>
                   </div>
-
+                  
                   <div class="flex items-center gap-3 px-4 py-3">
                     <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-orange-50 text-[#FF4C00]">
                       <.ui_icon name={:wallet} class="h-4 w-4" />
                     </span>
-
+                    
                     <span>
                       <span class="block text-[8px] font-black uppercase tracking-[0.18em] text-slate-400">
                         Your balance
                       </span>
-
+                      
                       <span id="credit-balance" class="block text-sm font-black text-slate-900">
                         {credit_balance()} Credits
                       </span>
@@ -623,7 +623,7 @@
                 </div>
               <% end %>
             </div>
-
+            
             <div class="mt-7 flex items-center justify-between border-t border-slate-100 pt-4">
               <button
                 type="button"
@@ -632,7 +632,7 @@
               >
                 <.ui_icon name={:chevron_right} class="h-3.5 w-3.5 rotate-180" /> Previous
               </button>
-              <span class="text-[10px] font-bold text-slate-400">Step 2 of 5</span>
+               <span class="text-[10px] font-bold text-slate-400">Step 2 of 5</span>
               <button
                 id="dates-next"
                 type="button"
@@ -651,7 +651,7 @@
             </div>
           </div>
         <% end %>
-
+        
         <%= if @step == 3 do %>
           <div id="step-companions" class="mx-auto max-w-4xl">
             <div class="flex justify-center">
@@ -663,7 +663,7 @@
                     {@trip.country}
                   </span>
                 <% end %>
-
+                
                 <button
                   id="change-destination"
                   type="button"
@@ -674,15 +674,15 @@
                 </button>
               </div>
             </div>
-
+            
             <h1 class="mt-4 flex items-center justify-center gap-2 text-center text-2xl font-black tracking-tight text-slate-900 md:text-3xl">
               Who is traveling with you? <.ui_icon name={:users} class="h-6 w-6 text-[#FF4C00]" />
             </h1>
-
+            
             <p class="mt-1 text-center text-sm font-bold leading-relaxed text-slate-400">
               Select your travel companions to customize recommendations for your group.
             </p>
-
+            
             <div class="mt-6 flex flex-wrap justify-center gap-3">
               <%= for party <- @parties do %>
                 <% selected = @trip.travel_party == party.key %>
@@ -705,7 +705,7 @@
                   ]}>
                     <.ui_icon name={party.icon} class="h-4.5 w-4.5" />
                   </span>
-
+                  
                   <span class="min-w-0">
                     <span class="block text-sm font-black text-slate-900">{party.title}</span>
                     <span class="mt-1 block text-[11px] font-bold leading-snug text-slate-400">
@@ -715,21 +715,21 @@
                 </button>
               <% end %>
             </div>
-
+            
             <div class="mt-6 flex flex-col gap-4 rounded-2xl border border-slate-100 bg-slate-50/60 p-4 sm:flex-row sm:items-center">
               <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-50 text-amber-500">
                 <.ui_icon name={:paw} class="h-5 w-5" />
               </span>
-
+              
               <div class="min-w-0 flex-1">
                 <p class="text-xs font-black text-slate-900">Are you traveling with pets?</p>
-
+                
                 <p class="mt-1 text-[11px] font-bold leading-relaxed text-slate-400">
                   We'll scan reviews and recommendations of travelers with pets to highlight pet-friendly
                   options, though some recommendations may not be entirely accommodating for pets.
                 </p>
               </div>
-
+              
               <div class="flex shrink-0 gap-2">
                 <button
                   type="button"
@@ -746,7 +746,7 @@
                 >
                   Yes
                 </button>
-
+                
                 <button
                   type="button"
                   id="pets-no"
@@ -764,7 +764,7 @@
                 </button>
               </div>
             </div>
-
+            
             <div class="mt-7 flex items-center justify-between border-t border-slate-100 pt-4">
               <button
                 type="button"
@@ -773,7 +773,7 @@
               >
                 <.ui_icon name={:chevron_right} class="h-3.5 w-3.5 rotate-180" /> Previous
               </button>
-              <span class="text-[10px] font-bold text-slate-400">Step 3 of 5</span>
+               <span class="text-[10px] font-bold text-slate-400">Step 3 of 5</span>
               <button
                 id="companions-next"
                 type="button"
@@ -791,7 +791,7 @@
             </div>
           </div>
         <% end %>
-
+        
         <%= if @step == 4 do %>
           <div id="step-budget" class="mx-auto max-w-4xl">
             <div class="flex justify-center">
@@ -803,7 +803,7 @@
                     {@trip.country}
                   </span>
                 <% end %>
-
+                
                 <button
                   id="change-destination"
                   type="button"
@@ -814,15 +814,15 @@
                 </button>
               </div>
             </div>
-
+            
             <h1 class="mt-4 flex items-center justify-center gap-2 text-center text-2xl font-black tracking-tight text-slate-900 md:text-3xl">
               Set your trip budget <.ui_icon name={:money} class="h-6 w-6 text-[#FF4C00]" />
             </h1>
-
+            
             <p class="mt-1 text-center text-sm font-bold leading-relaxed text-slate-400">
               Select your spending style to get appropriately matched lodging and dining recommendations.
             </p>
-
+            
             <div class="mt-6 flex flex-wrap justify-center gap-3">
               <%= for budget <- @budgets do %>
                 <% selected = @trip.budget == budget.key %>
@@ -845,7 +845,7 @@
                   ]}>
                     <.ui_icon name={budget.icon} class="h-3.5 w-3.5" />
                   </span>
-
+                  
                   <span class="min-w-0">
                     <span class="block text-[11px] font-black text-slate-900">{budget.title}</span>
                     <span class="mt-1 block text-[9px] font-bold leading-snug text-slate-400">
@@ -855,7 +855,7 @@
                 </button>
               <% end %>
             </div>
-
+            
             <div class="mt-7 flex items-center justify-between border-t border-slate-100 pt-4">
               <button
                 type="button"
@@ -864,7 +864,7 @@
               >
                 <.ui_icon name={:chevron_right} class="h-3.5 w-3.5 rotate-180" /> Previous
               </button>
-              <span class="text-[10px] font-bold text-slate-400">Step 4 of 5</span>
+               <span class="text-[10px] font-bold text-slate-400">Step 4 of 5</span>
               <button
                 id="budget-next"
                 type="button"
@@ -882,7 +882,7 @@
             </div>
           </div>
         <% end %>
-
+        
         <%= if @step == 5 do %>
           <div id="step-preferences" class="mx-auto max-w-3xl">
             <div class="flex justify-center">
@@ -894,7 +894,7 @@
                     {@trip.country}
                   </span>
                 <% end %>
-
+                
                 <button
                   id="change-destination"
                   type="button"
@@ -905,16 +905,16 @@
                 </button>
               </div>
             </div>
-
+            
             <h1 class="mt-4 flex items-center justify-center gap-2 text-center text-2xl font-black tracking-tight text-slate-900 md:text-3xl">
               Select your travel preferences
               <.ui_icon name={:compass} class="h-6 w-6 text-[#FF4C00]" />
             </h1>
-
+            
             <p class="mt-1 text-center text-sm font-bold leading-relaxed text-slate-400">
               Choose activities and styles you enjoy most to enrich your personalized itinerary.
             </p>
-
+            
             <div
               id="preference-chips"
               class="mx-auto mt-5 flex max-w-2xl flex-wrap justify-center gap-2"
@@ -938,7 +938,7 @@
                 </button>
               <% end %>
             </div>
-
+            
             <div class="mt-7 flex items-center justify-between border-t border-slate-100 pt-4">
               <button
                 type="button"
@@ -947,7 +947,7 @@
               >
                 <.ui_icon name={:chevron_right} class="h-3.5 w-3.5 rotate-180" /> Previous
               </button>
-              <span class="text-[10px] font-bold text-slate-400">Step 5 of 5</span>
+               <span class="text-[10px] font-bold text-slate-400">Step 5 of 5</span>
               <button
                 id="build-itinerary"
                 type="button"
@@ -960,29 +960,29 @@
             </div>
           </div>
         <% end %>
-
+        
         <%= if @step >= 6 && @itinerary do %>
           <div id="step-summary" class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_46%]">
             <article id="trip-itinerary" class="min-w-0 p-5 md:p-8">
               <p class="flex items-center gap-2 text-[11px] font-bold text-slate-500">
                 <.ui_icon name={:sparkles} class="h-4 w-4 text-[#FF4C00]" /> Powered by AI
               </p>
-
+              
               <p class="mt-8 text-xs font-bold text-slate-500">
                 Review our recommendations for your trip
               </p>
-
+              
               <h1
                 id="itinerary-title"
                 class="mt-2 text-2xl font-black tracking-tight text-slate-900"
               >
                 {@itinerary.title}
               </h1>
-
+              
               <p class="mt-4 text-sm font-bold leading-relaxed text-slate-500">
                 {@itinerary.overview}
               </p>
-
+              
               <%= if @recommendations_error || @itinerary.hotel_source != :google_maps || @itinerary.restaurant_source != :google_maps do %>
                 <div
                   id="recommendations-fallback"
@@ -991,7 +991,7 @@
                   <p class="text-xs font-black text-amber-900">
                     Showing curated picks
                   </p>
-
+                  
                   <p
                     id="recommendations-status"
                     class="mt-1 text-[11px] font-bold leading-relaxed text-amber-800"
@@ -999,7 +999,7 @@
                     {@recommendations_error ||
                       "Live Google ratings couldn't load. Your itinerary is ready with curated stays and restaurants — retry live results without regenerating anything."}
                   </p>
-
+                  
                   <button
                     type="button"
                     id="retry-recommendations"
@@ -1023,23 +1023,23 @@
                   <.ui_icon name={:check} class="h-3 w-3" /> Live Google ratings loaded
                 </p>
               <% end %>
-
+              
               <section class="mt-7 border-t border-slate-100 pt-5">
                 <h2 class="text-lg font-black tracking-tight text-slate-900">
                   Hotel Recommendation
                 </h2>
-
+                
                 <p class="mt-2 text-sm font-bold leading-relaxed text-slate-500">
                   {@itinerary.hotel}
                 </p>
-
+                
                 <div id="itinerary-hotels" class="mt-6 border-t border-slate-100 pt-5">
                   <div class="flex flex-wrap items-end justify-between gap-2">
                     <div>
                       <h3 class="text-base font-black tracking-tight text-slate-900">
                         Hotels &amp; Stays
                       </h3>
-
+                      
                       <p class="mt-1 text-[10px] font-bold text-slate-400">
                         <%= if @itinerary.hotel_source == :google_maps do %>
                           Top-rated accommodation from Google Maps reviews
@@ -1049,19 +1049,19 @@
                       </p>
                     </div>
                   </div>
-
+                  
                   <%= if @itinerary.hotels == [] do %>
                     <div
                       id="itinerary-hotels-empty"
                       class="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-5"
                     >
                       <p class="text-xs font-black text-slate-700">No live stays found yet</p>
-
+                      
                       <p class="mt-1 text-[11px] font-bold leading-relaxed text-slate-500">
                         We couldn't load hotel recommendations for this destination. Try again, or
                         open Google Maps to browse stays directly.
                       </p>
-
+                      
                       <div class="mt-3 flex flex-wrap gap-2">
                         <button
                           type="button"
@@ -1072,7 +1072,7 @@
                         >
                           Try again
                         </button>
-
+                        
                         <a
                           href={@itinerary.hotels_search_url}
                           target="_blank"
@@ -1084,7 +1084,7 @@
                       </div>
                     </div>
                   <% end %>
-
+                  
                   <div
                     :if={@itinerary.hotels != []}
                     class="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4"
@@ -1101,11 +1101,11 @@
                         <p class="mt-2 line-clamp-2 text-xs font-black leading-snug text-slate-900">
                           {hotel.name}
                         </p>
-
+                        
                         <p class="mt-1 line-clamp-1 text-[9px] font-bold text-slate-400">
                           {hotel.address}
                         </p>
-
+                        
                         <%= if hotel.rating do %>
                           <p
                             class="mt-1 flex items-center gap-1.5 text-[10px] font-bold text-slate-500"
@@ -1129,14 +1129,14 @@
                   </div>
                 </div>
               </section>
-
+              
               <section class="mt-7 border-t border-slate-100 pt-5">
                 <h2 class="text-lg font-black tracking-tight text-slate-900">Food</h2>
-
+                
                 <p class="mt-2 text-sm font-bold leading-relaxed text-slate-500">
                   {@itinerary.food}
                 </p>
-
+                
                 <div id="itinerary-restaurants" class="mt-6 border-t border-slate-100 pt-5">
                   <div class="flex flex-wrap items-end justify-between gap-2">
                     <div>
@@ -1145,7 +1145,7 @@
                       </h3>
                     </div>
                   </div>
-
+                  
                   <%= if @itinerary.restaurants == [] do %>
                     <div
                       id="itinerary-restaurants-empty"
@@ -1154,12 +1154,12 @@
                       <p class="text-xs font-black text-slate-700">
                         No live restaurants found yet
                       </p>
-
+                      
                       <p class="mt-1 text-[11px] font-bold leading-relaxed text-slate-500">
                         We couldn't load restaurant recommendations for this destination. Try again,
                         or open Google Maps to browse places to eat.
                       </p>
-
+                      
                       <div class="mt-3 flex flex-wrap gap-2">
                         <button
                           type="button"
@@ -1170,7 +1170,7 @@
                         >
                           Try again
                         </button>
-
+                        
                         <a
                           href={@itinerary.restaurants_search_url}
                           target="_blank"
@@ -1182,7 +1182,7 @@
                       </div>
                     </div>
                   <% end %>
-
+                  
                   <div
                     :if={@itinerary.restaurants != []}
                     class="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4"
@@ -1199,11 +1199,11 @@
                         <p class="mt-2 line-clamp-2 text-xs font-black leading-snug text-slate-900">
                           {restaurant.name}
                         </p>
-
+                        
                         <p class="mt-1 line-clamp-1 text-[9px] font-bold text-slate-400">
                           {restaurant.address}
                         </p>
-
+                        
                         <%= if restaurant.rating do %>
                           <p
                             class="mt-1 flex items-center gap-1.5 text-[10px] font-bold text-slate-500"
@@ -1227,14 +1227,14 @@
                   </div>
                 </div>
               </section>
-
+              
               <section id="itinerary-days" class="mt-7 border-t border-slate-100 pt-5">
                 <%= for day <- @itinerary.days do %>
                   <div class="mt-5 first:mt-0">
                     <h3 class="text-base font-black tracking-tight text-slate-900">
                       {day.date}: {day.title}
                     </h3>
-
+                    
                     <dl class="mt-3 space-y-3">
                       <%= for {label, text} <- [
                             {"Morning activity", day.morning},
@@ -1247,7 +1247,7 @@
                           <dt class="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
                             {label}
                           </dt>
-
+                          
                           <dd class="mt-1 text-sm font-bold leading-relaxed text-slate-500">
                             {text}
                           </dd>
@@ -1257,15 +1257,15 @@
                   </div>
                 <% end %>
               </section>
-
+              
               <section class="mt-7 border-t border-slate-100 pt-5">
                 <h2 class="text-lg font-black tracking-tight text-slate-900">Important Notes</h2>
-
+                
                 <ul class="mt-3 space-y-3">
                   <%= for note <- @itinerary.notes do %>
                     <li>
                       <p class="text-xs font-black text-slate-900">{note.title}:</p>
-
+                      
                       <p class="mt-1 text-sm font-bold leading-relaxed text-slate-500">
                         {note.text}
                       </p>
@@ -1273,7 +1273,7 @@
                   <% end %>
                 </ul>
               </section>
-
+              
               <div class="mt-7 flex flex-col gap-2 border-t border-slate-100 pt-5 sm:flex-row">
                 <a
                   id="open-chyllz-ai"
@@ -1282,7 +1282,7 @@
                 >
                   <.ui_icon name={:sparkles} class="h-4 w-4" /> Build with Chyllz AI
                 </a>
-
+                
                 <a
                   id="browse-chyllz"
                   href="/tour-packages"
@@ -1290,7 +1290,7 @@
                 >
                   Browse Chyllz
                 </a>
-
+                
                 <button
                   type="button"
                   phx-click="restart"
@@ -1301,7 +1301,7 @@
                   Start over
                 </button>
               </div>
-
+              
               <div id="itinerary-save-bar" class="sticky bottom-4 z-20 mt-8">
                 <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-white/90 px-4 py-2 shadow-xl backdrop-blur">
                   <div class="flex min-w-0 items-center gap-2">
@@ -1309,14 +1309,14 @@
                       <.ui_icon name={:pin} class="h-4 w-4 shrink-0 text-[#FF4C00]" />
                       <span class="truncate">{@itinerary.city}</span>
                     </span>
-
+                    
                     <%= if @dirty && @save_state != :saving do %>
                       <span class="rounded-full bg-amber-50 px-2 py-1 text-[8px] font-black uppercase tracking-widest text-amber-700">
                         Unsaved changes
                       </span>
                     <% end %>
                   </div>
-
+                  
                   <div class="flex flex-wrap items-center gap-2">
                     <button
                       type="button"
@@ -1327,7 +1327,7 @@
                     >
                       <.ui_icon name={:edit} class="h-3.5 w-3.5" /> Refine
                     </button>
-
+                    
                     <%= if @save_state == :saved && !@dirty do %>
                       <a
                         href="/dashboard?tab=chyllz"
@@ -1337,7 +1337,7 @@
                         Open My Chyllz
                       </a>
                     <% end %>
-
+                    
                     <button
                       id="save-itinerary"
                       type="button"
@@ -1372,7 +1372,7 @@
                 </div>
               </div>
             </article>
-
+            
             <aside class="relative h-[420px] border-t border-slate-100 lg:sticky lg:top-0 lg:h-screen lg:self-start lg:border-l lg:border-t-0">
               <div
                 id="itinerary-map"
@@ -1396,12 +1396,12 @@
                 >
                   Open map
                 </a>
-
+                
                 <div class="absolute left-3 top-3 flex max-w-[calc(100%-7rem)] items-center gap-2 rounded-full bg-white/95 px-3 py-1.5 shadow">
                   <p id="map-status" class="truncate text-[9px] font-bold text-slate-500">
                     Map not loading?
                   </p>
-
+                  
                   <button
                     type="button"
                     id="retry-map"
@@ -1417,7 +1417,7 @@
       </section>
     </main>
   </div>
-
+  
   <script :type={Phoenix.LiveView.ColocatedHook} name=".NetworkStatus">
     export default {
       mounted() {
@@ -1429,8 +1429,13 @@
           if (this.status && message) this.status.textContent = message
         }
 
+        const offlineMessage =
+          this.el.id === "generation-network-banner"
+            ? "Reconnect to finish preparing your trip. Your details are safe."
+            : "Reconnect to load live destination search and Google recommendations. Your current trip details are safe."
+
         this.onOnline = () => setVisible(false)
-        this.onOffline = () => setVisible(true, "You're offline. Check your connection and try again.")
+        this.onOffline = () => setVisible(true, offlineMessage)
         this.onDisconnected = () => setVisible(true, "Connection lost. We'll reconnect automatically — your trip is safe.")
         this.onConnected = () => setVisible(false)
 
@@ -1462,7 +1467,7 @@
       }
     }
   </script>
-
+  
   <script :type={Phoenix.LiveView.ColocatedHook} name=".GenerationSlow">
     export default {
       mounted() {
@@ -1476,7 +1481,7 @@
       }
     }
   </script>
-
+  
   <script :type={Phoenix.LiveView.ColocatedHook} name=".OfflineGuard">
     export default {
       mounted() {
@@ -1497,7 +1502,7 @@
       }
     }
   </script>
-
+  
   <script :type={Phoenix.LiveView.ColocatedHook} name=".ItineraryMap">
     export default {
       mounted() {
