@@ -173,17 +173,19 @@
                           <button
                             phx-click="edit_operator"
                             phx-value-id={operator.id}
+                            aria-label={"Edit " <> operator.name}
                             class="w-9 h-9 bg-orange-50 rounded-lg flex items-center justify-center text-[#FF4C00] hover:bg-[#FF4C00] hover:text-white transition-all shadow-sm"
                           >
-                            <span class="material-symbols-outlined !text-lg">edit_square</span>
+                            <span class="material-symbols-outlined !text-lg" aria-hidden="true">edit_square</span>
                           </button>
                           <button
                             phx-click="delete_operator"
                             phx-disable-with="Deleting..."
                             phx-value-id={operator.id}
+                            aria-label={"Delete " <> operator.name}
                             class="w-9 h-9 bg-red-50 rounded-lg flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm"
                           >
-                            <span class="material-symbols-outlined !text-lg">delete</span>
+                            <span class="material-symbols-outlined !text-lg" aria-hidden="true">delete</span>
                           </button>
                         </div>
                       </td>
@@ -205,14 +207,26 @@
       class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       phx-click="close_modal"
     >
-      <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg" phx-click.stop>
+      <div
+        class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg"
+        phx-click.stop
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="bus-operator-modal-title"
+        tabindex="-1"
+      >
         <div class="p-8 border-b border-slate-50">
           <div class="flex items-center justify-between">
-            <h3 class="text-xl font-black text-slate-900 tracking-tight">
+            <h3
+              id="bus-operator-modal-title"
+              class="text-xl font-black text-slate-900 tracking-tight"
+            >
               {if @editing_operator, do: "Edit Bus Operator", else: "Add Bus Operator"}
             </h3>
             <button
               phx-click="close_modal"
+              aria-label="Close bus operator dialog"
+              autofocus
               class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors"
             >
               <span class="material-symbols-outlined">close</span>
@@ -319,12 +333,22 @@
       class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       phx-click="cancel_delete"
     >
-      <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-md" phx-click.stop>
+      <div
+        class="bg-white rounded-[2rem] shadow-2xl w-full max-w-md"
+        phx-click.stop
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="delete-operator-title"
+        tabindex="-1"
+      >
         <div class="p-8 text-center">
           <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center text-red-500 mx-auto mb-4">
             <span class="material-symbols-outlined !text-3xl">warning</span>
           </div>
-          <h3 class="text-xl font-black text-slate-900 tracking-tight mb-2">
+          <h3
+            id="delete-operator-title"
+            class="text-xl font-black text-slate-900 tracking-tight mb-2"
+          >
             Delete Bus Operator
           </h3>
           <p class="text-sm font-bold text-slate-400 mb-8">
@@ -353,15 +377,9 @@
   <%!-- Floating Add Button --%>
   <button
     phx-click="open_add_modal"
+    aria-label="Add bus operator"
     class="fixed bottom-8 right-8 w-14 h-14 bg-[#FF4C00] text-white rounded-full shadow-lg shadow-orange-200 flex items-center justify-center hover:bg-[#E64400] transition-colors z-40"
   >
-    <span class="material-symbols-outlined !text-2xl">add</span>
-  </button>
-  <%!-- Floating Add Button --%>
-  <button
-    phx-click="open_add_modal"
-    class="fixed bottom-8 right-8 w-14 h-14 bg-[#FF4C00] text-white rounded-full shadow-lg shadow-orange-200 flex items-center justify-center hover:bg-[#E64400] transition-colors z-40"
-  >
-    <span class="material-symbols-outlined !text-2xl">add</span>
+    <span class="material-symbols-outlined !text-2xl" aria-hidden="true">add</span>
   </button>
 </Layouts.app>

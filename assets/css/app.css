@@ -1329,3 +1329,16 @@ footer nav[aria-label="Explore Komiuta"] {
     transition: none;
   }
 }
+
+/* Keyboard focus: visible on every interactive element without affecting mouse users. */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+[role="tab"]:focus-visible,
+summary:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #ff4c00;
+  outline-offset: 3px;
+}

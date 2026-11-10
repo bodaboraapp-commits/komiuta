@@ -55,4 +55,38 @@ defmodule XpressbusWeb.UiPolishTest do
     refute source =~ "ℹ️"
     refute source =~ "⚠️"
   end
+
+  test "icon-only controls, tabs, dialogs, ratings and status chips are accessible" do
+    dashboard = File.read!("lib/xpressbus_web/live/user_dashboard_live.html.heex")
+    booking = File.read!("lib/xpressbus_web/live/booking_live.html.heex")
+    trip = File.read!("lib/xpressbus_web/live/trip_manage_live.html.heex")
+    tabs = File.read!("lib/xpressbus_web/components/brand_components.ex")
+    admin_nav = File.read!("lib/xpressbus_web/components/admin_components.ex")
+    coupon = File.read!("lib/xpressbus_web/live/admin_coupon_live.html.heex")
+    operators = File.read!("lib/xpressbus_web/live/admin_bus_operator_live.html.heex")
+    itinerary = File.read!("lib/xpressbus_web/components/itinerary_components.ex")
+    ai = File.read!("lib/xpressbus_web/live/ai_trip_builder_live.html.heex")
+    css = File.read!("assets/css/app.css")
+
+    assert dashboard =~ ~s(aria-label="Close booking confirmation")
+    assert booking =~ ~s(aria-label="Close seat selection")
+    assert coupon =~ ~s(aria-label="Close coupon dialog")
+    assert operators =~ ~s(aria-label="Close bus operator dialog")
+    assert operators =~ ~s(aria-label="Add bus operator")
+
+    assert tabs =~ ~s(role="tab")
+    assert tabs =~ ~s(aria-selected={@active == @id})
+    assert trip =~ ~s(role="tablist")
+    assert trip =~ ~s(aria-selected={@active_tab == key})
+    assert admin_nav =~ ~s(aria-current={if is_active, do: "page"})
+
+    assert dashboard =~ ~s(role="dialog")
+    assert dashboard =~ ~s(aria-modal="true")
+    assert booking =~ ~s(aria-labelledby="seat-picker-title")
+    assert coupon =~ ~s(aria-labelledby="coupon-modal-title")
+
+    assert itinerary =~ ~S|aria-label={"Trip status: #{@status_label}"}|
+    assert ai =~ "out of 5"
+    assert css =~ "focus-visible"
+  end
 end

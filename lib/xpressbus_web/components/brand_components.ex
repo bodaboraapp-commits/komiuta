@@ -92,7 +92,6 @@ defmodule XpressbusWeb.BrandComponents do
                   else: "text-slate-400 group-hover:text-[#FF4C00]"
                 )
               ]}>shield</span>
-
               <span class={[
                 "text-[11px] font-black uppercase tracking-widest",
                 if(@step == :insurance,
@@ -199,6 +198,7 @@ defmodule XpressbusWeb.BrandComponents do
             >
               <span class="material-symbols-outlined text-[#FF4C00]">dashboard</span> Dashboard
             </a>
+
             <a
               href="/user/logout"
               class="flex items-center gap-3 px-3 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 rounded-xl transition"
@@ -212,6 +212,7 @@ defmodule XpressbusWeb.BrandComponents do
             >
               <span class="material-symbols-outlined text-slate-500">person_add</span> Sign up
             </a>
+
             <a
               href="/user/login"
               class="flex items-center gap-3 px-3 py-3 text-sm font-bold text-white bg-[#FF4C00] rounded-xl hover:bg-[#E64400] transition"
@@ -219,24 +220,28 @@ defmodule XpressbusWeb.BrandComponents do
               <span class="material-symbols-outlined">login</span> Log in
             </a>
           <% end %>
+
           <a
             href="/"
             class="flex items-center gap-3 px-3 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 rounded-xl transition"
           >
             <span class="material-symbols-outlined text-slate-500">directions_bus</span> Bus Tickets
           </a>
+
           <a
             href="/tour-packages"
             class="flex items-center gap-3 px-3 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 rounded-xl transition"
           >
             <span class="material-symbols-outlined text-slate-500">category</span> Chyllz
           </a>
+
           <a
             href="/tour-packages/insurance"
             class="flex items-center gap-3 px-3 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 rounded-xl transition"
           >
             <span class="material-symbols-outlined text-slate-500">shield</span> InSURE
           </a>
+
           <a
             id="pwa-download-mobile"
             href="#app-section"
@@ -245,6 +250,7 @@ defmodule XpressbusWeb.BrandComponents do
           >
             <span class="material-symbols-outlined text-slate-500">download</span> Download App
           </a>
+
           <a
             id="mobile-track-ticket"
             href="/tickets"
@@ -376,6 +382,7 @@ defmodule XpressbusWeb.BrandComponents do
             <h2 class="mb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">
               Popular bus routes
             </h2>
+
             <ul class="space-y-2">
               <%= for {from, to} <- @footer_routes do %>
                 <li>
@@ -394,6 +401,7 @@ defmodule XpressbusWeb.BrandComponents do
             <h2 class="mb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">
               Popular cities
             </h2>
+
             <ul class="space-y-2">
               <%= for {slug, name} <- @footer_cities do %>
                 <li>
@@ -412,6 +420,7 @@ defmodule XpressbusWeb.BrandComponents do
             <h2 class="mb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">
               Help &amp; company
             </h2>
+
             <ul class="grid grid-cols-2 md:grid-cols-1 gap-2">
               <li>
                 <a
@@ -419,42 +428,49 @@ defmodule XpressbusWeb.BrandComponents do
                   class="whitespace-nowrap text-[11px] font-bold text-slate-600 hover:text-[#FF4C00] transition-colors"
                 >Track ticket</a>
               </li>
+
               <li>
                 <a
                   href="/faqs"
                   class="whitespace-nowrap text-[11px] font-bold text-slate-600 hover:text-[#FF4C00] transition-colors"
                 >FAQs</a>
               </li>
+
               <li>
                 <a
                   href="/blog"
                   class="whitespace-nowrap text-[11px] font-bold text-slate-600 hover:text-[#FF4C00] transition-colors"
                 >Travel blog</a>
               </li>
+
               <li>
                 <a
                   href="/about"
                   class="whitespace-nowrap text-[11px] font-bold text-slate-600 hover:text-[#FF4C00] transition-colors"
                 >About KOMIUTA</a>
               </li>
+
               <li>
                 <a
                   href="/tour-packages"
                   class="whitespace-nowrap text-[11px] font-bold text-slate-600 hover:text-[#FF4C00] transition-colors"
                 >Chyllz packages</a>
               </li>
+
               <li>
                 <a
                   href="/tour-packages/insurance"
                   class="whitespace-nowrap text-[11px] font-bold text-slate-600 hover:text-[#FF4C00] transition-colors"
                 >Travel insurance</a>
               </li>
+
               <li>
                 <a
                   href="/agent"
                   class="whitespace-nowrap text-[11px] font-bold text-slate-600 hover:text-[#FF4C00] transition-colors"
                 >KOMIUTA Agent app</a>
               </li>
+
               <li>
                 <a
                   href="mailto:hello@komiuta.com"
@@ -583,18 +599,15 @@ defmodule XpressbusWeb.BrandComponents do
           target="_blank"
           rel="noopener noreferrer"
           class="hover:text-[#FF4C00] transition flex items-center gap-3"
-        ><span class="material-symbols-outlined !text-[#FF4C00]">language</span>
-        {Xpressbus.Brand.website_label()}</a>
+        ><span class="material-symbols-outlined !text-[#FF4C00]">language</span> {Xpressbus.Brand.website_label()}</a>
         <a
           href={"mailto:" <> Xpressbus.Brand.email()}
           class="hover:text-[#FF4C00] transition flex items-center gap-3"
-        ><span class="material-symbols-outlined !text-[#FF4C00]">mail</span>
-        {Xpressbus.Brand.email()}</a>
+        ><span class="material-symbols-outlined !text-[#FF4C00]">mail</span> {Xpressbus.Brand.email()}</a>
         <a
           href={Xpressbus.Brand.phone_uri()}
           class="hover:text-[#FF4C00] transition flex items-center gap-3"
-        ><span class="material-symbols-outlined !text-[#FF4C00]">call</span>
-        {Xpressbus.Brand.phone()}</a>
+        ><span class="material-symbols-outlined !text-[#FF4C00]">call</span> {Xpressbus.Brand.phone()}</a>
         <span class="flex items-center gap-3"><span class="material-symbols-outlined !text-[#FF4C00]">location_on</span>
         Kenya</span>
       </div>
@@ -640,14 +653,16 @@ defmodule XpressbusWeb.BrandComponents do
       id={"user-tab-" <> @id}
       phx-click="switch_tab"
       phx-value-tab={@id}
-      aria-pressed={@active == @id}
+      role="tab"
+      aria-selected={@active == @id}
+      aria-controls="dashboard-tabpanel"
       class={[
         "flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-black uppercase tracking-widest transition-all shrink-0",
         @active == @id && "bg-[#FF4C00] text-white shadow-lg shadow-orange-100",
         @active != @id && "text-slate-400 hover:bg-slate-50 hover:text-slate-900"
       ]}
     >
-      <span class="material-symbols-outlined !text-xl">{@icon}</span> {@label}
+      <span class="material-symbols-outlined !text-xl" aria-hidden="true">{@icon}</span> {@label}
     </button>
     """
   end
@@ -681,6 +696,7 @@ defmodule XpressbusWeb.BrandComponents do
             ]}>
               {if index < @current, do: "✓", else: index + 1}
             </div>
+
             <span class={[
               "text-[9px] font-black uppercase tracking-widest hidden sm:inline",
               index <= @current && "text-slate-900",
@@ -689,6 +705,7 @@ defmodule XpressbusWeb.BrandComponents do
               {label}
             </span>
           </div>
+
           <%= if index < length(@steps) - 1 do %>
             <div class={[
               "flex-1 h-0.5 mx-1.5 sm:mx-2 rounded-full",

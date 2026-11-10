@@ -65,11 +65,18 @@
     </section>
 
     <div class="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur">
-      <div class="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-3 md:px-8">
+      <div
+        role="tablist"
+        aria-label="Trip sections"
+        class="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-3 md:px-8"
+      >
         <%= for {key, label, icon} <- @tabs do %>
           <button
             type="button"
             id={"trip-tab-#{key}"}
+            role="tab"
+            aria-selected={@active_tab == key}
+            aria-controls="trip-tabpanel"
             phx-click="set_tab"
             phx-value-tab={key}
             class={[
@@ -78,7 +85,7 @@
               @active_tab != key && "border-transparent text-slate-400 hover:text-slate-700"
             ]}
           >
-            <span class="material-symbols-outlined !text-[16px]">{icon}</span> {label}
+            <span class="material-symbols-outlined !text-[16px]" aria-hidden="true">{icon}</span> {label}
             <%= if key == "expenses" do %>
               <span class="rounded-full bg-orange-100 px-2 py-0.5 text-[8px] text-[#FF4C00]">{length(
                 @expenses
@@ -101,7 +108,7 @@
       <% end %>
 
       <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_330px]">
-        <div class="min-w-0">
+        <div id="trip-tabpanel" role="tabpanel" aria-label="Selected trip section" class="min-w-0">
           <%= if @active_tab == "expenses" do %>
             <div class="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
               <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-50 px-5 py-4">

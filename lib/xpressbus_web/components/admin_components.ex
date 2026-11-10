@@ -430,6 +430,8 @@ defmodule XpressbusWeb.AdminComponents do
       <%= if @href do %>
         <.link
           navigate={@href}
+          aria-label={@label}
+          aria-current={if is_active, do: "page"}
           class={[
             "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all mb-1",
             is_active && "bg-[#FF4C00]/10 text-[#FF4C00]",
@@ -437,7 +439,10 @@ defmodule XpressbusWeb.AdminComponents do
             @collapsed && "justify-center px-0"
           ]}
         >
-          <span class={["material-symbols-outlined text-base shrink-0", @collapsed && "!text-xl"]}>{@icon}</span>
+          <span
+            class={["material-symbols-outlined text-base shrink-0", @collapsed && "!text-xl"]}
+            aria-hidden="true"
+          >{@icon}</span>
           <span :if={!@collapsed} class="truncate">{@label}</span>
           <%= if @has_arrow and !@collapsed do %>
             <span class="w-6 h-6 rounded-full bg-white flex items-center justify-center ml-auto shadow-sm shrink-0">
@@ -452,7 +457,10 @@ defmodule XpressbusWeb.AdminComponents do
           !is_active && "text-slate-500 hover:bg-slate-50 hover:text-slate-900",
           @collapsed && "justify-center px-0"
         ]}>
-          <span class={["material-symbols-outlined text-base shrink-0", @collapsed && "!text-xl"]}>{@icon}</span>
+          <span
+            class={["material-symbols-outlined text-base shrink-0", @collapsed && "!text-xl"]}
+            aria-hidden="true"
+          >{@icon}</span>
           <span :if={!@collapsed} class="truncate">{@label}</span>
           <%= if @has_arrow and !@collapsed do %>
             <span class="w-6 h-6 rounded-full bg-white flex items-center justify-center ml-auto shadow-sm shrink-0">
