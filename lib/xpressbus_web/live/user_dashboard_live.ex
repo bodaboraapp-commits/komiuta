@@ -35,6 +35,7 @@ defmodule XpressbusWeb.UserDashboardLive do
           tickets = list_user_tickets(user)
           transactions = Accounts.list_user_transactions(user.id)
           active_tab = normalize_tab(Map.get(params, "tab"))
+          hero_stats = ChyllzAccount.stats(user)
 
           socket =
             socket
@@ -45,6 +46,7 @@ defmodule XpressbusWeb.UserDashboardLive do
             |> assign(:current_user, user.phone)
             |> assign(:tickets, tickets)
             |> assign(:transactions, transactions)
+            |> assign(:hero_stats, hero_stats)
             |> assign(:selected_ticket, nil)
             |> assign(:show_ticket_modal, false)
             |> assign(:ticket_qr, nil)

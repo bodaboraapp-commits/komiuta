@@ -114,30 +114,118 @@
               </div>
             </div>
             
-            <div class="relative mt-5 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center">
-              <a
-                id="build-with-ai"
-                href="/trip/build-with-ai"
-                class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#FF4C00] px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-orange-500/20 transition-all hover:-translate-y-0.5 hover:bg-[#E64400] hover:shadow-xl sm:w-auto"
+            <div class="relative mt-5 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+              <div
+                id="hero-stats"
+                class="grid grid-cols-1 gap-2.5 sm:grid-cols-3 xl:max-w-[620px]"
               >
-                <.ui_icon name={:sparkles} class="h-4 w-4" /> Build with AI
-              </a>
+                <a
+                  id="stat-total-trips"
+                  href="/dashboard"
+                  class="group flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-3 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all hover:-translate-y-0.5 hover:border-orange-200 hover:shadow-lg"
+                >
+                  <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-orange-50 text-[#FF4C00]">
+                    <.ui_icon name={:route} class="h-5 w-5" />
+                  </span>
+                  
+                  <span class="min-w-0 flex-1">
+                    <span
+                      id="stat-total-trips-value"
+                      class="block text-xl font-black tabular-nums tracking-tight text-slate-900"
+                    >
+                      {@hero_stats.trips}
+                    </span>
+                    
+                    <span class="block text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
+                      Total Trips
+                    </span>
+                  </span>
+                  
+                  <span class="shrink-0 text-slate-300 transition-colors group-hover:text-[#FF4C00]">
+                    <.ui_icon name={:chevron_right} class="h-4 w-4" />
+                  </span>
+                </a>
+                
+                <a
+                  id="stat-upcoming-trips"
+                  href="/dashboard"
+                  class="group flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-3 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all hover:-translate-y-0.5 hover:border-orange-200 hover:shadow-lg"
+                >
+                  <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-orange-50 text-[#FF4C00]">
+                    <.ui_icon name={:calendar} class="h-5 w-5" />
+                  </span>
+                  
+                  <span class="min-w-0 flex-1">
+                    <span
+                      id="stat-upcoming-trips-value"
+                      class="block text-xl font-black tabular-nums tracking-tight text-slate-900"
+                    >
+                      {@hero_stats.upcoming}
+                    </span>
+                    
+                    <span class="block text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
+                      Upcoming Trips
+                    </span>
+                  </span>
+                  
+                  <span class="shrink-0 text-slate-300 transition-colors group-hover:text-[#FF4C00]">
+                    <.ui_icon name={:chevron_right} class="h-4 w-4" />
+                  </span>
+                </a>
+                
+                <a
+                  id="stat-places-visited"
+                  href="/tour-packages"
+                  class="group flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-3 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all hover:-translate-y-0.5 hover:border-orange-200 hover:shadow-lg"
+                >
+                  <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-orange-50 text-[#FF4C00]">
+                    <.ui_icon name={:pin} class="h-5 w-5" />
+                  </span>
+                  
+                  <span class="min-w-0 flex-1">
+                    <span
+                      id="stat-places-visited-value"
+                      class="block text-xl font-black tabular-nums tracking-tight text-slate-900"
+                    >
+                      {@hero_stats.places_visited}
+                    </span>
+                    
+                    <span class="block text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
+                      Places Visited
+                    </span>
+                  </span>
+                  
+                  <span class="shrink-0 text-slate-300 transition-colors group-hover:text-[#FF4C00]">
+                    <.ui_icon name={:chevron_right} class="h-4 w-4" />
+                  </span>
+                </a>
+              </div>
               
-              <a
-                id="create-new-trip"
-                href="/tour-packages"
-                class="inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-[#FF4C00] bg-orange-50 px-5 py-3 text-[10px] font-black uppercase tracking-widest text-[#FF4C00] transition-all hover:-translate-y-0.5 hover:bg-[#FF4C00] hover:text-white sm:w-auto"
-              >
-                <.ui_icon name={:compass} class="h-4 w-4" /> Create New Trip
-              </a>
-              
-              <a
-                id="view-my-trips"
-                href="/dashboard"
-                class="inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 text-[10px] font-black uppercase tracking-widest text-slate-700 transition-all hover:-translate-y-0.5 hover:border-[#FF4C00] hover:text-[#FF4C00] sm:w-auto"
-              >
-                <.ui_icon name={:ticket} class="h-4 w-4" /> View My Trips
-              </a>
+              <div class="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center xl:ml-auto xl:shrink-0">
+                <a
+                  id="build-with-ai"
+                  href="/trip/build-with-ai"
+                  class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#FF4C00] px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-orange-500/20 transition-all hover:-translate-y-0.5 hover:bg-[#E64400] hover:shadow-xl sm:w-auto"
+                >
+                  <.ui_icon name={:sparkles} class="h-4 w-4" /> Build with AI
+                </a>
+                
+                <a
+                  id="create-new-trip"
+                  href="/tour-packages"
+                  class="inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-[#FF4C00] bg-orange-50 px-5 py-3 text-[10px] font-black uppercase tracking-widest text-[#FF4C00] transition-all hover:-translate-y-0.5 hover:bg-[#FF4C00] hover:text-white sm:w-auto"
+                >
+                  <.ui_icon name={:compass} class="h-4 w-4" /> Create New Trip
+                </a>
+                
+                <a
+                  id="view-my-trips"
+                  href="/dashboard"
+                  class="inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 text-[10px] font-black uppercase tracking-widest text-slate-700 transition-all hover:-translate-y-0.5 hover:border-[#FF4C00] hover:text-[#FF4C00] sm:w-auto"
+                >
+                  <.ui_icon name={:ticket} class="h-4 w-4" /> View My Trips
+                </a>
+              </div>
             </div>
           </div>
         </div>
