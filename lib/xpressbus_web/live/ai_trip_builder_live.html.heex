@@ -317,7 +317,7 @@
         <% end %>
 
         <%= if @step == 3 do %>
-          <div id="step-companions" class="mx-auto max-w-3xl">
+          <div id="step-companions" class="mx-auto max-w-4xl">
             <div class="flex justify-center">
               <div class="inline-flex max-w-full items-center gap-2 rounded-full border border-orange-200 bg-orange-50/70 px-3 py-1.5 text-[10px] font-black text-slate-700">
                 <.ui_icon name={:pin} class="h-3.5 w-3.5 shrink-0 text-[#FF4C00]" />
@@ -350,7 +350,7 @@
                   phx-value-party={party.key}
                   aria-pressed={to_string(selected)}
                   class={[
-                    "flex w-full max-w-[320px] items-start gap-3 rounded-2xl border-2 bg-white px-4 py-4 text-left shadow-sm transition sm:w-[300px]",
+                    "flex w-full max-w-[320px] items-start gap-3 rounded-2xl border-2 bg-white px-4 py-4 text-left shadow-sm transition sm:w-[260px]",
                     selected && "border-[#FF4C00] bg-orange-50/60 shadow-orange-100",
                     !selected && "border-slate-100 hover:border-orange-200 hover:bg-orange-50/30"
                   ]}
