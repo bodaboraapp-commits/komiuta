@@ -393,7 +393,7 @@ defmodule XpressbusWeb.AiTripBuilderLive do
       {_pid, ref} =
         spawn_monitor(fn -> send(parent, {:generation_done, TripItinerary.generate(trip)}) end)
 
-      Process.send_after(self(), :generation_tick, 1_800)
+      Process.send_after(self(), :generation_tick, 1_200)
 
       {:noreply,
        socket
@@ -490,7 +490,7 @@ defmodule XpressbusWeb.AiTripBuilderLive do
           {0, hd(@generation_steps)}
         end
 
-      Process.send_after(self(), :generation_tick, 2_400)
+      Process.send_after(self(), :generation_tick, 1_400)
 
       {:noreply,
        socket
@@ -507,7 +507,7 @@ defmodule XpressbusWeb.AiTripBuilderLive do
     end
 
     started_at = socket.assigns.generation_started_at || System.monotonic_time(:millisecond)
-    remaining = max(2_200 - (System.monotonic_time(:millisecond) - started_at), 0)
+    remaining = max(4_500 - (System.monotonic_time(:millisecond) - started_at), 0)
 
     if remaining > 0 do
       Process.send_after(self(), {:generation_complete, itinerary}, remaining)
