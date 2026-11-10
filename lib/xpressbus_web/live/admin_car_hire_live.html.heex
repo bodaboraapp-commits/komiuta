@@ -1,6 +1,5 @@
 <Layouts.app flash={@flash}>
   <div class="flex min-h-screen bg-[#f8fafc]">
-    <%!-- Sidebar Component --%>
     <.sidebar
       active_tab="cars"
       bus_expanded={@bus_expanded}
@@ -9,106 +8,176 @@
       collapsed={@sidebar_collapsed}
     />
 
-    <%!-- Main Content Area --%>
     <div class={[
       "flex-1 transition-all duration-300",
       if(@sidebar_collapsed, do: "lg:pl-20", else: "lg:pl-72")
     ]}>
-      <%!-- Top Bar --%>
-      <header class="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-8 sticky top-0 z-30">
-        <h2 class="text-xl font-black text-slate-900 tracking-tight">Car Hire Management</h2>
+      <header class="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-slate-100 bg-white px-8">
+        <div>
+          <h2 class="text-xl font-black tracking-widest text-slate-900 uppercase">
+            Car Hire Management
+          </h2>
+          <p class="mt-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+            Chyllz · Premium Car Hire
+          </p>
+        </div>
 
-        <div class="flex items-center gap-6">
-          <button class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-[#FF4C00] transition-colors relative">
-            <span class="material-symbols-outlined">notifications</span>
-            <div class="absolute top-2.5 right-2.5 w-2 h-2 bg-[#FF4C00] rounded-full border-2 border-white">
-            </div>
-          </button>
-
-          <div class="flex items-center gap-3 border-l border-slate-100 pl-6">
-            <div class="text-right hidden sm:block">
-              <p class="text-[11px] font-black text-slate-900 leading-none">Admin User</p>
-              <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">Super Admin</p>
-            </div>
-            <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-[#FF4C00] font-black text-xs border-2 border-white shadow-sm">
-              AD
-            </div>
+        <div class="flex items-center gap-3">
+          <span class="rounded-full bg-orange-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-[#FF4C00]">
+            {@total_count} total
+          </span>
+          <div class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-orange-100 text-xs font-black text-[#FF4C00] shadow-sm">
+            AD
           </div>
         </div>
       </header>
 
-      <%!-- Main Scrollable Content --%>
-      <main class="p-8 md:p-12 pt-10 md:pt-16">
-        <div class="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
-          <%!-- Table Controls --%>
-          <div class="p-8 flex flex-col md:flex-row justify-between items-center gap-4 border-b border-slate-50">
-            <div class="flex items-center gap-3">
-              <span class="text-sm font-bold text-slate-400">Show</span>
-              <select class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 font-bold text-slate-700 outline-none focus:border-orange-500">
-                <option>10</option>
-                <option>25</option>
-                <option>50</option>
-              </select>
-              <span class="text-sm font-bold text-slate-400">entries</span>
-            </div>
-            <div class="flex items-center gap-3">
-              <span class="text-sm font-bold text-slate-400">Search:</span>
-              <input
-                type="text"
-                class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-1.5 font-bold text-slate-700 outline-none focus:border-orange-500"
-              />
-            </div>
+      <main class="p-6 md:p-10">
+        <div class="mb-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h1 class="text-3xl font-black tracking-tighter text-slate-900 uppercase">
+              Premium vehicles
+            </h1>
+            <p class="mt-1 max-w-xl text-sm font-bold leading-relaxed text-slate-400">
+              Manage the vehicles shown in the public Chyllz Premium Car Hire section. Changes
+              are saved to the database and go live immediately.
+            </p>
           </div>
 
-          <%!-- Table --%>
+          <div class="flex w-full flex-col gap-2 sm:flex-row md:w-auto">
+            <form
+              id="car-hire-search-form"
+              phx-change="search"
+              class="flex w-full items-center gap-3 rounded-2xl border border-slate-100 bg-white px-5 py-3 shadow-sm md:w-80"
+            >
+              <span class="material-symbols-outlined text-slate-300">search</span>
+              <input
+                type="search"
+                name="search_query"
+                value={@search_query}
+                phx-debounce="300"
+                placeholder="Search vehicle, type or location"
+                class="w-full border-0 p-0 text-sm font-bold text-slate-700 placeholder:text-slate-300 focus:outline-none focus:ring-0"
+              />
+            </form>
+
+            <button
+              id="add-car-hire-button"
+              type="button"
+              phx-click="open_add_modal"
+              class="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-[#FF4C00] px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-orange-200 transition hover:bg-[#E64400]"
+            >
+              <span class="material-symbols-outlined !text-base">add</span> Add vehicle
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-hidden rounded-[2rem] border border-slate-100 bg-white shadow-sm">
           <div class="overflow-x-auto">
             <table class="w-full text-left">
               <thead>
                 <tr class="border-b border-slate-50 bg-white">
-                  <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-[#FF4C00]">
-                    SR NO.
+                  <th class="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-[#FF4C00]">
+                    Vehicle
                   </th>
-                  <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                    CAR NAME
+                  <th class="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    Type
                   </th>
-                  <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                    TYPE
+                  <th class="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    Location
                   </th>
-                  <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                    LOCATION
+                  <th class="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    Price / day
                   </th>
-                  <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                    PRICE/DAY
+                  <th class="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    Status
                   </th>
-                  <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                    ACTION
+                  <th class="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    Actions
                   </th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-50">
                 <%= if Enum.empty?(@car_hires) do %>
                   <tr>
-                    <td colspan="6" class="px-8 py-12 text-center">
-                      <span class="material-symbols-outlined text-4xl text-slate-200 mb-4">directions_car</span>
-                      <p class="text-sm font-bold text-slate-400">No car hires found.</p>
+                    <td colspan="6" class="px-6 py-16 text-center">
+                      <span class="material-symbols-outlined !text-5xl text-slate-200">directions_car</span>
+                      <p class="mt-4 text-sm font-black text-slate-500">No vehicles found</p>
+                      <p class="mt-1 text-xs font-bold text-slate-400">
+                        Add a vehicle to show it in Premium Car Hire.
+                      </p>
                     </td>
                   </tr>
                 <% else %>
                   <%= for {car, index} <- Enum.with_index(@car_hires) do %>
-                    <tr class="hover:bg-slate-50/50 transition-colors group">
-                      <td class="px-8 py-6 text-sm font-bold text-slate-500">{index + 1}</td>
-                      <td class="px-8 py-6 text-sm font-black text-slate-900">{car.car_name}</td>
-                      <td class="px-8 py-6 text-sm font-bold text-slate-500">{car.type}</td>
-                      <td class="px-8 py-6 text-sm font-bold text-slate-500">
-                        {car.location || "—"}
+                    <tr
+                      id={"car-hire-row-#{car.id}"}
+                      class="group transition hover:bg-slate-50/60"
+                    >
+                      <td class="px-6 py-5">
+                        <div class="flex items-center gap-3">
+                          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 text-[#FF4C00]">
+                            <span class="material-symbols-outlined !text-xl">directions_car</span>
+                          </div>
+                          <div class="min-w-0">
+                            <p class="truncate text-sm font-black text-slate-900">
+                              {car.car_name}
+                            </p>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                              Vehicle #{index + 1}
+                            </p>
+                          </div>
+                        </div>
                       </td>
-                      <td class="px-8 py-6 text-sm font-black text-[#FF4C00]">
-                        {to_string(car.price_per_day)}
+                      <td class="px-6 py-5 text-xs font-bold text-slate-600">{car.type}</td>
+                      <td class="px-6 py-5">
+                        <span class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600">
+                          <span class="material-symbols-outlined !text-[14px] text-slate-300">location_on</span>
+                          {car.location || "—"}
+                        </span>
                       </td>
-                      <td class="px-8 py-6">
-                        <button class="w-9 h-9 bg-orange-50 rounded-lg flex items-center justify-center text-[#FF4C00] hover:bg-[#FF4C00] hover:text-white transition-all shadow-sm">
-                          <span class="material-symbols-outlined !text-lg">edit_square</span>
+                      <td class="px-6 py-5">
+                        <span class="text-sm font-black text-[#FF4C00]">
+                          KES {to_string(car.price_per_day)}
+                        </span>
+                      </td>
+                      <td class="px-6 py-5">
+                        <button
+                          type="button"
+                          phx-click="toggle_active"
+                          phx-value-id={car.id}
+                          class={[
+                            "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest transition",
+                            car.active && "bg-emerald-50 text-emerald-700 hover:bg-emerald-100",
+                            !car.active && "bg-red-50 text-red-600 hover:bg-red-100"
+                          ]}
+                        >
+                          <span class="h-1.5 w-1.5 rounded-full bg-current"></span>
+                          {if car.active, do: "Active", else: "Hidden"}
                         </button>
+                      </td>
+                      <td class="px-6 py-5">
+                        <div class="flex items-center gap-2">
+                          <button
+                            type="button"
+                            phx-click="edit_car"
+                            phx-value-id={car.id}
+                            class="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-50 text-[#FF4C00] transition hover:bg-[#FF4C00] hover:text-white"
+                            aria-label={"Edit #{car.car_name}"}
+                          >
+                            <span class="material-symbols-outlined !text-lg">edit_square</span>
+                          </button>
+                          <button
+                            type="button"
+                            phx-click="delete_car"
+                            phx-value-id={car.id}
+                            data-confirm={"Delete #{car.car_name}? This removes it from the website."}
+                            class="flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-red-500 transition hover:bg-red-500 hover:text-white"
+                            aria-label={"Delete #{car.car_name}"}
+                          >
+                            <span class="material-symbols-outlined !text-lg">delete</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   <% end %>
@@ -116,9 +185,144 @@
               </tbody>
             </table>
           </div>
+
           <.pager page={@page} page_size={@page_size} total_count={@total_count} />
         </div>
       </main>
     </div>
   </div>
+
+  <%= if @show_modal do %>
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div class="w-full max-w-lg rounded-[2rem] bg-white shadow-2xl">
+        <div class="border-b border-slate-50 p-6">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xl font-black tracking-tight text-slate-900">
+              {if @editing_car, do: "Edit vehicle", else: "Add vehicle"}
+            </h3>
+            <button
+              type="button"
+              phx-click="close_modal"
+              class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 text-slate-400 transition hover:text-slate-700"
+            >
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="p-6">
+          <%= if @error do %>
+            <div class="mb-5 rounded-2xl border border-red-100 bg-red-50 p-4">
+              <p class="text-xs font-bold text-red-700">{@error}</p>
+            </div>
+          <% end %>
+
+          <form id="car-hire-form" phx-submit="save_car" class="space-y-4">
+            <div>
+              <label
+                for="car-name"
+                class="mb-2 block text-[10px] font-black uppercase tracking-widest text-slate-500"
+              >
+                Vehicle name *
+              </label>
+              <input
+                id="car-name"
+                type="text"
+                name="car_name"
+                value={@car_name}
+                required
+                placeholder="e.g. Toyota Prado"
+                class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-sm font-bold outline-none transition focus:border-[#FF4C00] focus:bg-white"
+              />
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label
+                  for="car-type"
+                  class="mb-2 block text-[10px] font-black uppercase tracking-widest text-slate-500"
+                >
+                  Vehicle type *
+                </label>
+                <input
+                  id="car-type"
+                  type="text"
+                  name="type"
+                  value={@car_type}
+                  required
+                  placeholder="e.g. Premium SUV"
+                  class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-sm font-bold outline-none transition focus:border-[#FF4C00] focus:bg-white"
+                />
+              </div>
+
+              <div>
+                <label
+                  for="car-location"
+                  class="mb-2 block text-[10px] font-black uppercase tracking-widest text-slate-500"
+                >
+                  Location
+                </label>
+                <input
+                  id="car-location"
+                  type="text"
+                  name="location"
+                  value={@location}
+                  placeholder="e.g. Nairobi"
+                  class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-sm font-bold outline-none transition focus:border-[#FF4C00] focus:bg-white"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label
+                for="car-price"
+                class="mb-2 block text-[10px] font-black uppercase tracking-widest text-slate-500"
+              >
+                Price per day (KES) *
+              </label>
+              <input
+                id="car-price"
+                type="number"
+                name="price_per_day"
+                value={@price_per_day}
+                required
+                min="0"
+                step="0.01"
+                placeholder="e.g. 12000"
+                class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-sm font-bold outline-none transition focus:border-[#FF4C00] focus:bg-white"
+              />
+            </div>
+
+            <label class="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
+              <input type="hidden" name="active" value="false" />
+              <input
+                type="checkbox"
+                name="active"
+                value="true"
+                checked={@active}
+                class="h-5 w-5 rounded border-slate-300 text-[#FF4C00] focus:ring-[#FF4C00]"
+              />
+              <span class="text-sm font-bold text-slate-700">Active (visible on the website)</span>
+            </label>
+
+            <div class="flex gap-3 pt-2">
+              <button
+                type="button"
+                phx-click="close_modal"
+                class="flex-1 rounded-2xl border border-slate-200 bg-slate-50 py-4 text-sm font-black text-slate-700 transition hover:bg-slate-100"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="flex-1 rounded-2xl bg-[#FF4C00] py-4 text-sm font-black text-white shadow-lg shadow-orange-200 transition hover:bg-[#E64400]"
+              >
+                {if @editing_car, do: "Update vehicle", else: "Add vehicle"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  <% end %>
 </Layouts.app>
