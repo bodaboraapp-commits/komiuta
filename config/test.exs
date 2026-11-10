@@ -68,3 +68,7 @@ config :xpressbus, :weather,
   enabled: false,
   cache_ttl_seconds: 900,
   http_timeout_ms: 5_000
+
+# Never call Google Places from the test suite. Tests use the curated fallback;
+# the HTTP client can be exercised with an injected Req plug where needed.
+config :xpressbus, :google_places_enabled, false

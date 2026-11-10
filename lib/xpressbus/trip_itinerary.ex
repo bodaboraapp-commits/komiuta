@@ -9,6 +9,8 @@ defmodule Xpressbus.TripItinerary do
   destinations receive the same structure with destination-aware copy.
   """
 
+  alias Xpressbus.GooglePlaces
+
   @coordinates %{
     "moscow" => {55.7558, 37.6173},
     "cox's bazar" => {21.4272, 92.0058},
@@ -18,6 +20,171 @@ defmodule Xpressbus.TripItinerary do
     "new york" => {40.7128, -74.0060},
     "las vegas" => {36.1699, -115.1398},
     "istanbul" => {41.0082, 28.9784}
+  }
+
+  @hotel_images [
+    "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80",
+    "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=600&q=80",
+    "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=600&q=80",
+    "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=600&q=80"
+  ]
+
+  @fallback_hotels %{
+    "moscow" => [
+      %{
+        name: "Hotel Metropol Moscow",
+        address: "Teatralny Proyezd, 2, Moscow",
+        rating: 4.6,
+        reviews: 8700
+      },
+      %{
+        name: "Four Seasons Hotel Moscow",
+        address: "Okhotny Ryad, 2, Moscow",
+        rating: 4.7,
+        reviews: 5200
+      },
+      %{
+        name: "The Ritz-Carlton, Moscow",
+        address: "Tverskaya St, 3, Moscow",
+        rating: 4.7,
+        reviews: 2800
+      },
+      %{
+        name: "Ararat Park Hyatt Moscow",
+        address: "Neglinnaya St, 4, Moscow",
+        rating: 4.6,
+        reviews: 2100
+      }
+    ],
+    "new york" => [
+      %{
+        name: "The Plaza",
+        address: "768 5th Ave, New York",
+        rating: 4.5,
+        reviews: 22000
+      },
+      %{
+        name: "The Ritz-Carlton New York, Central Park",
+        address: "50 Central Park S, New York",
+        rating: 4.6,
+        reviews: 3400
+      },
+      %{
+        name: "Mandarin Oriental, New York",
+        address: "80 Columbus Cir, New York",
+        rating: 4.7,
+        reviews: 3000
+      },
+      %{
+        name: "The Langham, New York, Fifth Avenue",
+        address: "400 5th Ave, New York",
+        rating: 4.6,
+        reviews: 2400
+      }
+    ]
+  }
+
+  @fallback_restaurants %{
+    "moscow" => [
+      %{
+        name: "Café Pushkin",
+        address: "Tverskoy Blvd, 26A, Moscow",
+        rating: 4.6,
+        reviews: 22000
+      },
+      %{
+        name: "White Rabbit",
+        address: "Smolenskaya Square, 3, Moscow",
+        rating: 4.6,
+        reviews: 12000
+      },
+      %{
+        name: "Turandot",
+        address: "Tverskoy Blvd, 26/5, Moscow",
+        rating: 4.5,
+        reviews: 8000
+      },
+      %{
+        name: "Bolshoi Restaurant",
+        address: "Teatralnaya Square, 1, Moscow",
+        rating: 4.4,
+        reviews: 3000
+      },
+      %{
+        name: "Ginza",
+        address: "Tverskaya St, 3, Moscow",
+        rating: 4.4,
+        reviews: 4000
+      },
+      %{
+        name: "Selfie",
+        address: "Novinsky Blvd, 31, Moscow",
+        rating: 4.4,
+        reviews: 5500
+      },
+      %{
+        name: "Pushkin Cafe",
+        address: "Tverskoy Blvd, 26A, Moscow",
+        rating: 4.6,
+        reviews: 22000
+      },
+      %{
+        name: "Beluga",
+        address: "Mokhovaya St, 15/1, Moscow",
+        rating: 4.5,
+        reviews: 2500
+      }
+    ],
+    "new york" => [
+      %{
+        name: "Le Bernardin",
+        address: "155 W 51st St, New York",
+        rating: 4.7,
+        reviews: 5000
+      },
+      %{
+        name: "Eleven Madison Park",
+        address: "11 Madison Ave, New York",
+        rating: 4.6,
+        reviews: 6000
+      },
+      %{
+        name: "Katz's Delicatessen",
+        address: "205 E Houston St, New York",
+        rating: 4.5,
+        reviews: 25000
+      },
+      %{
+        name: "Joe's Pizza",
+        address: "7 Carmine St, New York",
+        rating: 4.6,
+        reviews: 12000
+      },
+      %{
+        name: "Peter Luger Steak House",
+        address: "178 Broadway, Brooklyn",
+        rating: 4.4,
+        reviews: 8000
+      },
+      %{
+        name: "Grand Central Oyster Bar",
+        address: "89 E 42nd St, New York",
+        rating: 4.4,
+        reviews: 7000
+      },
+      %{
+        name: "The Halal Guys",
+        address: "W 53rd St & 6th Ave, New York",
+        rating: 4.3,
+        reviews: 10000
+      },
+      %{
+        name: "Balthazar",
+        address: "80 Spring St, New York",
+        rating: 4.5,
+        reviews: 6000
+      }
+    ]
   }
 
   @restaurants [
@@ -139,7 +306,9 @@ defmodule Xpressbus.TripItinerary do
   def generate(trip) do
     city = city_label(trip)
     moscow? = moscow?(trip)
-    {map_image, map_link, map_attribution} = map_data(city)
+    {map_image, map_link, map_attribution, map_source} = map_data(city)
+    {hotels, hotel_source} = places_or_fallback(trip, city, :hotels, 4)
+    {restaurants, restaurant_source} = places_or_fallback(trip, city, :restaurants, 8)
 
     %{
       title: title(trip),
@@ -147,10 +316,16 @@ defmodule Xpressbus.TripItinerary do
       map_image: map_image,
       map_link: map_link,
       map_attribution: map_attribution,
+      map_source: map_source,
+      hotels: hotels,
+      hotel_source: hotel_source,
+      hotels_search_url: GooglePlaces.search_url(city, :hotels),
+      restaurants: restaurants,
+      restaurant_source: restaurant_source,
+      restaurants_search_url: GooglePlaces.search_url(city, :restaurants),
       overview: overview(trip, moscow?),
       hotel: hotel_recommendation(trip, moscow?),
       food: food_recommendation(trip, moscow?),
-      restaurants: restaurants(),
       days: days(trip, moscow?),
       notes: notes(trip, moscow?)
     }
@@ -173,6 +348,16 @@ defmodule Xpressbus.TripItinerary do
   end
 
   defp map_data(city) do
+    case GooglePlaces.static_map(city) do
+      url when is_binary(url) ->
+        {url, GooglePlaces.search_url(city, :hotels), "Map data ©2026 Google", :google_maps}
+
+      _fallback ->
+        arcgis_map_data(city)
+    end
+  end
+
+  defp arcgis_map_data(city) do
     key =
       city
       |> String.split(",")
@@ -196,7 +381,7 @@ defmodule Xpressbus.TripItinerary do
         "?bbox=#{Enum.join(bbox, ",")}&bboxSR=4326&imageSR=4326&size=800,900&format=png&f=image"
 
     {map_image, "https://www.google.com/maps/search/?api=1&query=" <> URI.encode_www_form(city),
-     "© Esri, HERE, Garmin, © OpenStreetMap contributors"}
+     "© Esri, HERE, Garmin, © OpenStreetMap contributors", :fallback}
   end
 
   defp destination(trip) do
@@ -350,15 +535,91 @@ defmodule Xpressbus.TripItinerary do
     """
   end
 
-  defp restaurants do
-    @restaurants
+  defp places_or_fallback(trip, city, category, limit) do
+    case GooglePlaces.recommendations(city, category, limit) do
+      {:ok, places} when places != [] ->
+        {places, :google_maps}
+
+      _fallback ->
+        {fallback_places(trip, city, category), :curated}
+    end
+  end
+
+  defp fallback_places(trip, city, :hotels) do
+    key =
+      city
+      |> String.split(",")
+      |> List.first()
+      |> String.downcase()
+      |> String.trim()
+
+    case Map.get(@fallback_hotels, key) do
+      nil ->
+        [
+          "Top-rated hotels",
+          "Luxury stays",
+          "Boutique hotels",
+          "Budget-friendly stays"
+        ]
+        |> Enum.with_index()
+        |> Enum.map(fn {label, index} ->
+          %{
+            name: "#{label} in #{destination(trip)}",
+            address: "Ranked by guest reviews on Google Maps",
+            rating: nil,
+            reviews: nil,
+            image: Enum.at(@hotel_images, index),
+            maps_url: GooglePlaces.search_url(city, :hotels)
+          }
+        end)
+
+      hotels ->
+        hotels
+        |> Enum.with_index()
+        |> Enum.map(fn {hotel, index} ->
+          Map.merge(hotel, %{
+            image: Enum.at(@hotel_images, index),
+            maps_url:
+              "https://www.google.com/maps/search/?api=1&query=" <>
+                URI.encode_www_form("#{hotel.name}, #{city}")
+          })
+        end)
+    end
+  end
+
+  defp fallback_places(_trip, city, :restaurants) do
+    key =
+      city
+      |> String.split(",")
+      |> List.first()
+      |> String.downcase()
+      |> String.trim()
+
+    restaurants =
+      case Map.get(@fallback_restaurants, key) do
+        nil ->
+          Enum.map(@restaurants, fn name ->
+            %{
+              name: name,
+              address: "Local favourite near the city centre",
+              rating: nil,
+              reviews: nil
+            }
+          end)
+
+        known ->
+          known
+      end
+
+    restaurants
     |> Enum.with_index()
-    |> Enum.map(fn {name, index} ->
-      %{
-        name: name,
+    |> Enum.map(fn {restaurant, index} ->
+      Map.merge(restaurant, %{
         image: Enum.at(@restaurant_images, index),
-        rating: "0.0"
-      }
+        maps_url:
+          "https://www.google.com/maps/search/?api=1&query=" <>
+            URI.encode_www_form("#{restaurant.name}, #{city}")
+      })
     end)
   end
 

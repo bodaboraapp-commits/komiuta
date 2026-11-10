@@ -3,43 +3,43 @@ defmodule XpressbusWeb.AiTripBuilderTest do
 
   import Phoenix.LiveViewTest
 
+  alias Xpressbus.GooglePlaces
+  alias Xpressbus.Places
 
-alias Xpressbus.Places
-
-setup do
-  previous = Application.get_env(:xpressbus, :places_search_override)
-  Places.reset_cache()
-
-  Application.put_env(:xpressbus, :places_search_override, fn query ->
-    case String.downcase(query) do
-      "zanzibar" ->
-        [
-          %{
-            name: "Zanzibar City",
-            country: "Tanzania",
-            region: "Zanzibar Urban/West",
-            latitude: -6.1659,
-            longitude: 39.2026
-          }
-        ]
-
-      _other ->
-        []
-    end
-  end)
-
-  on_exit(fn ->
+  setup do
+    previous = Application.get_env(:xpressbus, :places_search_override)
     Places.reset_cache()
 
-    if previous == nil do
-      Application.delete_env(:xpressbus, :places_search_override)
-    else
-      Application.put_env(:xpressbus, :places_search_override, previous)
-    end
-  end)
+    Application.put_env(:xpressbus, :places_search_override, fn query ->
+      case String.downcase(query) do
+        "zanzibar" ->
+          [
+            %{
+              name: "Zanzibar City",
+              country: "Tanzania",
+              region: "Zanzibar Urban/West",
+              latitude: -6.1659,
+              longitude: 39.2026
+            }
+          ]
 
-  :ok
-end
+        _other ->
+          []
+      end
+    end)
+
+    on_exit(fn ->
+      Places.reset_cache()
+
+      if previous == nil do
+        Application.delete_env(:xpressbus, :places_search_override)
+      else
+        Application.put_env(:xpressbus, :places_search_override, previous)
+      end
+    end)
+
+    :ok
+  end
 
   test "renders the destination step with search and trending destinations", %{conn: conn} do
     {:ok, view, html} = live(conn, ~p"/trip/build-with-ai")
@@ -169,17 +169,26 @@ end
     assert has_element?(view, "#step-summary")
     assert has_element?(view, "#trip-itinerary")
     assert has_element?(view, "#itinerary-map")
+    assert has_element?(view, "#itinerary-hotels")
+    assert has_element?(view, "#itinerary-restaurants")
     assert has_element?(view, "#save-itinerary")
     html = render(view)
     assert html =~ "Cox"
     assert html =~ "Hotel Recommendation"
+    assert html =~ "Hotels &amp; Stays"
     assert html =~ "Food"
     assert html =~ "Recommended Restaurants"
     assert html =~ "Classic Rice Table Dine"
+    assert html =~ "View on Google Maps"
     assert html =~ "Important Notes"
     assert html =~ "Friends"
     assert html =~ "Balanced"
     assert has_element?(view, "#open-chyllz-ai")
     assert has_element?(view, "#browse-chyllz")
+  end
+
+  test "google places is disabled during tests and falls back safely" do
+    assert {:error, :not_configured} = GooglePlaces.recommendations("Moscow", :hotels)
+    assert GooglePlaces.static_map("Moscow") == nil
   end
 end
