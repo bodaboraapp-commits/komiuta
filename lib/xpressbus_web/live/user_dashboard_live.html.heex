@@ -3,54 +3,149 @@
     <.main_header step={:dashboard} current_user={@current_user} />
     <main class="pt-[72px] md:pt-[80px]">
       <%!-- Dashboard Hero --%>
-      <section class="relative bg-slate-950 text-white pt-16 pb-[140px] px-6 overflow-hidden">
-        <div
-          class="absolute inset-0 opacity-10"
-          style="background-image: repeating-linear-gradient(45deg, #fff, #fff 1px, transparent 1px, transparent 20px);"
-        >
-        </div>
-        
-        <div class="max-w-[1350px] mx-auto flex flex-col md:flex-row items-center justify-between relative z-10">
-          <div class="w-full text-center md:text-left flex items-center gap-6">
-            <div class="w-20 h-20 bg-[#FF4C00] rounded-3xl flex items-center justify-center text-white text-3xl font-black shadow-2xl shadow-orange-500/20">
-              {String.at(@user.name, 0)}
-            </div>
-            
-            <div>
-              <h1 class="text-3xl md:text-4xl font-black tracking-tighter mb-1">{@user.name}</h1>
+      <%= if @active_tab != "chyllz" do %>
+        <section class="px-6 pt-10 pb-4">
+          <div class="mx-auto max-w-[1350px]">
+            <div
+              id="chyllz-welcome"
+              class="relative overflow-hidden rounded-[28px] border border-slate-100 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] md:p-7"
+            >
+              <div
+                class="pointer-events-none absolute -right-12 -top-16 h-44 w-44 rounded-full bg-orange-50/80 blur-2xl"
+                aria-hidden="true"
+              >
+              </div>
               
-              <p class="text-sm font-bold text-slate-400">
-                Member since {Calendar.strftime(@user.inserted_at, "%B %Y")} •
-                <span class="text-orange-500 font-black">Gold Status</span>
-              </p>
+              <div
+                class="pointer-events-none absolute -bottom-20 left-24 h-40 w-40 rounded-full bg-amber-50/70 blur-2xl"
+                aria-hidden="true"
+              >
+              </div>
+              
+              <div class="relative grid grid-cols-1 items-center gap-6 md:grid-cols-[auto_minmax(0,1fr)] xl:grid-cols-[auto_minmax(0,1fr)_auto]">
+                <div
+                  class="relative mx-auto hidden h-[152px] w-[172px] shrink-0 md:block"
+                  aria-hidden="true"
+                >
+                  <div class="absolute inset-0 -rotate-6 rounded-[22px] bg-orange-50"></div>
+                  
+                  <div class="absolute left-1.5 top-1.5 h-full w-full rotate-[6deg] rounded-[20px] border border-orange-100 bg-white/70">
+                  </div>
+                  
+                  <div class="absolute left-1/2 top-1/2 w-[150px] -translate-x-1/2 -translate-y-1/2 -rotate-[7deg] rounded-xl bg-white p-1.5 shadow-xl ring-1 ring-slate-100">
+                    <img
+                      src="/images/chyllz_account_hero.webp"
+                      alt=""
+                      width="600"
+                      height="450"
+                      loading="eager"
+                      decoding="async"
+                      class="h-[118px] w-full rounded-lg object-cover"
+                    />
+                    <div class="mt-1 flex items-center justify-between px-0.5 pb-0.5">
+                      <span class="text-[7px] font-black uppercase tracking-[0.18em] text-slate-400">
+                        Chyllz travels
+                      </span>
+                       <span class="h-1.5 w-1.5 rounded-full bg-[#FF4C00]"></span>
+                    </div>
+                  </div>
+                  
+                  <div class="absolute -bottom-2 -right-1 grid h-10 w-10 place-items-center rounded-full border-2 border-white bg-[#FF4C00] text-white shadow-lg">
+                    <.ui_icon name={:compass} class="h-5 w-5" />
+                  </div>
+                </div>
+                
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-orange-50 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.18em] text-[#FF4C00]">
+                      <.ui_icon name={:sparkles} class="h-3 w-3" /> Chyllz account
+                    </span>
+                    
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">
+                      Member since {Calendar.strftime(@user.inserted_at, "%B %Y")}
+                    </span>
+                  </div>
+                  
+                  <h1 class="mt-3 text-2xl font-black leading-tight tracking-tight md:text-[28px] 2xl:text-[32px]">
+                    Welcome back, {hd(String.split(@user.name || "Traveller"))}!
+                  </h1>
+                  
+                  <p class="mt-2 max-w-md text-sm font-bold leading-relaxed text-slate-400">
+                    Ready to explore the world? Plan your next adventure or manage your trips.
+                  </p>
+                </div>
+                
+                <div
+                  class="relative hidden w-[176px] shrink-0 select-none xl:block"
+                  aria-hidden="true"
+                >
+                  <svg viewBox="0 0 230 102" class="h-[92px] w-[196px]" fill="none">
+                    <path
+                      d="M6 68c30-46 62 22 96-16 22-25 46-26 74-8 16 10 26 26 30 44"
+                      stroke="#FF4C00"
+                      stroke-width="2"
+                      stroke-dasharray="5 7"
+                      stroke-linecap="round"
+                      opacity="0.7"
+                    /> <circle cx="6" cy="68" r="4" fill="#FF4C00" />
+                    <path d="m206 80 14 8-16 4 4-6z" fill="#FF4C00" opacity="0.9" />
+                    <text
+                      x="12"
+                      y="38"
+                      font-family="'Segoe Script','Brush Script MT','Bradley Hand',cursive"
+                      font-size="26"
+                      font-weight="700"
+                      fill="#0F172A"
+                    >
+                      New places,
+                    </text>
+                    
+                    <text
+                      x="34"
+                      y="74"
+                      font-family="'Segoe Script','Brush Script MT','Bradley Hand',cursive"
+                      font-size="26"
+                      font-weight="700"
+                      fill="#FF4C00"
+                      transform="rotate(-5 34 74)"
+                    >
+                      New stories
+                    </text>
+                  </svg>
+                </div>
+              </div>
+              
+              <div class="relative mt-5 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center">
+                <a
+                  id="build-with-ai"
+                  href="/trip/build-with-ai"
+                  class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#FF4C00] px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-orange-500/20 transition-all hover:-translate-y-0.5 hover:bg-[#E64400] hover:shadow-xl sm:w-auto"
+                >
+                  <.ui_icon name={:sparkles} class="h-4 w-4" /> Build with AI
+                </a>
+                
+                <a
+                  id="create-new-trip"
+                  href="/tour-packages"
+                  class="inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-[#FF4C00] bg-orange-50 px-5 py-3 text-[10px] font-black uppercase tracking-widest text-[#FF4C00] transition-all hover:-translate-y-0.5 hover:bg-[#FF4C00] hover:text-white sm:w-auto"
+                >
+                  <.ui_icon name={:compass} class="h-4 w-4" /> Create New Trip
+                </a>
+                
+                <a
+                  id="view-my-trips"
+                  href="/dashboard"
+                  class="inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 text-[10px] font-black uppercase tracking-widest text-slate-700 transition-all hover:-translate-y-0.5 hover:border-[#FF4C00] hover:text-[#FF4C00] sm:w-auto"
+                >
+                  <.ui_icon name={:ticket} class="h-4 w-4" /> View My Trips
+                </a>
+              </div>
             </div>
           </div>
-          
-          <div class="mt-8 md:mt-0 flex gap-4">
-            <div class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl text-center min-w-[120px]">
-              <div class="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-1">
-                Wallet
-              </div>
-              
-              <div class="text-xl font-black text-white tabular-nums">
-                Ksh {@user.wallet_balance}
-              </div>
-            </div>
-            
-            <div class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl text-center min-w-[120px]">
-              <div class="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-1">
-                Points
-              </div>
-              
-              <div class="text-xl font-black text-orange-500 tabular-nums">
-                {@user.points_balance}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+        </section>
+      <% end %>
        <%!-- Tab Navigation: one row that scrolls horizontally on narrow screens --%>
-      <nav class="relative z-20 -mt-14 max-w-[1350px] mx-auto px-6 mb-12">
+      <nav class="relative z-20 mt-2 max-w-[1350px] mx-auto px-6 mb-12">
         <div class="flex flex-nowrap gap-2 overflow-x-auto no-scrollbar rounded-2xl border border-slate-100 bg-white p-2 shadow-xl">
           <.user_tab_link
             id="bus"

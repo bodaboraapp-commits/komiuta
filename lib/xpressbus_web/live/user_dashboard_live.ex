@@ -1,6 +1,7 @@
 defmodule XpressbusWeb.UserDashboardLive do
   use XpressbusWeb, :live_view
   import XpressbusWeb.BrandComponents
+  import XpressbusWeb.ChyllzAccountArt
   import XpressbusWeb.ChyllzAccountComponents
   alias Xpressbus.{Accounts, ChyllzAccount, Itineraries, Repo, Tickets, Weather}
   alias Xpressbus.Payments.Payment
