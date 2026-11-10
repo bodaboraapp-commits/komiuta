@@ -295,7 +295,7 @@ defmodule Xpressbus.TripItinerary do
   def generate(trip) do
     city = city_label(trip)
     moscow? = moscow?(trip)
-    {map_embed_url, map_link, map_attribution, map_source} = map_data(city)
+    {map_embed_url, map_link, map_attribution, map_source} = map_data(city, trip)
     {hotels, hotel_source} = places_or_fallback(trip, city, :hotels, 4)
     {restaurants, restaurant_source} = places_or_fallback(trip, city, :restaurants, 8)
 
@@ -336,11 +336,19 @@ defmodule Xpressbus.TripItinerary do
     end
   end
 
-  defp map_data(city) do
+  defp map_data(city, trip) do
     embed_url =
-      "https://www.google.com/maps?q=#{URI.encode_www_form(city)}&z=12&output=embed"
+      case {Map.get(trip, :latitude), Map.get(trip, :longitude)} do
+        {latitude, longitude} when is_number(latitude) and is_number(longitude) ->
+          # A coordinate query renders a clean marker without Google's place info
+          # card, keeping the itinerary map uncluttered.
+          "https://www.google.com/maps?q=#{latitude},#{longitude}&z=12&output=embed"
 
-    {embed_url, GooglePlaces.search_url(city, :hotels), "Map data ©2026 Google", :google_maps}
+        _other ->
+          "https://www.google.com/maps?q=#{URI.encode_www_form(city)}&z=12&output=embed"
+      end
+
+    {embed_url, GooglePlaces.search_url(city, :hotels), "Map data (c)2026 Google", :google_maps}
   end
 
   defp destination(trip) do

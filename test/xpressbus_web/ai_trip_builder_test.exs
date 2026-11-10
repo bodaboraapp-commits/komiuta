@@ -172,6 +172,7 @@ defmodule XpressbusWeb.AiTripBuilderTest do
     assert has_element?(view, "#itinerary-hotels")
     assert has_element?(view, "#itinerary-restaurants")
     assert has_element?(view, "#itinerary-map-frame[src*='output=embed']")
+    assert has_element?(view, "#itinerary-map-frame[src*='q=21.4272']")
     assert has_element?(view, "#trip-itinerary #itinerary-save-bar #save-itinerary")
     html = render(view)
     assert html =~ "Cox"
