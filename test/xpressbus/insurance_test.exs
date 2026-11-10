@@ -76,15 +76,15 @@ defmodule Xpressbus.InsuranceTest do
       first =
         insurance_plan_fixture(%{
           coverage: [
-            %{"label" => "Trip Cancellation", "value" => "Ksh 100,000"},
-            %{"label" => "Medical Expenses", "value" => "Ksh 500,000"}
+            %{"label" => "Trip Cancellation", "value" => "KES 100,000"},
+            %{"label" => "Medical Expenses", "value" => "KES 500,000"}
           ]
         })
 
       second =
         insurance_plan_fixture(%{
           coverage: [
-            %{"label" => "Medical Expenses", "value" => "Ksh 2,000,000"},
+            %{"label" => "Medical Expenses", "value" => "KES 2,000,000"},
             %{"label" => "Gadget Protection", "value" => "Included"}
           ]
         })
@@ -92,8 +92,8 @@ defmodule Xpressbus.InsuranceTest do
       rows = Insurance.coverage_rows([first, second])
 
       assert [
-               {"Trip Cancellation", ["Ksh 100,000", "—"]},
-               {"Medical Expenses", ["Ksh 500,000", "Ksh 2,000,000"]},
+               {"Trip Cancellation", ["KES 100,000", "—"]},
+               {"Medical Expenses", ["KES 500,000", "KES 2,000,000"]},
                {"Gadget Protection", ["—", "Included"]}
              ] = rows
     end

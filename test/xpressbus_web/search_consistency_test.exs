@@ -31,7 +31,7 @@ defmodule XpressbusWeb.SearchConsistencyTest do
       departure: "10:00 AM",
       arrival: "2:00 PM",
       seats: "20 seats left",
-      price: "KSH 1,500",
+      price: "KES 1,500",
       registration: "CON #{System.unique_integer([:positive])}",
       from: "Nairobi",
       to: "Mombasa",

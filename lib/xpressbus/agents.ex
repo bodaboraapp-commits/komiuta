@@ -1,6 +1,6 @@
 defmodule Xpressbus.Agents do
   @moduledoc """
-  Agent onboarding applications submitted from the Komiuta Agent PWA.
+  Agent onboarding applications submitted from the KOMIUTA Agent PWA.
   """
 
   import Ecto.Query

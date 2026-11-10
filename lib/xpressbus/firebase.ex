@@ -5,7 +5,7 @@ defmodule Xpressbus.Firebase do
   The browser sends the SMS, verifies the code with the Firebase JS SDK and
   hands us a Firebase ID token. We validate that token through Firebase's
   Identity Toolkit REST API (Google verifies the signature, issuer, audience and
-  expiry), then map the verified phone number to an existing Komiuta account.
+  expiry), then map the verified phone number to an existing KOMIUTA account.
 
   The Firebase web config is public (it is shipped to the browser by design); it
   is configured in `config/config.exs` and can be overridden with
@@ -91,9 +91,9 @@ defmodule Xpressbus.Firebase do
   end
 
   @doc """
-  Finds an existing Komiuta user by the phone number returned by Firebase.
+  Finds an existing KOMIUTA user by the phone number returned by Firebase.
 
-  Firebase returns E.164 (`+254712345678`) while Komiuta stores local numbers
+  Firebase returns E.164 (`+254712345678`) while KOMIUTA stores local numbers
   (`0712345678`), so several representations are tried.
   """
   def find_user_by_phone(phone) when is_binary(phone) do
@@ -105,7 +105,7 @@ defmodule Xpressbus.Firebase do
   def find_user_by_phone(_phone), do: nil
 
   @doc """
-  Normalises a phone number to the local Kenyan representation used by Komiuta.
+  Normalises a phone number to the local Kenyan representation used by KOMIUTA.
 
       iex> Xpressbus.Firebase.normalize_phone("+254712345678")
       "0712345678"

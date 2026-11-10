@@ -54,21 +54,21 @@ defmodule Xpressbus.AgentNotifications do
 
     case event do
       :registered ->
-        "Hi #{name}, your Komiuta Agent application #{ref} has been received. We'll review it and update you. Log in at agent.komiuta.com/agent/login"
+        "Hi #{name}, your KOMIUTA Agent application #{ref} has been received. We'll review it and update you. Log in at agent.komiuta.com/agent/login"
 
       :pending ->
-        "Hi #{name}, your Komiuta Agent application #{ref} is still pending review. We'll update you soon. agent.komiuta.com/agent/login"
+        "Hi #{name}, your KOMIUTA Agent application #{ref} is still pending review. We'll update you soon. agent.komiuta.com/agent/login"
 
       :approved ->
-        "Hi #{name}, your Komiuta Agent application #{ref} has been approved! Our team will contact you about activation. Komiuta Agent"
+        "Hi #{name}, your KOMIUTA Agent application #{ref} has been approved! Our team will contact you about activation. KOMIUTA Agent"
 
       :rejected ->
         reason = reason && String.trim(to_string(reason))
 
-        "Hi #{name}, your Komiuta Agent application #{ref} was not approved.#{if reason && reason != "", do: " Reason: #{reason}", else: ""} Contact 0800 211 211."
+        "Hi #{name}, your KOMIUTA Agent application #{ref} was not approved.#{if reason && reason != "", do: " Reason: #{reason}", else: ""} Contact 0800 211 211."
 
       _ ->
-        "Hi #{name}, your Komiuta Agent application #{ref} has been updated. agent.komiuta.com/agent/login"
+        "Hi #{name}, your KOMIUTA Agent application #{ref} has been updated. agent.komiuta.com/agent/login"
     end
   end
 

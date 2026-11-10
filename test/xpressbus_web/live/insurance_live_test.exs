@@ -53,7 +53,7 @@ defmodule XpressbusWeb.InsuranceLiveTest do
 
       {:ok, view, _html} = live(conn, ~p"/tour-packages/insurance")
 
-      assert view |> element("#insurance-starting-price") |> render() =~ "Ksh 100 per trip"
+      assert view |> element("#insurance-starting-price") |> render() =~ "KES 100 per trip"
     end
 
     test "renders an empty state when no plans are available", %{conn: conn} do

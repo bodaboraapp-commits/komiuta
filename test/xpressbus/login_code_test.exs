@@ -60,7 +60,7 @@ defmodule Xpressbus.LoginCodeTest do
       assert DateTime.compare(code.expires_at, DateTime.utc_now()) == :gt
     end
 
-    test "login email includes the Komiuta logo" do
+    test "login email includes the KOMIUTA logo" do
       user = create_user()
 
       assert {:ok, _user} = Accounts.request_login_code(user.phone)
@@ -70,7 +70,7 @@ defmodule Xpressbus.LoginCodeTest do
       logo_url = XpressbusWeb.Endpoint.url() <> "/images/logo_email.png"
 
       assert email.html_body =~ logo_url
-      assert email.html_body =~ ~s(alt="Komiuta")
+      assert email.html_body =~ ~s(alt="KOMIUTA")
       assert email.html_body =~ ~s(width="146")
       assert email.html_body =~ "Secure sign-in"
 

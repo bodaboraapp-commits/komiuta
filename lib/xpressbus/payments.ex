@@ -650,7 +650,7 @@ defmodule Xpressbus.Payments do
                      json: body,
                      headers: %{
                        "Authorization" => "Bearer #{token}",
-                       "User-Agent" => "Mozilla/5.0 (Komiuta)",
+                       "User-Agent" => "Mozilla/5.0 (KOMIUTA)",
                        "Accept" => "application/json"
                      },
                      receive_timeout: 30_000
@@ -754,7 +754,7 @@ defmodule Xpressbus.Payments do
           name: attrs[:passenger_name] || "Traveler"
         },
         customizations: %{
-          title: "Komiuta Tickets",
+          title: "KOMIUTA Tickets",
           logo: "https://api.komiuta.com/images/logo_brand.png"
         }
       }

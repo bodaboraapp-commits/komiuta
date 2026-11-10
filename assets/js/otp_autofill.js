@@ -1,4 +1,4 @@
-// OTP autofill for every Komiuta PWA surface.
+// OTP autofill for every KOMIUTA PWA surface.
 //
 //  * SMS: uses the WebOTP API on Android/Chrome when the SMS is origin-bound.
 //  * SMS/browser autofill: `autocomplete="one-time-code"` already lets iOS and

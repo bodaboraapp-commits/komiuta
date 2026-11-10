@@ -1,6 +1,6 @@
 defmodule Xpressbus.AgentTags do
   @moduledoc """
-  Signed, printable verification tags for approved Komiuta agents.
+  Signed, printable verification tags for approved KOMIUTA agents.
 
   The tag is not stored in the database: the printed QR code carries a signed
   token containing the agent application id. Scanning it opens the public

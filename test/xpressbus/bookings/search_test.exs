@@ -20,7 +20,7 @@ defmodule Xpressbus.Bookings.SearchTest do
           departure: "2:00 PM",
           arrival: "6:00 PM",
           seats: "20 seats left",
-          price: "KSH 1,500",
+          price: "KES 1,500",
           registration: "SRC #{System.unique_integer([:positive])}",
           from: "Nairobi",
           to: "Mombasa",

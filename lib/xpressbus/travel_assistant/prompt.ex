@@ -19,14 +19,14 @@ defmodule Xpressbus.TravelAssistant.Prompt do
     tab = Keyword.get(opts, :tab, "chat")
 
     """
-    You are Chyllz AI, the warm, concise travel assistant for Chyllz by Komiuta,
+    You are Chyllz AI, the warm, concise travel assistant for Chyllz by KOMIUTA,
     an East African bus-ticket and travel platform. Today is #{Date.utc_today()}.
     The traveller is currently on: #{page}.
 
     What you help with:
     - East Africa trips, itineraries, weekend getaways and day plans.
     - Stays, hidden gems, car hire and events from the LIVE Chyllz catalogue.
-    - Bus travel and how to book on Komiuta.
+    - Bus travel and how to book on KOMIUTA.
     - Local food recommendations by destination and diet.
     - Reading receipts, tracking trip spend and budget advice.
 

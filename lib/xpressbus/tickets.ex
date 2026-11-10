@@ -140,7 +140,7 @@ defmodule Xpressbus.Tickets do
     for {key, value} <- attrs, into: %{}, do: {to_string(key), value}
   end
 
-  @doc "Parses a KES amount from a price string such as \"KSH 1,500\"."
+  @doc "Parses a KES amount from a price string such as \"KES 1,500\"."
   def parse_amount(value) when is_integer(value), do: value
 
   def parse_amount(value) when is_binary(value) do

@@ -39,7 +39,7 @@ defmodule Xpressbus.EmailChangeEmail do
     new()
     |> to({name, new_email})
     |> from(from())
-    |> subject("Confirm your new Komiuta email address")
+    |> subject("Confirm your new KOMIUTA email address")
     |> text_body(code_text(name, code, ttl_minutes))
     |> html_body(code_html(name, code, ttl_minutes))
   end
@@ -50,7 +50,7 @@ defmodule Xpressbus.EmailChangeEmail do
     new()
     |> to({name, email})
     |> from(from())
-    |> subject("Email change requested on your Komiuta account")
+    |> subject("Email change requested on your KOMIUTA account")
     |> text_body(notice_text(name, new_email))
     |> html_body(notice_html(name, new_email))
   end
@@ -68,14 +68,14 @@ defmodule Xpressbus.EmailChangeEmail do
 
   defp from do
     address = Application.get_env(:xpressbus, :mailer_from, "no-reply@komiuta.com")
-    {"Komiuta", address}
+    {"KOMIUTA", address}
   end
 
   defp code_text(name, code, ttl_minutes) do
     """
     Hi #{name},
 
-    Your Komiuta email-change code is:
+    Your KOMIUTA email-change code is:
 
         #{code}
 
@@ -85,7 +85,7 @@ defmodule Xpressbus.EmailChangeEmail do
     If you did not request this change, ignore this email—your current email
     stays exactly as it is.
 
-    — Komiuta
+    — KOMIUTA
     """
   end
 
@@ -93,7 +93,7 @@ defmodule Xpressbus.EmailChangeEmail do
     """
     Hi #{name},
 
-    Someone requested to change the email address on your Komiuta account to
+    Someone requested to change the email address on your KOMIUTA account to
     #{new_email}.
 
     If that was you, no action is needed here—use the code sent to the new
@@ -102,7 +102,7 @@ defmodule Xpressbus.EmailChangeEmail do
     If it was not you, your email has not changed. You can ignore this email,
     but consider updating your login code.
 
-    — Komiuta
+    — KOMIUTA
     """
   end
 
@@ -116,14 +116,14 @@ defmodule Xpressbus.EmailChangeEmail do
             <td align="center">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border:1px solid #e2e8f0;border-radius:24px;overflow:hidden;">
                 <tr>
-                  <td style="background:#FF4C00;padding:20px 28px;color:#ffffff;font-size:18px;font-weight:800;">Komiuta</td>
+                  <td style="background:#FF4C00;padding:20px 28px;color:#ffffff;font-size:18px;font-weight:800;">KOMIUTA</td>
                 </tr>
                 <tr>
                   <td style="padding:32px 28px 8px;">
                     <p style="margin:0 0 8px;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;color:#FF4C00;font-weight:800;">Email change</p>
                     <h1 style="margin:0 0 16px;font-size:22px;line-height:1.2;">Hi #{html_escape(name)},</h1>
                     <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#475569;">
-                      Use the code below to confirm your new Komiuta email address.
+                      Use the code below to confirm your new KOMIUTA email address.
                     </p>
                     <div style="background:#fff7ed;border:2px dashed #fdba74;border-radius:16px;padding:20px;text-align:center;margin-bottom:24px;">
                       <div style="font-family:'Courier New',monospace;font-size:34px;letter-spacing:0.35em;font-weight:800;color:#0f172a;">#{code}</div>
@@ -155,13 +155,13 @@ defmodule Xpressbus.EmailChangeEmail do
             <td align="center">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border:1px solid #e2e8f0;border-radius:24px;overflow:hidden;">
                 <tr>
-                  <td style="background:#FF4C00;padding:20px 28px;color:#ffffff;font-size:18px;font-weight:800;">Komiuta</td>
+                  <td style="background:#FF4C00;padding:20px 28px;color:#ffffff;font-size:18px;font-weight:800;">KOMIUTA</td>
                 </tr>
                 <tr>
                   <td style="padding:32px 28px;">
                     <h1 style="margin:0 0 16px;font-size:20px;line-height:1.2;">Email change requested</h1>
                     <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#475569;">
-                      Hi #{html_escape(name)}, someone requested to change the email on your Komiuta account to
+                      Hi #{html_escape(name)}, someone requested to change the email on your KOMIUTA account to
                       <strong>#{html_escape(new_email)}</strong>.
                     </p>
                     <p style="margin:0 0 16px;font-size:13px;line-height:1.6;color:#64748b;">

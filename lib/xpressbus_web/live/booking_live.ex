@@ -55,12 +55,12 @@ defmodule XpressbusWeb.BookingLive do
      socket
      |> assign(
        :page_title,
-       "Komiuta Bus Booking. #1 Ticketing Platform For Matatu Sacco & Financiers"
+       "KOMIUTA Bus Booking. #1 Ticketing Platform For Matatu Sacco & Financiers"
      )
      |> assign(:page_title_suffix, "")
      |> assign(
        :page_description,
-       "Komiuta Bus Booking is a transport technology and booking platform designed for public transit, intercity travel, and matatu/bus fleet management."
+       "KOMIUTA Bus Booking is a transport technology and booking platform designed for public transit, intercity travel, and matatu/bus fleet management."
      )
      |> assign(:page_canonical, XpressbusWeb.Endpoint.url() <> "/")
      |> assign(:page_robots, "index,follow")
@@ -168,11 +168,11 @@ defmodule XpressbusWeb.BookingLive do
   defp trending_mode(_pills), do: :popular
 
   # The app-download section shows a locally generated QR pointing at the
-  # installable web app (PWA). Scanning opens Komiuta in the phone browser,
+  # installable web app (PWA). Scanning opens KOMIUTA in the phone browser,
   # where the user can install it / add it to the home screen.
   defp pwa_qr do
     XpressbusWeb.QRCode.svg(XpressbusWeb.Endpoint.url() <> "/?source=qr_app_section",
-      aria_label: "Scan to open the Komiuta app"
+      aria_label: "Scan to open the KOMIUTA app"
     )
   end
 
@@ -1042,8 +1042,8 @@ defmodule XpressbusWeb.BookingLive do
           travel_date: socket.assigns.date,
           departure: Map.get(bus, :departure),
           arrival: Map.get(bus, :arrival),
-          company: Map.get(bus, :company, "Komiuta Bus"),
-          price: "KSH #{amount}",
+          company: Map.get(bus, :company, "KOMIUTA Bus"),
+          price: "KES #{amount}",
           seats: socket.assigns.selected_seats,
           passenger_name: passenger_name,
           passenger_phone: passenger_phone,
@@ -1121,7 +1121,7 @@ defmodule XpressbusWeb.BookingLive do
      put_flash(
        socket,
        :info,
-       "The Komiuta app is coming soon. Book here on the web in the meantime."
+       "The KOMIUTA app is coming soon. Book here on the web in the meantime."
      )}
   end
 
@@ -1450,7 +1450,7 @@ defmodule XpressbusWeb.BookingLive do
       fetch_bus_from_db(bus_id) ||
       %{
         id: bus_id,
-        company: "Komiuta Bus",
+        company: "KOMIUTA Bus",
         price: 1500,
         vip_price: "2300",
         business_price: "2000",
@@ -1590,7 +1590,7 @@ defmodule XpressbusWeb.BookingLive do
          |> assign(:discount_amount, discount)
          |> assign(:coupon_code, code)
          |> update_pricing()
-         |> put_flash(:info, "Coupon applied! You saved Ksh #{discount}")}
+         |> put_flash(:info, "Coupon applied! You saved KES #{discount}")}
 
       {:error, reason} ->
         reset_coupon(socket, coupon_error(reason))
@@ -1604,7 +1604,7 @@ defmodule XpressbusWeb.BookingLive do
       :expired -> "This coupon has expired."
       :usage_limit -> "Coupon usage limit reached."
       :no_discount -> "This coupon does not apply to this booking."
-      {:min_amount, minimum} -> "Minimum amount for this coupon is Ksh #{minimum}"
+      {:min_amount, minimum} -> "Minimum amount for this coupon is KES #{minimum}"
       _ -> "This coupon could not be applied."
     end
   end

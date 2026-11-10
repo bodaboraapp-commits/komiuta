@@ -137,7 +137,7 @@ defmodule Xpressbus.AgentLoginEmail do
 
   defp from do
     address = Application.get_env(:xpressbus, :mailer_from, "no-reply@komiuta.com")
-    {"Komiuta", address}
+    {"KOMIUTA", address}
   end
 
   defp verify_url(code) do

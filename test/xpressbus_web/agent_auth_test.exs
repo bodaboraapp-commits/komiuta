@@ -273,7 +273,7 @@ defmodule XpressbusWeb.AgentAuthTest do
         "travel_date" => Date.utc_today(),
         "departure" => "8:00 AM",
         "arrival" => "3:00 PM",
-        "price" => "KSH 1,800",
+        "price" => "KES 1,800",
         "seats" => "[]",
         "bus_operator_id" => operator.id
       })
@@ -287,7 +287,7 @@ defmodule XpressbusWeb.AgentAuthTest do
         "departure" => "8:00 AM",
         "arrival" => "3:00 PM",
         "company" => operator.name,
-        "price" => "KSH 1,800",
+        "price" => "KES 1,800",
         "seats" => "[\"1A\"]",
         "passenger_name" => "Wallet Passenger",
         "passenger_phone" => "0712345678",

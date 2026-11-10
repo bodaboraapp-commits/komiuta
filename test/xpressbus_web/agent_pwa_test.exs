@@ -11,7 +11,7 @@ defmodule XpressbusWeb.AgentPwaTest do
   test "agent app exposes the sign-up experience and Agent PWA manifest", %{conn: conn} do
     html = conn |> get(~p"/agent") |> html_response(200)
 
-    assert html =~ "Komiuta Agent"
+    assert html =~ "KOMIUTA Agent"
     assert html =~ "Create your agent account"
     assert html =~ "agent-application-form"
     assert html =~ "agent-install-button"
@@ -27,7 +27,7 @@ defmodule XpressbusWeb.AgentPwaTest do
 
     html = conn |> get(~p"/agent") |> html_response(200)
 
-    assert html =~ "Komiuta Agent"
+    assert html =~ "KOMIUTA Agent"
     assert html =~ ~s(href="/agent-manifest.json")
     assert html =~ "agent-install-button"
 
@@ -81,7 +81,7 @@ defmodule XpressbusWeb.AgentPwaTest do
     assert application.reference =~ "AGT-"
 
     assert_email_sent(fn email ->
-      assert email.subject =~ "received your Komiuta Agent application"
+      assert email.subject =~ "received your KOMIUTA Agent application"
       assert email.to == [{"Jane Agent", "jane.agent@example.com"}]
     end)
   end

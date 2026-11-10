@@ -29,10 +29,10 @@ defmodule XpressbusWeb.LegalLive do
        :page_description,
        case action do
          :terms ->
-           "Komiuta terms and conditions for bus ticket bookings, payments, cancellations and travel."
+           "KOMIUTA terms and conditions for bus ticket bookings, payments, cancellations and travel."
 
          :privacy ->
-           "How Komiuta collects, uses and protects your personal data when you book bus tickets."
+           "How KOMIUTA collects, uses and protects your personal data when you book bus tickets."
        end
      )
      |> assign(:page_canonical, XpressbusWeb.SEO.base_url() <> "/" <> to_string(action))
@@ -157,8 +157,8 @@ defmodule XpressbusWeb.LegalLive do
         <h2 class="text-xl font-black text-slate-900 mb-3">1. About these terms</h2>
 
         <p>
-          These terms govern your use of the Komiuta bus booking platform operated by
-          Komiuta WanCom Engineering Sol ("Komiuta", "we", "us"). By searching for a trip,
+          These terms govern your use of the KOMIUTA bus booking platform operated by
+          KOMIUTA WanCom Engineering Sol ("KOMIUTA", "we", "us"). By searching for a trip,
           reserving a seat or completing a payment you accept these terms. If you do not
           agree with them, please do not use the service.
         </p>
@@ -211,7 +211,7 @@ defmodule XpressbusWeb.LegalLive do
         <p>
           You are responsible for carrying valid travel documents for your route, including
           any cross-border requirements. Passengers must comply with the operating company's
-          luggage, safety and conduct rules. Komiuta may refuse or cancel a booking where
+          luggage, safety and conduct rules. KOMIUTA may refuse or cancel a booking where
           fraud, abuse or a safety risk is suspected.
         </p>
       </section>
@@ -256,7 +256,7 @@ defmodule XpressbusWeb.LegalLive do
         </p>
 
         <p>
-          When you pay, our payment partners process your payment details. Komiuta does not
+          When you pay, our payment partners process your payment details. KOMIUTA does not
           store your card number or M-PESA PIN. We retain payment references and status so
           that we can reconcile a booking and support you if a payment is disputed.
         </p>

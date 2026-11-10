@@ -14,7 +14,7 @@ defmodule XpressbusWeb.BrandComponents do
           <a href="/" class="flex-shrink-0">
             <img
               src="/images/logo_brand.png"
-              alt="Komiuta"
+              alt="KOMIUTA"
               width="190"
               height="52"
               class="h-10 md:h-12 w-auto object-contain"
@@ -315,7 +315,7 @@ defmodule XpressbusWeb.BrandComponents do
           hint.className =
             "fixed left-1/2 bottom-6 z-[100] -translate-x-1/2 w-[calc(100%-2rem)] max-w-md rounded-2xl bg-slate-900 px-5 py-4 text-white shadow-2xl cursor-pointer"
           hint.innerHTML =
-            '<p class="text-[10px] font-black uppercase tracking-widest text-orange-400 mb-1">Install Komiuta</p>' +
+            '<p class="text-[10px] font-black uppercase tracking-widest text-orange-400 mb-1">Install KOMIUTA</p>' +
             '<p class="text-sm font-bold leading-snug">Open the browser menu (or Share on iPhone) and choose <span class="text-[#FF4C00]">Add to Home Screen</span> to install the app.</p>'
           hint.addEventListener("click", () => hint.remove())
           document.body.appendChild(hint)
@@ -358,7 +358,7 @@ defmodule XpressbusWeb.BrandComponents do
       <div class="flex justify-center mb-8 md:mb-10">
         <img
           src="/images/logo_brand.png"
-          alt="Komiuta"
+          alt="KOMIUTA"
           width="190"
           height="52"
           loading="lazy"
@@ -370,7 +370,7 @@ defmodule XpressbusWeb.BrandComponents do
       <%= unless assigns[:step] in [:passenger_info, :review_and_pay, :ticket] do %>
         <nav
           class="mb-6 grid grid-cols-2 md:grid-cols-3 gap-8 rounded-[2rem] border border-slate-100 bg-white p-6 md:p-8"
-          aria-label="Explore Komiuta"
+          aria-label="Explore KOMIUTA"
         >
           <div>
             <h2 class="mb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">
@@ -435,7 +435,7 @@ defmodule XpressbusWeb.BrandComponents do
                 <a
                   href="/about"
                   class="whitespace-nowrap text-[11px] font-bold text-slate-600 hover:text-[#FF4C00] transition-colors"
-                >About Komiuta</a>
+                >About KOMIUTA</a>
               </li>
               <li>
                 <a
@@ -453,7 +453,7 @@ defmodule XpressbusWeb.BrandComponents do
                 <a
                   href="/agent"
                   class="whitespace-nowrap text-[11px] font-bold text-slate-600 hover:text-[#FF4C00] transition-colors"
-                >Komiuta Agent app</a>
+                >KOMIUTA Agent app</a>
               </li>
               <li>
                 <a
@@ -518,7 +518,7 @@ defmodule XpressbusWeb.BrandComponents do
           <%= case @footer_tab do %>
             <% "about" -> %>
               <p class="text-sm md:text-base font-bold text-slate-500 leading-relaxed">
-                <span class="text-slate-900">Komiuta</span>
+                <span class="text-slate-900">KOMIUTA</span>
                 is East Africa's leading technology-driven bus booking engine. We partner with over
                 <span class="text-[#FF4C00]">100+ premier bus operators</span>
                 to provide a seamless, secure, and reliable travel experience. Since 2019, we have revolutionized regional transport by digitizing the ticketing process for over
@@ -555,15 +555,15 @@ defmodule XpressbusWeb.BrandComponents do
               </div>
             <% "track" -> %>
               <p class="text-sm md:text-base font-bold text-slate-500 leading-relaxed">
-                Never miss a bus with <span class="text-slate-900">Komiuta Real-Time Tracking</span>. By entering your ticket number in our mobile app, you can see the exact live location of your bus, estimated time of arrival at your boarding point, and receive instant push notifications about any operator changes. Stay informed, stay safe, and travel with total peace of mind.
+                Never miss a bus with <span class="text-slate-900">KOMIUTA Real-Time Tracking</span>. By entering your ticket number in our mobile app, you can see the exact live location of your bus, estimated time of arrival at your boarding point, and receive instant push notifications about any operator changes. Stay informed, stay safe, and travel with total peace of mind.
               </p>
             <% "carbon" -> %>
               <p class="text-sm md:text-base font-bold text-slate-500 leading-relaxed">
-                Komiuta is committed to the future of sustainable transport. We are currently pioneering
+                KOMIUTA is committed to the future of sustainable transport. We are currently pioneering
                 <span class="text-[#00AC4E]">Carbon-Neutral Travel</span>
                 initiatives in East Africa, including the phased rollout of our first intercity
                 <strong class="font-black text-slate-900">EV (Electric Vehicle) fleet</strong>
-                by 2025. By choosing Komiuta, you're supporting optimized route planning that reduces fuel waste and helps preserve the beautiful landscapes of our region for future generations.
+                by 2025. By choosing KOMIUTA, you're supporting optimized route planning that reduces fuel waste and helps preserve the beautiful landscapes of our region for future generations.
               </p>
           <% end %>
 
@@ -621,7 +621,7 @@ defmodule XpressbusWeb.BrandComponents do
 
       <div class="mt-8 pt-8 border-t border-slate-100 text-center">
         <p class="text-[10px] font-black uppercase tracking-[0.5em] text-slate-300">
-          © {DateTime.utc_now().year} Komiuta WanCom Engineering Sol. All rights reserved.
+          © {DateTime.utc_now().year} KOMIUTA WanCom Engineering Sol. All rights reserved.
         </p>
       </div>
     </footer>

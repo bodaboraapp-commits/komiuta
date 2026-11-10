@@ -5,7 +5,7 @@ defmodule XpressbusWeb.ChyllzAccountArt do
   The page is deliberately dependency-free: icons are inline strokes, the trip
   cards get a small scenic illustration instead of a stock photo, and the
   weather glyphs are drawn locally. That keeps the page fast (no icon font or
-  image round-trips) and lets every colour follow the Komiuta orange palette.
+  image round-trips) and lets every colour follow the KOMIUTA orange palette.
   """
 
   use Phoenix.Component

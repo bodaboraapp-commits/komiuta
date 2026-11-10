@@ -613,7 +613,7 @@ defmodule XpressbusWeb.AdminIntegrationLive do
          put_flash(
            socket,
            :info,
-           "Google Maps key is saved. It is browser/referrer restricted, so it cannot be tested from the server — open a map page on the Komiuta domain to confirm it."
+           "Google Maps key is saved. It is browser/referrer restricted, so it cannot be tested from the server — open a map page on the KOMIUTA domain to confirm it."
          )}
     end
   end

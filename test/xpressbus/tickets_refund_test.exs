@@ -26,7 +26,7 @@ defmodule Xpressbus.TicketsRefundTest do
         "departure" => "08:00",
         "arrival" => "14:00",
         "company" => "Refund Coaches",
-        "price" => "KSH 1,500",
+        "price" => "KES 1,500",
         "seats" => ["1A"],
         "passenger_name" => user.name,
         "passenger_phone" => user.phone,
@@ -124,8 +124,8 @@ defmodule Xpressbus.TicketsRefundTest do
     assert result.refund.notification_details["sms"] == "not_configured"
   end
 
-  test "parses prices such as KSH 1,500" do
-    assert Tickets.parse_amount("KSH 1,500") == 1500
+  test "parses prices such as KES 1,500" do
+    assert Tickets.parse_amount("KES 1,500") == 1500
     assert Tickets.parse_amount(2400) == 2400
     assert Tickets.parse_amount("free") == nil
   end

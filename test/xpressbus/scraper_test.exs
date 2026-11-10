@@ -10,7 +10,7 @@ defmodule Xpressbus.Bookings.ScraperTest do
   @search_date ~D[2026-11-20]
 
   @sse """
-  data: {"provider": "chania", "data": [{"from": "Nairobi", "to": "Ukunda", "departure_date": "2026-11-06", "operator": {"alias": "chania", "name": "Chania Executive Special", "logo": "https://example.com/chania.webp"}, "trip_id": 5, "departure_time": "21:00:00", "arrival_time": "06:00:00", "number_of_available_seats": 38, "fare": 0.0, "bus_capacity": 47, "seats_types": [{"alias": "normal", "fare": 2000, "name": "Normal", "currency": "KSH"}]}], "status": false, "completed": false}
+  data: {"provider": "chania", "data": [{"from": "Nairobi", "to": "Ukunda", "departure_date": "2026-11-06", "operator": {"alias": "chania", "name": "Chania Executive Special", "logo": "https://example.com/chania.webp"}, "trip_id": 5, "departure_time": "21:00:00", "arrival_time": "06:00:00", "number_of_available_seats": 38, "fare": 0.0, "bus_capacity": 47, "seats_types": [{"alias": "normal", "fare": 2000, "name": "Normal", "currency": "KES"}]}], "status": false, "completed": false}
   data: {"data": {}, "status": true, "completed": true}
   """
 
@@ -20,7 +20,7 @@ defmodule Xpressbus.Bookings.ScraperTest do
     assert bus.company == "Chania Executive Special"
     assert bus.departure == "9:00 PM"
     assert bus.arrival == "6:00 AM"
-    assert bus.price == "KSH 2000"
+    assert bus.price == "KES 2000"
     assert bus.duration == "9h 0m"
     assert bus.seats == "38 seats left"
     assert bus.source == "buupass_api"
@@ -122,7 +122,7 @@ defmodule Xpressbus.Bookings.ScraperTest do
       departure: "10:00 AM",
       arrival: "2:00 PM",
       seats: "20 seats left",
-      price: "KSH 1,500",
+      price: "KES 1,500",
       registration: "TEST #{System.unique_integer([:positive])}",
       from: "Nairobi",
       to: "Ukunda",

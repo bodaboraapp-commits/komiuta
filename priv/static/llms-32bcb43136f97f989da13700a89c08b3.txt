@@ -1,6 +1,6 @@
-# Komiuta — bus ticket booking for Kenya, Uganda and Tanzania.
+# KOMIUTA — bus ticket booking for Kenya, Uganda and Tanzania.
 
-> Komiuta is an East African bus booking platform. Travellers compare intercity
+> KOMIUTA is an East African bus booking platform. Travellers compare intercity
 > bus fares, pick seats, and pay with M-PESA, card or mobile money. Tickets are
 > delivered instantly by SMS and email.
 

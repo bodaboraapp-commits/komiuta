@@ -127,7 +127,7 @@
                       <td class="px-8 py-6 font-black text-slate-900">
                         {if coupon.type == "percentage",
                           do: "#{coupon.value}%",
-                          else: "Ksh #{coupon.value}"}
+                          else: "KES #{coupon.value}"}
                       </td>
 
                       <td class="px-8 py-6 text-sm font-bold text-slate-500">
@@ -242,7 +242,7 @@
                 </option>
 
                 <option value="fixed" selected={@form[:type].value == "fixed"}>
-                  Fixed Amount (Ksh)
+                  Fixed Amount (KES)
                 </option>
               </select>
             </div>

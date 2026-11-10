@@ -1,6 +1,6 @@
 defmodule XpressbusWeb.Blog do
   @moduledoc """
-  Static launch articles for the Komiuta travel blog.
+  Static launch articles for the KOMIUTA travel blog.
 
   Keeping these as structured data (not a database) makes the launch content
   reviewable in git while still giving each article a real URL, metadata,
@@ -29,7 +29,7 @@ defmodule XpressbusWeb.Blog do
           heading: "How long is the bus from Nairobi to Kisumu?",
           paragraphs: [
             "Most direct buses take between 7 and 9 hours, depending on the operator, departure time and traffic on the Nairobi–Nakuru–Kisumu highway. Early-morning departures usually avoid the heaviest Nairobi traffic and arrive in Kisumu in the afternoon.",
-            "When you search on Komiuta, the journey time is shown on every bus card. Use the Fastest sort if you want the shortest scheduled trip."
+            "When you search on KOMIUTA, the journey time is shown on every bus card. Use the Fastest sort if you want the shortest scheduled trip."
           ]
         },
         %{
@@ -80,15 +80,15 @@ defmodule XpressbusWeb.Blog do
         %{
           question: "Can I book a Nairobi to Kisumu bus online?",
           answer:
-            "Yes. Search on Komiuta, choose your seat, pay with M-PESA or card and receive your ticket by SMS and email."
+            "Yes. Search on KOMIUTA, choose your seat, pay with M-PESA or card and receive your ticket by SMS and email."
         }
       ]
     },
     %{
       slug: "how-to-pay-for-bus-ticket-with-mpesa",
-      title: "How to Pay for a Bus Ticket with M-PESA on Komiuta",
+      title: "How to Pay for a Bus Ticket with M-PESA on KOMIUTA",
       description:
-        "Step-by-step guide to paying for a Komiuta bus ticket with M-PESA, including the STK prompt, confirmation SMS, payment troubleshooting and ticket delivery.",
+        "Step-by-step guide to paying for a KOMIUTA bus ticket with M-PESA, including the STK prompt, confirmation SMS, payment troubleshooting and ticket delivery.",
       excerpt:
         "A simple, secure walkthrough of paying for your bus ticket with M-PESA — from choosing your seat to receiving the ticket.",
       category: "Payment guide",
@@ -105,7 +105,7 @@ defmodule XpressbusWeb.Blog do
           heading: "Before you start",
           paragraphs: [
             "Make sure your phone has an active Safaricom line and enough M-PESA balance for the ticket. You will also need the phone number that receives the STK push — this can be different from the passenger phone number.",
-            "Komiuta never asks for your M-PESA PIN. Only enter your PIN on the official M-PESA prompt on your phone."
+            "KOMIUTA never asks for your M-PESA PIN. Only enter your PIN on the official M-PESA prompt on your phone."
           ]
         },
         %{
@@ -117,7 +117,7 @@ defmodule XpressbusWeb.Blog do
           bullets: [
             "Enter the number without spaces or the +254 prefix",
             "Approve the prompt within the time limit",
-            "Wait for both the M-PESA SMS and the Komiuta ticket SMS"
+            "Wait for both the M-PESA SMS and the KOMIUTA ticket SMS"
           ]
         },
         %{
@@ -137,7 +137,7 @@ defmodule XpressbusWeb.Blog do
       ],
       faqs: [
         %{
-          question: "Does Komiuta accept M-PESA?",
+          question: "Does KOMIUTA accept M-PESA?",
           answer:
             "Yes. M-PESA is available on every booking, alongside card and mobile money options."
         },
@@ -147,9 +147,9 @@ defmodule XpressbusWeb.Blog do
             "If the prompt goes to the wrong phone, cancel it and restart checkout with the correct number. If a payment succeeded but the ticket did not arrive, contact support with the confirmation code."
         },
         %{
-          question: "Is it safe to pay on Komiuta?",
+          question: "Is it safe to pay on KOMIUTA?",
           answer:
-            "Yes. Payments are handled by regulated payment partners and Komiuta never stores your M-PESA PIN or full card details."
+            "Yes. Payments are handled by regulated payment partners and KOMIUTA never stores your M-PESA PIN or full card details."
         }
       ]
     },
@@ -174,7 +174,7 @@ defmodule XpressbusWeb.Blog do
           heading: "Journey time and departures",
           paragraphs: [
             "The Mombasa to Nairobi bus usually takes 8 to 10 hours. Day buses leave through the morning and early afternoon, while night buses depart in the evening and arrive in Nairobi early the next morning.",
-            "Night buses can suit travellers who want to save a hotel night, but choose a reputable operator and a seat class you are comfortable with. Komiuta shows operator ratings and seat availability before you book."
+            "Night buses can suit travellers who want to save a hotel night, but choose a reputable operator and a seat class you are comfortable with. KOMIUTA shows operator ratings and seat availability before you book."
           ]
         },
         %{

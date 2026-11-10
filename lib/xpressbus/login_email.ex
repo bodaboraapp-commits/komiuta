@@ -19,7 +19,7 @@ defmodule Xpressbus.LoginEmail do
     new()
     |> to({name, user.email})
     |> from(from())
-    |> subject("Your Komiuta login code")
+    |> subject("Your KOMIUTA login code")
     |> text_body(text_body(name, code, ttl_minutes))
     |> html_body(html_body(name, code, ttl_minutes))
   end
@@ -45,7 +45,7 @@ defmodule Xpressbus.LoginEmail do
 
   defp from do
     address = Application.get_env(:xpressbus, :mailer_from, "no-reply@komiuta.com")
-    {"Komiuta", address}
+    {"KOMIUTA", address}
   end
 
   defp verify_url(code) do
@@ -56,7 +56,7 @@ defmodule Xpressbus.LoginEmail do
     """
     Hi #{name},
 
-    Your Komiuta login code is:
+    Your KOMIUTA login code is:
 
         #{code}
 
@@ -78,7 +78,7 @@ defmodule Xpressbus.LoginEmail do
       end)
 
     """
-    — Komiuta · Elevate Your Journey
+    — KOMIUTA · Elevate Your Journey
     Website: #{Brand.website()}
     Email: #{Brand.email()} · Call: #{Brand.phone()}
     Follow us: #{social}
@@ -99,7 +99,7 @@ defmodule Xpressbus.LoginEmail do
       </head>
       <body style="margin:0;padding:0;background:#f8fafc;font-family:'Trebuchet MS','Segoe UI',Arial,sans-serif;color:#0f172a;">
         <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#f8fafc;opacity:0;">
-          Your Komiuta login code expires in #{ttl_minutes} minutes.
+          Your KOMIUTA login code expires in #{ttl_minutes} minutes.
         </div>
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#f8fafc" style="background:#f8fafc;padding:32px 16px;">
           <tr>
@@ -117,7 +117,7 @@ defmodule Xpressbus.LoginEmail do
                             src="#{logo_url}"
                             width="146"
                             height="40"
-                            alt="Komiuta"
+                            alt="KOMIUTA"
                             style="display:block;border:0;outline:none;text-decoration:none;"
                           />
                         </td>
@@ -136,7 +136,7 @@ defmodule Xpressbus.LoginEmail do
                     <p style="margin:0 0 8px;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;color:#FF4C00;font-weight:800;">Login code</p>
                     <h1 style="margin:0 0 16px;font-size:22px;line-height:1.2;">Hi #{html_escape(name)},</h1>
                     <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#475569;">
-                      Use the code below to sign in to your Komiuta account.
+                      Use the code below to sign in to your KOMIUTA account.
                     </p>
                     <div style="background:#fff7ed;border:2px dashed #fdba74;border-radius:16px;padding:20px;text-align:center;margin-bottom:16px;">
                       <div style="font-family:'Courier New',monospace;font-size:34px;letter-spacing:0.35em;font-weight:800;color:#0f172a;">#{code}</div>
@@ -175,7 +175,7 @@ defmodule Xpressbus.LoginEmail do
     <tr>
                   <td align="center" style="padding:20px 28px 24px;border-top:1px solid #f1f5f9;text-align:center;">
                     <p style="margin:0 0 10px;font-size:11px;color:#94a3b8;letter-spacing:0.06em;text-align:center;">
-                      Komiuta · Elevate Your Journey
+                      KOMIUTA · Elevate Your Journey
                     </p>
                     <p style="margin:0 0 8px;font-size:12px;line-height:1.6;color:#64748b;text-align:center;">
                       <a href="#{html_escape(Brand.website())}" target="_blank" rel="noopener" style="color:#FF4C00;text-decoration:none;">#{html_escape(Brand.website_label())}</a>

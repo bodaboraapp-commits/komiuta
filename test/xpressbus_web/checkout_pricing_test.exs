@@ -19,7 +19,7 @@ defmodule XpressbusWeb.CheckoutPricingTest do
       departure: "10:00 AM",
       arrival: "2:00 PM",
       seats: "20 seats left",
-      price: "KSH 2,000",
+      price: "KES 2,000",
       registration: "PRC #{System.unique_integer([:positive])}",
       from: "nairobi",
       to: "mombasa",
@@ -66,7 +66,7 @@ defmodule XpressbusWeb.CheckoutPricingTest do
 
     # Seat drawer shows the base fare; the KES 50 fee is added at checkout.
     assert render(view) =~ "TOTAL FARE"
-    assert render(view) =~ "KSH 2000"
+    assert render(view) =~ "KES 2000"
   end
 
   test "checkout template shows the convenience fee and wires the payable total" do
@@ -75,7 +75,7 @@ defmodule XpressbusWeb.CheckoutPricingTest do
     assert template =~ "CONVENIENCE FEE"
     assert template =~ "@convenience_fee"
     assert template =~ "@tax_amount"
-    assert template =~ "PAY KSH {@final_price}"
+    assert template =~ "PAY KES {@final_price}"
     refute template =~ "TAXES & FEES"
   end
 end

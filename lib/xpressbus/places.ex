@@ -38,7 +38,7 @@ defmodule Xpressbus.Places do
   # that the city-only geocoder cannot match. Their usage policy requires a
   # descriptive User-Agent and caching, which this module provides.
   @osm_url "https://nominatim.openstreetmap.org/search"
-  @osm_user_agent "KomiutaTripBuilder/1.0 (+https://www.komiuta.com)"
+  @osm_user_agent "KOMIUTATripBuilder/1.0 (+https://www.komiuta.com)"
 
   @ai_system_prompt """
   You resolve travel requests to real places on Earth.

@@ -5,7 +5,7 @@
         <a href="/agent" class="flex items-center gap-3">
           <img
             src="/images/logo_brand.png"
-            alt="Komiuta"
+            alt="KOMIUTA"
             width="146"
             height="40"
             class="h-9 w-auto"
@@ -103,7 +103,7 @@
 
           <div class="mt-5 flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
             <p class="max-w-md text-[10px] font-bold leading-relaxed text-white/50">
-              This is the value of confirmed tickets sold for your partner. The Komiuta partnerships
+              This is the value of confirmed tickets sold for your partner. The KOMIUTA partnerships
               team settles payouts to your {String.capitalize(to_string(@agent.payout_method))} account.
             </p>
 
@@ -136,7 +136,7 @@
 
                 <p class="mt-2 max-w-xl text-[11px] font-bold leading-relaxed text-white/60">
                   Performance is reviewed monthly on a balanced scorecard. Platform-wide results measure
-                  Komiuta’s overall growth; partner results are calculated from your own assigned partner.
+                  KOMIUTA’s overall growth; partner results are calculated from your own assigned partner.
                 </p>
               </div>
 
@@ -381,11 +381,11 @@
             <p class="text-[10px] font-bold leading-relaxed text-slate-400">
               Scorecard period: <span class="font-black text-slate-500">{@kpi_achieved.period_label}</span>.
               <span class="font-black text-slate-500">Platform-wide</span>
-              values measure Komiuta’s overall growth and are
+              values measure KOMIUTA’s overall growth and are
               not attributed to an individual agent.
               <span class="font-black text-slate-500">Your partner</span>
               values
-              are calculated from your assigned partner and booking scope. Reviewed monthly with your Komiuta partnerships manager.
+              are calculated from your assigned partner and booking scope. Reviewed monthly with your KOMIUTA partnerships manager.
             </p>
           </div>
         </section>
@@ -423,7 +423,7 @@
           <% @agent.status == "approved" -> %>
             <p class="mt-5 rounded-2xl bg-emerald-50 px-5 py-4 text-xs font-bold leading-relaxed text-emerald-800">
               Your agent account is approved. Our partnerships team will be in touch about
-              activation and selling on Komiuta.
+              activation and selling on KOMIUTA.
             </p>
           <% @agent.status == "rejected" -> %>
             <p class="mt-5 rounded-2xl bg-red-50 px-5 py-4 text-xs font-bold leading-relaxed text-red-700">
@@ -550,7 +550,7 @@
     </main>
 
     <footer class="px-5 py-8 text-center text-[10px] font-black uppercase tracking-widest text-slate-400">
-      © {DateTime.utc_now().year} Komiuta Agent
+      © {DateTime.utc_now().year} KOMIUTA Agent
     </footer>
   </div>
 </Layouts.app>

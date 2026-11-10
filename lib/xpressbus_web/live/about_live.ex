@@ -1,6 +1,6 @@
 defmodule XpressbusWeb.AboutLive do
   @moduledoc """
-  About Komiuta: company story, what the platform does, coverage, payment
+  About KOMIUTA: company story, what the platform does, coverage, payment
   security and support — the E-E-A-T/trust page for search and AI answers.
   """
 
@@ -17,10 +17,10 @@ defmodule XpressbusWeb.AboutLive do
      |> assign(:step, :about)
      |> assign(:footer_tab, "about")
      |> assign(:current_user, session["user_id"])
-     |> assign(:page_title, "About Komiuta — Bus Ticket Booking in East Africa")
+     |> assign(:page_title, "About KOMIUTA — Bus Ticket Booking in East Africa")
      |> assign(
        :page_description,
-       "Komiuta is an East African bus booking platform connecting travellers with 100+ bus operators across Kenya, Uganda and Tanzania. Compare fares, pick seats and pay with M-PESA, card or mobile money."
+       "KOMIUTA is an East African bus booking platform connecting travellers with 100+ bus operators across Kenya, Uganda and Tanzania. Compare fares, pick seats and pay with M-PESA, card or mobile money."
      )
      |> assign(:page_canonical, SEO.base_url() <> "/about")
      |> assign(:page_robots, "index,follow")
@@ -38,15 +38,15 @@ defmodule XpressbusWeb.AboutLive do
       %{
         "@context" => "https://schema.org",
         "@type" => "AboutPage",
-        "name" => "About Komiuta",
+        "name" => "About KOMIUTA",
         "url" => SEO.base_url() <> "/about",
         "description" =>
-          "Komiuta is an East African bus booking platform connecting travellers with 100+ operators across Kenya, Uganda and Tanzania.",
-        "mainEntity" => %{"@type" => "Organization", "name" => "Komiuta", "url" => SEO.base_url()}
+          "KOMIUTA is an East African bus booking platform connecting travellers with 100+ operators across Kenya, Uganda and Tanzania.",
+        "mainEntity" => %{"@type" => "Organization", "name" => "KOMIUTA", "url" => SEO.base_url()}
       },
       SEO.breadcrumb([
         {"Home", SEO.base_url() <> "/"},
-        {"About Komiuta", SEO.base_url() <> "/about"}
+        {"About KOMIUTA", SEO.base_url() <> "/about"}
       ])
     ]
   end

@@ -40,7 +40,7 @@ defmodule XpressbusWeb.SearchCardRenderTest do
         departure: format_time(departure),
         arrival: format_time(arrival),
         seats: "28 seats left",
-        price: "KSH 1,500",
+        price: "KES 1,500",
         registration: "KAA 123B",
         from: "nairobi",
         to: "mombasa",

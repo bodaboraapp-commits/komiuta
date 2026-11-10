@@ -23,10 +23,10 @@ defmodule XpressbusWeb.BlogLive do
      |> assign(:posts, Blog.all())
      |> assign(:post, nil)
      |> assign(:related_posts, [])
-     |> assign(:page_title, "Komiuta Travel Blog")
+     |> assign(:page_title, "KOMIUTA Travel Blog")
      |> assign(
        :page_description,
-       "Practical bus travel guides for Kenya and East Africa: route fares, terminals, M-PESA payment tips, journey times and booking advice from Komiuta."
+       "Practical bus travel guides for Kenya and East Africa: route fares, terminals, M-PESA payment tips, journey times and booking advice from KOMIUTA."
      )
      |> assign(:page_canonical, SEO.base_url() <> "/blog")
      |> assign(:page_robots, "index,follow")
@@ -68,13 +68,13 @@ defmodule XpressbusWeb.BlogLive do
       %{
         "@context" => "https://schema.org",
         "@type" => "Blog",
-        "name" => "Komiuta Travel Blog",
+        "name" => "KOMIUTA Travel Blog",
         "url" => SEO.base_url() <> "/blog",
         "description" =>
           "Bus travel guides for Kenya and East Africa: fares, terminals, payment and booking advice.",
         "publisher" => %{
           "@type" => "Organization",
-          "name" => "Komiuta",
+          "name" => "KOMIUTA",
           "url" => SEO.base_url()
         }
       },
@@ -102,12 +102,12 @@ defmodule XpressbusWeb.BlogLive do
         "image" => SEO.base_url() <> "/images/hero_bg-1024.avif",
         "author" => %{
           "@type" => "Organization",
-          "name" => "Komiuta",
+          "name" => "KOMIUTA",
           "url" => SEO.base_url()
         },
         "publisher" => %{
           "@type" => "Organization",
-          "name" => "Komiuta",
+          "name" => "KOMIUTA",
           "url" => SEO.base_url(),
           "logo" => %{
             "@type" => "ImageObject",

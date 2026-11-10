@@ -183,7 +183,7 @@ defmodule Xpressbus.PlacesTest do
             assert conn.query_string =~ "eiffel"
 
             assert Plug.Conn.get_req_header(conn, "user-agent") == [
-                     "KomiutaTripBuilder/1.0 (+https://www.komiuta.com)"
+                     "KOMIUTATripBuilder/1.0 (+https://www.komiuta.com)"
                    ]
 
             Req.Test.json(conn, [

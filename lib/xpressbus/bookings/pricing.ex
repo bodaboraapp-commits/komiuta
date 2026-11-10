@@ -79,7 +79,7 @@ defmodule Xpressbus.Bookings.Pricing do
     end)
   end
 
-  @doc "Parses a KES amount from an integer or a price string such as \"KSH 2,000\"."
+  @doc "Parses a KES amount from an integer or a price string such as \"KES 2,000\"."
   def parse_price(value, default \\ 0) do
     case value do
       nil ->

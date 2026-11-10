@@ -206,7 +206,7 @@ defmodule XpressbusWeb.UserAuthTest do
       assert get_session(conn, :user_id) == user.id
     end
 
-    test "returns not_found when the phone has no Komiuta account", %{conn: conn} do
+    test "returns not_found when the phone has no KOMIUTA account", %{conn: conn} do
       Application.put_env(:xpressbus, :firebase_lookup_fun, fn _token ->
         {:ok, "+254700000001"}
       end)
@@ -216,7 +216,7 @@ defmodule XpressbusWeb.UserAuthTest do
       conn = post(conn, ~p"/user/firebase/verify", %{"id_token" => "firebase-id-token"})
 
       assert conn.status == 404
-      assert json_response(conn, 404)["error"] =~ "No Komiuta account"
+      assert json_response(conn, 404)["error"] =~ "No KOMIUTA account"
     end
   end
 end

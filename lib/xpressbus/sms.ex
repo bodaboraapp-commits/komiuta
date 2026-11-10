@@ -76,7 +76,7 @@ defmodule Xpressbus.SMS do
     date = Calendar.strftime(ticket.travel_date, "%d %b %Y")
     reference = refund.reference || "processing"
 
-    "Hi #{first_name(ticket.passenger_name)}, we're sorry that ticket #{ticket.ticket_id} (#{route}, #{date}) has been cancelled. Your refund of KES #{refund.amount} is being processed (ref #{reference}). We apologise for the inconvenience. Komiuta 0800 211 211"
+    "Hi #{first_name(ticket.passenger_name)}, we're sorry that ticket #{ticket.ticket_id} (#{route}, #{date}) has been cancelled. Your refund of KES #{refund.amount} is being processed (ref #{reference}). We apologise for the inconvenience. KOMIUTA 0800 211 211"
   end
 
   defp deliver_africastalking(to, message, config) do

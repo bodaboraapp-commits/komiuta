@@ -19,12 +19,12 @@ defmodule XpressbusWeb.SEO do
     %{
       "@context" => "https://schema.org",
       "@type" => "Organization",
-      "name" => "Komiuta",
-      "alternateName" => "Komiuta Bus Booking",
+      "name" => "KOMIUTA",
+      "alternateName" => "KOMIUTA Bus Booking",
       "url" => @base_url,
       "logo" => @base_url <> "/images/logo_brand.png",
       "description" =>
-        "Komiuta Bus Booking is a transport technology and booking platform designed for public transit, intercity travel, and matatu/bus fleet management. Book intercity bus tickets across Kenya, Uganda and Tanzania with M-PESA, card or mobile money.",
+        "KOMIUTA Bus Booking is a transport technology and booking platform designed for public transit, intercity travel, and matatu/bus fleet management. Book intercity bus tickets across Kenya, Uganda and Tanzania with M-PESA, card or mobile money.",
       "sameAs" => [
         "https://github.com/bodaboraapp-commits/komiuta"
       ],
@@ -44,11 +44,11 @@ defmodule XpressbusWeb.SEO do
     %{
       "@context" => "https://schema.org",
       "@type" => "WebSite",
-      "name" => "Komiuta",
-      "alternateName" => "Komiuta Bus Booking",
+      "name" => "KOMIUTA",
+      "alternateName" => "KOMIUTA Bus Booking",
       "url" => @base_url,
       "description" =>
-        "Komiuta Bus Booking is a transport technology and booking platform designed for public transit, intercity travel, and matatu/bus fleet management.",
+        "KOMIUTA Bus Booking is a transport technology and booking platform designed for public transit, intercity travel, and matatu/bus fleet management.",
       "potentialAction" => %{
         "@type" => "SearchAction",
         "target" => @base_url <> "/?q={search_term_string}",
@@ -90,8 +90,8 @@ defmodule XpressbusWeb.SEO do
       "@context" => "https://schema.org",
       "@type" => "BusTrip",
       "name" => "#{from} to #{to} bus",
-      "busName" => operator || "Komiuta partner bus",
-      "provider" => %{"@type" => "Organization", "name" => "Komiuta", "url" => @base_url},
+      "busName" => operator || "KOMIUTA partner bus",
+      "provider" => %{"@type" => "Organization", "name" => "KOMIUTA", "url" => @base_url},
       "departureBusStop" => %{"@type" => "BusStop", "name" => "#{from} CBD terminals"},
       "arrivalBusStop" => %{"@type" => "BusStop", "name" => "#{to} bus terminal"},
       "offers" => %{
@@ -110,7 +110,7 @@ defmodule XpressbusWeb.SEO do
       %{
         question: "How much is a bus ticket from #{from} to #{to}?",
         answer:
-          "Fares start from about KES #{price_from}. Normal seats are usually the cheapest option, while VIP and first-class seats cost more. Prices update daily on Komiuta."
+          "Fares start from about KES #{price_from}. Normal seats are usually the cheapest option, while VIP and first-class seats cost more. Prices update daily on KOMIUTA."
       },
       %{
         question: "How long does the bus take from #{from} to #{to}?",

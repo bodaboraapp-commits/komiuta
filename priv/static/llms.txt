@@ -1,6 +1,6 @@
-# Komiuta Bus Booking - bus ticketing for Kenya, Uganda and Tanzania
+# KOMIUTA Bus Booking - bus ticketing for Kenya, Uganda and Tanzania
 
-> Komiuta Bus Booking is a transport technology and booking platform designed for public transit, intercity travel, and matatu/bus fleet management. Travellers compare intercity bus fares, pick seats, and pay with M-PESA, card or mobile money. Tickets are delivered instantly by SMS and email. Komiuta is also the #1 ticketing platform for matatu saccos and financiers.
+> KOMIUTA Bus Booking is a transport technology and booking platform designed for public transit, intercity travel, and matatu/bus fleet management. Travellers compare intercity bus fares, pick seats, and pay with M-PESA, card or mobile money. Tickets are delivered instantly by SMS and email. KOMIUTA is also the #1 ticketing platform for matatu saccos and financiers.
 
 Key facts:
 - Fares are shown in KES and include all fees.
@@ -11,7 +11,7 @@ Key facts:
 
 Key pages:
 - https://www.komiuta.com/blog - bus travel guides and route advice
-- https://www.komiuta.com/about - about Komiuta
+- https://www.komiuta.com/about - about KOMIUTA
 - https://www.komiuta.com/faqs - booking, payment and ticket FAQs
 - https://www.komiuta.com/ - bus search and booking
 - https://www.komiuta.com/tour-packages - Chyllz hotels, hidden gems, car hire, events

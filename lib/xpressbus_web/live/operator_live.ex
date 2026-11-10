@@ -26,7 +26,7 @@ defmodule XpressbusWeb.OperatorLive do
      |> assign(:routes, [])
      |> assign(:cities, [])
      |> assign(:page_title, "Bus operators in Kenya")
-     |> assign(:page_description, "Compare bus operators, routes and fares on Komiuta.")
+     |> assign(:page_description, "Compare bus operators, routes and fares on KOMIUTA.")
      |> assign(:page_robots, "index,follow")
      |> assign(:page_json_ld, nil)}
   end
@@ -50,7 +50,7 @@ defmodule XpressbusWeb.OperatorLive do
          |> assign(:page_title, "#{operator.name} Bus Tickets — Routes, Fares & Schedules")
          |> assign(
            :page_description,
-           "Book #{operator.name} bus tickets on Komiuta. Compare #{operator.name} routes, departure times and live fares, with M-PESA payment and instant SMS/email tickets."
+           "Book #{operator.name} bus tickets on KOMIUTA. Compare #{operator.name} routes, departure times and live fares, with M-PESA payment and instant SMS/email tickets."
          )
          |> assign(:page_canonical, url)
          |> assign(:page_json_ld, operator_json_ld(operator, routes, cities, url))}
@@ -66,7 +66,7 @@ defmodule XpressbusWeb.OperatorLive do
      |> assign(:page_title, "Bus Operators in Kenya — Routes, Fares & Schedules")
      |> assign(
        :page_description,
-       "Compare bus operators on Komiuta: routes, departure times and live fares from Kenya's bus companies. Book seats online with M-PESA, card or mobile money."
+       "Compare bus operators on KOMIUTA: routes, departure times and live fares from Kenya's bus companies. Book seats online with M-PESA, card or mobile money."
      )
      |> assign(:page_canonical, SEO.base_url() <> "/operators")
      |> assign(:page_json_ld, operator_index_json_ld(operators))}
@@ -83,7 +83,7 @@ defmodule XpressbusWeb.OperatorLive do
       %{
         "@context" => "https://schema.org",
         "@type" => "ItemList",
-        "name" => "Bus operators on Komiuta",
+        "name" => "Bus operators on KOMIUTA",
         "itemListElement" =>
           operators
           |> Enum.with_index(1)
@@ -110,10 +110,10 @@ defmodule XpressbusWeb.OperatorLive do
         "@type" => "Organization",
         "name" => operator.name,
         "url" => url,
-        "description" => "#{operator.name} intercity bus operator on Komiuta.",
+        "description" => "#{operator.name} intercity bus operator on KOMIUTA.",
         "parentOrganization" => %{
           "@type" => "Organization",
-          "name" => "Komiuta",
+          "name" => "KOMIUTA",
           "url" => SEO.base_url()
         }
       },

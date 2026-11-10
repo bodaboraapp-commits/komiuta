@@ -3,7 +3,7 @@ defmodule Xpressbus.ChyllzAccount do
   Read-only view model for the Chyllz account view in the user dashboard
   ("My Chyllz" tab, also reachable at `/dashboard?tab=chyllz`).
 
-  The page is deliberately honest about the data Komiuta keeps today:
+  The page is deliberately honest about the data KOMIUTA keeps today:
 
     * **trips** come from the traveller's tickets — the only booking history the
       platform stores — matched by phone number exactly like the dashboard;
@@ -237,7 +237,7 @@ defmodule Xpressbus.ChyllzAccount do
   end
 
   @doc """
-  Number of travel stories published on the Komiuta blog.
+  Number of travel stories published on the KOMIUTA blog.
   """
   def story_count do
     Blog.all()
@@ -373,8 +373,8 @@ defmodule Xpressbus.ChyllzAccount do
   end
 
   @doc """
-  Formats a ticket price for display, e.g. `"KSH 2300"` or `"1500"` becomes
-  `"Ksh 2,300"`. Unparseable values are returned unchanged.
+  Formats a ticket price for display, e.g. `"KES 2300"` or `"1500"` becomes
+  `"KES 2,300"`. Unparseable values are returned unchanged.
   """
   def format_money(nil), do: "—"
 
@@ -388,7 +388,7 @@ defmodule Xpressbus.ChyllzAccount do
           |> String.replace(",", "")
           |> String.to_integer()
 
-        if amount > 0, do: "Ksh " <> group_digits(amount), else: text
+        if amount > 0, do: "KES " <> group_digits(amount), else: text
 
       _no_number ->
         text

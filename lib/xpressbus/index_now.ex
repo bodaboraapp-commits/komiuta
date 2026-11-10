@@ -1,6 +1,6 @@
 defmodule Xpressbus.IndexNow do
   @moduledoc """
-  IndexNow submission for Komiuta.
+  IndexNow submission for KOMIUTA.
 
   IndexNow is the shared instant-indexing protocol supported by Bing, Yandex,
   Seznam and other engines. The key file is served from the site root as

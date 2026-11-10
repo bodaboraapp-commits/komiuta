@@ -14,7 +14,7 @@ defmodule Xpressbus.TicketPDFTest do
         departure: "7:00 AM",
         arrival: "5:30 PM",
         company: "MashPoa",
-        price: "KSH 2300",
+        price: "KES 2300",
         seats: "[\"6\"]",
         passenger_name: "Test User",
         passenger_phone: "0798335246",

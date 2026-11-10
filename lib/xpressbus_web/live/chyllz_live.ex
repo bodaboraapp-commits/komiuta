@@ -61,7 +61,7 @@ defmodule XpressbusWeb.ChyllzLive do
      )
      |> assign(
        :page_description,
-       "Discover handpicked hotels, hidden gems, car hire and events across East Africa with Chyllz by Komiuta. Book stays and experiences alongside your bus ticket."
+       "Discover handpicked hotels, hidden gems, car hire and events across East Africa with Chyllz by KOMIUTA. Book stays and experiences alongside your bus ticket."
      )
      |> assign(:page_canonical, XpressbusWeb.Endpoint.url() <> "/tour-packages")
      |> assign(:page_json_ld, chyllz_json_ld(:chyllz))
@@ -863,7 +863,7 @@ defmodule XpressbusWeb.ChyllzLive do
     compact([
       {"Location", hotel.location},
       {"Rating", hotel.rating && rating(hotel.rating)},
-      {"Price", hotel.price_per_night && "Ksh #{money(hotel.price_per_night)} / night"},
+      {"Price", hotel.price_per_night && "KES #{money(hotel.price_per_night)} / night"},
       {"Amenities", amenities_text(hotel.amenities)}
     ])
   end
@@ -876,7 +876,7 @@ defmodule XpressbusWeb.ChyllzLive do
     compact([
       {"Vehicle type", car.type},
       {"Location", car.location},
-      {"Price", car.price_per_day && "Ksh #{money(car.price_per_day)} / day"}
+      {"Price", car.price_per_day && "KES #{money(car.price_per_day)} / day"}
     ])
   end
 
@@ -1310,7 +1310,7 @@ defmodule XpressbusWeb.ChyllzLive do
             onerror="this.style.opacity='0'"
           />
           <div class="absolute top-6 right-6 bg-white/95 backdrop-blur-md px-5 py-2 rounded-full font-black text-xs shadow-xl border border-slate-50">
-            Ksh {money(@hotel.price_per_night)}/night
+            KES {money(@hotel.price_per_night)}/night
           </div>
         </div>
 
@@ -1438,7 +1438,7 @@ defmodule XpressbusWeb.ChyllzLive do
           <div class="text-[10px] font-bold text-slate-400 uppercase">From</div>
 
           <div class="text-lg font-black text-slate-900">
-            Ksh {money(@car.price_per_day)}<span class="text-xs font-bold text-slate-400">/day</span>
+            KES {money(@car.price_per_day)}<span class="text-xs font-bold text-slate-400">/day</span>
           </div>
         </div>
 

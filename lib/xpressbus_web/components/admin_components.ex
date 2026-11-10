@@ -25,12 +25,12 @@ defmodule XpressbusWeb.AdminComponents do
             <span
               :if={!@collapsed}
               class="text-lg font-black tracking-tighter text-slate-900 whitespace-nowrap"
-            >Komiuta</span>
+            >KOMIUTA</span>
           </div>
 
           <%= if @collapsed do %>
             <div class="absolute left-full ml-4 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-slate-900 text-white text-xs font-black rounded-lg opacity-0 pointer-events-none group-hover/logo:opacity-100 transition-opacity z-50 whitespace-nowrap shadow-xl">
-              Komiuta
+              KOMIUTA
               <div class="absolute right-full top-1/2 -translate-y-1/2 border-8 border-transparent border-r-slate-900">
               </div>
             </div>

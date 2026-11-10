@@ -31,7 +31,7 @@ defmodule XpressbusWeb.PartnerRegistrationLive do
            "to" => "",
            "departure" => "08:00 AM",
            "arrival" => "04:00 PM",
-           "price" => "KSH 1500",
+           "price" => "KES 1500",
            "registration" => "",
            "total_seats" => 40
          }
@@ -66,7 +66,7 @@ defmodule XpressbusWeb.PartnerRegistrationLive do
               </h2>
 
               <p class="text-slate-500 font-bold leading-relaxed mb-8">
-                Thank you for choosing Komiuta. Your partner account and fleet registration are being reviewed by our industrial operations team. We will contact you within 24 hours.
+                Thank you for choosing KOMIUTA. Your partner account and fleet registration are being reviewed by our industrial operations team. We will contact you within 24 hours.
               </p>
 
               <a
@@ -102,7 +102,7 @@ defmodule XpressbusWeb.PartnerRegistrationLive do
                         type="text"
                         name="operator[name]"
                         required
-                        placeholder="e.g. Komiuta Express"
+                        placeholder="e.g. KOMIUTA Express"
                         class="w-full px-6 py-4 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-orange-50 focus:border-[#FF4C00] transition-all uppercase"
                       />
                     </div>
@@ -218,7 +218,7 @@ defmodule XpressbusWeb.PartnerRegistrationLive do
                         type="text"
                         name="bus[price]"
                         required
-                        value="KSH 1500"
+                        value="KES 1500"
                         class="w-full px-6 py-4 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-orange-50 focus:border-[#FF4C00] transition-all uppercase"
                       />
                     </div>
@@ -247,7 +247,7 @@ defmodule XpressbusWeb.PartnerRegistrationLive do
                     type="submit"
                     class="w-full bg-[#FF4C00] text-white py-6 rounded-3xl font-black uppercase tracking-[0.2em] text-sm hover:bg-[#E64400] transition shadow-2xl shadow-orange-500/20 active:scale-[0.99] flex items-center justify-center gap-4 group"
                   >
-                    <span>Register Fleet & Join Komiuta</span>
+                    <span>Register Fleet & Join KOMIUTA</span>
                     <span class="material-symbols-outlined !text-2xl group-hover:translate-x-2 transition-transform">arrow_forward</span>
                   </button>
                 </div>
@@ -307,7 +307,7 @@ defmodule XpressbusWeb.PartnerRegistrationLive do
                 registration: String.trim(to_string(bus_params["registration"] || "")),
                 from: from,
                 to: to,
-                price: String.trim(to_string(bus_params["price"] || "KSH 1500")),
+                price: String.trim(to_string(bus_params["price"] || "KES 1500")),
                 travel_date: travel_date,
                 # Schedule is agreed with the operations team after approval.
                 departure: "08:00 AM",

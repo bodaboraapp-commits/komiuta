@@ -428,7 +428,7 @@ defmodule Xpressbus.TravelAssistant.Local do
       reply(
         "Here's a three-day Chyllz plan for #{location}:\n\n" <>
           days <>
-          "\n\nBook the bus to #{location} on Komiuta, then reserve the stay from Chyllz. Want a cheaper version or more days?",
+          "\n\nBook the bus to #{location} on KOMIUTA, then reserve the stay from Chyllz. Want a cheaper version or more days?",
         [hotel, gem, event, car]
         |> Enum.reject(&is_nil/1)
         |> Enum.take(3)
@@ -460,7 +460,7 @@ defmodule Xpressbus.TravelAssistant.Local do
   defp bus_reply(nil) do
     reply(
       """
-      Komiuta books bus tickets across Kenya and East Africa. Search your route on the home page — or tell me your origin and destination and I'll point you the right way.
+      KOMIUTA books bus tickets across Kenya and East Africa. Search your route on the home page — or tell me your origin and destination and I'll point you the right way.
 
       Once your ticket is set, I can add a stay, event or car to the trip.
       """,
@@ -472,7 +472,7 @@ defmodule Xpressbus.TravelAssistant.Local do
   defp bus_reply(location) do
     reply(
       """
-      You can book a bus to #{location} right on Komiuta — enter “To: #{location}” in the search pill and pick your date.
+      You can book a bus to #{location} right on KOMIUTA — enter “To: #{location}” in the search pill and pick your date.
 
       Want me to pair it with a stay or an event in #{location}?
       """,

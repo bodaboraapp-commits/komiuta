@@ -28,7 +28,7 @@ defmodule XpressbusWeb.TicketModalCodesTest do
       departure: "7:00 AM",
       arrival: "4:00 PM",
       company: "Chania Executive",
-      price: "KSH 1500",
+      price: "KES 1500",
       seats: "[\"40\"]",
       passenger_name: "Modal Passenger",
       passenger_phone: "0712345678",

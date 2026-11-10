@@ -403,7 +403,7 @@ defmodule XpressbusWeb.AdminFleetLive do
                       name="bus[company]"
                       value={if @editing_bus, do: @editing_bus.company, else: ""}
                       required
-                      placeholder="e.g. Komiuta Bus"
+                      placeholder="e.g. KOMIUTA Bus"
                       class="w-full px-6 py-4 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-orange-50 focus:border-[#FF4C00] transition-all uppercase"
                     />
                   </div>
@@ -462,9 +462,9 @@ defmodule XpressbusWeb.AdminFleetLive do
                     <input
                       type="text"
                       name="bus[price]"
-                      value={if @editing_bus, do: @editing_bus.price, else: "KSH 1500"}
+                      value={if @editing_bus, do: @editing_bus.price, else: "KES 1500"}
                       required
-                      placeholder="KSH 1500"
+                      placeholder="KES 1500"
                       class="w-full px-6 py-4 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-orange-50 focus:border-[#FF4C00] transition-all uppercase"
                     />
                   </div>

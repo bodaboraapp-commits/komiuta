@@ -267,7 +267,7 @@ defmodule XpressbusWeb.AdminCommsLive do
               time: "10:45 AM",
               status: "Pending",
               body:
-                "Hi Komiuta Support,\n\nI have a booking for the 8:00 PM bus from Nairobi to Mombasa (Ticket #KMT-901). I'm currently stuck in traffic near Westlands.\n\nIs the bus on schedule? And how long will it wait at the terminal?\n\nBest regards,\nJohn"
+                "Hi KOMIUTA Support,\n\nI have a booking for the 8:00 PM bus from Nairobi to Mombasa (Ticket #KMT-901). I'm currently stuck in traffic near Westlands.\n\nIs the bus on schedule? And how long will it wait at the terminal?\n\nBest regards,\nJohn"
             },
             %{
               id: "w2",
@@ -286,7 +286,7 @@ defmodule XpressbusWeb.AdminCommsLive do
           [
             %{
               id: "s1",
-              sender: "Komiuta System",
+              sender: "KOMIUTA System",
               contact: "To: +254 700 111 222",
               subject: "Booking Confirm",
               snippet:
@@ -294,18 +294,18 @@ defmodule XpressbusWeb.AdminCommsLive do
               time: "Yesterday",
               status: "Sent",
               body:
-                "Komiuta: Your booking KMT-992 is confirmed. Departure: 08:00 PM today from Nairobi Main Terminal. Please arrive 30 mins early. Ref: https://kmt.io/tkt/992"
+                "KOMIUTA: Your booking KMT-992 is confirmed. Departure: 08:00 PM today from Nairobi Main Terminal. Please arrive 30 mins early. Ref: https://kmt.io/tkt/992"
             },
             %{
               id: "s2",
-              sender: "Komiuta System",
+              sender: "KOMIUTA System",
               contact: "To: +254 722 333 444",
               subject: "Delay Alert",
               snippet: "URGENT: Bus MashPoa KCH 442Y is delayed by 30 mins due to logistics.",
               time: "Aug 23",
               status: "Sent",
               body:
-                "Komiuta Alert: Bus MashPoa KCH 442Y is delayed by 30 mins. New departure time is 08:30 PM. We apologize for the inconvenience."
+                "KOMIUTA Alert: Bus MashPoa KCH 442Y is delayed by 30 mins. New departure time is 08:30 PM. We apologize for the inconvenience."
             }
           ]
 
@@ -313,15 +313,15 @@ defmodule XpressbusWeb.AdminCommsLive do
           [
             %{
               id: "e1",
-              sender: "Komiuta Brand",
+              sender: "KOMIUTA Brand",
               contact: "marketing@komiuta.com",
               subject: "Welcome aboard!",
               snippet:
-                "Welcome to Komiuta. Elevate your journey with us. Here is a gift for you...",
+                "Welcome to KOMIUTA. Elevate your journey with us. Here is a gift for you...",
               time: "2 days ago",
               status: "Sent",
               body:
-                "Hello Traveler,\n\nWelcome to Komiuta! We are thrilled to have you join our community of over 830,000 explorers.\n\nAs a welcome gift, use the code GOLD10 for 10% off your next booking.\n\nSafe travels!"
+                "Hello Traveler,\n\nWelcome to KOMIUTA! We are thrilled to have you join our community of over 830,000 explorers.\n\nAs a welcome gift, use the code GOLD10 for 10% off your next booking.\n\nSafe travels!"
             },
             %{
               id: "e2",
@@ -329,11 +329,11 @@ defmodule XpressbusWeb.AdminCommsLive do
               contact: "tickets@komiuta.com",
               subject: "Your E-Ticket",
               snippet:
-                "Thank you for booking with Komiuta. Attached is your E-Ticket for NBO -> MSA.",
+                "Thank you for booking with KOMIUTA. Attached is your E-Ticket for NBO -> MSA.",
               time: "Aug 20",
               status: "Sent",
               body:
-                "Dear Customer,\n\nThank you for choosing Komiuta. Your payment of KSH 1,500 has been received.\n\nTrip: Nairobi to Mombasa\nDate: Sept 03, 2026\nSeat: 4 (VIP)\n\nPlease present the attached PDF at the boarding point."
+                "Dear Customer,\n\nThank you for choosing KOMIUTA. Your payment of KES 1,500 has been received.\n\nTrip: Nairobi to Mombasa\nDate: Sept 03, 2026\nSeat: 4 (VIP)\n\nPlease present the attached PDF at the boarding point."
             }
           ]
 
@@ -341,7 +341,7 @@ defmodule XpressbusWeb.AdminCommsLive do
           [
             %{
               id: "n1",
-              sender: "Komiuta Dispatch",
+              sender: "KOMIUTA Dispatch",
               contact: "12,400 Subscribers",
               subject: "Weekly Insights #42",
               snippet: "Discover the hidden gems of Kwale and the best budget stays in Lamu...",

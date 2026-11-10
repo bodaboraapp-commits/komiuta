@@ -29,7 +29,7 @@ defmodule XpressbusWeb.AgentLive do
        |> assign(
          :agent_qr,
          XpressbusWeb.QRCode.svg(agent_url,
-           aria_label: "Scan to open the Komiuta Agent sign-up app",
+           aria_label: "Scan to open the KOMIUTA Agent sign-up app",
            size: 148
          )
        )

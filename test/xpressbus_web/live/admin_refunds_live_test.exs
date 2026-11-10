@@ -25,7 +25,7 @@ defmodule XpressbusWeb.AdminRefundsLiveTest do
         departure: "9:00 AM",
         arrival: "3:00 PM",
         company: "Refund Coaches",
-        price: "KSH 1,800",
+        price: "KES 1,800",
         seats: "[\"2B\"]",
         passenger_name: "Refund Passenger #{unique}",
         passenger_phone: "07123000#{String.pad_leading(to_string(rem(unique, 100)), 2, "0")}",

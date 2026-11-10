@@ -1,4 +1,4 @@
-# Komiuta robots.txt
+# KOMIUTA robots.txt
 # Search engines and AI answer engines are welcome to crawl public pages.
 User-agent: *
 Allow: /

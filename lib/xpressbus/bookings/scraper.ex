@@ -5,7 +5,7 @@ defmodule Xpressbus.Bookings.Scraper do
 
   History: this module used to generate hard-coded fallback buses (8 operators x
   a fixed schedule) whenever BuuPass returned no data. Those fabricated rows made
-  Komiuta show far more buses than BuuPass. The fallback has been removed; real
+  KOMIUTA show far more buses than BuuPass. The fallback has been removed; real
   schedules are used, and legacy fallback rows are marked `source =
   "legacy_fallback"` so public search ignores them.
   """
@@ -175,7 +175,7 @@ defmodule Xpressbus.Bookings.Scraper do
       business_fare = seat_fare(seat_types, ["business"])
       first_fare = seat_fare(seat_types, ["first class", "first_class", "first"])
       seats = item["number_of_available_seats"]
-      currency = seat_currency(seat_types) || "KSH"
+      currency = seat_currency(seat_types) || "KES"
 
       %Bus{
         company: operator,

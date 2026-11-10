@@ -488,7 +488,7 @@ defmodule XpressbusWeb.TripManageLive do
 
     %{
       title: "#{title_case(ticket.from)} → #{title_case(ticket.to)}",
-      subtitle: ticket.company || "Komiuta bus trip",
+      subtitle: ticket.company || "KOMIUTA bus trip",
       date_label:
         "#{Calendar.strftime(date, "%a %d %b %Y")}#{if ticket.departure, do: " · #{ticket.departure}", else: ""}",
       days: 1,

@@ -91,8 +91,8 @@ defmodule XpressbusWeb.AdminDashboardLive do
     }
   end
 
-  defp format_revenue(0), do: "Ksh 0"
-  defp format_revenue(amount), do: "Ksh #{amount}"
+  defp format_revenue(0), do: "KES 0"
+  defp format_revenue(amount), do: "KES #{amount}"
 
   defp parse_price(nil), do: 0
 

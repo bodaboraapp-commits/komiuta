@@ -29,7 +29,7 @@ defmodule XpressbusWeb.Cities do
       tagline: "Lake Victoria's largest city, connected to Nairobi, Eldoret and Mombasa.",
       terminals: "Kisumu Bus Park and Kondele stage",
       intro:
-        "Travelling from Kisumu to Nairobi, Eldoret or Mombasa? Compare daily departures and fares from trusted operators on Komiuta."
+        "Travelling from Kisumu to Nairobi, Eldoret or Mombasa? Compare daily departures and fares from trusted operators on KOMIUTA."
     },
     "eldoret" => %{
       name: "Eldoret",

@@ -5,7 +5,7 @@ defmodule XpressbusWeb.ItineraryComponents do
   The cards are shown on the **My Chyllz** dashboard tab: cover art, travel
   status (upcoming / ongoing / completed), title, destination, dates, duration
   and budget, with actions to reopen or share the itinerary. The palette stays
-  Komiuta orange on white/slate cards.
+  KOMIUTA orange on white/slate cards.
   """
 
   use XpressbusWeb, :html

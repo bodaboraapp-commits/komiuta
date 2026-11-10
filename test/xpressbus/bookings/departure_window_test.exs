@@ -13,7 +13,7 @@ defmodule Xpressbus.Bookings.DepartureWindowTest do
 
   defp buses(times) do
     Enum.map(times, fn departure ->
-      %{departure: departure, company: "Coach", price: "KSH 1,000"}
+      %{departure: departure, company: "Coach", price: "KES 1,000"}
     end)
   end
 
@@ -76,7 +76,7 @@ defmodule Xpressbus.Bookings.DepartureWindowTest do
     [bus] = DepartureWindow.filter_bookable(buses(["2:00 PM"]), @date, now: @now)
 
     assert bus.company == "Coach"
-    assert bus.price == "KSH 1,000"
+    assert bus.price == "KES 1,000"
   end
 
   test "exposes the two hour lead time" do

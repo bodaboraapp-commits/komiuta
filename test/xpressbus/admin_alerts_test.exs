@@ -27,7 +27,7 @@ defmodule Xpressbus.AdminAlertsTest do
       passenger_name: "Test Passenger",
       passenger_phone: "0712345678",
       company: "Test Coach",
-      price: "KSH 1,800",
+      price: "KES 1,800",
       status: "confirmed",
       inserted_at: ~U[2026-11-06 09:30:00Z]
     }
@@ -59,7 +59,7 @@ defmodule Xpressbus.AdminAlertsTest do
       assert email.text_body =~ "mpesa"
       assert email.html_body =~ "New booking & payment received"
       assert email.html_body =~ "/images/logo_email.png"
-      assert email.html_body =~ ~s(alt="Komiuta")
+      assert email.html_body =~ ~s(alt="KOMIUTA")
       assert email.html_body =~ "PAY-ALERT-1"
       assert email.html_body =~ "hello@komiuta.com"
       assert email.html_body =~ "0800 211 211"

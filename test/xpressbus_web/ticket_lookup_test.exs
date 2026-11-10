@@ -17,7 +17,7 @@ defmodule XpressbusWeb.TicketLookupTest do
       departure: "7:00 AM",
       arrival: "5:30 PM",
       company: "MashPoa",
-      price: "KSH 2300",
+      price: "KES 2300",
       seats: "[\"6\"]",
       passenger_name: "Private Passenger",
       passenger_phone: "0712345678",

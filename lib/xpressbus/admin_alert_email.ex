@@ -45,7 +45,7 @@ defmodule Xpressbus.AdminAlertEmail do
     email =
       Swoosh.Email.new()
       |> to(recipients)
-      |> from({"Komiuta Alerts", from_address()})
+      |> from({"KOMIUTA Alerts", from_address()})
       |> subject(subject)
       |> text_body(text)
       |> html_body(html)
@@ -66,7 +66,7 @@ defmodule Xpressbus.AdminAlertEmail do
 
   defp booking_body(ticket, payment) do
     """
-    New booking on Komiuta
+    New booking on KOMIUTA
 
     Ticket: #{ticket.ticket_id}
     Route: #{ticket.from} -> #{ticket.to}
@@ -86,7 +86,7 @@ defmodule Xpressbus.AdminAlertEmail do
     body(
       if(paid?(payment), do: "New booking & payment received", else: "New booking"),
       """
-      <p style="margin:0 0 16px;font-size:14px;color:#475569;">A new booking was created on Komiuta.</p>
+      <p style="margin:0 0 16px;font-size:14px;color:#475569;">A new booking was created on KOMIUTA.</p>
       #{details_table(ticket)}
       #{payment_block(payment)}
       <p style="margin:20px 0 0;font-size:12px;color:#94a3b8;">Booked #{datetime(ticket.inserted_at)}</p>
@@ -96,7 +96,7 @@ defmodule Xpressbus.AdminAlertEmail do
 
   defp payment_body(ticket, payment) do
     """
-    Payment received on Komiuta
+    Payment received on KOMIUTA
 
     Ticket: #{ticket.ticket_id}
     Route: #{ticket.from} -> #{ticket.to}
@@ -114,7 +114,7 @@ defmodule Xpressbus.AdminAlertEmail do
     body(
       "Payment received",
       """
-      <p style="margin:0 0 16px;font-size:14px;color:#475569;">A payment was received for a Komiuta booking.</p>
+      <p style="margin:0 0 16px;font-size:14px;color:#475569;">A payment was received for a KOMIUTA booking.</p>
       #{details_table(ticket)}
       #{payment_block(payment)}
       #{booking_link(ticket)}
@@ -174,10 +174,10 @@ defmodule Xpressbus.AdminAlertEmail do
     """
     <div style="font-family:Arial,sans-serif;max-width:620px;margin:0 auto;padding:24px;background:#ffffff;">
       <div style="background:#ffffff;padding:16px 22px;border:1px solid #f1f5f9;border-bottom:0;border-radius:14px 14px 0 0;">
-        <img src="#{logo_url()}" alt="Komiuta" width="146" height="40" style="display:block;height:40px;width:auto;border:0;" />
+        <img src="#{logo_url()}" alt="KOMIUTA" width="146" height="40" style="display:block;height:40px;width:auto;border:0;" />
       </div>
       <div style="background:#FF4C00;color:#ffffff;padding:18px 22px;">
-        <p style="margin:0;font-size:11px;letter-spacing:2px;text-transform:uppercase;opacity:.8;">Komiuta operations</p>
+        <p style="margin:0;font-size:11px;letter-spacing:2px;text-transform:uppercase;opacity:.8;">KOMIUTA operations</p>
         <h1 style="margin:4px 0 0;font-size:22px;">#{heading}</h1>
       </div>
       <div style="border:1px solid #f1f5f9;border-top:0;border-radius:0 0 14px 14px;padding:22px;">
@@ -205,7 +205,7 @@ defmodule Xpressbus.AdminAlertEmail do
         <a href="#{h(Brand.phone_uri())}" style="color:#FF4C00;text-decoration:none;">#{h(Brand.phone())}</a>
       </p>
       <p style="margin:0;">Follow us: #{social_html}</p>
-      <p style="margin:6px 0 0;color:#cbd5e1;">Komiuta · Elevate Your Journey</p>
+      <p style="margin:6px 0 0;color:#cbd5e1;">KOMIUTA · Elevate Your Journey</p>
     </div>
     """
   end
@@ -217,7 +217,7 @@ defmodule Xpressbus.AdminAlertEmail do
       end)
 
     """
-    — Komiuta · Elevate Your Journey
+    — KOMIUTA · Elevate Your Journey
     Website: #{Brand.website()}
     Email: #{Brand.email()} · Call: #{Brand.phone()}
     Follow us: #{social}

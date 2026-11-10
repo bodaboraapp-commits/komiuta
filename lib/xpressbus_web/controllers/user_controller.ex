@@ -72,7 +72,7 @@ defmodule XpressbusWeb.UserController do
                 |> put_status(:not_found)
                 |> json(%{
                   error:
-                    "No Komiuta account is linked to this phone number. Please sign up with your email first."
+                    "No KOMIUTA account is linked to this phone number. Please sign up with your email first."
                 })
             end
 
@@ -365,7 +365,7 @@ defmodule XpressbusWeb.UserController do
 
         if Accounts.profile_complete?(user) do
           conn
-          |> put_flash(:success, "Registration successful! Welcome to Komiuta.")
+          |> put_flash(:success, "Registration successful! Welcome to KOMIUTA.")
           |> redirect(to: ~p"/dashboard")
         else
           conn
@@ -419,7 +419,7 @@ defmodule XpressbusWeb.UserController do
             conn
             |> put_session(:user_id, user.id)
             |> put_session(:user_name, user.name)
-            |> put_flash(:success, "You're all set — welcome to Komiuta!")
+            |> put_flash(:success, "You're all set — welcome to KOMIUTA!")
             |> redirect(to: ~p"/dashboard")
 
           {:error, %Ecto.Changeset{} = changeset} ->

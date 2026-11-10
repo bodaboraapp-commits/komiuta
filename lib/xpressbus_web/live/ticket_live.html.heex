@@ -414,7 +414,7 @@
           const url = path ? `${window.location.origin}${path}` : window.location.href
           try {
             if (navigator.share) {
-              await navigator.share({ title: "Komiuta ticket", url })
+              await navigator.share({ title: "KOMIUTA ticket", url })
             } else if (navigator.clipboard) {
               await navigator.clipboard.writeText(url)
               this.pushEvent("ticket_shared", {})

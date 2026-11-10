@@ -41,12 +41,12 @@ defmodule XpressbusWeb.BusCardComponent do
                 />
               <% else %>
                 <div class={"h-full w-full rounded-xl flex items-center justify-center text-white font-black text-[10px] #{initials_color(@bus.company)}"}>
-                  {String.slice(@bus.company || "Komiuta Bus", 0, 2)}
+                  {String.slice(@bus.company || "KOMIUTA Bus", 0, 2)}
                 </div>
               <% end %>
             </div>
             <h4 class="text-xs font-black text-slate-900 tracking-tight text-center uppercase whitespace-nowrap">
-              {@bus.company || "Komiuta Bus"}
+              {@bus.company || "KOMIUTA Bus"}
             </h4>
           </div>
 

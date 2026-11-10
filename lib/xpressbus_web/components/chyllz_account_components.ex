@@ -10,7 +10,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
   Every number comes from the database or the curated travel blog — nothing is
   demo content. The weather widget is fed by `Xpressbus.Weather` (Open-Meteo)
   and degrades to a friendly retry card when the service is unavailable. The
-  palette stays Komiuta orange (`#FF4C00`) on white/slate cards.
+  palette stays KOMIUTA orange (`#FF4C00`) on white/slate cards.
   """
 
   use XpressbusWeb, :html

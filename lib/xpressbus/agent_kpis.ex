@@ -35,7 +35,7 @@ defmodule Xpressbus.AgentKpis do
             :id
           ),
           :platform,
-          "New bus operators added across Komiuta in #{period_label}."
+          "New bus operators added across KOMIUTA in #{period_label}."
         ),
       new_agents:
         metric(
@@ -46,7 +46,7 @@ defmodule Xpressbus.AgentKpis do
             :id
           ),
           :platform,
-          "Agent applications approved across Komiuta in #{period_label}."
+          "Agent applications approved across KOMIUTA in #{period_label}."
         ),
       new_passengers:
         metric(
@@ -55,7 +55,7 @@ defmodule Xpressbus.AgentKpis do
             :id
           ),
           :platform,
-          "New traveller accounts created across Komiuta in #{period_label}. Agent code attribution is not tracked yet."
+          "New traveller accounts created across KOMIUTA in #{period_label}. Agent code attribution is not tracked yet."
         ),
       booking_growth:
         metric(

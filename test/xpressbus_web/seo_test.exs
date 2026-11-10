@@ -27,7 +27,7 @@ defmodule XpressbusWeb.SeoTest do
         departure: format_time(departure),
         arrival: format_time(arrival),
         seats: "28 seats left",
-        price: "KSH 1,500",
+        price: "KES 1,500",
         registration: "SEO 001A",
         from: "seocity",
         to: "seotown",
@@ -69,10 +69,10 @@ defmodule XpressbusWeb.SeoTest do
     assert body =~ "Disallow: /admin"
   end
 
-  test "llms.txt describes Komiuta and key route pages", %{conn: conn} do
+  test "llms.txt describes KOMIUTA and key route pages", %{conn: conn} do
     body = get(conn, "/llms.txt").resp_body
 
-    assert body =~ "Komiuta"
+    assert body =~ "KOMIUTA"
     assert body =~ "transport technology and booking platform"
     assert body =~ "/buses/Nairobi-to-Kisumu"
     assert body =~ "M-PESA"
@@ -82,7 +82,7 @@ defmodule XpressbusWeb.SeoTest do
     body = get(conn, "/").resp_body
 
     assert body =~
-             "Komiuta Bus Booking. #1 Ticketing Platform For Matatu Sacco &amp; Financiers"
+             "KOMIUTA Bus Booking. #1 Ticketing Platform For Matatu Sacco &amp; Financiers"
 
     assert body =~
              "transport technology and booking platform designed for public transit, intercity travel, and matatu/bus fleet management"
@@ -128,7 +128,7 @@ defmodule XpressbusWeb.SeoTest do
     assert body =~ "Bus booking FAQs"
     assert body =~ "rel=\"canonical\" href=\"https://www.komiuta.com/faqs\""
     assert body =~ "\"@type\":\"FAQPage\""
-    assert body =~ "How do I book a bus ticket on Komiuta?"
+    assert body =~ "How do I book a bus ticket on KOMIUTA?"
   end
 
   test "city landing page has routes, ItemList and FAQ schema", %{conn: conn} do
@@ -144,7 +144,7 @@ defmodule XpressbusWeb.SeoTest do
   test "blog index lists guide articles", %{conn: conn} do
     body = get(conn, "/blog").resp_body
 
-    assert body =~ "Komiuta travel blog"
+    assert body =~ "KOMIUTA travel blog"
     assert body =~ "rel=\"canonical\" href=\"https://www.komiuta.com/blog\""
     assert body =~ "\"@type\":\"Blog\""
     assert body =~ "Nairobi to Kisumu Bus Guide"

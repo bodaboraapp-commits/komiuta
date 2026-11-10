@@ -24,19 +24,19 @@ defmodule Xpressbus.Insurance.SeedData do
       position: 1,
       popular: false,
       features: [
-        "Trip cancellation up to Ksh 100,000",
-        "Medical expenses up to Ksh 500,000",
-        "Baggage loss up to Ksh 50,000",
+        "Trip cancellation up to KES 100,000",
+        "Medical expenses up to KES 500,000",
+        "Baggage loss up to KES 50,000",
         "24/7 Emergency assistance",
         "Flight delay compensation",
         "Personal liability cover"
       ],
       coverage: [
-        %{"label" => "Trip Cancellation", "value" => "Ksh 100,000"},
-        %{"label" => "Medical Expenses", "value" => "Ksh 500,000"},
-        %{"label" => "Baggage Loss/Delay", "value" => "Ksh 50,000"},
-        %{"label" => "Flight Delay (>6 hrs)", "value" => "Ksh 10,000"},
-        %{"label" => "Personal Liability", "value" => "Ksh 500,000"},
+        %{"label" => "Trip Cancellation", "value" => "KES 100,000"},
+        %{"label" => "Medical Expenses", "value" => "KES 500,000"},
+        %{"label" => "Baggage Loss/Delay", "value" => "KES 50,000"},
+        %{"label" => "Flight Delay (>6 hrs)", "value" => "KES 10,000"},
+        %{"label" => "Personal Liability", "value" => "KES 500,000"},
         %{"label" => "Rental Car Excess", "value" => "—"},
         %{"label" => "Adventure Sports", "value" => "—"},
         %{"label" => "Gadget Protection", "value" => "—"},
@@ -51,25 +51,25 @@ defmodule Xpressbus.Insurance.SeedData do
       position: 2,
       popular: true,
       features: [
-        "Trip cancellation up to Ksh 300,000",
-        "Medical expenses up to Ksh 2,000,000",
-        "Baggage loss up to Ksh 150,000",
+        "Trip cancellation up to KES 300,000",
+        "Medical expenses up to KES 2,000,000",
+        "Baggage loss up to KES 150,000",
         "24/7 Emergency assistance",
         "Flight delay compensation",
         "Personal liability cover",
         "Rental car excess cover",
         "Adventure sports cover",
-        "Gadget protection up to Ksh 100,000"
+        "Gadget protection up to KES 100,000"
       ],
       coverage: [
-        %{"label" => "Trip Cancellation", "value" => "Ksh 300,000"},
-        %{"label" => "Medical Expenses", "value" => "Ksh 2,000,000"},
-        %{"label" => "Baggage Loss/Delay", "value" => "Ksh 150,000"},
-        %{"label" => "Flight Delay (>6 hrs)", "value" => "Ksh 25,000"},
-        %{"label" => "Personal Liability", "value" => "Ksh 1,000,000"},
-        %{"label" => "Rental Car Excess", "value" => "Ksh 100,000"},
+        %{"label" => "Trip Cancellation", "value" => "KES 300,000"},
+        %{"label" => "Medical Expenses", "value" => "KES 2,000,000"},
+        %{"label" => "Baggage Loss/Delay", "value" => "KES 150,000"},
+        %{"label" => "Flight Delay (>6 hrs)", "value" => "KES 25,000"},
+        %{"label" => "Personal Liability", "value" => "KES 1,000,000"},
+        %{"label" => "Rental Car Excess", "value" => "KES 100,000"},
         %{"label" => "Adventure Sports", "value" => "Included"},
-        %{"label" => "Gadget Protection", "value" => "Ksh 100,000"},
+        %{"label" => "Gadget Protection", "value" => "KES 100,000"},
         %{"label" => "24/7 Emergency Assist", "value" => "Included"}
       ]
     },
@@ -82,26 +82,26 @@ defmodule Xpressbus.Insurance.SeedData do
       popular: false,
       features: [
         "Unlimited trips per year (max 90 days each)",
-        "Trip cancellation up to Ksh 500,000",
-        "Medical expenses up to Ksh 5,000,000",
-        "Baggage loss up to Ksh 200,000",
+        "Trip cancellation up to KES 500,000",
+        "Medical expenses up to KES 5,000,000",
+        "Baggage loss up to KES 200,000",
         "24/7 Emergency assistance",
         "Flight delay compensation",
         "Personal liability cover",
         "Rental car excess cover",
         "Adventure sports cover",
-        "Gadget protection up to Ksh 200,000",
+        "Gadget protection up to KES 200,000",
         "Family coverage option available"
       ],
       coverage: [
-        %{"label" => "Trip Cancellation", "value" => "Ksh 500,000"},
-        %{"label" => "Medical Expenses", "value" => "Ksh 5,000,000"},
-        %{"label" => "Baggage Loss/Delay", "value" => "Ksh 200,000"},
-        %{"label" => "Flight Delay (>6 hrs)", "value" => "Ksh 30,000"},
-        %{"label" => "Personal Liability", "value" => "Ksh 2,000,000"},
-        %{"label" => "Rental Car Excess", "value" => "Ksh 150,000"},
+        %{"label" => "Trip Cancellation", "value" => "KES 500,000"},
+        %{"label" => "Medical Expenses", "value" => "KES 5,000,000"},
+        %{"label" => "Baggage Loss/Delay", "value" => "KES 200,000"},
+        %{"label" => "Flight Delay (>6 hrs)", "value" => "KES 30,000"},
+        %{"label" => "Personal Liability", "value" => "KES 2,000,000"},
+        %{"label" => "Rental Car Excess", "value" => "KES 150,000"},
         %{"label" => "Adventure Sports", "value" => "Included"},
-        %{"label" => "Gadget Protection", "value" => "Ksh 200,000"},
+        %{"label" => "Gadget Protection", "value" => "KES 200,000"},
         %{"label" => "24/7 Emergency Assist", "value" => "Included"}
       ]
     }
@@ -129,7 +129,7 @@ defmodule Xpressbus.Insurance.SeedData do
     %{
       question: "How do I make a claim?",
       answer:
-        "Contact our 24/7 claims hotline or submit online via the Komiuta app. You'll need your policy number, travel documents, and supporting evidence (medical reports, receipts, police reports for theft). Claims are typically processed within 10 business days.",
+        "Contact our 24/7 claims hotline or submit online via the KOMIUTA app. You'll need your policy number, travel documents, and supporting evidence (medical reports, receipts, police reports for theft). Claims are typically processed within 10 business days.",
       position: 4
     },
     %{

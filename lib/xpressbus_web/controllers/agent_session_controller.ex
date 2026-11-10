@@ -370,7 +370,7 @@ defmodule XpressbusWeb.AgentSessionController do
             verify_url: verify_url,
             tag_qr:
               XpressbusWeb.QRCode.svg(verify_url,
-                aria_label: "Scan to verify this Komiuta agent",
+                aria_label: "Scan to verify this KOMIUTA agent",
                 size: 132
               ),
             initials: AgentTags.initials(application),

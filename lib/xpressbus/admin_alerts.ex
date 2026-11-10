@@ -1,6 +1,6 @@
 defmodule Xpressbus.AdminAlerts do
   @moduledoc """
-  Operational alerts for the Komiuta team.
+  Operational alerts for the KOMIUTA team.
 
   Booking and payment alerts go to the configured comms inbox(es) only. They are
   deliberately separate from the admin login accounts, so changing who receives

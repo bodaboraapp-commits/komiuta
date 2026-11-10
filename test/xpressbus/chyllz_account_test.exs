@@ -88,7 +88,7 @@ defmodule Xpressbus.ChyllzAccountTest do
         travel_date: future,
         departure: "8:15 AM",
         arrival: "2:45 PM",
-        price: "KSH 1500"
+        price: "KES 1500"
       })
 
       [trip] = ChyllzAccount.recent_trips(user, 1)
@@ -99,7 +99,7 @@ defmodule Xpressbus.ChyllzAccountTest do
       assert trip.status_key == :upcoming
       assert trip.travel_date == Calendar.strftime(future, "%d %b, %Y")
       assert trip.departure == "8:15 AM – 2:45 PM"
-      assert trip.fare == "Ksh 1,500"
+      assert trip.fare == "KES 1,500"
     end
 
     test "returns an empty list for a user without tickets" do
@@ -217,10 +217,10 @@ defmodule Xpressbus.ChyllzAccountTest do
   end
 
   describe "format_money/1" do
-    test "formats prices with the Ksh label and grouped digits" do
-      assert ChyllzAccount.format_money("2300") == "Ksh 2,300"
-      assert ChyllzAccount.format_money("KSH 1500") == "Ksh 1,500"
-      assert ChyllzAccount.format_money("15000.00") == "Ksh 15,000"
+    test "formats prices with the KES label and grouped digits" do
+      assert ChyllzAccount.format_money("2300") == "KES 2,300"
+      assert ChyllzAccount.format_money("KES 1500") == "KES 1,500"
+      assert ChyllzAccount.format_money("15000.00") == "KES 15,000"
       assert ChyllzAccount.format_money(nil) == "—"
       assert ChyllzAccount.format_money("Free") == "Free"
     end

@@ -29,7 +29,7 @@ defmodule XpressbusWeb.AdminTicketsLiveTest do
         "departure" => "09:00",
         "arrival" => "15:00",
         "company" => "Admin Coaches",
-        "price" => "KSH 1,800",
+        "price" => "KES 1,800",
         "seats" => ["2B"],
         "passenger_name" => user.name,
         "passenger_phone" => user.phone,

@@ -421,7 +421,7 @@
                       <div class="w-16 h-16 rounded-2xl bg-white shadow-xl border border-slate-50 flex items-center justify-center p-2">
                         <img
                           src="/images/logo_brand.png"
-                          alt="Komiuta"
+                          alt="KOMIUTA"
                           loading="lazy"
                           decoding="async"
                           width="190"
@@ -476,7 +476,7 @@
                       <div class="text-xl font-black text-slate-900 opacity-30">2024</div>
 
                       <div class="text-[8px] font-black text-slate-400 uppercase tracking-tighter">
-                        Komiuta Maxx
+                        KOMIUTA Maxx
                       </div>
                     </div>
                   </div>
@@ -513,7 +513,7 @@
           <p class="text-slate-500 font-bold max-w-3xl mx-auto text-sm md:text-base leading-relaxed mb-10 md:mb-12 opacity-80 uppercase tracking-widest">
             Experience the gold standard of travel for less. Whether you are booking the popular
             <br class="hidden md:block" /> <span class="text-slate-900">Nairobi-Mombasa</span>
-            corridor or exploring new regional routes, Komiuta guarantees
+            corridor or exploring new regional routes, KOMIUTA guarantees
             <br class="hidden md:block" />
             unbeatable value on East Africa's safest, most reliable bus operators.
           </p>
@@ -670,7 +670,7 @@
 
               <p class="text-xl md:text-2xl font-black tracking-tight opacity-90 uppercase">
                 & get up to
-                <span class="bg-white text-[#FF4C00] px-4 py-1 rounded-full mx-1 shadow-lg inline-block align-middle">KSH 500</span>
+                <span class="bg-white text-[#FF4C00] px-4 py-1 rounded-full mx-1 shadow-lg inline-block align-middle">KES 500</span>
                 OFF on your first booking
               </p>
             </div>
@@ -679,7 +679,7 @@
               <button
                 type="button"
                 phx-click="app_coming_soon"
-                aria-label="Download Komiuta on the App Store"
+                aria-label="Download KOMIUTA on the App Store"
                 class="hover:scale-105 transition-all shadow-xl shadow-black/10 rounded-xl group w-full max-w-[200px] md:max-w-none cursor-pointer"
               >
                 <img
@@ -696,7 +696,7 @@
               <button
                 type="button"
                 phx-click="app_coming_soon"
-                aria-label="Get Komiuta on Google Play"
+                aria-label="Get KOMIUTA on Google Play"
                 class="hover:scale-105 transition-all shadow-xl shadow-black/10 rounded-xl group w-full max-w-[200px] md:max-w-none cursor-pointer"
               >
                 <img
@@ -726,7 +726,7 @@
                 <%= if @pwa_qr do %>
                   <a
                     href="/?source=qr_app_section"
-                    aria-label="Open the Komiuta app"
+                    aria-label="Open the KOMIUTA app"
                     class="block w-40 h-40 rounded-2xl overflow-hidden bg-white"
                   >
                     {@pwa_qr}
@@ -740,7 +740,7 @@
             </div>
           </div>
         </section>
-        <%!-- Komiuta Dispatch Newsletter Section --%>
+        <%!-- KOMIUTA Dispatch Newsletter Section --%>
         <section class="py-14 md:py-16 px-6 max-w-[1350px] mx-auto text-center">
           <div class="mb-8 md:mb-10">
             <h2 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
@@ -748,7 +748,7 @@
             </h2>
 
             <p class="text-slate-500 font-bold mt-2 max-w-3xl mx-auto text-sm md:text-base leading-relaxed opacity-80 uppercase tracking-widest">
-              From Nairobi to Mombasa, Kampala to Dar es Salaam - Komiuta brings the entire region to your fingertips.
+              From Nairobi to Mombasa, Kampala to Dar es Salaam - KOMIUTA brings the entire region to your fingertips.
             </p>
           </div>
 
@@ -761,7 +761,7 @@
 
             <div class="relative z-10 flex flex-col lg:flex-row items-center gap-10 md:gap-12">
               <div class="flex-1 text-white">
-                <span class="text-[10px] font-black uppercase tracking-[0.5em] text-[#FF4C00] mb-4 block">The Komiuta Dispatch</span>
+                <span class="text-[10px] font-black uppercase tracking-[0.5em] text-[#FF4C00] mb-4 block">The KOMIUTA Dispatch</span>
                 <h2 class="text-3xl md:text-4xl font-black tracking-tighter leading-[1.1] mb-4">
                   Weekly Travel Insights. <br /> Straight to your inbox.
                 </h2>
@@ -1446,7 +1446,7 @@
                       TOTAL FARE
                     </div>
 
-                    <div class="text-2xl font-black text-[#FF4C00]">KSH {@total_price}</div>
+                    <div class="text-2xl font-black text-[#FF4C00]">KES {@total_price}</div>
                   </div>
                 </div>
 
@@ -1816,7 +1816,7 @@
                         Convenience fee
                       </span>
 
-                      <span class="text-sm font-black text-slate-900">KSH {@convenience_fee}</span>
+                      <span class="text-sm font-black text-slate-900">KES {@convenience_fee}</span>
                     </div>
                   <% end %>
 
@@ -1825,13 +1825,13 @@
                       <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                         Tax ({@tax_rate_label}%)
                       </span>
-                      <span class="text-sm font-black text-slate-900">KSH {@tax_amount}</span>
+                      <span class="text-sm font-black text-slate-900">KES {@tax_amount}</span>
                     </div>
                   <% end %>
 
                   <div class="flex justify-between items-center py-8 border-y border-slate-50">
                     <span class="text-xl font-black text-slate-900">Total</span>
-                    <span class="text-xl font-black text-slate-900">Ksh {@final_price}</span>
+                    <span class="text-xl font-black text-slate-900">KES {@final_price}</span>
                   </div>
                   <%!-- Industrial Promo Box (Image Match) --%>
                   <div class="bg-orange-50 rounded-3xl p-6 mt-8 border border-orange-100 flex gap-4">
@@ -1841,13 +1841,13 @@
 
                     <div class="space-y-1">
                       <p class="text-[11px] font-black text-slate-900 leading-snug">
-                        Complete this booking and earn <span class="text-[#FF4C00]">100 KSH</span>
+                        Complete this booking and earn <span class="text-[#FF4C00]">100 KES</span>
                         for every friend you refer!
                       </p>
 
                       <p class="text-[9px] font-bold text-slate-400 leading-relaxed">
                         Share your Referral Code and
-                        <span class="text-[#FF4C00]">earn up to 2,500 KSH in cashback!</span>
+                        <span class="text-[#FF4C00]">earn up to 2,500 KES in cashback!</span>
                         both you and your friend get rewarded after their first completed trip.
                       </p>
 
@@ -1914,7 +1914,7 @@
                 data-track="begin_checkout"
                 class="w-full bg-[#FF4C00] text-white py-4 rounded-xl font-black uppercase tracking-widest text-[11px] shadow-lg shadow-orange-200 active:scale-[0.99] transition-all"
               >
-                Continue to payment · KSH {@final_price}
+                Continue to payment · KES {@final_price}
               </button>
 
               <p class="text-center text-[8px] font-bold text-slate-400 mt-1.5">
@@ -2121,13 +2121,13 @@
                 <div class="space-y-3 mb-5">
                   <div class="flex justify-between items-center">
                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">BASE FARE</span>
-                    <span class="text-sm font-black text-slate-900">KSH {@total_price}</span>
+                    <span class="text-sm font-black text-slate-900">KES {@total_price}</span>
                   </div>
 
                   <%= if @discount_amount > 0 do %>
                     <div class="flex justify-between items-center text-emerald-600">
                       <span class="text-[10px] font-black uppercase tracking-widest">PROMO SAVINGS</span>
-                      <span class="text-sm font-black">- KSH {@discount_amount}</span>
+                      <span class="text-sm font-black">- KES {@discount_amount}</span>
                     </div>
                   <% end %>
 
@@ -2135,7 +2135,7 @@
                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                       CONVENIENCE FEE
                     </span>
-                    <span class="text-sm font-black text-slate-900">KSH {@convenience_fee}</span>
+                    <span class="text-sm font-black text-slate-900">KES {@convenience_fee}</span>
                   </div>
 
                   <%= if @tax_amount > 0 do %>
@@ -2143,7 +2143,7 @@
                       <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                         TAX ({@tax_rate_label}%)
                       </span>
-                      <span class="text-sm font-black text-slate-900">KSH {@tax_amount}</span>
+                      <span class="text-sm font-black text-slate-900">KES {@tax_amount}</span>
                     </div>
                   <% end %>
                 </div>
@@ -2178,17 +2178,17 @@
 
                   <div class="text-right">
                     <div class="text-4xl font-black text-[#FF4C00] tracking-tighter leading-none">
-                      KSH {@final_price}
+                      KES {@final_price}
                     </div>
 
                     <%= if @discount_amount > 0 do %>
                       <div class="mt-1 flex items-center justify-end gap-2">
                         <span class="text-[10px] font-bold text-slate-400 line-through">
-                          KSH {@total_price}
+                          KES {@total_price}
                         </span>
 
                         <span class="text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                          You save KSH {@discount_amount}
+                          You save KES {@discount_amount}
                         </span>
                       </div>
                     <% end %>
@@ -2223,7 +2223,7 @@
                       PROCESSING...
                     </div>
                   <% else %>
-                    <span class="relative z-10">PAY KSH {@final_price}</span>
+                    <span class="relative z-10">PAY KES {@final_price}</span>
                     <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000">
                     </div>
                   <% end %>
@@ -2334,7 +2334,7 @@
             >
               <span class="inline-flex items-center gap-2">
                 <span class="material-symbols-outlined !text-lg">lock</span>
-                Pay KSH {@final_price} securely
+                Pay KES {@final_price} securely
               </span>
             </button>
           </div>
@@ -2375,7 +2375,7 @@
 
                 <img
                   src="/images/logo_brand.png"
-                  alt="Komiuta"
+                  alt="KOMIUTA"
                   class="h-8 opacity-20"
                   width="190"
                   height="52"

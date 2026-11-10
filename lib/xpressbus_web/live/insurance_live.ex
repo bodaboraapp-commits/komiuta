@@ -32,7 +32,7 @@ defmodule XpressbusWeb.InsuranceLive do
      |> assign(:selected_plan, nil)
      |> assign(
        :page_description,
-       "Compare travel insurance plans from InSURE by Komiuta. Cover for medical emergencies, trip cancellation, baggage and delays across Kenya, Uganda and Tanzania."
+       "Compare travel insurance plans from InSURE by KOMIUTA. Cover for medical emergencies, trip cancellation, baggage and delays across Kenya, Uganda and Tanzania."
      )
      |> assign(:page_canonical, XpressbusWeb.Endpoint.url() <> "/tour-packages/insurance")
      |> assign(
@@ -100,7 +100,7 @@ defmodule XpressbusWeb.InsuranceLive do
               </h1>
 
               <p class="text-xl md:text-2xl font-medium opacity-90 mb-12 max-w-2xl">
-                Comprehensive travel insurance for your Komiuta journeys. Coverage for trip cancellations, medical emergencies, baggage loss, and more.
+                Comprehensive travel insurance for your KOMIUTA journeys. Coverage for trip cancellations, medical emergencies, baggage loss, and more.
               </p>
 
               <div class="flex flex-col sm:flex-row items-center gap-4 w-full max-w-md">
@@ -171,7 +171,7 @@ defmodule XpressbusWeb.InsuranceLive do
                           href="mailto:hello@komiuta.com?subject=InSURE%20cover%20activation"
                           class="text-[#FF4C00] hover:underline"
                         >hello@komiuta.com</a>
-                        to activate this cover on your next Komiuta trip.
+                        to activate this cover on your next KOMIUTA trip.
                       </p>
                     </div>
 
@@ -277,7 +277,7 @@ defmodule XpressbusWeb.InsuranceLive do
                   class="text-slate-300 font-bold text-lg mb-10 max-w-xl mx-auto"
                 >
                   <%= if @starting_price do %>
-                    Add InSURE to your next booking or purchase standalone coverage. Peace of mind starts at just Ksh {money(
+                    Add InSURE to your next booking or purchase standalone coverage. Peace of mind starts at just KES {money(
                       @starting_price
                     )} per trip.
                   <% else %>
@@ -333,7 +333,7 @@ defmodule XpressbusWeb.InsuranceLive do
       <div class="text-center mb-8">
         <h3 class="text-2xl font-black text-slate-900 mb-2">{@plan.name}</h3>
         <div class="flex items-baseline justify-center gap-1 mb-2">
-          <span class="text-4xl font-black text-slate-900">Ksh {money(@plan.price)}</span>
+          <span class="text-4xl font-black text-slate-900">KES {money(@plan.price)}</span>
           <span class="text-sm font-bold text-slate-400">/{@plan.period}</span>
         </div>
         <%= if @plan.tagline do %>

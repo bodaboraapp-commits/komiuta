@@ -51,12 +51,12 @@ defmodule Xpressbus.AgentNotificationsTest do
     assert {:ok, _} = result.sms
 
     assert_email_sent(fn email ->
-      assert email.subject =~ "received your Komiuta Agent application"
+      assert email.subject =~ "received your KOMIUTA Agent application"
       assert email.to == [{"Notify Agent", "notify.agent@example.com"}]
     end)
 
     assert_email_sent(fn email ->
-      assert email.subject =~ "New Komiuta Agent application"
+      assert email.subject =~ "New KOMIUTA Agent application"
     end)
 
     assert_receive {:agent_sms, "+254712345678", message}
@@ -102,7 +102,7 @@ defmodule Xpressbus.AgentNotificationsTest do
     assert {:ok, _} = result.sms
 
     assert_email_sent(fn email ->
-      assert email.subject =~ "Update on your Komiuta Agent application"
+      assert email.subject =~ "Update on your KOMIUTA Agent application"
       assert email.text_body =~ "Missing business registration"
     end)
 

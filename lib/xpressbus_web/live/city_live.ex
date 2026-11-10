@@ -31,7 +31,7 @@ defmodule XpressbusWeb.CityLive do
      |> assign(:page_title, "Bus tickets in Kenya")
      |> assign(
        :page_description,
-       "Find and book intercity bus tickets across Kenya with Komiuta."
+       "Find and book intercity bus tickets across Kenya with KOMIUTA."
      )
      |> assign(:page_canonical, SEO.base_url() <> "/cities")
      |> assign(:page_robots, "index,follow")
@@ -123,7 +123,7 @@ defmodule XpressbusWeb.CityLive do
       %{
         question: "How much is a bus ticket from #{city}?",
         answer:
-          "Fares from #{city} depend on the destination, operator and seat class. Komiuta shows the live fare for every bus before you book, with M-PESA, card and mobile money options."
+          "Fares from #{city} depend on the destination, operator and seat class. KOMIUTA shows the live fare for every bus before you book, with M-PESA, card and mobile money options."
       },
       %{
         question: "Where do buses from #{city} depart?",

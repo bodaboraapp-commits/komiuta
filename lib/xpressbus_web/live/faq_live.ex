@@ -11,7 +11,7 @@ defmodule XpressbusWeb.FaqLive do
 
   @faqs [
     %{
-      question: "How do I book a bus ticket on Komiuta?",
+      question: "How do I book a bus ticket on KOMIUTA?",
       answer:
         "Search your route and travel date, compare buses and fares, choose your seat, enter the passenger details and pay with M-PESA, card or mobile money. Your ticket is sent instantly by SMS and email."
     },
@@ -58,7 +58,7 @@ defmodule XpressbusWeb.FaqLive do
     %{
       question: "Is my payment secure?",
       answer:
-        "Yes. Payments are processed through PCI-compliant payment partners. Komiuta never stores your M-PESA PIN or full card details."
+        "Yes. Payments are processed through PCI-compliant payment partners. KOMIUTA never stores your M-PESA PIN or full card details."
     }
   ]
 
@@ -73,7 +73,7 @@ defmodule XpressbusWeb.FaqLive do
      |> assign(:page_title, "Bus Booking FAQs — Tickets, M-PESA & Cancellations")
      |> assign(
        :page_description,
-       "Answers to common Komiuta questions: booking a bus ticket, fares, M-PESA payment, seat selection, ticket delivery, tracking, changes and cancellations."
+       "Answers to common KOMIUTA questions: booking a bus ticket, fares, M-PESA payment, seat selection, ticket delivery, tracking, changes and cancellations."
      )
      |> assign(:page_canonical, SEO.base_url() <> "/faqs")
      |> assign(:page_robots, "index,follow")

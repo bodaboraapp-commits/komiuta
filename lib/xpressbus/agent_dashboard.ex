@@ -132,7 +132,7 @@ defmodule Xpressbus.AgentDashboard do
   def status_label(other) when is_binary(other), do: String.capitalize(other)
   def status_label(_other), do: "Unknown"
 
-  @doc "Formats a ticket price such as `\"KSH 1,800\"` as an integer amount."
+  @doc "Formats a ticket price such as `\"KES 1,800\"` as an integer amount."
   def amount(%Ticket{price: price}), do: amount(price)
 
   def amount(price) when is_binary(price) do

@@ -23,7 +23,7 @@ defmodule XpressbusWeb.RecentBookingsPillsTest do
         departure: "7:00 AM",
         arrival: "3:00 PM",
         company: "Test Operator",
-        price: "KSH 1000",
+        price: "KES 1000",
         seats: "[\"1\"]",
         passenger_name: "Pill Test",
         passenger_phone: "0712345678",

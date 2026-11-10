@@ -16,8 +16,8 @@ defmodule Xpressbus.TicketCancellationEmail do
 
     new()
     |> to({name, user.email})
-    |> from({"Komiuta", from_address()})
-    |> subject("Our apologies — your Komiuta ticket #{ticket.ticket_id} was cancelled")
+    |> from({"KOMIUTA", from_address()})
+    |> subject("Our apologies — your KOMIUTA ticket #{ticket.ticket_id} was cancelled")
     |> text_body(text_body(name, ticket, refund, website, support_email, phone))
     |> html_body(html_body(name, ticket, refund, logo_url, website, support_email, phone))
   end
@@ -61,7 +61,7 @@ defmodule Xpressbus.TicketCancellationEmail do
     """
     Dear #{name},
 
-    We are very sorry to let you know that your Komiuta ticket #{ticket.ticket_id}
+    We are very sorry to let you know that your KOMIUTA ticket #{ticket.ticket_id}
     for #{route(ticket)} on #{travel_date(ticket)} has been cancelled.
 
     A refund of #{money(refund.amount)} is being processed back to your original
@@ -71,7 +71,7 @@ defmodule Xpressbus.TicketCancellationEmail do
     have any questions, please contact us at #{support_email} or #{phone}.
 
     With apologies,
-    The Komiuta team
+    The KOMIUTA team
     #{website}
     """
   end
@@ -83,7 +83,7 @@ defmodule Xpressbus.TicketCancellationEmail do
       <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Your Komiuta ticket was cancelled</title>
+        <title>Your KOMIUTA ticket was cancelled</title>
       </head>
       <body style="margin:0;padding:0;background:#f8fafc;font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:24px 12px;">
@@ -95,7 +95,7 @@ defmodule Xpressbus.TicketCancellationEmail do
                 </tr>
                 <tr>
                   <td style="padding:28px 32px 0;">
-                    <img src="#{logo_url}" alt="Komiuta" width="146" height="40" style="display:block;border:0;" />
+                    <img src="#{logo_url}" alt="KOMIUTA" width="146" height="40" style="display:block;border:0;" />
                   </td>
                 </tr>
                 <tr>
@@ -129,7 +129,7 @@ defmodule Xpressbus.TicketCancellationEmail do
                       If you'd like help rebooking or have any questions, reply to this email or call us on
                       <strong>#{phone}</strong> / <a href="mailto:#{support_email}" style="color:#FF4C00;">#{support_email}</a>.
                     </p>
-                    <p style="margin:18px 0 0;font-size:14px;color:#64748b;">With apologies,<br /><strong style="color:#0f172a;">The Komiuta team</strong></p>
+                    <p style="margin:18px 0 0;font-size:14px;color:#64748b;">With apologies,<br /><strong style="color:#0f172a;">The KOMIUTA team</strong></p>
                   </td>
                 </tr>
                 <tr>

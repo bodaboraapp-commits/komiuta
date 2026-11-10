@@ -38,7 +38,7 @@
     {
       "name": "Agent home",
       "short_name": "Agent",
-      "description": "Open the Komiuta Agent app",
+      "description": "Open the KOMIUTA Agent app",
       "url": "/agent",
       "icons": [{ "src": "/images/agent-icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
