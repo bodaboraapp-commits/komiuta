@@ -34,6 +34,33 @@ defmodule XpressbusWeb.AiTripBuilderLive do
 
   @preferences ~w(Beach Food Culture Adventure Nature Nightlife Shopping Relaxation)
 
+  @parties [
+    %{
+      key: "solo",
+      title: "Only Me",
+      description: "Traveling solo, just you",
+      icon: :user
+    },
+    %{
+      key: "couple",
+      title: "A Couple",
+      description: "A romantic getaway for two",
+      icon: :heart
+    },
+    %{
+      key: "family",
+      title: "Family",
+      description: "Quality time with your loved ones",
+      icon: :users
+    },
+    %{
+      key: "friends",
+      title: "Friends",
+      description: "Adventure with your closest pals",
+      icon: :sparkles
+    }
+  ]
+
   @budgets [
     "Under KES 50,000",
     "KES 50,000 – 100,000",
@@ -51,6 +78,7 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:steps, @steps)
      |> assign(:destinations, @destinations)
      |> assign(:preferences, @preferences)
+     |> assign(:parties, @parties)
      |> assign(:budgets, @budgets)
      |> assign(:step, 1)
      |> assign(:query, "")
@@ -118,15 +146,27 @@ defmodule XpressbusWeb.AiTripBuilderLive do
     end
   end
 
-  def handle_event("companions", %{"adults" => adults, "children" => children}, socket) do
-    adults = adults |> to_string() |> to_int(2) |> clamp(1, 20)
-    children = children |> to_string() |> to_int(0) |> clamp(0, 20)
+  def handle_event("select_companions", %{"party" => party}, socket) do
+    if Enum.any?(@parties, &(&1.key == party)) do
+      {:noreply,
+       socket
+       |> assign(:error, nil)
+       |> assign(:trip, %{socket.assigns.trip | travel_party: party})}
+    else
+      {:noreply, socket}
+    end
+  end
 
-    {:noreply,
-     socket
-     |> assign(:error, nil)
-     |> assign(:trip, %{socket.assigns.trip | adults: adults, children: children})
-     |> assign(:step, 4)}
+  def handle_event("toggle_pets", %{"value" => value}, socket) do
+    {:noreply, assign(socket, :trip, %{socket.assigns.trip | pets: value == "yes"})}
+  end
+
+  def handle_event("companions_next", _params, socket) do
+    if socket.assigns.trip.travel_party do
+      {:noreply, socket |> assign(:error, nil) |> assign(:step, 4)}
+    else
+      {:noreply, assign(socket, :error, "Select who you're travelling with to continue.")}
+    end
   end
 
   def handle_event("budget", %{"budget" => budget}, socket) do
@@ -183,8 +223,8 @@ defmodule XpressbusWeb.AiTripBuilderLive do
       country: nil,
       start_date: nil,
       end_date: nil,
-      adults: 2,
-      children: 0,
+      travel_party: nil,
+      pets: false,
       budget: hd(@budgets),
       preferences: []
     })
@@ -301,8 +341,6 @@ defmodule XpressbusWeb.AiTripBuilderLive do
     if value in list, do: List.delete(list, value), else: list ++ [value]
   end
 
-  defp clamp(value, minimum, maximum), do: value |> max(minimum) |> min(maximum)
-
   defp to_int(value, default) do
     case Integer.parse(to_string(value)) do
       {number, _rest} -> number
@@ -321,18 +359,14 @@ defmodule XpressbusWeb.AiTripBuilderLive do
     "#{format_date(start_date)} → #{format_date(end_date)}"
   end
 
-  defp companion_label(%{adults: adults, children: children}) do
-    parts = ["#{adults} #{if adults == 1, do: "adult", else: "adults"}"]
+  defp companion_label(%{travel_party: nil}), do: "Who's coming"
+  defp companion_label(%{travel_party: "solo"}), do: "Only me"
+  defp companion_label(%{travel_party: "couple"}), do: "A couple"
+  defp companion_label(%{travel_party: "family"}), do: "Family"
+  defp companion_label(%{travel_party: "friends"}), do: "Friends"
 
-    parts =
-      if children > 0 do
-        parts ++ ["#{children} #{if children == 1, do: "child", else: "children"}"]
-      else
-        parts
-      end
-
-    Enum.join(parts, " · ")
-  end
+  defp pets_label(%{pets: true}), do: " · with pets"
+  defp pets_label(_trip), do: ""
 
   defp budget_label(%{budget: budget}), do: budget
 

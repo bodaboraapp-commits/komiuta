@@ -317,66 +317,130 @@
         <% end %>
 
         <%= if @step == 3 do %>
-          <div id="step-companions" class="mx-auto max-w-xl">
-            <p class="text-[10px] font-black uppercase tracking-[0.24em] text-[#FF4C00]">
-              Step 03 · Companions
-            </p>
-            <h1 class="mt-2 text-2xl font-black tracking-tight text-slate-900 md:text-3xl">
-              Who's coming with you?
-            </h1>
-            <p class="mt-2 text-sm font-bold text-slate-400">
-              This helps Chyllz AI balance the pace, rooms and activities.
-            </p>
-
-            <form
-              id="companions-form"
-              phx-submit="companions"
-              class="mt-6 grid gap-4 sm:grid-cols-2"
-            >
-              <label class="block">
-                <span class="mb-2 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
-                  Adults
-                </span>
-                <input
-                  id="adults"
-                  type="number"
-                  name="adults"
-                  min="1"
-                  max="20"
-                  value={@trip.adults}
-                  class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#FF4C00] focus:bg-white"
-                />
-              </label>
-              <label class="block">
-                <span class="mb-2 block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
-                  Children
-                </span>
-                <input
-                  id="children"
-                  type="number"
-                  name="children"
-                  min="0"
-                  max="20"
-                  value={@trip.children}
-                  class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#FF4C00] focus:bg-white"
-                />
-              </label>
-              <div class="flex gap-2 sm:col-span-2">
+          <div id="step-companions" class="mx-auto max-w-3xl">
+            <div class="flex justify-center">
+              <div class="inline-flex max-w-full items-center gap-2 rounded-full border border-orange-200 bg-orange-50/70 px-3 py-1.5 text-[10px] font-black text-slate-700">
+                <.ui_icon name={:pin} class="h-3.5 w-3.5 shrink-0 text-[#FF4C00]" />
+                <span class="max-w-[190px] truncate">{@trip.destination}</span>
                 <button
+                  id="change-destination"
                   type="button"
-                  phx-click="back"
-                  class="rounded-xl border border-slate-200 px-5 py-3 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:border-slate-300"
+                  phx-click="change_destination"
+                  class="inline-flex shrink-0 items-center gap-1 rounded-full bg-white px-2 py-1 text-[9px] font-black uppercase tracking-widest text-[#FF4C00] shadow-sm"
                 >
-                  Back
-                </button>
-                <button
-                  type="submit"
-                  class="flex-1 rounded-xl bg-[#FF4C00] px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white hover:bg-[#E64400]"
-                >
-                  Continue
+                  <.ui_icon name={:search} class="h-3 w-3" /> Change
                 </button>
               </div>
-            </form>
+            </div>
+
+            <h1 class="mt-4 text-center text-2xl font-black tracking-tight text-slate-900 md:text-3xl">
+              Who is traveling with you? <span aria-hidden="true">🧑‍🤝‍🧑</span>
+            </h1>
+            <p class="mt-1 text-center text-sm font-bold leading-relaxed text-slate-400">
+              Select your travel companions to customize recommendations for your group.
+            </p>
+
+            <div class="mt-6 flex flex-wrap justify-center gap-3">
+              <%= for party <- @parties do %>
+                <% selected = @trip.travel_party == party.key %>
+                <button
+                  type="button"
+                  id={"companion-" <> party.key}
+                  phx-click="select_companions"
+                  phx-value-party={party.key}
+                  aria-pressed={to_string(selected)}
+                  class={[
+                    "flex w-full max-w-[320px] items-start gap-3 rounded-2xl border-2 bg-white px-4 py-4 text-left shadow-sm transition sm:w-[300px]",
+                    selected && "border-[#FF4C00] bg-orange-50/60 shadow-orange-100",
+                    !selected && "border-slate-100 hover:border-orange-200 hover:bg-orange-50/30"
+                  ]}
+                >
+                  <span class={[
+                    "grid h-9 w-9 shrink-0 place-items-center rounded-xl",
+                    selected && "bg-[#FF4C00] text-white",
+                    !selected && "bg-orange-50 text-[#FF4C00]"
+                  ]}>
+                    <.ui_icon name={party.icon} class="h-4.5 w-4.5" />
+                  </span>
+                  <span class="min-w-0">
+                    <span class="block text-sm font-black text-slate-900">{party.title}</span>
+                    <span class="mt-1 block text-[11px] font-bold leading-snug text-slate-400">
+                      {party.description}
+                    </span>
+                  </span>
+                </button>
+              <% end %>
+            </div>
+
+            <div class="mt-6 flex flex-col gap-4 rounded-2xl border border-slate-100 bg-slate-50/60 p-4 sm:flex-row sm:items-center">
+              <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-50 text-amber-500">
+                <.ui_icon name={:paw} class="h-5 w-5" />
+              </span>
+              <div class="min-w-0 flex-1">
+                <p class="text-xs font-black text-slate-900">Are you traveling with pets?</p>
+                <p class="mt-1 text-[11px] font-bold leading-relaxed text-slate-400">
+                  We'll scan reviews and recommendations of travelers with pets to highlight pet-friendly
+                  options, though some recommendations may not be entirely accommodating for pets.
+                </p>
+              </div>
+              <div class="flex shrink-0 gap-2">
+                <button
+                  type="button"
+                  id="pets-yes"
+                  phx-click="toggle_pets"
+                  phx-value-value="yes"
+                  aria-pressed={to_string(@trip.pets)}
+                  class={[
+                    "rounded-full border px-4 py-2 text-[10px] font-black uppercase tracking-widest transition",
+                    @trip.pets && "border-[#FF4C00] bg-[#FF4C00] text-white",
+                    !@trip.pets &&
+                      "border-slate-200 bg-white text-slate-600 hover:border-[#FF4C00] hover:text-[#FF4C00]"
+                  ]}
+                >
+                  Yes
+                </button>
+                <button
+                  type="button"
+                  id="pets-no"
+                  phx-click="toggle_pets"
+                  phx-value-value="no"
+                  aria-pressed={to_string(!@trip.pets)}
+                  class={[
+                    "rounded-full border px-4 py-2 text-[10px] font-black uppercase tracking-widest transition",
+                    !@trip.pets && "border-[#FF4C00] bg-[#FF4C00] text-white",
+                    @trip.pets &&
+                      "border-slate-200 bg-white text-slate-600 hover:border-[#FF4C00] hover:text-[#FF4C00]"
+                  ]}
+                >
+                  No
+                </button>
+              </div>
+            </div>
+
+            <div class="mt-7 flex items-center justify-between border-t border-slate-100 pt-4">
+              <button
+                type="button"
+                phx-click="back"
+                class="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-100 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-600 transition hover:border-slate-300"
+              >
+                <.ui_icon name={:chevron_right} class="h-3.5 w-3.5 rotate-180" /> Previous
+              </button>
+              <span class="text-[10px] font-bold text-slate-400">Step 3 of 5</span>
+              <button
+                id="companions-next"
+                type="button"
+                phx-click="companions_next"
+                disabled={is_nil(@trip.travel_party)}
+                class={[
+                  "inline-flex items-center gap-1 rounded-xl px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-white transition",
+                  !is_nil(@trip.travel_party) &&
+                    "bg-[#FF4C00] shadow-lg shadow-orange-500/25 hover:bg-[#E64400]",
+                  is_nil(@trip.travel_party) && "cursor-not-allowed bg-slate-200 text-slate-400"
+                ]}
+              >
+                Next <.ui_icon name={:arrow_right} class="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
         <% end %>
 
@@ -519,7 +583,7 @@
                   Travellers
                 </dt>
                 <dd class="text-right text-sm font-black text-slate-800">
-                  {companion_label(@trip)}
+                  {companion_label(@trip)}{pets_label(@trip)}
                 </dd>
               </div>
               <div class="flex items-start justify-between gap-4 border-b border-slate-100 pb-2">

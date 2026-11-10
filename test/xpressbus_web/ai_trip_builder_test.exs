@@ -38,6 +38,32 @@ defmodule XpressbusWeb.AiTripBuilderTest do
     assert render(view) =~ "Bangkok"
   end
 
+  test "the companions step offers travel-party cards and a pet toggle", %{conn: conn} do
+    {:ok, view, _html} = live(conn, ~p"/ai-trip-builder")
+    today = Date.utc_today()
+
+    view |> element("#destination-rome") |> render_click()
+    view |> element("#calendar-day-#{Date.to_iso8601(Date.add(today, 1))}") |> render_click()
+    view |> element("#calendar-day-#{Date.to_iso8601(Date.add(today, 2))}") |> render_click()
+    view |> element("#dates-next") |> render_click()
+
+    assert has_element?(view, "#step-companions")
+    assert has_element?(view, "#companion-solo")
+    assert has_element?(view, "#companion-couple")
+    assert has_element?(view, "#companion-family")
+    assert has_element?(view, "#companion-friends")
+    assert has_element?(view, "#companions-next[disabled]")
+
+    view |> element("#companion-couple") |> render_click()
+    refute has_element?(view, "#companions-next[disabled]")
+
+    view |> element("#pets-yes") |> render_click()
+    assert has_element?(view, "#pets-yes[aria-pressed='true']")
+
+    view |> element("#companions-next") |> render_click()
+    assert has_element?(view, "#step-budget")
+  end
+
   test "the full wizard produces a trip brief", %{conn: conn} do
     {:ok, view, _html} = live(conn, ~p"/ai-trip-builder")
 
@@ -67,9 +93,9 @@ defmodule XpressbusWeb.AiTripBuilderTest do
     view |> element("#dates-next") |> render_click()
     assert has_element?(view, "#step-companions")
 
-    view
-    |> form("#companions-form", %{"adults" => "2", "children" => "1"})
-    |> render_submit()
+    view |> element("#companion-friends") |> render_click()
+    view |> element("#pets-no") |> render_click()
+    view |> element("#companions-next") |> render_click()
 
     assert has_element?(view, "#step-budget")
 
@@ -88,7 +114,7 @@ defmodule XpressbusWeb.AiTripBuilderTest do
     assert html =~ "Cox"
     assert html =~ Calendar.strftime(start_date, "%d %b %Y")
     assert html =~ Calendar.strftime(end_date, "%d %b %Y")
-    assert html =~ "2 adults · 1 child"
+    assert html =~ "Friends"
     assert html =~ "Beach · Food"
     assert has_element?(view, "#open-chyllz-ai")
     assert has_element?(view, "#browse-chyllz")
