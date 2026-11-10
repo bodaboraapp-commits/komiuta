@@ -362,7 +362,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                       <a
                         href={trip.href}
                         id={"manage-itinerary-" <> to_string(trip.id)}
-                        class="flex min-w-0 flex-1 items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-[11px] font-black text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100"
+                        class="flex min-w-0 flex-1 items-center justify-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-2.5 text-[11px] font-black text-[#FF4C00] transition hover:border-orange-300 hover:bg-orange-100"
                       >
                         <.ui_icon name={:list} class="h-4 w-4 shrink-0" /> Manage Itinerary
                       </a>
@@ -373,7 +373,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                         phx-value-ticket_id={trip.id}
                         aria-label={"Preview itinerary for " <> to_string(trip.title)}
                         title="Preview itinerary"
-                        class="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-emerald-100 bg-white text-emerald-600 transition hover:border-emerald-300 hover:bg-emerald-50"
+                        class="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-orange-100 bg-white text-[#FF4C00] transition hover:border-orange-300 hover:bg-orange-50"
                       >
                         <.ui_icon name={:eye} class="h-4 w-4" />
                       </button>
@@ -385,7 +385,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                         phx-value-title={trip.title}
                         aria-label={"Share trip " <> to_string(trip.title)}
                         title="Share itinerary"
-                        class="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-emerald-100 bg-white text-emerald-600 transition hover:border-emerald-300 hover:bg-emerald-50"
+                        class="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-orange-100 bg-white text-[#FF4C00] transition hover:border-orange-300 hover:bg-orange-50"
                       >
                         <.ui_icon name={:share} class="h-4 w-4" />
                       </button>
