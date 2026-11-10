@@ -62,24 +62,47 @@ defmodule XpressbusWeb.CoreComponents do
       :if={msg = render_slot(@inner_block) || Phoenix.Flash.get(@flash, @kind)}
       id={@id}
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
-      role="alert"
+      phx-hook="FlashAutoDismiss"
+      data-flash-kind={@kind}
+      role="status"
       class="toast toast-top toast-end z-50"
       {@rest}
     >
       <div class={[
         "alert w-80 sm:w-96 max-w-80 sm:max-w-96 text-wrap p-4 rounded-lg shadow-lg mb-2",
-        @kind == :info && "bg-blue-50 text-blue-800 border border-blue-200",
+        @kind == :info && "bg-emerald-50 text-emerald-800 border border-emerald-200",
         @kind == :error && "bg-red-50 text-red-800 border border-red-200"
       ]}>
-        <span :if={@kind == :info} class="size-5 shrink-0">ℹ️</span>
-        <span :if={@kind == :error} class="size-5 shrink-0">⚠️</span>
+        <span
+          :if={@kind == :info}
+          class="material-symbols-outlined !text-[20px] shrink-0"
+          aria-hidden="true"
+        >
+          check_circle
+        </span>
+        <span
+          :if={@kind == :error}
+          class="material-symbols-outlined !text-[20px] shrink-0"
+          aria-hidden="true"
+        >
+          warning
+        </span>
         <div>
           <p :if={@title} class="font-semibold">{@title}</p>
           <p>{msg}</p>
         </div>
         <div class="flex-1" />
-        <button type="button" class="group self-start cursor-pointer" aria-label={gettext("close")}>
-          <span class="opacity-40 group-hover:opacity-70">✕</span>
+        <button
+          type="button"
+          class="group self-start cursor-pointer"
+          aria-label={gettext("Close notification")}
+        >
+          <span
+            class="material-symbols-outlined !text-[16px] opacity-40 group-hover:opacity-70"
+            aria-hidden="true"
+          >
+            close
+          </span>
         </button>
       </div>
     </div>

@@ -59,6 +59,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
             <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-50 text-[#FF4C00]">
               <.ui_icon name={:route} class="h-6 w-6" />
             </span>
+            
             <span class="min-w-0 flex-1">
               <span
                 id="stat-total-trips-value"
@@ -66,15 +67,17 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
               >
                 {@overview.stats.trips}
               </span>
+              
               <span class="block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
                 Total Trips
               </span>
             </span>
+            
             <span class="shrink-0 text-slate-300 transition-colors group-hover:text-[#FF4C00]">
               <.ui_icon name={:chevron_right} class="h-4 w-4" />
             </span>
           </a>
-
+          
           <a
             id="stat-upcoming-trips"
             href="/dashboard"
@@ -83,6 +86,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
             <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-50 text-[#FF4C00]">
               <.ui_icon name={:calendar} class="h-6 w-6" />
             </span>
+            
             <span class="min-w-0 flex-1">
               <span
                 id="stat-upcoming-trips-value"
@@ -90,15 +94,17 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
               >
                 {@overview.stats.upcoming}
               </span>
+              
               <span class="block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
                 Upcoming Trips
               </span>
             </span>
+            
             <span class="shrink-0 text-slate-300 transition-colors group-hover:text-[#FF4C00]">
               <.ui_icon name={:chevron_right} class="h-4 w-4" />
             </span>
           </a>
-
+          
           <a
             id="stat-places-visited"
             href="/tour-packages"
@@ -107,6 +113,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
             <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-50 text-[#FF4C00]">
               <.ui_icon name={:pin} class="h-6 w-6" />
             </span>
+            
             <span class="min-w-0 flex-1">
               <span
                 id="stat-places-visited-value"
@@ -114,17 +121,18 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
               >
                 {@overview.stats.places_visited}
               </span>
+              
               <span class="block text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
                 Places Visited
               </span>
             </span>
+            
             <span class="shrink-0 text-slate-300 transition-colors group-hover:text-[#FF4C00]">
               <.ui_icon name={:chevron_right} class="h-4 w-4" />
             </span>
           </a>
         </div>
-
-        <%!-- Hotel / accommodation bookings --%>
+         <%!-- Hotel / accommodation bookings --%>
         <section id="hotel-bookings" aria-labelledby="hotel-bookings-heading">
           <div class="mb-3.5 flex items-center justify-between gap-3 px-1">
             <h2
@@ -136,6 +144,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
               </span>
               Your Stays
             </h2>
+            
             <a
               id="view-chyllz-stays"
               href="/tour-packages/hotels"
@@ -144,7 +153,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
               Book a stay <.ui_icon name={:arrow_right} class="h-3.5 w-3.5" />
             </a>
           </div>
-
+          
           <div id="hotel-bookings-list" class="space-y-3.5">
             <%= if @hotel_bookings == [] do %>
               <div
@@ -154,8 +163,10 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                 <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-50 text-[#FF4C00]">
                   <.ui_icon name={:bag} class="h-6 w-6" />
                 </span>
+                
                 <div class="min-w-0 flex-1">
                   <h3 class="text-base font-black text-slate-900">No accommodation bookings yet</h3>
+                  
                   <p class="mt-1 text-xs font-bold leading-relaxed text-slate-400">
                     Reserve a hotel through Chyllz and every stay will appear here.
                   </p>
@@ -172,13 +183,15 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                       <p class="text-[10px] font-black uppercase tracking-[0.18em] text-[#FF4C00]">
                         {booking.reference}
                       </p>
+                      
                       <h3 class="mt-1 text-base font-black text-slate-900">{booking.hotel_name}</h3>
+                      
                       <p class="mt-1 flex items-center gap-1 text-xs font-bold text-slate-400">
-                        <.ui_icon name={:pin} class="h-3.5 w-3.5" />
-                        {booking.hotel_location || "Location shared on confirmation"}
+                        <.ui_icon name={:pin} class="h-3.5 w-3.5" /> {booking.hotel_location ||
+                          "Location shared on confirmation"}
                       </p>
                     </div>
-
+                    
                     <span class={[
                       "rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest",
                       booking.status == "confirmed" && "bg-emerald-50 text-emerald-600",
@@ -189,28 +202,33 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                       {booking.status}
                     </span>
                   </div>
-
+                  
                   <dl class="mt-4 grid grid-cols-2 gap-3 border-t border-slate-50 pt-4 sm:grid-cols-4">
                     <div>
                       <dt class="text-[9px] font-black uppercase tracking-widest text-slate-400">
                         Check-in
                       </dt>
+                      
                       <dd class="mt-0.5 text-xs font-black text-slate-800">
                         {short_date(booking.check_in)}
                       </dd>
                     </div>
+                    
                     <div>
                       <dt class="text-[9px] font-black uppercase tracking-widest text-slate-400">
                         Check-out
                       </dt>
+                      
                       <dd class="mt-0.5 text-xs font-black text-slate-800">
                         {short_date(booking.check_out)}
                       </dd>
                     </div>
+                    
                     <div>
                       <dt class="text-[9px] font-black uppercase tracking-widest text-slate-400">
                         Stay
                       </dt>
+                      
                       <dd class="mt-0.5 text-xs font-black text-slate-800">
                         {booking.nights} night{if booking.nights == 1, do: "", else: "s"} · {booking.rooms} room{if booking.rooms ==
                                                                                                                       1,
@@ -220,10 +238,12 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                                                                                                                       "s"}
                       </dd>
                     </div>
+                    
                     <div>
                       <dt class="text-[9px] font-black uppercase tracking-widest text-slate-400">
                         Total
                       </dt>
+                      
                       <dd class="mt-0.5 text-xs font-black text-[#FF4C00]">
                         KES {money(booking.total_amount)}
                       </dd>
@@ -234,9 +254,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
             <% end %>
           </div>
         </section>
-
-        <ItineraryComponents.saved_itineraries itineraries={@itineraries} />
-
+         <ItineraryComponents.saved_itineraries itineraries={@itineraries} />
         <section aria-labelledby="recent-trips-heading">
           <div class="mb-3.5 flex items-center justify-between gap-3 px-1">
             <h2
@@ -248,6 +266,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
               </span>
               Recent Trips
             </h2>
+            
             <a
               id="view-all-trips"
               href="/dashboard"
@@ -256,7 +275,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
               View All Trips <.ui_icon name={:arrow_right} class="h-3.5 w-3.5" />
             </a>
           </div>
-
+          
           <div id="recent-trips" class="space-y-3.5">
             <%= if @trips == [] do %>
               <div
@@ -266,12 +285,15 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                 <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-50 text-[#FF4C00]">
                   <.ui_icon name={:bag} class="h-6 w-6" />
                 </span>
+                
                 <div class="min-w-0 flex-1">
                   <h3 class="text-base font-black text-slate-900">No trips yet</h3>
+                  
                   <p class="mt-1 text-xs font-bold leading-relaxed text-slate-400">
                     Book a bus or plan a Chyllz escape and your journeys will appear here.
                   </p>
                 </div>
+                
                 <div class="flex shrink-0 flex-wrap justify-center gap-2">
                   <a
                     href="/"
@@ -279,6 +301,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                   >
                     Book a bus
                   </a>
+                  
                   <a
                     href="/tour-packages"
                     class="rounded-full border border-slate-200 px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-700 transition hover:border-[#FF4C00] hover:text-[#FF4C00]"
@@ -299,18 +322,20 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                       {trip.company}
                     </span>
                   </div>
-
+                  
                   <div class="min-w-0 p-4 md:p-5">
                     <div class="flex items-start justify-between gap-3">
                       <div class="min-w-0">
                         <h3 class="truncate text-base font-black tracking-tight text-slate-900 md:text-lg">
                           {trip.title}
                         </h3>
+                        
                         <p class="mt-1 flex items-center gap-1.5 text-[11px] font-bold text-slate-400">
                           <.ui_icon name={:pin} class="h-3.5 w-3.5 shrink-0 text-[#FF4C00]" />
                           <span class="truncate">{trip.location}</span>
                         </p>
                       </div>
+                      
                       <span class={[
                         "inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-widest",
                         status_badge_class(trip.status_key)
@@ -318,7 +343,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                         {trip.status}
                       </span>
                     </div>
-
+                    
                     <div class="mt-3.5 grid grid-cols-1 gap-2 sm:grid-cols-3">
                       <%= for {icon, label, value} <- [
                             {:calendar, "Travel Date", trip.travel_date},
@@ -329,10 +354,12 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                           <span class="text-[#FF4C00]">
                             <.ui_icon name={icon} class="h-3.5 w-3.5" />
                           </span>
+                          
                           <span class="min-w-0">
                             <span class="block text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">
                               {label}
                             </span>
+                            
                             <span class="block truncate text-[10px] font-black text-slate-700">
                               {value}
                             </span>
@@ -340,15 +367,18 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                         </div>
                       <% end %>
                     </div>
-
+                    
                     <div class="mt-3.5 flex items-center gap-2">
                       <a
                         href={trip.href}
                         id={"manage-itinerary-" <> to_string(trip.id)}
+                        data-track="manage_itinerary_open"
+                        data-track-label="bus_trip"
                         class="flex min-w-0 flex-1 items-center justify-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-2.5 text-[11px] font-black text-[#FF4C00] transition hover:border-orange-300 hover:bg-orange-100"
                       >
                         <.ui_icon name={:list} class="h-4 w-4 shrink-0" /> Manage Itinerary
                       </a>
+                      
                       <button
                         type="button"
                         id={"preview-trip-" <> to_string(trip.id)}
@@ -360,6 +390,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                       >
                         <.ui_icon name={:eye} class="h-4 w-4" />
                       </button>
+                      
                       <button
                         type="button"
                         id={"share-trip-" <> to_string(trip.id)}
@@ -379,7 +410,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
             <% end %>
           </div>
         </section>
-
+        
         <%!-- Chyllz suggestions for accounts without trip history, so the page
         still feels complete and the columns stay balanced. --%>
         <%= if @trips == [] and @picks != [] do %>
@@ -394,6 +425,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                 </span>
                 Chyllz picks for you
               </h2>
+              
               <a
                 id="view-all-picks"
                 href="/tour-packages"
@@ -402,7 +434,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                 Explore Chyllz <.ui_icon name={:arrow_right} class="h-3.5 w-3.5" />
               </a>
             </div>
-
+            
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <%= for pick <- @picks do %>
                 <a
@@ -414,14 +446,17 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                     <span class="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-orange-50 text-[#FF4C00]">
                       <.ui_icon name={pick.icon} class="h-5 w-5" />
                     </span>
-                    <span class="truncate text-[9px] font-black text-[#FF4C00]">{pick.meta}</span>
+                     <span class="truncate text-[9px] font-black text-[#FF4C00]">{pick.meta}</span>
                   </div>
+                  
                   <span class="mt-2.5 block text-[8px] font-black uppercase tracking-[0.16em] text-slate-400">
                     {pick.kind}
                   </span>
+                  
                   <span class="mt-1 line-clamp-2 text-xs font-black leading-snug text-slate-900 transition group-hover:text-[#FF4C00]">
                     {pick.title}
                   </span>
+                  
                   <span class="mt-auto flex items-center justify-between gap-2 pt-2.5 text-[10px] font-bold text-slate-400">
                     <span class="truncate">{pick.location}</span>
                     <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-slate-50 text-slate-300 transition group-hover:bg-[#FF4C00] group-hover:text-white">
@@ -433,7 +468,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
             </div>
           </section>
         <% end %>
-
+        
         <%!-- Travel stories from the curated blog. Rendered for accounts without
         trips so the main column matches the height of the weather sidebar. --%>
         <%= if @trips == [] and @story_cards != [] do %>
@@ -448,6 +483,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                 </span>
                 Travel stories
               </h2>
+              
               <a
                 id="view-all-stories"
                 href="/blog"
@@ -456,7 +492,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                 Read all <.ui_icon name={:arrow_right} class="h-3.5 w-3.5" />
               </a>
             </div>
-
+            
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <%= for story <- @story_cards do %>
                 <a
@@ -467,9 +503,11 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                   <span class="inline-flex w-fit items-center rounded-full bg-orange-50 px-2 py-1 text-[8px] font-black uppercase tracking-[0.14em] text-[#FF4C00]">
                     {story.category}
                   </span>
+                  
                   <span class="mt-2 line-clamp-2 text-xs font-black leading-snug text-slate-900 transition group-hover:text-[#FF4C00]">
                     {story.title}
                   </span>
+                  
                   <span class="mt-auto flex items-center justify-between pt-3 text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">
                     {story.read_minutes} min read <.ui_icon name={:arrow_right} class="h-3 w-3" />
                   </span>
@@ -479,7 +517,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
           </section>
         <% end %>
       </div>
-
+      
       <%!-- ─────────────────────────── Sidebar ─────────────────────────── --%>
       <aside class="min-w-0 space-y-5 md:space-y-6">
         <%!-- Weather --%>
@@ -498,6 +536,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
               </span>
               Weather
             </h2>
+            
             <p
               id="weather-location"
               class="flex min-w-0 items-center gap-1 text-[10px] font-black uppercase tracking-[0.14em] text-slate-400"
@@ -510,7 +549,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
               <% end %>
             </p>
           </div>
-
+          
           <form
             id="weather-search-form"
             phx-submit="search_weather"
@@ -520,6 +559,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
               <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300">
                 <.ui_icon name={:search} class="h-3.5 w-3.5" />
               </span>
+              
               <input
                 id="weather-city-input"
                 type="search"
@@ -531,6 +571,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                 class="h-10 w-full rounded-full border border-slate-200 bg-white pl-9 pr-3 text-[11px] font-bold text-slate-700 outline-none transition placeholder:text-slate-300 focus:border-[#FF4C00] focus:ring-2 focus:ring-orange-100"
               />
             </div>
+            
             <button
               type="submit"
               id="weather-search-button"
@@ -540,7 +581,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
               <.ui_icon name={:search} class="h-4 w-4" />
             </button>
           </form>
-
+          
           <%= cond do %>
             <% @weather_loading -> %>
               <div
@@ -550,14 +591,20 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
               >
                 <div class="flex items-center gap-4 rounded-2xl bg-slate-50 p-4">
                   <div class="h-14 w-14 rounded-2xl bg-slate-100"></div>
+                  
                   <div class="flex-1 space-y-2">
                     <div class="h-6 w-24 rounded-full bg-slate-100"></div>
+                    
                     <div class="h-2.5 w-16 rounded-full bg-slate-100"></div>
                   </div>
+                  
                   <div class="h-8 w-16 rounded-xl bg-slate-100"></div>
                 </div>
+                
                 <div class="h-2.5 w-28 rounded-full bg-slate-100"></div>
+                
                 <div class="h-[64px] rounded-2xl bg-slate-100"></div>
+                
                 <div class="grid grid-cols-3 gap-2">
                   <div :for={_index <- 1..3} class="h-16 rounded-xl bg-slate-100"></div>
                 </div>
@@ -568,6 +615,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                   <div class="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white text-slate-400 shadow-sm">
                     <.weather_glyph icon={@weather.icon} class="h-9 w-9" />
                   </div>
+                  
                   <div class="min-w-0">
                     <div
                       id="weather-current"
@@ -575,55 +623,64 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                     >
                       {temperature_label(@weather.temperature)}
                     </div>
+                    
                     <div class="mt-1 truncate text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
                       {@weather.condition}
                     </div>
                   </div>
+                  
                   <div class="ml-auto shrink-0 text-right">
                     <div class="text-[11px] font-black tabular-nums text-slate-600">
                       H: {degree(@weather.high)} L: {degree(@weather.low)}
                     </div>
+                    
                     <div class="mt-0.5 text-[10px] font-bold text-slate-400">
                       Feels like {degree(@weather.feels_like)}
                     </div>
                   </div>
                 </div>
-
+                
                 <div class="mt-3 grid grid-cols-2 gap-2.5">
                   <div class="flex items-center gap-2.5 rounded-xl bg-slate-50 px-3 py-2.5">
                     <span class="grid h-7 w-7 place-items-center rounded-lg bg-white text-[#FF4C00] shadow-sm">
                       <.ui_icon name={:drop} class="h-3.5 w-3.5" />
                     </span>
+                    
                     <span>
                       <span class="block text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">
                         Humidity
                       </span>
+                      
                       <span class="block text-[11px] font-black tabular-nums text-slate-900">
                         {percent_label(@weather.humidity)}
                       </span>
                     </span>
                   </div>
+                  
                   <div class="flex items-center gap-2.5 rounded-xl bg-slate-50 px-3 py-2.5">
                     <span class="grid h-7 w-7 place-items-center rounded-lg bg-white text-[#FF4C00] shadow-sm">
                       <.ui_icon name={:wind} class="h-3.5 w-3.5" />
                     </span>
+                    
                     <span>
                       <span class="block text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">
                         Wind
                       </span>
+                      
                       <span class="block text-[11px] font-black tabular-nums text-slate-900">
                         {wind_label(@weather.wind)}
                       </span>
                     </span>
                   </div>
                 </div>
-
+                
                 <div class="mt-4">
                   <div class="flex items-center justify-between">
                     <h3 class="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
                       <.ui_icon name={:clock} class="h-3.5 w-3.5 text-[#FF4C00]" /> Hourly Temperature
                     </h3>
                   </div>
+                  
                   <div class="mt-2.5 rounded-2xl border border-slate-100 bg-white p-3">
                     <svg
                       viewBox="0 0 300 90"
@@ -637,7 +694,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                           <stop offset="1" stop-color="#FF4C00" stop-opacity="0" />
                         </linearGradient>
                       </defs>
-                      <polygon points={@weather_chart.area} fill="url(#weather-spark)" />
+                       <polygon points={@weather_chart.area} fill="url(#weather-spark)" />
                       <polyline
                         points={@weather_chart.line}
                         fill="none"
@@ -657,6 +714,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                         />
                       <% end %>
                     </svg>
+                    
                     <div
                       id="weather-hourly"
                       class="mt-1 grid gap-1"
@@ -665,6 +723,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                       <%= for hour <- trend_hours(@weather.hourly) do %>
                         <div class="text-center">
                           <div class="text-[8px] font-bold text-slate-400">{hour.label}</div>
+                          
                           <div class="text-[10px] font-black tabular-nums text-slate-900">
                             {trend_temperature(hour.temperature)}
                           </div>
@@ -673,20 +732,23 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                     </div>
                   </div>
                 </div>
-
+                
                 <div class="mt-4 border-t border-slate-100 pt-4">
                   <h3 class="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
                     <.ui_icon name={:calendar} class="h-3.5 w-3.5 text-[#FF4C00]" /> 3-Day Forecast
                   </h3>
+                  
                   <div id="weather-daily" class="mt-2.5 grid grid-cols-3 gap-2">
                     <%= for day <- @weather.daily do %>
                       <div class="flex flex-col items-center gap-1.5 rounded-2xl bg-slate-50/80 px-2 py-3 text-center">
                         <span class="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
                           {day.label}
                         </span>
+                        
                         <span class="text-slate-400">
                           <.weather_glyph icon={day.icon} class="h-8 w-8" />
                         </span>
+                        
                         <span class="text-[11px] font-black tabular-nums text-slate-900">
                           {degree(day.low)}
                           <span class="font-bold text-slate-400">/ {degree(day.high)}</span>
@@ -704,10 +766,13 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                 <div class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-white text-[#FF4C00] shadow-sm">
                   <.weather_glyph icon={:cloud} class="h-7 w-7" />
                 </div>
+                
                 <p class="mt-3 text-xs font-black text-slate-700">Weather unavailable</p>
+                
                 <p class="mt-1 text-[11px] font-bold leading-relaxed text-slate-400">
                   {@weather_error}
                 </p>
+                
                 <button
                   type="button"
                   id="weather-retry"
@@ -719,8 +784,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
               </div>
           <% end %>
         </section>
-
-        <%!-- Popular destinations --%>
+         <%!-- Popular destinations --%>
         <section
           class="rounded-[26px] border border-slate-100 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]"
           aria-labelledby="popular-destinations-heading"
@@ -734,7 +798,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
             </span>
             Popular Destinations
           </h2>
-
+          
           <div id="popular-destinations" class="mt-4 flex flex-wrap gap-2">
             <%= for destination <- @overview.destinations do %>
               <a
@@ -745,7 +809,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
               </a>
             <% end %>
           </div>
-
+          
           <div class="mt-4 space-y-2.5 border-t border-slate-100 pt-4">
             <a
               href="/tour-packages"
@@ -753,6 +817,7 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
             >
               Explore Chyllz stays <.ui_icon name={:arrow_right} class="h-3.5 w-3.5" />
             </a>
+            
             <a
               href="/blog"
               class="flex items-center justify-between gap-3 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500 transition hover:text-[#FF4C00]"

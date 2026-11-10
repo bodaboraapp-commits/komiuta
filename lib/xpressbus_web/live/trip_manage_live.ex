@@ -61,6 +61,7 @@ defmodule XpressbusWeb.TripManageLive do
     |> assign(:current_user, user.phone)
     |> assign(:user, user)
     |> assign(:finance_scope, finance_scope)
+    |> assign(:trip_kind, context.kind)
     |> assign(:tabs, @tabs)
     |> assign(:active_tab, "expenses")
     |> assign(:categories, @expense_categories)

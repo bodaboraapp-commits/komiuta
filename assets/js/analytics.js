@@ -108,4 +108,11 @@ export function initAnalytics() {
     },
     true
   )
+
+  document.querySelectorAll("[data-track-view]").forEach((element) => {
+    track(element.dataset.trackView, {
+      label: element.dataset.trackLabel || undefined,
+      value: element.dataset.trackValue || undefined,
+    })
+  })
 }

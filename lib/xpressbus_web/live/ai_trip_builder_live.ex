@@ -486,11 +486,17 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      socket
      |> assign(:step, 1)
      |> assign(:refining, true)
+     |> assign(:dirty, true)
      |> assign(:error, nil)}
   end
 
   def handle_event("cancel_refine", _params, socket) do
-    {:noreply, socket |> assign(:step, 6) |> assign(:refining, false) |> assign(:error, nil)}
+    {:noreply,
+     socket
+     |> assign(:step, 6)
+     |> assign(:refining, false)
+     |> assign(:dirty, is_nil(socket.assigns.saved_itinerary))
+     |> assign(:error, nil)}
   end
 
   defp persist_itinerary(user, socket) do

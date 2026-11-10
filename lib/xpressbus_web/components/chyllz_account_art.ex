@@ -121,14 +121,14 @@ defmodule XpressbusWeb.ChyllzAccountArt do
           <circle cx="14.5" cy="12.5" r="1.1" fill="currentColor" stroke="none" />
           <path d="M9.5 15.5h5" />
         <% :edit -> %>
-          <path d="M4 20h4l10.5-10.5a2.8 2.8 0 0 0-4-4L4 16v4z" />
-          <path d="m13.5 6.5 4 4" />
+          <path d="M4 20h4l10.5-10.5a2.8 2.8 0 0 0-4-4L4 16v4z" /> <path d="m13.5 6.5 4 4" />
         <% :content_copy -> %>
           <rect x="8" y="8" width="12" height="12" rx="2.5" />
           <path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4H5.5A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8" />
         <% :delete -> %>
-          <path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13" />
-          <path d="M10 11v5M14 11v5" />
+          <path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13" /> <path d="M10 11v5M14 11v5" />
+        <% :flame -> %>
+          <path d="M12 3c1.2 3.8-2.1 4.4-2.1 7.2 0 1.4.9 2.2 1.8 2.2 1.2 0 1.8-.9 1.8-2.1 0-1-.4-1.7-.4-1.7 3.2 1.6 4.4 3.7 4.4 6.1a5.5 5.5 0 0 1-11 0C6.5 10.4 9.7 8.3 12 3z" />
         <% _other -> %>
           <circle cx="12" cy="12" r="8.5" />
       <% end %>
@@ -234,12 +234,12 @@ defmodule XpressbusWeb.ChyllzAccountArt do
             <linearGradient id={"trip-sky-mountains-" <> @key} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stop-color="#FFEEDD" /> <stop offset="1" stop-color="#FFD9B0" />
             </linearGradient>
-
+            
             <linearGradient id={"trip-lake-mountains-" <> @key} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stop-color="#7DD3FC" /> <stop offset="1" stop-color="#38BDF8" />
             </linearGradient>
           </defs>
-          <rect width="320" height="220" fill={"url(#trip-sky-mountains-#{@key})"} />
+           <rect width="320" height="220" fill={"url(#trip-sky-mountains-#{@key})"} />
           <circle cx="250" cy="62" r="34" fill="#FF8A00" opacity="0.16" />
           <circle cx="250" cy="62" r="22" fill="#FF8A00" opacity="0.9" />
           <path d="M-20 152 70 66 122 124 172 62 258 152Z" fill="#475569" opacity="0.45" />
@@ -269,12 +269,12 @@ defmodule XpressbusWeb.ChyllzAccountArt do
             <linearGradient id={"trip-sky-coast-" <> @key} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stop-color="#FFE9CE" /> <stop offset="1" stop-color="#FFC9A0" />
             </linearGradient>
-
+            
             <linearGradient id={"trip-sea-coast-" <> @key} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stop-color="#22D3EE" /> <stop offset="1" stop-color="#0E7490" />
             </linearGradient>
           </defs>
-          <rect width="320" height="220" fill={"url(#trip-sky-coast-#{@key})"} />
+           <rect width="320" height="220" fill={"url(#trip-sky-coast-#{@key})"} />
           <circle cx="252" cy="54" r="30" fill="#FF8A00" opacity="0.16" />
           <circle cx="252" cy="54" r="19" fill="#FF8A00" opacity="0.9" />
           <rect y="124" width="320" height="96" fill={"url(#trip-sea-coast-#{@key})"} />
@@ -295,7 +295,7 @@ defmodule XpressbusWeb.ChyllzAccountArt do
             <path d="M232 96c12-18 4-36-10-42 4 16 4 28 10 42z" />
             <path d="M232 96c6-16 22-26 36-22-12 10-22 16-36 22z" />
           </g>
-          <path d="M70 120 88 120 79 102Z" fill="#F8FAFC" />
+           <path d="M70 120 88 120 79 102Z" fill="#F8FAFC" />
           <path d="M48 132h84l-10 8H58Z" fill="#F8FAFC" opacity="0.9" />
           <path
             d="M120 92q6-7 13 0M144 84q6-7 13 0"
@@ -310,7 +310,7 @@ defmodule XpressbusWeb.ChyllzAccountArt do
               <stop offset="0" stop-color="#FFEDB8" /> <stop offset="1" stop-color="#FFB86B" />
             </linearGradient>
           </defs>
-          <rect width="320" height="220" fill={"url(#trip-sky-savanna-#{@key})"} />
+           <rect width="320" height="220" fill={"url(#trip-sky-savanna-#{@key})"} />
           <circle cx="170" cy="116" r="62" fill="#FF8A00" opacity="0.18" />
           <circle cx="170" cy="116" r="46" fill="#FF8A00" opacity="0.92" />
           <path d="M0 158c62-16 112 10 168 0 56-10 102 10 152-4v66H0Z" fill="#D97706" />

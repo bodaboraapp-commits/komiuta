@@ -55,11 +55,71 @@ document.addEventListener("click", event => {
   carousel.scrollBy({left: control.hasAttribute("data-carousel-next") ? amount : -amount, behavior: "smooth"})
 })
 
+// Warn before abandoning a generated AI itinerary with unsaved changes.
+// This covers reloads/closing the tab and in-app links; LiveView buttons such
+// as "Start over" carry their own data-confirm copy.
+const UnsavedChanges = {
+  mounted() {
+    this.onBeforeUnload = event => {
+      if (!this.isDirty()) return
+      event.preventDefault()
+      event.returnValue = ""
+    }
+
+    this.onLinkClick = event => {
+      if (!this.isDirty()) return
+      const link = event.target.closest("a[href]")
+      if (!link || link.target === "_blank" || link.hasAttribute("download")) return
+      if (!window.confirm("You have unsaved changes. Leave this itinerary anyway?")) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+    }
+
+    window.addEventListener("beforeunload", this.onBeforeUnload)
+    document.addEventListener("click", this.onLinkClick, true)
+  },
+  updated() {
+    if (!this.isDirty()) return
+    // Keep the permission state consistent when LiveView updates dirty attrs.
+    this.el.dataset.unsaved = "true"
+  },
+  destroyed() {
+    window.removeEventListener("beforeunload", this.onBeforeUnload)
+    document.removeEventListener("click", this.onLinkClick, true)
+  },
+  isDirty() {
+    return this.el.dataset.dirty === "true"
+  },
+}
+
+// Auto-dismiss success/info toasts so confirmations never block the page.
+const FlashAutoDismiss = {
+  mounted() {
+    if (this.el.dataset.flashKind === "error") return
+    this.timer = window.setTimeout(() => this.el.click(), 6000)
+  },
+  destroyed() {
+    if (this.timer) window.clearTimeout(this.timer)
+  },
+}
+
+// Prevent double-submitting non-LiveView forms (e.g. account creation).
+document.addEventListener("submit", event => {
+  const form = event.target
+  if (!(form instanceof HTMLFormElement) || !form.matches("[data-submit-once]")) return
+  const button = form.querySelector("button[type='submit']")
+  if (!button || button.disabled) return
+  button.disabled = true
+  button.dataset.originalLabel = button.textContent
+  button.textContent = button.dataset.loadingLabel || "Working…"
+})
+
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks},
+  hooks: {...colocatedHooks, UnsavedChanges, FlashAutoDismiss},
 })
 
 // Show progress bar on live navigation and form submits
