@@ -45,6 +45,9 @@ defmodule XpressbusWeb.AiTripBuilderTest do
     {:ok, view, html} = live(conn, ~p"/trip/build-with-ai")
 
     assert html =~ "Find your dream destination"
+    assert has_element?(view, "header")
+    assert has_element?(view, "header nav", "Bus Tickets")
+    assert has_element?(view, "header nav", "Chyllz")
     assert has_element?(view, "#destination-search-form")
     assert has_element?(view, "#destination-search")
     assert has_element?(view, "#destination-cox")

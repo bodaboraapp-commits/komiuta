@@ -14,6 +14,8 @@ defmodule XpressbusWeb.AiTripBuilderLive do
 
   use XpressbusWeb, :live_view
 
+  import XpressbusWeb.BrandComponents
+
   alias Xpressbus.{Accounts, Itineraries, TripItinerary}
 
   import XpressbusWeb.ChyllzAccountArt
