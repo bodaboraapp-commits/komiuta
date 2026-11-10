@@ -110,30 +110,6 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
               <p class="mt-2 max-w-md text-sm font-bold leading-relaxed text-slate-400">
                 Ready to explore the world? Plan your next adventure or manage your trips.
               </p>
-
-              <div class="mt-5 flex flex-wrap items-center gap-2.5">
-                <a
-                  id="build-with-ai"
-                  href="/tour-packages?assistant=1"
-                  class="inline-flex items-center gap-2 rounded-full bg-[#FF4C00] px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-orange-500/20 transition-all hover:-translate-y-0.5 hover:bg-[#E64400] hover:shadow-xl"
-                >
-                  <.ui_icon name={:sparkles} class="h-4 w-4" /> Build with AI
-                </a>
-                <a
-                  id="create-new-trip"
-                  href="/tour-packages"
-                  class="inline-flex items-center gap-2 rounded-full border-2 border-[#FF4C00] bg-orange-50 px-5 py-3 text-[10px] font-black uppercase tracking-widest text-[#FF4C00] transition-all hover:-translate-y-0.5 hover:bg-[#FF4C00] hover:text-white"
-                >
-                  <.ui_icon name={:compass} class="h-4 w-4" /> Create New Trip
-                </a>
-                <a
-                  id="view-my-trips"
-                  href="/dashboard"
-                  class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 text-[10px] font-black uppercase tracking-widest text-slate-700 transition-all hover:-translate-y-0.5 hover:border-[#FF4C00] hover:text-[#FF4C00]"
-                >
-                  <.ui_icon name={:ticket} class="h-4 w-4" /> View My Trips
-                </a>
-              </div>
             </div>
 
             <%!-- Hand-lettered tagline --%>
@@ -175,6 +151,33 @@ defmodule XpressbusWeb.ChyllzAccountComponents do
                 </text>
               </svg>
             </div>
+          </div>
+
+          <div
+            id="chyllz-hero-actions"
+            class="relative mt-5 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center"
+          >
+            <a
+              id="build-with-ai"
+              href="/tour-packages?assistant=1"
+              class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#FF4C00] px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-orange-500/20 transition-all hover:-translate-y-0.5 hover:bg-[#E64400] hover:shadow-xl sm:w-auto"
+            >
+              <.ui_icon name={:sparkles} class="h-4 w-4" /> Build with AI
+            </a>
+            <a
+              id="create-new-trip"
+              href="/tour-packages"
+              class="inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-[#FF4C00] bg-orange-50 px-5 py-3 text-[10px] font-black uppercase tracking-widest text-[#FF4C00] transition-all hover:-translate-y-0.5 hover:bg-[#FF4C00] hover:text-white sm:w-auto"
+            >
+              <.ui_icon name={:compass} class="h-4 w-4" /> Create New Trip
+            </a>
+            <a
+              id="view-my-trips"
+              href="/dashboard"
+              class="inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 text-[10px] font-black uppercase tracking-widest text-slate-700 transition-all hover:-translate-y-0.5 hover:border-[#FF4C00] hover:text-[#FF4C00] sm:w-auto"
+            >
+              <.ui_icon name={:ticket} class="h-4 w-4" /> View My Trips
+            </a>
           </div>
         </section>
 
