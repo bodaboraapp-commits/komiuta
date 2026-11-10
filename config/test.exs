@@ -49,3 +49,11 @@ config :xpressbus, Xpressbus.Repo,
 
 # Never hit the live BuuPass API during the test suite.
 config :xpressbus, :scraper_enabled, false
+
+# Never call the live weather API during the test suite. Tests that need a
+# forecast inject one through `:weather_forecast_override` (see
+# `Xpressbus.Weather.load/1`).
+config :xpressbus, :weather,
+  enabled: false,
+  cache_ttl_seconds: 900,
+  http_timeout_ms: 5_000

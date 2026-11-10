@@ -637,8 +637,10 @@ defmodule XpressbusWeb.BrandComponents do
     ~H"""
     <button
       type="button"
+      id={"user-tab-" <> @id}
       phx-click="switch_tab"
       phx-value-tab={@id}
+      aria-pressed={@active == @id}
       class={[
         "flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-black uppercase tracking-widest transition-all shrink-0",
         @active == @id && "bg-[#FF4C00] text-white shadow-lg shadow-orange-100",

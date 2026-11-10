@@ -144,28 +144,20 @@
               <% end %>
             </div>
           <% "chyllz" -> %>
-            <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
-              <div class="flex items-center justify-between mb-8">
-                <h2 class="text-xl font-black text-slate-900 tracking-tight uppercase tracking-widest">
-                  My Chyllz Bookings
-                </h2>
-                <a
-                  href="/tour-packages"
-                  class="text-[#FF4C00] font-black text-xs uppercase tracking-widest hover:underline flex items-center gap-2"
-                >Explore Chyllz
-                <span class="material-symbols-outlined !text-sm">open_in_new</span></a>
-              </div>
-
-              <div class="py-20 text-center">
-                <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-200 mx-auto mb-4">
-                  <span class="material-symbols-outlined !text-4xl">hotel</span>
-                </div>
-                <h3 class="text-lg font-black text-slate-400">No Chyllz bookings yet</h3>
-                <p class="text-sm font-bold text-slate-300 mt-2">
-                  Your hotels, car hires, and experiences will appear here.
-                </p>
-              </div>
-            </div>
+            <%!-- Chyllz account view: greeting, counters, recent trips and the
+            weather/destination sidebar. Same account shell as My Bus. --%>
+            <.account_dashboard
+              user={@user}
+              overview={@chyllz_overview}
+              trips={@chyllz_trips}
+              member_since={@member_since}
+              weather={@weather}
+              weather_error={@weather_error}
+              weather_loading={@weather_loading}
+              weather_chart={@weather_chart}
+              weather_query={@weather_query}
+              weather_city={@weather_city}
+            />
           <% "transactions" -> %>
             <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
               <div class="p-8 border-b border-slate-50">

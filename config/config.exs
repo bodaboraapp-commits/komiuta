@@ -66,6 +66,12 @@ config :xpressbus, :firebase, %{
   measurement_id: "G-V9JD71WH4E"
 }
 
+# Weather widget on the Chyllz account landing page. Data comes from Open-Meteo,
+# a free, keyless API, and every result is cached in-process for a few minutes.
+config :xpressbus, :weather,
+  enabled: true,
+  cache_ttl_seconds: 900,
+  http_timeout_ms: 5_000
 # Transactional SMS (ticket cancellation notifications). Africa's Talking is the
 # default gateway for Kenya; configure the credentials in the environment.
 config :xpressbus, :sms, %{

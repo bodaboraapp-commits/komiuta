@@ -374,7 +374,7 @@ defmodule XpressbusWeb.ChyllzLive do
         <.main_header step={@step} current_user={@current_user} />
         <main class="pt-[72px] md:pt-[80px]">
           <%= if @step == :chyllz do %>
-            <.hub_hero counts={@counts} />
+            <.hub_hero counts={@counts} current_user={@current_user} />
             <div class="max-w-[1350px] mx-auto px-6 space-y-20 py-[58px]">
               <section id="hotels">
                 <.section_heading
@@ -498,6 +498,7 @@ defmodule XpressbusWeb.ChyllzLive do
   end
 
   attr :counts, :map, required: true
+  attr :current_user, :string, default: nil
 
   defp hub_hero(assigns) do
     ~H"""
@@ -566,6 +567,17 @@ defmodule XpressbusWeb.ChyllzLive do
             Search Stays
           </button>
         </form>
+
+        <%= if @current_user do %>
+          <a
+            href="/dashboard?tab=chyllz"
+            id="chyllz-hub-account-link"
+            class="mt-7 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-6 py-3 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur transition-all hover:-translate-y-0.5 hover:bg-white hover:text-[#FF4C00]"
+          >
+            <span class="material-symbols-outlined !text-base" aria-hidden="true">person</span>
+            My Chyllz account
+          </a>
+        <% end %>
       </div>
     </section>
     """

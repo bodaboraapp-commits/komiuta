@@ -1,12 +1,15 @@
 defmodule XpressbusWeb.UserDashboardLive do
   use XpressbusWeb, :live_view
   import XpressbusWeb.BrandComponents
-  alias Xpressbus.{Repo, Tickets, Accounts}
+  import XpressbusWeb.ChyllzAccountComponents
+  alias Xpressbus.{Accounts, ChyllzAccount, Repo, Tickets, Weather}
   alias Xpressbus.Tickets.Ticket
   alias XpressbusWeb.TicketCodes
   import Ecto.Query
 
-  def mount(_params, session, socket) do
+  @tabs ~w(bus chyllz wallet transactions referral profile)
+
+  def mount(params, session, socket) do
     user_id_or_phone = session["user_id"]
 
     if user_id_or_phone do
@@ -29,29 +32,33 @@ defmodule XpressbusWeb.UserDashboardLive do
         if Accounts.profile_complete?(user) do
           tickets = list_user_tickets(user.phone)
           transactions = Accounts.list_user_transactions(user.id)
+          active_tab = normalize_tab(Map.get(params, "tab"))
 
-          {:ok,
-           socket
-           |> assign(:page_title, "My Dashboard")
-           |> assign(:active_tab, "bus")
-           |> assign(:user, user)
-           |> assign(:current_user, user.phone)
-           |> assign(:tickets, tickets)
-           |> assign(:transactions, transactions)
-           |> assign(:selected_ticket, nil)
-           |> assign(:show_ticket_modal, false)
-           |> assign(:ticket_qr, nil)
-           |> assign(:ticket_barcode, nil)
-           |> assign(:download_url, nil)
-           |> assign(:show_phone_modal, false)
-           |> assign(:phone_error, nil)
-           |> assign(:profile_form, Accounts.change_user(user) |> to_form())
-           |> assign(:show_email_change_modal, false)
-           |> assign(:email_change_step, :email)
-           |> assign(:email_change_form, to_form(%{"new_email" => ""}))
-           |> assign(:email_change_error, nil)
-           |> assign(:pending_new_email, nil)
-           |> assign(:footer_tab, "about")}
+          socket =
+            socket
+            |> assign(:page_title, "My Dashboard")
+            |> assign(:page_robots, "noindex,nofollow")
+            |> assign(:active_tab, active_tab)
+            |> assign(:user, user)
+            |> assign(:current_user, user.phone)
+            |> assign(:tickets, tickets)
+            |> assign(:transactions, transactions)
+            |> assign(:selected_ticket, nil)
+            |> assign(:show_ticket_modal, false)
+            |> assign(:ticket_qr, nil)
+            |> assign(:ticket_barcode, nil)
+            |> assign(:download_url, nil)
+            |> assign(:show_phone_modal, false)
+            |> assign(:phone_error, nil)
+            |> assign(:profile_form, Accounts.change_user(user) |> to_form())
+            |> assign(:show_email_change_modal, false)
+            |> assign(:email_change_step, :email)
+            |> assign(:email_change_form, to_form(%{"new_email" => ""}))
+            |> assign(:email_change_error, nil)
+            |> assign(:pending_new_email, nil)
+            |> assign(:footer_tab, "about")
+
+          {:ok, socket}
         else
           # Every account must have both a phone number and an email before the
           # dashboard (and its personal data) is shown.
@@ -70,8 +77,48 @@ defmodule XpressbusWeb.UserDashboardLive do
     end
   end
 
+  # The active tab lives in the URL (`/dashboard?tab=chyllz`) so a refresh or a
+  # shared link opens the same account view.
+  def handle_params(params, _uri, socket) do
+    socket = assign(socket, :active_tab, normalize_tab(Map.get(params, "tab")))
+
+    socket =
+      case Map.get(socket.assigns, :user) do
+        nil -> socket
+        user -> maybe_load_chyllz_account(socket, user)
+      end
+
+    {:noreply, socket}
+  end
+
+  def handle_info({:load_weather, query}, socket) do
+    {:noreply, fetch_weather(socket, query)}
+  end
+
+  # LiveView only keeps the messages a LiveView declares; the dashboard also
+  # receives internal notifications it does not need to act on (for example the
+  # Swoosh test adapter telling the delivering process about an email).
+  def handle_info(_message, socket), do: {:noreply, socket}
+
   def handle_event("switch_tab", %{"tab" => tab}, socket) do
-    {:noreply, assign(socket, :active_tab, tab)}
+    {:noreply, push_patch(socket, to: tab_path(normalize_tab(tab)))}
+  end
+
+  # Weather search on the My Chyllz tab. The first forecast arrives
+  # asynchronously (see `load_weather/3`); a search is user-initiated and
+  # therefore loaded straight away.
+  def handle_event("search_weather", %{"city" => city}, socket) do
+    query = normalize_city(city)
+
+    if query == "" do
+      {:noreply, put_flash(socket, :error, "Type a city name to see its weather.")}
+    else
+      {:noreply, socket |> assign(:weather_query, query) |> load_weather(query)}
+    end
+  end
+
+  def handle_event("refresh_weather", _params, socket) do
+    {:noreply, load_weather(socket, socket.assigns.weather_query)}
   end
 
   def handle_event("view_ticket", %{"ticket_id" => ticket_id}, socket) do
@@ -325,4 +372,92 @@ defmodule XpressbusWeb.UserDashboardLive do
         "Something went wrong. Please try again."
     end
   end
+
+  # ----------------------------------------------------- My Chyllz account tab
+
+  # The Chyllz tab is lazy: nothing is queried and no weather request is made
+  # until the traveller opens it (through `?tab=chyllz` or the tab menu).
+  defp maybe_load_chyllz_account(socket, user) do
+    if socket.assigns.active_tab == "chyllz" and is_nil(socket.assigns[:chyllz_overview]) do
+      load_chyllz_account(socket, user)
+    else
+      socket
+    end
+  end
+
+  defp load_chyllz_account(socket, user) do
+    overview = ChyllzAccount.overview(user)
+
+    socket
+    |> assign(:chyllz_overview, overview)
+    |> assign(:chyllz_trips, overview.recent_trips)
+    |> assign(:member_since, member_since(user))
+    |> assign(:weather_query, overview.default_city)
+    |> assign(:weather_city, overview.default_city)
+    |> assign(:weather, nil)
+    |> assign(:weather_error, nil)
+    |> assign(:weather_loading, true)
+    |> assign(:weather_chart, empty_chart())
+    |> load_weather(overview.default_city, async: true)
+  end
+
+  # The first forecast is fetched after the page is interactive so the account
+  # page never waits on the network; the static (pre-websocket) render shows the
+  # skeleton only.
+  defp load_weather(socket, query, opts \\ []) do
+    cond do
+      Keyword.get(opts, :async, false) and not connected?(socket) ->
+        assign(socket,
+          weather: nil,
+          weather_error: nil,
+          weather_loading: true,
+          weather_chart: empty_chart()
+        )
+
+      Keyword.get(opts, :async, false) and live_weather?() ->
+        send(self(), {:load_weather, query})
+
+        assign(socket,
+          weather: nil,
+          weather_error: nil,
+          weather_loading: true,
+          weather_chart: empty_chart()
+        )
+
+      true ->
+        fetch_weather(socket, query)
+    end
+  end
+
+  defp fetch_weather(socket, query) do
+    case Weather.load(query) do
+      {:ok, forecast} ->
+        socket
+        |> assign(:weather, forecast)
+        |> assign(:weather_city, forecast.location.name)
+        |> assign(:weather_error, nil)
+        |> assign(:weather_loading, false)
+        |> assign(:weather_chart, chart_for(forecast.hourly))
+
+      {:error, reason} ->
+        socket
+        |> assign(:weather, nil)
+        |> assign(:weather_error, weather_error_message(reason))
+        |> assign(:weather_loading, false)
+        |> assign(:weather_chart, empty_chart())
+    end
+  end
+
+  defp live_weather? do
+    Weather.enabled?() and
+      is_nil(Application.get_env(:xpressbus, :weather_forecast_override))
+  end
+
+  defp normalize_tab(tab) do
+    tab = to_string(tab)
+    if tab in @tabs, do: tab, else: "bus"
+  end
+
+  defp tab_path("bus"), do: "/dashboard"
+  defp tab_path(tab), do: "/dashboard?tab=" <> tab
 end
