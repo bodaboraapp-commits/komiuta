@@ -302,7 +302,7 @@ defmodule Xpressbus.TripItinerary do
     moscow? = moscow?(trip)
     {map_embed_url, map_link, map_attribution, map_source} = map_data(city, trip)
 
-    {hotels, hotel_source, restaurants, restaurant_source} =
+    recommendations =
       recommendations(trip, city, Keyword.get(opts, :live_places, true))
 
     %{
@@ -312,17 +312,37 @@ defmodule Xpressbus.TripItinerary do
       map_link: map_link,
       map_attribution: map_attribution,
       map_source: map_source,
-      hotels: hotels,
-      hotel_source: hotel_source,
+      hotels: recommendations.hotels,
+      hotel_source: recommendations.hotel_source,
       hotels_search_url: GooglePlaces.search_url(city, :hotels),
-      restaurants: restaurants,
-      restaurant_source: restaurant_source,
+      restaurants: recommendations.restaurants,
+      restaurant_source: recommendations.restaurant_source,
       restaurants_search_url: GooglePlaces.search_url(city, :restaurants),
+      recommendation_errors: recommendations.errors,
       overview: overview(trip, moscow?),
       hotel: hotel_recommendation(trip, moscow?),
       food: food_recommendation(trip, moscow?),
       days: days(trip, moscow?),
       notes: notes(trip, moscow?)
+    }
+  end
+
+  @doc """
+  Refreshes only the Google Places recommendations on an existing itinerary.
+
+  The rest of the plan (days, notes, map) is untouched, so the "Retry live
+  results" action is fast and never discards the traveller's generated trip.
+  """
+  def refresh_recommendations(trip, itinerary) do
+    recommendations = recommendations(trip, itinerary.city, true)
+
+    %{
+      itinerary
+      | hotels: recommendations.hotels,
+        hotel_source: recommendations.hotel_source,
+        restaurants: recommendations.restaurants,
+        restaurant_source: recommendations.restaurant_source,
+        recommendation_errors: recommendations.errors
     }
   end
 
@@ -545,10 +565,15 @@ defmodule Xpressbus.TripItinerary do
   end
 
   defp recommendations(trip, city, false) do
-    {hotels, hotel_source} = places_or_fallback(trip, city, :hotels, 4)
-    {restaurants, restaurant_source} = places_or_fallback(trip, city, :restaurants, 8)
-
-    {hotels, hotel_source, restaurants, restaurant_source}
+    # The generation deadline is already up. Never touch the network here: use
+    # the curated cards immediately and let the page offer a live retry.
+    %{
+      hotels: fallback_places(trip, city, :hotels),
+      hotel_source: :curated,
+      restaurants: fallback_places(trip, city, :restaurants),
+      restaurant_source: :curated,
+      errors: %{hotels: :generation_deadline, restaurants: :generation_deadline}
+    }
   end
 
   defp recommendations(trip, city, true) do
@@ -565,14 +590,32 @@ defmodule Xpressbus.TripItinerary do
         {:exit, _reason}, acc -> acc
       end)
 
-    {hotels, hotel_source} =
-      Map.get(results, :hotels, {fallback_places(trip, city, :hotels), :curated})
+    {hotels, hotel_source, hotel_error} =
+      Map.get(results, :hotels, {fallback_places(trip, city, :hotels), :curated, :timeout})
 
-    {restaurants, restaurant_source} =
-      Map.get(results, :restaurants, {fallback_places(trip, city, :restaurants), :curated})
+    {restaurants, restaurant_source, restaurant_error} =
+      Map.get(results, :restaurants, {
+        fallback_places(trip, city, :restaurants),
+        :curated,
+        :timeout
+      })
 
-    {hotels, hotel_source, restaurants, restaurant_source}
+    errors =
+      %{}
+      |> put_recommendation_error(:hotels, hotel_error)
+      |> put_recommendation_error(:restaurants, restaurant_error)
+
+    %{
+      hotels: hotels,
+      hotel_source: hotel_source,
+      restaurants: restaurants,
+      restaurant_source: restaurant_source,
+      errors: errors
+    }
   end
+
+  defp put_recommendation_error(errors, _category, nil), do: errors
+  defp put_recommendation_error(errors, category, reason), do: Map.put(errors, category, reason)
 
   defp places_or_fallback(trip, city, category, limit) do
     opts = [
@@ -583,10 +626,13 @@ defmodule Xpressbus.TripItinerary do
 
     case GooglePlaces.recommendations(city, category, limit, opts) do
       {:ok, places} when places != [] ->
-        {places, :google_maps}
+        {places, :google_maps, nil}
+
+      {:error, reason} ->
+        {fallback_places(trip, city, category), :curated, reason}
 
       _fallback ->
-        {fallback_places(trip, city, category), :curated}
+        {fallback_places(trip, city, category), :curated, :no_results}
     end
   end
 

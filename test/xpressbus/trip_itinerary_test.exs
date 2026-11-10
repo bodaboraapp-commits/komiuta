@@ -57,4 +57,28 @@ defmodule Xpressbus.TripItineraryTest do
     assert family.title == "Moscow: A Family Luxury Escape"
     assert friends.title == "Moscow: A Group Luxury Escape"
   end
+
+  test "deadline fallback never touches live places and marks recommendations retryable" do
+    itinerary = TripItinerary.generate(trip(), live_places: false)
+
+    assert itinerary.hotel_source == :curated
+    assert itinerary.restaurant_source == :curated
+
+    assert itinerary.recommendation_errors == %{
+             hotels: :generation_deadline,
+             restaurants: :generation_deadline
+           }
+  end
+
+  test "refreshing recommendations keeps the generated plan intact" do
+    itinerary = TripItinerary.generate(trip(), live_places: false)
+    refreshed = TripItinerary.refresh_recommendations(trip(), itinerary)
+
+    assert refreshed.title == itinerary.title
+    assert refreshed.days == itinerary.days
+    assert refreshed.notes == itinerary.notes
+    assert refreshed.map_embed_url == itinerary.map_embed_url
+    assert refreshed.hotel_source == :curated
+    assert refreshed.restaurant_source == :curated
+  end
 end

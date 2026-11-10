@@ -1397,17 +1397,17 @@
                   Open map
                 </a>
 
-                <div class="absolute bottom-3 left-3 right-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white/95 px-3 py-2 shadow">
-                  <p id="map-status" class="text-[10px] font-bold text-slate-500">
-                    Map not loading? Reload it without leaving the page.
+                <div class="absolute left-3 top-3 flex max-w-[calc(100%-7rem)] items-center gap-2 rounded-full bg-white/95 px-3 py-1.5 shadow">
+                  <p id="map-status" class="truncate text-[9px] font-bold text-slate-500">
+                    Map not loading?
                   </p>
 
                   <button
                     type="button"
                     id="retry-map"
-                    class="shrink-0 rounded-lg bg-[#FF4C00] px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-white"
+                    class="shrink-0 rounded-full bg-[#FF4C00] px-2.5 py-1 text-[8px] font-black uppercase tracking-widest text-white"
                   >
-                    Reload map
+                    Reload
                   </button>
                 </div>
               </div>
@@ -1421,11 +1421,11 @@
   <script :type={Phoenix.LiveView.ColocatedHook} name=".NetworkStatus">
     export default {
       mounted() {
-        this.status = this.querySelector("[data-network-status]")
-        this.retry = this.querySelector("[data-network-retry]")
+        this.status = this.el.querySelector("[data-network-status]")
+        this.retry = this.el.querySelector("[data-network-retry]")
 
         const setVisible = (visible, message) => {
-          this.hidden = !visible
+          this.el.hidden = !visible
           if (this.status && message) this.status.textContent = message
         }
 
@@ -1451,14 +1451,14 @@
             window.location.reload()
           }
         }
-        this.addEventListener("click", this.onClick)
+        this.el.addEventListener("click", this.onClick)
       },
       destroyed() {
         window.removeEventListener("online", this.onOnline)
         window.removeEventListener("offline", this.onOffline)
         document.removeEventListener("phx:disconnected", this.onDisconnected)
         document.removeEventListener("phx:connected", this.onConnected)
-        if (this.onClick) this.removeEventListener("click", this.onClick)
+        if (this.onClick) this.el.removeEventListener("click", this.onClick)
       }
     }
   </script>
@@ -1466,9 +1466,9 @@
   <script :type={Phoenix.LiveView.ColocatedHook} name=".GenerationSlow">
     export default {
       mounted() {
-        this.hidden = true
+        this.el.hidden = true
         this.timer = window.setTimeout(() => {
-          this.hidden = false
+          this.el.hidden = false
         }, 12000)
       },
       destroyed() {
@@ -1501,9 +1501,9 @@
   <script :type={Phoenix.LiveView.ColocatedHook} name=".ItineraryMap">
     export default {
       mounted() {
-        this.frame = this.querySelector("#itinerary-map-frame")
-        this.status = this.querySelector("#map-status")
-        this.retry = this.querySelector("#retry-map")
+        this.frame = this.el.querySelector("#itinerary-map-frame")
+        this.status = this.el.querySelector("#map-status")
+        this.retry = this.el.querySelector("#retry-map")
         if (!this.retry) return
 
         this.onClick = () => {

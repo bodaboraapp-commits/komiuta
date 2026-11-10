@@ -209,6 +209,7 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:suggestions, [])
      |> assign(:searching, false)
      |> assign(:search_empty, false)
+     |> assign(:search_error, false)
      |> assign(:error, nil)
      |> assign(:saved_itinerary, nil)
      |> assign(:itinerary, nil)
@@ -216,6 +217,9 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:dirty, false)
      |> assign(:refining, false)
      |> assign(:generating, false)
+     |> assign(:generation_failed, false)
+     |> assign(:recommendations_retrying, false)
+     |> assign(:recommendations_error, nil)
      |> assign(:generation_stage, 0)
      |> assign(:generation_total, length(@generation_steps))
      |> assign(:generation_message, @generation_default.message)
@@ -244,7 +248,8 @@ defmodule XpressbusWeb.AiTripBuilderLive do
        |> assign(:query, query)
        |> assign(:suggestions, [])
        |> assign(:searching, false)
-       |> assign(:search_empty, false)}
+       |> assign(:search_empty, false)
+       |> assign(:search_error, false)}
     else
       {:noreply,
        socket
@@ -278,6 +283,22 @@ defmodule XpressbusWeb.AiTripBuilderLive do
          |> assign(:searching, true)
          |> assign(:search_empty, false)
          |> start_async(:destination_resolve, fn -> Places.resolve(query) end)}
+    end
+  end
+
+  def handle_event("retry_destination_search", _params, socket) do
+    query = socket.assigns.query
+
+    if query == "" do
+      {:noreply, assign(socket, :error, "Type a city, country or landmark to continue.")}
+    else
+      {:noreply,
+       socket
+       |> assign(:error, nil)
+       |> assign(:searching, true)
+       |> assign(:search_empty, false)
+       |> assign(:search_error, false)
+       |> start_async(:destination_resolve, fn -> Places.resolve(query) end)}
     end
   end
 
@@ -340,7 +361,8 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:query, socket.assigns.trip.destination || "")
      |> assign(:suggestions, [])
      |> assign(:searching, false)
-     |> assign(:search_empty, false)}
+     |> assign(:search_empty, false)
+     |> assign(:search_error, false)}
   end
 
   def handle_event("dates_next", _params, socket) do
@@ -412,34 +434,20 @@ defmodule XpressbusWeb.AiTripBuilderLive do
       {:noreply,
        assign(socket, :error, "Pick at least one preference so the AI can shape your trip.")}
     else
-      parent = self()
-      trip = socket.assigns.trip
-
-      {pid, ref} =
-        spawn_monitor(fn -> send(parent, {:generation_done, TripItinerary.generate(trip)}) end)
-
-      Process.send_after(self(), :generation_tick, 1_200)
-      Process.send_after(self(), :generation_timeout, @generation_deadline_ms)
-
-      copy = generation_copy(:brief, trip)
-
-      {:noreply,
-       socket
-       |> assign(:error, nil)
-       |> assign(:generating, true)
-       |> assign(:generation_stage, 0)
-       |> assign(:generation_total, length(@generation_steps))
-       |> assign(:generation_message, copy.message)
-       |> assign(:generation_detail, copy.detail)
-       |> assign(:generation_task_label, generation_step(0).label)
-       |> assign(:generation_ref, ref)
-       |> assign(:generation_pid, pid)
-       |> assign(:generation_started_at, System.monotonic_time(:millisecond))}
+      {:noreply, begin_generation(socket)}
     end
   end
 
+  def handle_event("retry_generation", _params, socket) do
+    {:noreply, begin_generation(socket)}
+  end
+
   def handle_event("back", _params, socket) do
-    {:noreply, socket |> assign(:error, nil) |> assign(:step, max(socket.assigns.step - 1, 1))}
+    {:noreply,
+     socket
+     |> assign(:error, nil)
+     |> assign(:generation_failed, false)
+     |> assign(:step, max(socket.assigns.step - 1, 1))}
   end
 
   def handle_event("restart", _params, socket) do
@@ -449,6 +457,10 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:query, "")
      |> assign(:error, nil)
      |> assign(:generating, false)
+     |> assign(:generation_failed, false)
+     |> assign(:recommendations_retrying, false)
+     |> assign(:recommendations_error, nil)
+     |> assign(:search_error, false)
      |> assign(:save_state, :unsaved)
      |> assign(:dirty, false)
      |> assign(:refining, false)
@@ -499,6 +511,56 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      |> assign(:refining, false)
      |> assign(:dirty, is_nil(socket.assigns.saved_itinerary))
      |> assign(:error, nil)}
+  end
+
+  def handle_event("retry_recommendations", _params, socket) do
+    cond do
+      socket.assigns.recommendations_retrying ->
+        {:noreply, socket}
+
+      is_nil(socket.assigns.itinerary) ->
+        {:noreply, socket}
+
+      true ->
+        trip = socket.assigns.trip
+        itinerary = socket.assigns.itinerary
+
+        {:noreply,
+         socket
+         |> assign(:recommendations_retrying, true)
+         |> assign(:recommendations_error, nil)
+         |> start_async(:recommendations_refresh, fn ->
+           TripItinerary.refresh_recommendations(trip, itinerary)
+         end)}
+    end
+  end
+
+  defp begin_generation(socket) do
+    parent = self()
+    trip = socket.assigns.trip
+
+    {pid, ref} =
+      spawn_monitor(fn -> send(parent, {:generation_done, TripItinerary.generate(trip)}) end)
+
+    Process.send_after(self(), :generation_tick, 1_200)
+    Process.send_after(self(), :generation_timeout, @generation_deadline_ms)
+
+    copy = generation_copy(:brief, trip)
+
+    socket
+    |> assign(:error, nil)
+    |> assign(:generation_failed, false)
+    |> assign(:recommendations_retrying, false)
+    |> assign(:recommendations_error, nil)
+    |> assign(:generating, true)
+    |> assign(:generation_stage, 0)
+    |> assign(:generation_total, length(@generation_steps))
+    |> assign(:generation_message, copy.message)
+    |> assign(:generation_detail, copy.detail)
+    |> assign(:generation_task_label, generation_step(0).label)
+    |> assign(:generation_ref, ref)
+    |> assign(:generation_pid, pid)
+    |> assign(:generation_started_at, System.monotonic_time(:millisecond))
   end
 
   defp persist_itinerary(user, socket) do
@@ -556,7 +618,8 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      socket
      |> assign(:suggestions, results)
      |> assign(:searching, false)
-     |> assign(:search_empty, results == [])}
+     |> assign(:search_empty, results == [])
+     |> assign(:search_error, false)}
   end
 
   def handle_async(:destination_search, {:ok, {:error, _reason}}, socket) do
@@ -564,7 +627,8 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      socket
      |> assign(:suggestions, [])
      |> assign(:searching, false)
-     |> assign(:search_empty, true)}
+     |> assign(:search_empty, false)
+     |> assign(:search_error, true)}
   end
 
   def handle_async(:destination_search, {:exit, _reason}, socket) do
@@ -572,19 +636,52 @@ defmodule XpressbusWeb.AiTripBuilderLive do
      socket
      |> assign(:suggestions, [])
      |> assign(:searching, false)
-     |> assign(:search_empty, true)}
+     |> assign(:search_empty, false)
+     |> assign(:search_error, true)}
   end
 
   def handle_async(:destination_resolve, {:ok, {:ok, place, _results}}, socket) do
     {:noreply, choose_place(socket, place)}
   end
 
-  def handle_async(:destination_resolve, {:ok, {:error, _reason}}, socket) do
-    {:noreply, destination_not_found(socket)}
+  def handle_async(:destination_resolve, {:ok, {:error, reason}}, socket) do
+    if reason == :not_found do
+      {:noreply, destination_not_found(socket)}
+    else
+      {:noreply, destination_network_error(socket)}
+    end
   end
 
   def handle_async(:destination_resolve, {:exit, _reason}, socket) do
-    {:noreply, destination_not_found(socket)}
+    {:noreply, destination_network_error(socket)}
+  end
+
+  def handle_async(:recommendations_refresh, {:ok, itinerary}, socket) do
+    live? =
+      itinerary.hotel_source == :google_maps and itinerary.restaurant_source == :google_maps
+
+    error =
+      if live? do
+        nil
+      else
+        "Live Google recommendations are still unavailable. We're showing curated picks."
+      end
+
+    {:noreply,
+     socket
+     |> assign(:itinerary, itinerary)
+     |> assign(:recommendations_retrying, false)
+     |> assign(:recommendations_error, error)}
+  end
+
+  def handle_async(:recommendations_refresh, {:exit, _reason}, socket) do
+    {:noreply,
+     socket
+     |> assign(:recommendations_retrying, false)
+     |> assign(
+       :recommendations_error,
+       "We couldn't refresh Google recommendations. Check your connection and try again."
+     )}
   end
 
   @impl true
@@ -623,6 +720,9 @@ defmodule XpressbusWeb.AiTripBuilderLive do
     {:noreply,
      socket
      |> assign(:generating, false)
+     |> assign(:generation_failed, false)
+     |> assign(:recommendations_retrying, false)
+     |> assign(:recommendations_error, nil)
      |> assign(:generation_ref, nil)
      |> assign(:itinerary, itinerary)
      |> assign(:save_state, :unsaved)
@@ -703,7 +803,10 @@ defmodule XpressbusWeb.AiTripBuilderLive do
       {:noreply,
        socket
        |> assign(:generating, false)
+       |> assign(:generation_failed, true)
        |> assign(:generation_ref, nil)
+       |> assign(:generation_pid, nil)
+       |> assign(:recommendations_retrying, false)
        |> assign(:generation_message, hd(@generation_steps))
        |> assign(:error, "We couldn't finish your itinerary. Please try again.")}
     else
@@ -837,6 +940,9 @@ defmodule XpressbusWeb.AiTripBuilderLive do
     {:noreply,
      socket
      |> assign(:generating, false)
+     |> assign(:generation_failed, false)
+     |> assign(:recommendations_retrying, false)
+     |> assign(:recommendations_error, nil)
      |> assign(:generation_ref, nil)
      |> assign(:generation_pid, nil)
      |> assign(:itinerary, itinerary)
@@ -888,11 +994,23 @@ defmodule XpressbusWeb.AiTripBuilderLive do
     socket
     |> assign(:searching, false)
     |> assign(:suggestions, [])
+    |> assign(:search_error, false)
     |> assign(
       :error,
       "We couldn't find that place. Search for a real city or country - e.g. Nairobi, Paris or " <>
         "Bali - or describe the vibe and let Chyllz AI pinpoint the nearest real place."
     )
+  end
+
+  # A lookup that failed because the network/provider was unavailable should
+  # offer a retry rather than claiming the place does not exist.
+  defp destination_network_error(socket) do
+    socket
+    |> assign(:searching, false)
+    |> assign(:suggestions, [])
+    |> assign(:search_empty, false)
+    |> assign(:search_error, true)
+    |> assign(:error, nil)
   end
 
   defp sanitize_query(query) do
