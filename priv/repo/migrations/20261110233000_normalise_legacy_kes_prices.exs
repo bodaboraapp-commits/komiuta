@@ -11,9 +11,8 @@ defmodule Xpressbus.Repo.Migrations.NormaliseLegacyKesPrices do
   ]
 
   def up do
-    for {table, columns} <- @text_columns,
-        column <- columns do
-      normalise_text_column(table, column)
+    for {table, columns} <- @text_columns do
+      normalise_text_columns(table, columns)
     end
 
     normalise_bus_seat_types()
@@ -24,19 +23,26 @@ defmodule Xpressbus.Repo.Migrations.NormaliseLegacyKesPrices do
     :ok
   end
 
-  defp normalise_text_column(table, column) do
-    %{rows: rows} =
-      Repo.query!(
-        "SELECT id, #{column} FROM #{table} WHERE #{column} IS NOT NULL AND #{column} <> ''"
-      )
+  # Set-based updates keep this migration fast on large ticket tables. The old
+  # row-by-row version could hold a migration transaction open for a long time.
+  defp normalise_text_columns(table, columns) do
+    assignments =
+      Enum.map_join(columns, ", ", fn column ->
+        "#{column} = " <> replace_currency(column)
+      end)
 
-    for [id, value] <- rows, is_binary(value) do
-      normalised = LegacyPriceNormalizer.normalise(value)
+    where =
+      Enum.map_join(columns, " OR ", fn column ->
+        "#{column} LIKE '%KSH%' OR #{column} LIKE '%Ksh%' OR #{column} LIKE '%ksh%'"
+      end)
 
-      if normalised != value do
-        Repo.query!("UPDATE #{table} SET #{column} = ? WHERE id = ?", [normalised, id])
-      end
-    end
+    execute("UPDATE #{table} SET #{assignments} WHERE #{where}")
+  end
+
+  defp replace_currency(column) do
+    Enum.reduce(["Kshs", "kshs", "KSH", "KSh", "Ksh", "ksh"], column, fn label, expr ->
+      "REPLACE(#{expr}, '#{label}', 'KES')"
+    end)
   end
 
   defp normalise_bus_seat_types do
