@@ -98,4 +98,52 @@ defmodule Xpressbus.IntegrationsTest do
       assert Integrations.login_method() == "email"
     end
   end
+
+  describe "Chyllz AI integration" do
+    test "returns nil when nothing is configured" do
+      assert Integrations.ai_integration() == nil
+    end
+
+    test "normalises an active provider and its defaults" do
+      {:ok, _} =
+        Integrations.upsert_config_by_provider("ai", %{
+          active: true,
+          config: %{
+            "api_key" => "  sk-db-key  ",
+            "base_url" => " https://api.test/v1 ",
+            "timeout" => "12000"
+          }
+        })
+
+      integration = Integrations.ai_integration()
+
+      assert integration.source == :integration
+      assert integration.active
+      assert integration.api_key == "sk-db-key"
+      assert integration.base_url == "https://api.test/v1"
+      assert integration.model == "gpt-4o-mini"
+      assert integration.vision_model == "gpt-4o-mini"
+      assert integration.timeout == 12_000
+    end
+
+    test "reports a missing key without exposing a secret" do
+      {:ok, _} =
+        Integrations.upsert_config_by_provider("ai", %{active: true, config: %{}})
+
+      integration = Integrations.ai_integration()
+
+      assert integration.source == :missing_key
+      refute Map.has_key?(integration, :api_key)
+    end
+
+    test "reports a disabled integration" do
+      {:ok, _} =
+        Integrations.upsert_config_by_provider("ai", %{
+          active: false,
+          config: %{"api_key" => "sk-db-key"}
+        })
+
+      assert Integrations.ai_integration() == %{source: :disabled, active: false}
+    end
+  end
 end

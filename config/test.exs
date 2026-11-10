@@ -50,6 +50,17 @@ config :xpressbus, Xpressbus.Repo,
 # Never hit the live BuuPass API during the test suite.
 config :xpressbus, :scraper_enabled, false
 
+# Never call a live AI provider from the test suite. Tests that exercise the
+# provider inject a stubbed Req plug explicitly.
+config :xpressbus, :ai, %{
+  enabled: false,
+  api_key: nil,
+  base_url: "https://api.openai.com/v1",
+  model: "gpt-4o-mini",
+  vision_model: "gpt-4o-mini",
+  timeout: 2_000
+}
+
 # Never call the live weather API during the test suite. Tests that need a
 # forecast inject one through `:weather_forecast_override` (see
 # `Xpressbus.Weather.load/1`).

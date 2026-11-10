@@ -18,15 +18,17 @@ defmodule XpressbusWeb.ChyllzLive do
 
   use XpressbusWeb, :live_view
 
+  import XpressbusWeb.AssistantComponents
   import XpressbusWeb.BrandComponents
 
   import XpressbusWeb.Format,
     only: [day_of_month: 1, long_date: 1, money: 1, month_abbr: 1, rating: 1, short_date: 1]
 
-  alias Xpressbus.Chyllz
+  alias Xpressbus.{Accounts, Chyllz, HotelBookings, TravelAssistant}
 
   @listing_limit 60
   @room_images ["/images/room_1.webp", "/images/room_2.webp", "/images/room_3.webp"]
+  @assistant_hourly_limit 40
 
   @impl true
   def mount(_params, session, socket) do
@@ -37,6 +39,11 @@ defmodule XpressbusWeb.ChyllzLive do
      |> assign(:current_user, session["user_id"])
      |> assign(:search, "")
      |> assign(:selected, nil)
+     |> assign(:stay_error, nil)
+     |> assign(:stay_check_in, Date.to_iso8601(Date.add(Date.utc_today(), 1)))
+     |> assign(:stay_check_out, Date.to_iso8601(Date.add(Date.utc_today(), 2)))
+     |> assign(:stay_rooms, "1")
+     |> assign(:stay_guests, "1")
      |> assign(:hotels, [])
      |> assign(:hidden_gems, [])
      |> assign(:car_hires, [])
@@ -44,6 +51,14 @@ defmodule XpressbusWeb.ChyllzLive do
      |> assign(:past_events, [])
      |> assign(:events_are_past, false)
      |> assign(:counts, %{hotels: 0, hidden_gems: 0, car_hires: 0, events: 0})
+     |> assign(:assistant, initial_assistant_state())
+     |> assign(:assistant_ai_enabled, TravelAssistant.provider_configured?())
+     |> assign(:assistant_engine, TravelAssistant.engine_label())
+     |> allow_upload(:assistant_photo,
+       accept: ~w(.jpg .jpeg .png .webp),
+       max_entries: 1,
+       max_file_size: 8_000_000
+     )
      |> assign(
        :page_description,
        "Discover handpicked hotels, hidden gems, car hire and events across East Africa with Chyllz by Komiuta. Book stays and experiences alongside your bus ticket."
@@ -67,8 +82,19 @@ defmodule XpressbusWeb.ChyllzLive do
       |> assign(:page_canonical, canonical_for(step))
       |> assign(:page_json_ld, chyllz_json_ld(step))
       |> load_step(step, search)
+      |> maybe_open_assistant(params)
 
     {:noreply, socket}
+  end
+
+  # The Chyllz account hero's "Build with AI" button deep-links here with
+  # `?assistant=1`; open the travel assistant straight away.
+  defp maybe_open_assistant(socket, params) do
+    if Map.get(params, "assistant") in ["1", "open", "true"] do
+      assign_assistant(socket, %{socket.assigns.assistant | open: true, error: nil})
+    else
+      socket
+    end
   end
 
   @impl true
@@ -86,8 +112,87 @@ defmodule XpressbusWeb.ChyllzLive do
 
   def handle_event("open_item", %{"kind" => kind, "id" => id}, socket) do
     case find_item(socket.assigns, kind, id) do
-      nil -> {:noreply, socket}
-      item -> {:noreply, assign(socket, :selected, %{kind: kind, item: item})}
+      nil ->
+        {:noreply, socket}
+
+      item ->
+        socket =
+          socket
+          |> assign(:selected, %{kind: kind, item: item})
+          |> assign(:stay_error, nil)
+
+        socket =
+          if kind == "hotel" do
+            today = Date.utc_today()
+
+            socket
+            |> assign(:stay_check_in, Date.to_iso8601(Date.add(today, 1)))
+            |> assign(:stay_check_out, Date.to_iso8601(Date.add(today, 2)))
+            |> assign(:stay_rooms, "1")
+            |> assign(:stay_guests, "1")
+          else
+            socket
+          end
+
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event("book_stay", params, socket) do
+    user =
+      case socket.assigns.current_user do
+        nil -> nil
+        identity -> Accounts.get_user(identity) || Accounts.get_user_by_phone(identity)
+      end
+
+    hotel =
+      case socket.assigns.selected do
+        %{kind: "hotel", item: hotel} -> hotel
+        _ -> nil
+      end
+
+    cond do
+      is_nil(user) ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "Sign in to reserve a stay.")
+         |> push_navigate(to: ~p"/user/login")}
+
+      is_nil(hotel) ->
+        {:noreply, assign(socket, :stay_error, "Choose a hotel before reserving.")}
+
+      true ->
+        socket =
+          socket
+          |> assign(:stay_check_in, params["check_in"] || socket.assigns.stay_check_in)
+          |> assign(:stay_check_out, params["check_out"] || socket.assigns.stay_check_out)
+          |> assign(:stay_rooms, params["rooms"] || socket.assigns.stay_rooms)
+          |> assign(:stay_guests, params["guests"] || socket.assigns.stay_guests)
+
+        case HotelBookings.create_booking(user, hotel, params) do
+          {:ok, booking} ->
+            {:noreply,
+             socket
+             |> assign(:selected, nil)
+             |> assign(:stay_error, nil)
+             |> put_flash(
+               :success,
+               "Stay reserved. #{booking.hotel_name} · #{booking.reference}"
+             )
+             |> push_navigate(to: ~p"/dashboard?tab=chyllz")}
+
+          {:error, %Ecto.Changeset{} = changeset} ->
+            {:noreply, assign(socket, :stay_error, stay_error_message(changeset))}
+
+          {:error, :past_check_in} ->
+            {:noreply, assign(socket, :stay_error, "Check-in date cannot be in the past.")}
+
+          {:error, :invalid_dates} ->
+            {:noreply, assign(socket, :stay_error, "Check-out must be after check-in.")}
+
+          {:error, _reason} ->
+            {:noreply, assign(socket, :stay_error, "Could not create the reservation.")}
+        end
     end
   end
 
@@ -101,6 +206,443 @@ defmodule XpressbusWeb.ChyllzLive do
 
   def handle_event("back_to_search", _params, socket) do
     {:noreply, push_navigate(socket, to: ~p"/")}
+  end
+
+  # --- Chyllz AI assistant ---------------------------------------------------
+
+  @impl true
+  def handle_event("assistant_open", _params, socket) do
+    {:noreply, assign_assistant(socket, %{socket.assigns.assistant | open: true, error: nil})}
+  end
+
+  def handle_event("assistant_close", _params, socket) do
+    {:noreply, assign_assistant(socket, %{socket.assigns.assistant | open: false})}
+  end
+
+  def handle_event("assistant_escape", _params, socket) do
+    if socket.assigns.assistant.open do
+      {:noreply, assign_assistant(socket, %{socket.assigns.assistant | open: false})}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_event("assistant_tab", %{"tab" => tab}, socket)
+      when tab in ~w(chat lens receipt food) do
+    state = %{socket.assigns.assistant | tab: tab, error: nil, input: ""}
+    {:noreply, assign_assistant(socket, state)}
+  end
+
+  def handle_event("assistant_tab", _params, socket), do: {:noreply, socket}
+
+  def handle_event("assistant_input", %{"message" => message}, socket) do
+    state = %{
+      socket.assigns.assistant
+      | input: message |> to_string() |> String.slice(0, 1_000)
+    }
+
+    {:noreply, assign_assistant(socket, state)}
+  end
+
+  def handle_event("assistant_caption", %{"caption" => caption}, socket) do
+    state = %{socket.assigns.assistant | caption: caption |> to_string() |> String.slice(0, 300)}
+    {:noreply, assign_assistant(socket, state)}
+  end
+
+  def handle_event("assistant_validate_upload", params, socket) do
+    caption = Map.get(params, "caption", socket.assigns.assistant.caption)
+
+    state = %{
+      socket.assigns.assistant
+      | caption: caption |> to_string() |> String.slice(0, 300),
+        error: nil
+    }
+
+    {:noreply, assign_assistant(socket, state)}
+  end
+
+  def handle_event("assistant_send", %{"message" => message}, socket) do
+    {:noreply, assistant_submit(socket, message)}
+  end
+
+  def handle_event("assistant_suggestion", %{"prompt" => prompt}, socket) do
+    {:noreply, assistant_submit(socket, prompt)}
+  end
+
+  def handle_event("assistant_new_chat", _params, socket) do
+    state = socket.assigns.assistant
+
+    socket =
+      if state.pending do
+        cancel_async(socket, {:assistant_reply, state.pending_ref})
+      else
+        socket
+      end
+
+    socket =
+      Enum.reduce(socket.assigns.uploads.assistant_photo.entries, socket, fn entry, acc ->
+        cancel_upload(acc, :assistant_photo, entry.ref)
+      end)
+
+    state = %{
+      state
+      | threads: Map.put(state.threads, state.tab, []),
+        input: "",
+        caption: "",
+        receipt_text: "",
+        error: nil,
+        pending: false,
+        pending_ref: nil,
+        pending_tab: nil,
+        pending_prompt: nil,
+        pending_history: nil
+    }
+
+    {:noreply, assign_assistant(socket, state)}
+  end
+
+  def handle_event("assistant_cancel_upload", %{"ref" => ref}, socket) do
+    socket = cancel_upload(socket, :assistant_photo, ref)
+    {:noreply, assign_assistant(socket, %{socket.assigns.assistant | error: nil})}
+  end
+
+  def handle_event("assistant_analyze", params, socket) do
+    caption = Map.get(params, "caption", socket.assigns.assistant.caption)
+    {:noreply, assistant_analyze_photo(socket, to_string(caption))}
+  end
+
+  def handle_event("assistant_receipt_text", %{"receipt_text" => text}, socket) do
+    {:noreply, assistant_receipt_submit(socket, text)}
+  end
+
+  def handle_event("assistant_clear_expenses", _params, socket) do
+    {:noreply, assign_assistant(socket, %{socket.assigns.assistant | expenses: []})}
+  end
+
+  @impl true
+  def handle_async({:assistant_reply, ref}, {:ok, {tab, reply}}, socket) do
+    if socket.assigns.assistant.pending_ref == ref do
+      socket =
+        socket
+        |> clear_assistant_pending()
+        |> append_assistant_reply(tab, reply)
+
+      {:noreply, socket}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_async({:assistant_reply, ref}, {:exit, _reason}, socket) do
+    state = socket.assigns.assistant
+
+    if state.pending_ref == ref do
+      tab = state.pending_tab || state.tab
+      prompt = state.pending_prompt || ""
+      context = TravelAssistant.context()
+
+      fallback =
+        TravelAssistant.respond(tab, prompt, state.pending_history || [], context, use_ai: false)
+
+      reply = %{
+        fallback
+        | text:
+            "I couldn't reach the AI service just now — here's the catalogue answer instead.\n\n" <>
+              fallback.text
+      }
+
+      socket =
+        socket
+        |> clear_assistant_pending()
+        |> append_assistant_reply(tab, reply)
+
+      {:noreply, socket}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_async(_name, _result, socket), do: {:noreply, socket}
+
+  defp initial_assistant_state do
+    %{
+      open: false,
+      tab: "chat",
+      threads: %{"chat" => [], "lens" => [], "receipt" => [], "food" => []},
+      pending: false,
+      pending_ref: nil,
+      pending_tab: nil,
+      pending_prompt: nil,
+      pending_history: nil,
+      input: "",
+      caption: "",
+      receipt_text: "",
+      expenses: [],
+      error: nil,
+      sequence: 0,
+      requests: []
+    }
+  end
+
+  defp assign_assistant(socket, state), do: assign(socket, :assistant, state)
+
+  defp assistant_submit(socket, text) do
+    text = text |> to_string() |> String.trim() |> String.slice(0, 1_000)
+    state = socket.assigns.assistant
+    rate = assistant_rate_status(state)
+
+    cond do
+      text == "" ->
+        socket
+
+      state.pending ->
+        assign_assistant(socket, %{state | input: ""})
+
+      rate.limited ->
+        socket = append_chat_message(socket, state.tab, :user, text)
+
+        socket =
+          assign_assistant(socket, %{
+            socket.assigns.assistant
+            | input: "",
+              requests: rate.requests
+          })
+
+        append_chat_message(
+          socket,
+          state.tab,
+          :assistant,
+          "You've reached this hour's assistant limit. Give it a few minutes, or browse the Chyllz catalogue in the meantime."
+        )
+
+      state.tab == "receipt" and receipt_like?(text) ->
+        assistant_receipt_submit(socket, text)
+
+      true ->
+        assistant_respond(socket, text, rate.requests)
+    end
+  end
+
+  defp assistant_respond(socket, text, requests) do
+    state = socket.assigns.assistant
+    tab = state.tab
+    history = state.threads[tab] || []
+    context = TravelAssistant.context()
+
+    socket = append_chat_message(socket, tab, :user, text)
+    state = socket.assigns.assistant
+
+    socket =
+      assign_assistant(socket, %{
+        state
+        | input: "",
+          error: nil,
+          requests: requests
+      })
+
+    if socket.assigns.assistant_ai_enabled and tab in ["chat", "food"] do
+      ref = System.unique_integer([:positive])
+
+      socket
+      |> assign_assistant(%{
+        socket.assigns.assistant
+        | pending: true,
+          pending_ref: ref,
+          pending_tab: tab,
+          pending_prompt: text,
+          pending_history: history
+      })
+      |> start_async({:assistant_reply, ref}, fn ->
+        {tab, TravelAssistant.respond(tab, text, history, context)}
+      end)
+    else
+      reply = TravelAssistant.respond(tab, text, history, context, use_ai: false)
+      append_assistant_reply(socket, tab, reply)
+    end
+  end
+
+  defp assistant_receipt_submit(socket, text) do
+    text = to_string(text)
+
+    if String.trim(text) == "" do
+      assign_assistant(socket, %{
+        socket.assigns.assistant
+        | error: "Paste the receipt lines first."
+      })
+    else
+      result = TravelAssistant.parse_receipt_text(text)
+      label = text |> String.trim() |> String.slice(0, 500)
+
+      socket =
+        socket
+        |> append_chat_message("receipt", :user, label)
+        |> append_assistant_reply("receipt", %{
+          text: result.text,
+          cards: [],
+          action: nil,
+          source: :local,
+          receipt: result.receipt
+        })
+
+      state = socket.assigns.assistant
+      assign_assistant(socket, %{state | receipt_text: "", input: "", error: nil})
+    end
+  end
+
+  defp assistant_analyze_photo(socket, caption) do
+    state = socket.assigns.assistant
+
+    cond do
+      state.pending ->
+        socket
+
+      socket.assigns.uploads.assistant_photo.entries == [] ->
+        assign_assistant(socket, %{
+          state
+          | error: "Add a photo first — or paste the receipt lines below."
+        })
+
+      true ->
+        [entry | _rest] = socket.assigns.uploads.assistant_photo.entries
+        content_type = image_content_type(entry.client_type, entry.client_name)
+
+        case consume_uploaded_entry(socket, entry, fn %{path: path} ->
+               case File.read(path) do
+                 {:ok, binary} when byte_size(binary) > 0 -> {:ok, binary}
+                 {:ok, _empty} -> {:error, :empty}
+                 {:error, reason} -> {:error, reason}
+               end
+             end) do
+          binary when is_binary(binary) ->
+            data_url = "data:" <> content_type <> ";base64," <> Base.encode64(binary)
+            tab = state.tab
+            history = state.threads[tab] || []
+            user_text = if String.trim(caption) == "", do: "📷 Photo", else: "📷 " <> caption
+
+            socket = append_chat_message(socket, tab, :user, user_text)
+            state = socket.assigns.assistant
+
+            socket =
+              assign_assistant(socket, %{
+                state
+                | caption: "",
+                  input: "",
+                  error: nil
+              })
+
+            if socket.assigns.assistant_ai_enabled do
+              ref = System.unique_integer([:positive])
+
+              socket
+              |> assign_assistant(%{
+                socket.assigns.assistant
+                | pending: true,
+                  pending_ref: ref,
+                  pending_tab: tab,
+                  pending_prompt: caption,
+                  pending_history: history
+              })
+              |> start_async({:assistant_reply, ref}, fn ->
+                {tab, TravelAssistant.photo_reply(tab, data_url, caption)}
+              end)
+            else
+              reply = TravelAssistant.photo_reply(tab, data_url, caption)
+              append_assistant_reply(socket, tab, reply)
+            end
+
+          {:error, _reason} ->
+            assign_assistant(socket, %{
+              socket.assigns.assistant
+              | error: "That photo could not be read. Please try another image."
+            })
+        end
+    end
+  end
+
+  defp append_assistant_reply(socket, tab, reply) do
+    socket =
+      append_chat_message(socket, tab, :assistant, reply.text,
+        cards: reply.cards || [],
+        action: reply.action,
+        source: reply.source
+      )
+
+    if Map.get(reply, :receipt) do
+      add_assistant_expense(socket, reply.receipt)
+    else
+      socket
+    end
+  end
+
+  defp append_chat_message(socket, tab, role, text, opts \\ []) do
+    state = socket.assigns.assistant
+    sequence = state.sequence + 1
+
+    message = %{
+      id: "assistant-message-#{sequence}",
+      role: role,
+      text: to_string(text),
+      cards: Keyword.get(opts, :cards, []),
+      action: Keyword.get(opts, :action),
+      source: Keyword.get(opts, :source)
+    }
+
+    thread =
+      ((state.threads[tab] || []) ++ [message])
+      |> Enum.take(-60)
+
+    state = %{state | sequence: sequence, threads: Map.put(state.threads, tab, thread)}
+    assign_assistant(socket, state)
+  end
+
+  defp add_assistant_expense(socket, summary) do
+    state = socket.assigns.assistant
+    entry = TravelAssistant.expense_entry(summary)
+    expenses = (state.expenses ++ [entry]) |> Enum.take(-20)
+    assign_assistant(socket, %{state | expenses: expenses})
+  end
+
+  defp clear_assistant_pending(socket) do
+    state = %{
+      socket.assigns.assistant
+      | pending: false,
+        pending_ref: nil,
+        pending_tab: nil,
+        pending_prompt: nil,
+        pending_history: nil
+    }
+
+    assign_assistant(socket, state)
+  end
+
+  defp assistant_rate_status(state) do
+    now = System.monotonic_time(:millisecond)
+    recent = Enum.filter(state.requests || [], &(now - &1 < 3_600_000))
+
+    %{
+      limited: length(recent) >= @assistant_hourly_limit,
+      requests: [now | recent]
+    }
+  end
+
+  defp receipt_like?(text) do
+    String.contains?(text, "\n") and Regex.match?(~r/\d/, text)
+  end
+
+  defp image_content_type(client_type, filename) do
+    cond do
+      is_binary(client_type) and String.starts_with?(client_type, "image/") ->
+        client_type
+
+      is_binary(filename) and String.ends_with?(String.downcase(filename), ".png") ->
+        "image/png"
+
+      is_binary(filename) and String.ends_with?(String.downcase(filename), ".webp") ->
+        "image/webp"
+
+      true ->
+        "image/jpeg"
+    end
   end
 
   defp load_step(socket, :chyllz, _search) do
@@ -366,6 +908,19 @@ defmodule XpressbusWeb.ChyllzLive do
     Enum.reject(pairs, fn {_label, value} -> is_nil(value) or value == "" end)
   end
 
+  defp stay_error_message(changeset) do
+    changeset
+    |> Ecto.Changeset.traverse_errors(fn {message, _opts} -> message end)
+    |> Enum.map(fn {field, messages} ->
+      "#{Phoenix.Naming.humanize(field)} #{Enum.join(messages, ", ")}"
+    end)
+    |> Enum.join(". ")
+    |> case do
+      "" -> "Check the reservation details and try again."
+      message -> message
+    end
+  end
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -493,6 +1048,26 @@ defmodule XpressbusWeb.ChyllzLive do
           <.catalogue_modal selected={@selected} />
         <% end %>
       </div>
+
+      <.assistant_launcher open={@assistant.open} />
+      <.assistant_panel
+        open={@assistant.open}
+        tab={@assistant.tab}
+        thread={@assistant.threads[@assistant.tab] || []}
+        pending={@assistant.pending}
+        pending_tab={@assistant.pending_tab}
+        input={@assistant.input}
+        upload={@uploads.assistant_photo}
+        caption={@assistant.caption}
+        receipt_text={@assistant.receipt_text}
+        expenses={@assistant.expenses}
+        expense_total={TravelAssistant.expense_total_label(@assistant.expenses)}
+        greeting={TravelAssistant.greeting(@assistant.tab)}
+        suggestions={TravelAssistant.suggestions(@assistant.tab)}
+        engine={@assistant_engine}
+        ai_enabled={@assistant_ai_enabled}
+        error={@assistant.error}
+      />
     </Layouts.app>
     """
   end
@@ -567,6 +1142,15 @@ defmodule XpressbusWeb.ChyllzLive do
             Search Stays
           </button>
         </form>
+
+        <button
+          type="button"
+          id="chyllz-ai-hero-cta"
+          phx-click="assistant_open"
+          class="mt-7 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-6 py-3 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur transition-all hover:-translate-y-0.5 hover:bg-white hover:text-[#FF4C00]"
+        >
+          <.sparkle_icon class="h-4 w-4" /> Ask Chyllz AI
+        </button>
 
         <%= if @current_user do %>
           <a
@@ -1072,6 +1656,113 @@ defmodule XpressbusWeb.ChyllzLive do
 
           <%= if item_description(@selected) do %>
             <p class="text-slate-500 font-bold leading-relaxed">{item_description(@selected)}</p>
+          <% end %>
+
+          <%= if @selected.kind == "hotel" do %>
+            <div id="stay-booking" class="rounded-[1.75rem] border border-orange-100 bg-orange-50/50 p-5">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#FF4C00]">event_available</span>
+                <h3 class="text-sm font-black uppercase tracking-widest text-slate-900">
+                  Reserve this stay
+                </h3>
+              </div>
+
+              <p class="mt-1 text-xs font-bold leading-relaxed text-slate-500">
+                Send a reservation request to {item_name(@selected)}. No payment is taken here.
+              </p>
+
+              <%= if @stay_error do %>
+                <p id="stay-booking-error" class="mt-3 rounded-xl bg-red-50 px-3 py-2 text-xs font-bold text-red-600">
+                  {@stay_error}
+                </p>
+              <% end %>
+
+              <%= if @current_user do %>
+                <form id="stay-booking-form" phx-submit="book_stay" class="mt-4 space-y-3">
+                  <div class="grid gap-3 sm:grid-cols-2">
+                    <label class="block text-left">
+                      <span class="mb-1 block text-[10px] font-black uppercase tracking-widest text-slate-500">
+                        Check-in
+                      </span>
+                      <input
+                        id="stay-check-in"
+                        type="date"
+                        name="check_in"
+                        value={@stay_check_in}
+                        min={Date.to_iso8601(Date.utc_today())}
+                        required
+                        class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold text-slate-700 outline-none focus:border-[#FF4C00]"
+                      />
+                    </label>
+
+                    <label class="block text-left">
+                      <span class="mb-1 block text-[10px] font-black uppercase tracking-widest text-slate-500">
+                        Check-out
+                      </span>
+                      <input
+                        id="stay-check-out"
+                        type="date"
+                        name="check_out"
+                        value={@stay_check_out}
+                        min={@stay_check_in}
+                        required
+                        class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold text-slate-700 outline-none focus:border-[#FF4C00]"
+                      />
+                    </label>
+                  </div>
+
+                  <div class="grid gap-3 sm:grid-cols-2">
+                    <label class="block text-left">
+                      <span class="mb-1 block text-[10px] font-black uppercase tracking-widest text-slate-500">
+                        Rooms
+                      </span>
+                      <input
+                        id="stay-rooms"
+                        type="number"
+                        name="rooms"
+                        min="1"
+                        max="10"
+                        value={@stay_rooms}
+                        required
+                        class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold text-slate-700 outline-none focus:border-[#FF4C00]"
+                      />
+                    </label>
+
+                    <label class="block text-left">
+                      <span class="mb-1 block text-[10px] font-black uppercase tracking-widest text-slate-500">
+                        Guests
+                      </span>
+                      <input
+                        id="stay-guests"
+                        type="number"
+                        name="guests"
+                        min="1"
+                        max="20"
+                        value={@stay_guests}
+                        required
+                        class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold text-slate-700 outline-none focus:border-[#FF4C00]"
+                      />
+                    </label>
+                  </div>
+
+                  <button
+                    id="stay-booking-submit"
+                    type="submit"
+                    class="w-full rounded-full bg-[#FF4C00] px-6 py-3.5 text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-orange-200 transition hover:bg-[#E64400]"
+                  >
+                    Request reservation
+                  </button>
+                </form>
+              <% else %>
+                <.link
+                  id="stay-booking-login"
+                  navigate={~p"/user/login"}
+                  class="mt-4 flex items-center justify-center rounded-full bg-[#FF4C00] px-6 py-3.5 text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-orange-200 transition hover:bg-[#E64400]"
+                >
+                  Sign in to reserve
+                </.link>
+              <% end %>
+            </div>
           <% end %>
 
           <div class="flex flex-col sm:flex-row gap-3 pt-2">

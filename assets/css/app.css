@@ -1196,6 +1196,12 @@ footer nav[aria-label="Explore Komiuta"] {
   pointer-events: auto;
 }
 
+@media (max-width: 639px) {
+  body:has(#chyllz-assistant[data-open="true"]) {
+    overflow: hidden;
+  }
+}
+
 #chyllz-assistant-backdrop {
   opacity: 0;
   transition: opacity 0.25s ease-out;

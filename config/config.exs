@@ -72,6 +72,7 @@ config :xpressbus, :weather,
   enabled: true,
   cache_ttl_seconds: 900,
   http_timeout_ms: 5_000
+
 # Transactional SMS (ticket cancellation notifications). Africa's Talking is the
 # default gateway for Kenya; configure the credentials in the environment.
 config :xpressbus, :sms, %{
@@ -79,6 +80,25 @@ config :xpressbus, :sms, %{
   api_key: "",
   username: "",
   sender_id: "KOMIUTA"
+}
+
+# Chyllz AI travel assistant. The assistant works entirely offline against the
+# live Chyllz catalogue when no key is set; configuring an OpenAI-compatible
+# endpoint upgrades the Chat/Food tabs and adds photo (Lens) and receipt vision.
+# The preferred production path is Admin → Settings → Integrations → Chyllz AI,
+# which is stored in the `integrations` table and overrides these values.
+# Secrets can also be supplied at runtime (see config/runtime.exs and
+# DEPLOY_RENDER.md) for environments without admin access.
+config :xpressbus, :ai, %{
+  enabled: true,
+  provider: "openai",
+  api_key: nil,
+  base_url: "https://api.openai.com/v1",
+  model: "gpt-4o-mini",
+  vision_model: "gpt-4o-mini",
+  temperature: 0.4,
+  max_tokens: 700,
+  timeout: 20_000
 }
 
 # Configure esbuild (the version is required)

@@ -57,6 +57,46 @@ config :xpressbus,
        :sms,
        Application.get_env(:xpressbus, :sms, %{}) |> Map.merge(sms_env)
 
+# Chyllz AI assistant. Any non-empty environment variable overrides the
+# compile-time default; with no AI_API_KEY the assistant runs in local mode and
+# never sends traveller text or photos to a third party. Tests always run in
+# local mode so the suite can never hit a live provider.
+if config_env() != :test do
+  ai_env =
+    %{
+      api_key: System.get_env("AI_API_KEY") || System.get_env("OPENAI_API_KEY"),
+      base_url: System.get_env("AI_BASE_URL"),
+      model: System.get_env("AI_MODEL"),
+      vision_model: System.get_env("AI_VISION_MODEL")
+    }
+    |> Enum.reject(fn {_key, value} -> is_nil(value) or String.trim(value) == "" end)
+    |> Map.new()
+
+  ai_env =
+    case System.get_env("AI_ENABLED") do
+      nil -> ai_env
+      value -> Map.put(ai_env, :enabled, String.downcase(value) in ["true", "1", "yes"])
+    end
+
+  ai_env =
+    case System.get_env("AI_TIMEOUT_MS") do
+      nil ->
+        ai_env
+
+      value ->
+        case Integer.parse(value) do
+          {timeout, ""} when timeout >= 1_000 -> Map.put(ai_env, :timeout, timeout)
+          _other -> ai_env
+        end
+    end
+
+  if map_size(ai_env) > 0 do
+    config :xpressbus,
+           :ai,
+           Application.get_env(:xpressbus, :ai, %{}) |> Map.merge(ai_env)
+  end
+end
+
 if config_env() == :dev do
   # Reload browser tabs when matching files change.
   config :xpressbus, XpressbusWeb.Endpoint,

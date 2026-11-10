@@ -40,7 +40,7 @@
         <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
           <div class="p-6 md:p-10">
             <%!-- Provider Tabs --%>
-            <div class="flex gap-4 mb-4 border-b border-slate-50">
+            <div class="flex flex-wrap gap-2 sm:gap-4 mb-4 border-b border-slate-50">
               <%= for {provider_key, provider_info} <- @providers do %>
                 <button
                   phx-click="switch_provider"
@@ -907,6 +907,222 @@
                       class="px-10 bg-slate-900 text-white py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-slate-200 hover:bg-black transition-all"
                     >
                       Test API
+                    </button>
+                  </div>
+                </form>
+              </div>
+            <% end %>
+
+            <%!-- Chyllz AI provider (Chat / Lens / Receipt / Food) --%>
+            <%= if @current_provider == "ai" do %>
+              <% ai_config = provider_config(@settings, "ai") %>
+              <% ai_status = @ai_status %>
+              <% ai_model = ai_config["model"] || ai_status.model %>
+              <% ai_vision_model = ai_config["vision_model"] || ai_status.vision_model %>
+              <% ai_base_url = ai_config["base_url"] || ai_status.base_url %>
+              <% ai_timeout = ai_config["timeout"] || "20000" %>
+              <% ai_status_label =
+                case ai_status.source do
+                  :integration -> "Connected via admin"
+                  :environment -> "Using environment key"
+                  :disabled -> "Disabled by admin"
+                  :missing_key -> "Enabled — add an API key"
+                  _ -> "Local guide mode (no key)"
+                end %>
+              <div class="animate-fade-in-up space-y-8">
+                <form id="ai-integration-form" phx-submit="save" class="space-y-8">
+                  <input type="hidden" name="provider" value="ai" />
+
+                  <div class="flex items-center justify-between p-4 bg-slate-50 rounded-[2rem] border border-slate-100">
+                    <div>
+                      <h4 class="font-black text-slate-900 text-sm uppercase tracking-widest">
+                        Chyllz AI Configuration
+                      </h4>
+                      <p class="text-[11px] font-bold text-slate-400">
+                        OpenAI-compatible provider for the travel assistant
+                      </p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        phx-click="toggle_active"
+                        phx-value-provider="ai"
+                        checked={Map.get(@settings["ai"], :active, true)}
+                        class="sr-only peer"
+                      />
+                      <div class="relative w-20 h-9 bg-[#FF4C00] peer-focus:outline-none rounded-full peer-checked:after:translate-x-[3rem] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-7 after:w-7 after:transition-all peer-checked:bg-green-500">
+                        <span class={[
+                          "absolute inset-0 flex items-center justify-end pr-3 text-[11px] font-black uppercase tracking-wider text-white transition-opacity duration-200 z-10 drop-shadow-sm",
+                          if(Map.get(@settings["ai"], :active, true), do: "opacity-0")
+                        ]}>OFF</span>
+                        <span class={[
+                          "absolute inset-0 flex items-center justify-start pl-3 text-[11px] font-black uppercase tracking-wider text-white transition-opacity duration-200 opacity-0 z-10 drop-shadow-sm",
+                          if(Map.get(@settings["ai"], :active, true), do: "opacity-100")
+                        ]}>ON</span>
+                      </div>
+                    </label>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="rounded-[1.5rem] border border-slate-100 bg-slate-50 p-5">
+                      <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
+                        Connection
+                      </p>
+                      <span class={[
+                        "mt-3 inline-flex items-center gap-2 rounded-full px-3 py-2 text-[9px] font-black uppercase tracking-widest",
+                        ai_status.configured &&
+                          "bg-emerald-50 text-emerald-700 border border-emerald-100",
+                        !ai_status.configured &&
+                          "bg-amber-50 text-amber-700 border border-amber-100"
+                      ]}>
+                        <span class={[
+                          "w-2 h-2 rounded-full",
+                          ai_status.configured && "bg-emerald-500",
+                          !ai_status.configured && "bg-amber-500"
+                        ]}></span>
+                        {ai_status_label}
+                      </span>
+                    </div>
+
+                    <div class="rounded-[1.5rem] border border-slate-100 bg-white p-5">
+                      <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
+                        Chat model
+                      </p>
+                      <p class="mt-2 break-words text-xs font-black text-slate-900">
+                        {ai_model}
+                      </p>
+                    </div>
+
+                    <div class="rounded-[1.5rem] border border-slate-100 bg-white p-5">
+                      <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
+                        Vision model
+                      </p>
+                      <p class="mt-2 break-words text-xs font-black text-slate-900">
+                        {ai_vision_model}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
+                    <div class="md:col-span-2">
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">
+                        API Key
+                      </label>
+                      <input
+                        type="password"
+                        name="config[api_key]"
+                        value=""
+                        autocomplete="new-password"
+                        placeholder={
+                          if ai_status.has_integration_key,
+                            do: "•••••••• — leave blank to keep the saved key",
+                            else: "sk-... or your provider key"
+                        }
+                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                      />
+                      <p class="mt-3 text-[10px] font-bold leading-relaxed text-slate-400">
+                        <%= if ai_status.has_integration_key do %>
+                          A key is saved and is never sent back to this page. Leave the field blank to keep it, or paste a new key to replace it.
+                        <% else %>
+                          Add an OpenAI, OpenRouter, Groq, Together or other OpenAI-compatible key. The key stays server-side.
+                        <% end %>
+                        <%= if ai_status.has_env_key and !ai_status.has_integration_key do %>
+                          The server also has an environment key configured; it is used until you save a key here.
+                        <% end %>
+                      </p>
+                    </div>
+
+                    <div class="md:col-span-2">
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">
+                        Base URL
+                      </label>
+                      <input
+                        type="url"
+                        name="config[base_url]"
+                        value={ai_base_url}
+                        placeholder="https://api.openai.com/v1"
+                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                      />
+                      <p class="mt-3 text-[10px] font-bold leading-relaxed text-slate-400">
+                        Use an OpenAI-compatible <code class="font-black">/v1</code>
+                        base. For OpenRouter use <code class="font-black">https://openrouter.ai/api/v1</code>.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">
+                        Chat model
+                      </label>
+                      <input
+                        type="text"
+                        name="config[model]"
+                        value={ai_model}
+                        placeholder="gpt-4o-mini"
+                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">
+                        Vision model
+                      </label>
+                      <input
+                        type="text"
+                        name="config[vision_model]"
+                        value={ai_vision_model}
+                        placeholder="gpt-4o-mini"
+                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">
+                        Request timeout (ms)
+                      </label>
+                      <input
+                        type="number"
+                        name="config[timeout]"
+                        value={ai_timeout}
+                        min="1000"
+                        max="60000"
+                        step="1000"
+                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="rounded-[1.5rem] bg-orange-50 border border-orange-100 p-6">
+                    <h4 class="text-xs font-black text-slate-900 uppercase tracking-widest mb-2">
+                      How Chyllz uses this
+                    </h4>
+                    <p class="text-[11px] font-bold leading-relaxed text-slate-600">
+                      When this integration is ON and a key is saved, the Chyllz assistant uses the provider for Chat and Food,
+                      and the vision model for Lens and Receipt photos. With no key, the assistant stays in its live-catalogue
+                      guide mode and still answers, plans trips and reads pasted receipts. AI errors always fall back to the guide.
+                    </p>
+                  </div>
+
+                  <div class="pt-2 flex flex-wrap gap-4">
+                    <button
+                      type="submit"
+                      class="flex-1 min-w-[220px] bg-[#FF4C00] text-white py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-orange-100 hover:bg-[#E64400] transition-all transform active:scale-95"
+                    >
+                      Save AI Settings
+                    </button>
+                    <button
+                      type="button"
+                      phx-click="test_connection"
+                      class="px-10 bg-slate-900 text-white py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-slate-200 hover:bg-black transition-all"
+                    >
+                      Test Connection
+                    </button>
+                    <button
+                      :if={ai_status.has_integration_key}
+                      type="button"
+                      phx-click="clear_ai_key"
+                      class="px-8 bg-white text-red-600 border-2 border-red-100 py-5 rounded-[1.5rem] font-black text-xs uppercase tracking-widest hover:bg-red-50 transition-all"
+                    >
+                      Remove saved key
                     </button>
                   </div>
                 </form>

@@ -84,6 +84,33 @@ Alternatives supported by the app: Mailgun (`MAILGUN_API_KEY` + `MAILGUN_DOMAIN`
 > resolve in DNS (the MX hosts only accept inbound mail on port 25 and do not offer authenticated
 > submission). Rotate any password shared in plain text.
 
+### Chyllz AI assistant (optional provider)
+
+The Chyllz assistant (Chat / Lens / Receipt / Food) works out of the box in **local guide mode**:
+answers come from the live Chyllz catalogue and receipts are parsed on the server. To enable the
+generative AI + photo/receipt vision, open **Admin → Settings → Integrations → Chyllz AI** on the
+deployed site and save an OpenAI-compatible key. That is the preferred path: it applies on the next
+assistant message, needs no redeploy, and the key is stored server-side and never sent back to the
+admin browser.
+
+Environment variables remain available as a bootstrap/fallback for environments without admin access:
+
+| Variable | Value |
+|---|---|
+| `AI_API_KEY` (or `OPENAI_API_KEY`) | provider API key |
+| `AI_BASE_URL` | optional, defaults to `https://api.openai.com/v1`; set for OpenRouter/Groq/Azure gateways |
+| `AI_MODEL` | optional, defaults to `gpt-4o-mini` |
+| `AI_VISION_MODEL` | optional, defaults to `AI_MODEL`; must support image inputs |
+| `AI_TIMEOUT_MS` | optional, defaults to `20000` |
+| `AI_ENABLED` | set to `false` to force local guide mode even with a key present |
+
+Precedence: an active admin integration with a saved key overrides the environment; an
+admin-disabled integration forces local mode even if an environment key exists; an active admin
+integration without a key falls back to the environment key. Chat/photo data is sent to the provider
+only when a key is configured. If the provider errors or times out, the assistant automatically falls
+back to the local guide. No database migration is needed. See the "Chyllz AI travel assistant" entry
+in [`AGENTS.md`](AGENTS.md) for the architecture and verification steps.
+
 ### Firebase SMS OTP (optional second login)
 
 SMS one-time codes are sent by **Firebase Phone Authentication**. Email OTP stays available as the

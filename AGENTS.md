@@ -1388,6 +1388,120 @@ mix test test/xpressbus/weather_test.exs test/xpressbus_web/admin_integration_we
 # 24 passed
 ```
 
+### 2026-11-10 Session — Chyllz AI travel assistant (Chat · Lens · Receipt · Food)
+
+**Objective:** Turn the Chyllz storefront into an AI-assisted travel experience: a branded assistant
+sheet on every Chyllz page with Chat, Lens, Receipt and Food modes, grounded in the live catalogue,
+working even before an external AI provider is configured.
+
+**Completed:**
+- `Xpressbus.AI` — a small, defensive OpenAI-compatible chat client (Req, no retries, hard timeout,
+  key never logged). Configured under `config :xpressbus, :ai`; runtime overrides are
+  `AI_API_KEY`/`OPENAI_API_KEY`, `AI_BASE_URL`, `AI_MODEL`, `AI_VISION_MODEL`, `AI_TIMEOUT_MS`,
+  `AI_ENABLED`. Tests run with `enabled: false` and never touch the network.
+- `Xpressbus.TravelAssistant` + `TravelAssistant.Local` — a deterministic, catalogue-grounded guide
+  used when there is no key (or the provider fails). It understands destination, budget and intent
+  (stays, trips/itineraries, events, car hire, hidden gems, buses, receipts, food), returns real
+  names/prices and links into the Chyllz catalogue, and never invents a venue. Placeholder
+  `AI` credentials automatically fall back to this guide, so the feature succeeds out of the box.
+- `TravelAssistant.Prompt` — system prompts grounded in a live catalogue digest (only active rows),
+  with rules against inventing prices/venues and explicit receipt-JSON extraction.
+- `TravelAssistant.Receipt` + `TravelAssistant.Money` — deterministic receipt parsing (total, currency,
+  merchant, date, item categories, tax/payment/date lines ignored), summary text and a running
+  trip-spend log. AI vision can also extract receipt JSON and feed the same summariser.
+- `TravelAssistant.FoodGuide` — curated East African dish knowledge by culinary region, filtered by
+  vegetarian/vegan/seafood preferences; venue suggestions still come only from the live catalogue.
+- `XpressbusWeb.AssistantComponents` — the full-bleed mobile sheet / 450px desktop side panel:
+  top bar (new chat + close), Chat/Lens/Receipt/Food tabs, greeting, quick prompts, message bubbles,
+  catalogue cards, action links, typing dots, upload previews, caption/receipt text forms, expense
+  log and composer. Branded sparkle inline SVG; no dependency on new icon-font glyphs.
+- `ChyllzLive` wiring — launcher on all five Chyllz pages plus an “Ask Chyllz AI” hero CTA; panel
+  state/threads per tab; uploads (JPG/PNG/WebP, 8 MB); async AI replies via `start_async`;
+  request rate limit (40/hour/session); input sanitising; receipt flow; deterministic local replies.
+- Provider transport is optional and privacy-preserving: no image or chat text leaves the server
+  unless a valid API key is configured; no DB persistence and no new tables/migrations.
+- `assets/js/app.js` rebuilds include the colocated `.AssistantScroll` hook; `sw.js` bumped to
+  `komiuta-v6` so returning PWA users receive the new CSS/JS instead of the stale cache.
+
+**Tests added:**
+- `test/xpressbus/ai_test.exs` — configured/unconfigured, request shape/authorisation, vision content
+  parts, provider errors, empty responses (Req.Test stub).
+- `test/xpressbus/travel_assistant_test.exs` — catalogue context, budget/intent answers, itinerary,
+  events, food/diet, receipt helpers, AI success + fallback, copy helpers.
+- `test/xpressbus/travel_assistant/receipt_test.exs` — totals, tax fallback, currencies, date/payment
+  filtering, category mapping, AI-extracted summarisation.
+- `test/xpressbus_web/live/chyllz_assistant_test.exs` — launcher/hero CTA on every Chyllz page (and
+  not elsewhere), open/close/new chat, tabs and tools, sending/suggestions, receipt paste + running
+  log + clear, photo upload with live preview and local Lens fallback.
+
+**Verification:**
+```
+mix test test/xpressbus/ai_test.exs test/xpressbus/travel_assistant_test.exs \
+  test/xpressbus/travel_assistant/receipt_test.exs test/xpressbus_web/live/chyllz_assistant_test.exs
+# 49 passed
+
+mix test test/xpressbus_web/live/chyllz_live_test.exs test/xpressbus/chyllz_test.exs \
+  test/xpressbus_web/mobile_render_test.exs test/xpressbus_web/mobile_perf_test.exs \
+  test/xpressbus_web/pwa_test.exs
+# 82 passed (assistant + Chyllz/mobile/PWA regressions)
+
+mix assets.build && mix phx.digest priv/static/assets
+```
+Visual checks: `scratch/chyllz_assistant_screenshot.js` captured desktop (450px sheet, chat plan with
+catalogue card/action) and mobile (full-screen 390×844, no horizontal overflow) plus Lens, Food and
+Receipt states; committed copies are in `docs/chyllz-ai-assistant-*.png`.
+
+**Notes:**
+- To enable real AI, use **Admin → Settings → Integrations → Chyllz AI** (preferred, applies
+  immediately, stored in the `integrations` table). Environment keys (`AI_API_KEY`, optional
+  `AI_MODEL`/`AI_VISION_MODEL`/`AI_BASE_URL`) remain as a bootstrap fallback. Without either, the
+  assistant is a live-catalogue guide, not a dead feature.
+- Full suite at the end of this session: **467/476**; the 9 failures are pre-existing agent-auth /
+  agent-dashboard / admin-agent-partner tests from incomplete agent-login work in this checkout, not
+  the assistant. `mix precommit` therefore still exits non-zero for those unrelated tests.
+
+### 2026-11-10 Session — Chyllz AI provider connected to Admin → Integrations
+
+**Objective:** Let operations connect/rotate the AI provider from the existing admin Integration
+section instead of editing environment variables and redeploying.
+
+**Completed:**
+- `Xpressbus.Integrations` now understands `provider: "ai"` via `ai_integration/0`: normalises the
+  saved key/base URL/model/vision model/timeout, reports `:integration`, `:missing_key`, `:disabled`
+  or `nil`, and never exposes the key through the admin-facing status helper.
+- `Xpressbus.AI` resolves config in this order: active admin integration with a key → environment →
+  defaults. An admin-disabled integration forces local mode even when an env key exists; an active
+  integration without a key falls back to the env key. Added `AI.provider_status/0` (source, effective
+  model/base URL, booleans only — no secret) for the admin UI and tests.
+- `/admin/integration` has a new **Chyllz AI** tab: ON/OFF toggle, connection badge
+  (connected/environment key/disabled/missing key/local guide), effective chat/vision model, masked
+  API-key field (never echoed back), base URL, models, timeout, “Test Connection”, “Save AI Settings”
+  and “Remove saved key”. Saving a key updates the assistant immediately with no redeploy; errors
+  fall back to the local guide as before.
+- Saving models with a blank API-key field preserves the existing key; invalid base URLs/timeouts are
+  rejected before persistence; test connection handles missing key, 401/403, other HTTP errors and
+  network failures without leaking the key or provider body.
+- Docs/config comments updated (`DEPLOY_RENDER.md`, `config/config.exs`).
+
+**Tests added:**
+- `test/xpressbus_web/live/admin_integration_ai_test.exs` — tab/form, save, key preservation, key
+  removal, disable toggle, validation, missing-key test, and a stubbed successful connection test.
+- `test/xpressbus/ai_test.exs` — admin integration overrides env, disabled forces local, missing key
+  falls back to env, status source without key exposure, request auth/model from the saved row.
+- `test/xpressbus/integrations_test.exs` — `ai_integration/0` normalisation, missing key and disabled
+  shapes.
+
+**Verification:**
+```
+mix test test/xpressbus/integrations_test.exs test/xpressbus/ai_test.exs \
+  test/xpressbus_web/live/admin_integration_ai_test.exs \
+  test/xpressbus_web/live/admin_integration_live_test.exs \
+  test/xpressbus_web/admin_integration_weather_test.exs test/xpressbus/travel_assistant_test.exs \
+  test/xpressbus_web/live/chyllz_assistant_test.exs
+# 67 passed
+```
+
+
 
 
 

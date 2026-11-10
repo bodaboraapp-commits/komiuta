@@ -1,6 +1,7 @@
 defmodule XpressbusWeb.AdminIntegrationLive do
   use XpressbusWeb, :live_view
   import XpressbusWeb.AdminComponents
+  alias Xpressbus.AI
   alias Xpressbus.Integrations
 
   @weatherapi_base "https://api.weatherapi.com/v1"
@@ -10,6 +11,12 @@ defmodule XpressbusWeb.AdminIntegrationLive do
       label: "User Login",
       icon: "login",
       description: "Choose how travellers sign in: email code, SMS code, or both"
+    },
+    "ai" => %{
+      label: "Chyllz AI",
+      icon: "forum",
+      description:
+        "OpenAI-compatible provider for the Chyllz Chat, Lens, Receipt and Food assistant"
     },
     "mpesa" => %{
       label: "MPESA",
@@ -59,6 +66,7 @@ defmodule XpressbusWeb.AdminIntegrationLive do
        |> assign(:settings, settings)
        |> assign(:firebase_config, Xpressbus.Firebase.client_config())
        |> assign(:login_method_choice, Integrations.login_method())
+       |> assign(:ai_status, AI.provider_status())
        |> assign(:sidebar_collapsed, false)
        |> assign(:bus_expanded, false)
        |> assign(:chyllz_expanded, false)
@@ -113,6 +121,36 @@ defmodule XpressbusWeb.AdminIntegrationLive do
 
       {:error, _changeset} ->
         {:noreply, put_flash(socket, :error, "Failed to save the login setting")}
+    end
+  end
+
+  def handle_event("save", %{"provider" => "ai", "config" => config_params}, socket) do
+    case build_ai_config(config_params) do
+      {:ok, config} ->
+        current_active = Map.get(socket.assigns.settings["ai"], :active, true)
+
+        case Integrations.upsert_config_by_provider("ai", %{
+               active: current_active,
+               config: config
+             }) do
+          {:ok, _config} ->
+            socket = refresh_ai(socket)
+
+            message =
+              if socket.assigns.ai_status.configured do
+                "Chyllz AI settings saved. The assistant will use the connected provider."
+              else
+                "Chyllz AI settings saved. Add an API key to enable AI replies; the live catalogue guide stays active meanwhile."
+              end
+
+            {:noreply, put_flash(socket, :info, message)}
+
+          {:error, _changeset} ->
+            {:noreply, put_flash(socket, :error, "Failed to save Chyllz AI settings")}
+        end
+
+      {:error, message} ->
+        {:noreply, put_flash(socket, :error, message)}
     end
   end
 
@@ -171,6 +209,9 @@ defmodule XpressbusWeb.AdminIntegrationLive do
       "weather_api" ->
         test_weather_api(socket, socket.assigns.settings["weather_api"])
 
+      "ai" ->
+        test_ai(socket)
+
       _ ->
         {:noreply, put_flash(socket, :info, "Handshake successful! Payment gateway is active.")}
     end
@@ -184,10 +225,34 @@ defmodule XpressbusWeb.AdminIntegrationLive do
       {:ok, _result} ->
         if provider == "weather_api", do: Xpressbus.Weather.clear_cache()
 
-        {:noreply, assign(socket, :settings, load_settings())}
+        socket = assign(socket, :settings, load_settings())
+
+        socket =
+          if provider == "ai", do: assign(socket, :ai_status, AI.provider_status()), else: socket
+
+        {:noreply, socket}
 
       {:error, _changeset} ->
         {:noreply, put_flash(socket, :error, "Failed to update #{provider} status")}
+    end
+  end
+
+  def handle_event("clear_ai_key", _params, socket) do
+    case Integrations.upsert_config_by_provider("ai", %{config: %{"api_key" => ""}}) do
+      {:ok, _config} ->
+        socket = refresh_ai(socket)
+
+        message =
+          if socket.assigns.ai_status.configured do
+            "Stored AI key removed. Chyllz AI is still connected through the environment key."
+          else
+            "Stored AI key removed. Chyllz is now using the local catalogue guide."
+          end
+
+        {:noreply, put_flash(socket, :info, message)}
+
+      {:error, _changeset} ->
+        {:noreply, put_flash(socket, :error, "Failed to remove the stored AI key")}
     end
   end
 
@@ -386,6 +451,128 @@ defmodule XpressbusWeb.AdminIntegrationLive do
       config = Integrations.get_config_by_provider(provider_key) || %{config: %{}, active: true}
       {provider_key, config}
     end)
+  end
+
+  defp refresh_ai(socket) do
+    socket
+    |> assign(:settings, load_settings())
+    |> assign(:ai_status, AI.provider_status())
+  end
+
+  defp build_ai_config(params) do
+    base_url = ai_trim(params["base_url"])
+    model = ai_trim(params["model"])
+    vision_model = ai_trim(params["vision_model"])
+    timeout = ai_trim(params["timeout"])
+    api_key = ai_trim(params["api_key"])
+
+    cond do
+      base_url && not Regex.match?(~r/^https?:\/\/[^\s]+$/i, base_url) ->
+        {:error, "Base URL must start with http:// or https://"}
+
+      base_url && String.length(base_url) > 300 ->
+        {:error, "Base URL is too long"}
+
+      model && String.length(model) > 120 ->
+        {:error, "Model name is too long"}
+
+      vision_model && String.length(vision_model) > 120 ->
+        {:error, "Vision model name is too long"}
+
+      api_key && String.length(api_key) > 500 ->
+        {:error, "API key is too long"}
+
+      timeout && invalid_ai_timeout?(timeout) ->
+        {:error, "Timeout must be between 1,000 and 60,000 milliseconds"}
+
+      true ->
+        config =
+          %{}
+          |> ai_put("api_key", api_key)
+          |> ai_put("base_url", base_url)
+          |> ai_put("model", model)
+          |> ai_put("vision_model", vision_model)
+          |> ai_put("timeout", timeout)
+
+        {:ok, config}
+    end
+  end
+
+  defp ai_trim(value) do
+    case value do
+      nil ->
+        nil
+
+      value ->
+        value = value |> to_string() |> String.trim()
+        if value == "", do: nil, else: value
+    end
+  end
+
+  defp ai_put(config, _key, nil), do: config
+
+  defp ai_put(config, key, value) do
+    if key in Integrations.ai_fields(), do: Map.put(config, key, value), else: config
+  end
+
+  defp invalid_ai_timeout?(value) do
+    case Integer.parse(value) do
+      {timeout, ""} when timeout >= 1_000 and timeout <= 60_000 -> false
+      _other -> true
+    end
+  end
+
+  defp test_ai(socket) do
+    status = socket.assigns.ai_status
+
+    if status.configured do
+      messages = [
+        %{"role" => "system", "content" => "You are a connectivity check. Reply briefly."},
+        %{"role" => "user", "content" => "Reply with OK."}
+      ]
+
+      case AI.chat(messages, max_tokens: 8, timeout: 10_000) do
+        {:ok, _reply} ->
+          {:noreply,
+           put_flash(
+             socket,
+             :info,
+             "Chyllz AI is reachable. Provider model: #{status.model}."
+           )}
+
+        {:error, :not_configured} ->
+          {:noreply,
+           put_flash(socket, :error, "No AI key is configured. Save a key or set AI_API_KEY.")}
+
+        {:error, {:http_status, 401, _body}} ->
+          {:noreply, put_flash(socket, :error, "The AI provider rejected the API key (401).")}
+
+        {:error, {:http_status, 403, _body}} ->
+          {:noreply,
+           put_flash(socket, :error, "The AI provider denied access to this key (403).")}
+
+        {:error, {:http_status, status_code, _body}} ->
+          {:noreply, put_flash(socket, :error, "The AI provider returned HTTP #{status_code}.")}
+
+        {:error, {:request_failed, _reason}} ->
+          {:noreply,
+           put_flash(
+             socket,
+             :error,
+             "Could not reach the AI provider. Check the base URL and network access."
+           )}
+
+        {:error, _reason} ->
+          {:noreply, put_flash(socket, :error, "The AI connection check failed.")}
+      end
+    else
+      {:noreply,
+       put_flash(
+         socket,
+         :error,
+         "No AI key is configured. Save a key first, or set AI_API_KEY on the server."
+       )}
+    end
   end
 
   defp provider_config(settings, provider) do

@@ -71,6 +71,89 @@ defmodule Xpressbus.Integrations do
 
   def login_methods, do: @login_methods
 
+  @ai_default_base_url "https://api.openai.com/v1"
+  @ai_default_model "gpt-4o-mini"
+  @ai_fields ~w(api_key base_url model vision_model timeout)
+
+  @doc """
+  Returns the Chyllz AI provider saved on the admin Integration page.
+
+  The result is intentionally small and stable:
+
+    * `:source` is `:integration` when an active row has an API key,
+      `:missing_key` when the row is active but has no key, `:disabled` when
+      the admin turned the integration off, and `nil` when no row exists;
+    * `:api_key` is only present for an active, configured row;
+    * the remaining values are normalised strings/integers for the AI client.
+
+  The API key is never included in the admin-facing status helper
+  (`Xpressbus.AI.provider_status/0`); only this internal function returns it.
+  """
+  def ai_integration do
+    case get_config_by_provider("ai") do
+      nil ->
+        nil
+
+      %{active: false} ->
+        %{source: :disabled, active: false}
+
+      %{active: true, config: config} when is_map(config) ->
+        key = trimmed(config["api_key"])
+
+        integration = %{
+          source: if(key, do: :integration, else: :missing_key),
+          active: true,
+          base_url: trimmed(config["base_url"]) || @ai_default_base_url,
+          model: trimmed(config["model"]) || @ai_default_model,
+          vision_model:
+            trimmed(config["vision_model"]) || trimmed(config["model"]) || @ai_default_model,
+          timeout: ai_timeout(config["timeout"])
+        }
+
+        if key, do: Map.put(integration, :api_key, key), else: integration
+
+      %{active: true} ->
+        %{
+          source: :missing_key,
+          active: true,
+          base_url: @ai_default_base_url,
+          model: @ai_default_model,
+          vision_model: @ai_default_model,
+          timeout: nil
+        }
+    end
+  end
+
+  @doc "The whitelisted fields accepted from the Chyllz AI admin form."
+  def ai_fields, do: @ai_fields
+
+  defp trimmed(value) do
+    case value do
+      nil ->
+        nil
+
+      value ->
+        value = value |> to_string() |> String.trim()
+        if value == "", do: nil, else: value
+    end
+  end
+
+  defp ai_timeout(value) do
+    case value do
+      value when is_integer(value) and value >= 1_000 and value <= 60_000 ->
+        value
+
+      value when is_binary(value) ->
+        case Integer.parse(String.trim(value)) do
+          {timeout, ""} when timeout >= 1_000 and timeout <= 60_000 -> timeout
+          _other -> nil
+        end
+
+      _other ->
+        nil
+    end
+  end
+
   @doc """
   Upserts a payment config by provider.
   Expects attrs to be a map with :active and :config (the config map).
