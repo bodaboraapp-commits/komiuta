@@ -163,7 +163,7 @@ defmodule XpressbusWeb.DashboardChyllzTabTest do
     # The eye button previews the itinerary in the existing ticket modal.
     view |> element("#preview-trip-#{upcoming.ticket_id}") |> render_click()
     assert has_element?(view, "#ticket-qr")
-    view |> element("button", "close") |> render_click()
+    view |> element("button[phx-click='close_ticket']", "close") |> render_click()
     refute has_element?(view, "#no-trips")
 
     assert has_element?(view, "#weather-card")

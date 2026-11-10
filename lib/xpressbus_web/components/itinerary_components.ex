@@ -110,9 +110,58 @@ defmodule XpressbusWeb.ItineraryComponents do
     ~H"""
     <article
       id={"itinerary-card-" <> to_string(@itinerary.id)}
-      class="group flex flex-col overflow-hidden rounded-[24px] border border-slate-100 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all hover:-translate-y-0.5 hover:border-orange-100 hover:shadow-lg"
+      class="group relative flex flex-col overflow-visible rounded-[24px] border border-slate-100 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all hover:-translate-y-0.5 hover:border-orange-100 hover:shadow-lg"
     >
-      <div class="relative h-40 overflow-hidden">
+      <details
+        id={"itinerary-card-menu-" <> to_string(@itinerary.id)}
+        class="absolute right-3 top-3 z-30"
+      >
+        <summary
+          aria-label="Itinerary actions"
+          title="Itinerary actions"
+          class="grid h-8 w-8 cursor-pointer list-none place-items-center rounded-full bg-white/90 text-sm font-black leading-none text-slate-500 shadow-sm backdrop-blur transition hover:text-[#FF4C00] [&::-webkit-details-marker]:hidden"
+        >
+          ...
+        </summary>
+
+        <div class="absolute right-0 mt-2 w-44 overflow-hidden rounded-2xl border border-slate-100 bg-white p-1.5 shadow-xl shadow-slate-900/10">
+          <a
+            id={"edit-itinerary-" <> to_string(@itinerary.id)}
+            href={@edit_path}
+            data-track="itinerary_edit_open"
+            class="flex items-center gap-2 rounded-xl px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-600 transition hover:bg-slate-50 hover:text-[#FF4C00]"
+          >
+            <.ui_icon name={:edit} class="h-3.5 w-3.5" /> Edit
+          </a>
+
+          <button
+            type="button"
+            id={"duplicate-itinerary-" <> to_string(@itinerary.id)}
+            phx-click="duplicate_itinerary"
+            phx-value-id={@itinerary.id}
+            phx-disable-with="Duplicating…"
+            data-track="itinerary_duplicate"
+            class="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-600 transition hover:bg-slate-50 hover:text-[#FF4C00]"
+          >
+            <.ui_icon name={:content_copy} class="h-3.5 w-3.5" /> Duplicate
+          </button>
+
+          <button
+            type="button"
+            id={"delete-itinerary-" <> to_string(@itinerary.id)}
+            phx-click="delete_itinerary"
+            phx-value-id={@itinerary.id}
+            phx-disable-with="Deleting…"
+            data-confirm="Delete this saved itinerary? This cannot be undone."
+            data-track="itinerary_delete"
+            class="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-red-500 transition hover:bg-red-50 hover:text-red-600"
+          >
+            <.ui_icon name={:delete} class="h-3.5 w-3.5" /> Delete
+          </button>
+        </div>
+      </details>
+
+      <div class="relative h-40 overflow-hidden rounded-t-[24px]">
         <.trip_art variant={@art} tag={"itinerary-" <> to_string(@itinerary.id)} />
         <span class="absolute inset-0 bg-gradient-to-t from-slate-950/55 via-transparent to-transparent"></span>
         <span class={[
@@ -121,16 +170,7 @@ defmodule XpressbusWeb.ItineraryComponents do
         ]}>
           <span class="h-1.5 w-1.5 rounded-full bg-current"></span>{@status_label}
         </span>
-        
-        <a
-          id={"itinerary-card-menu-" <> to_string(@itinerary.id)}
-          href={@path}
-          aria-label="Open saved itinerary"
-          class="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-white/90 text-sm font-black leading-none text-slate-500 shadow-sm backdrop-blur transition hover:text-[#FF4C00]"
-        >
-          ...
-        </a>
-        
+
         <span class="absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-full bg-slate-950/70 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-white backdrop-blur">
           <.ui_icon name={:clock} class="h-3 w-3" /> {@status_meta}
         </span>
@@ -196,42 +236,6 @@ defmodule XpressbusWeb.ItineraryComponents do
           >
             <.ui_icon name={:share} class="h-4 w-4" />
           </a>
-        </div>
-        
-        <div class="mt-2 grid grid-cols-3 gap-1.5 border-t border-slate-100 pt-2">
-          <a
-            id={"edit-itinerary-" <> to_string(@itinerary.id)}
-            href={@edit_path}
-            data-track="itinerary_edit_open"
-            class="inline-flex items-center justify-center gap-1 rounded-lg px-2 py-2 text-[9px] font-black uppercase tracking-widest text-slate-500 transition hover:bg-slate-50 hover:text-[#FF4C00]"
-          >
-            <.ui_icon name={:edit} class="h-3 w-3" /> Edit
-          </a>
-          
-          <button
-            type="button"
-            id={"duplicate-itinerary-" <> to_string(@itinerary.id)}
-            phx-click="duplicate_itinerary"
-            phx-value-id={@itinerary.id}
-            phx-disable-with="Duplicating…"
-            data-track="itinerary_duplicate"
-            class="inline-flex items-center justify-center gap-1 rounded-lg px-2 py-2 text-[9px] font-black uppercase tracking-widest text-slate-500 transition hover:bg-slate-50 hover:text-[#FF4C00]"
-          >
-            <.ui_icon name={:content_copy} class="h-3 w-3" /> Duplicate
-          </button>
-          
-          <button
-            type="button"
-            id={"delete-itinerary-" <> to_string(@itinerary.id)}
-            phx-click="delete_itinerary"
-            phx-value-id={@itinerary.id}
-            phx-disable-with="Deleting…"
-            data-confirm="Delete this saved itinerary? This cannot be undone."
-            data-track="itinerary_delete"
-            class="inline-flex items-center justify-center gap-1 rounded-lg px-2 py-2 text-[9px] font-black uppercase tracking-widest text-slate-400 transition hover:bg-red-50 hover:text-red-600"
-          >
-            <.ui_icon name={:delete} class="h-3 w-3" /> Delete
-          </button>
         </div>
       </div>
     </article>
