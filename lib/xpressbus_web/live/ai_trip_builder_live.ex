@@ -20,6 +20,8 @@ defmodule XpressbusWeb.AiTripBuilderLive do
 
   alias Xpressbus.Places
 
+  @generation_deadline_ms 10_000
+
   @generation_steps [
     "Building your itinerary...",
     "Searching top-rated hotels on Google Maps...",
@@ -395,7 +397,7 @@ defmodule XpressbusWeb.AiTripBuilderLive do
         spawn_monitor(fn -> send(parent, {:generation_done, TripItinerary.generate(trip)}) end)
 
       Process.send_after(self(), :generation_tick, 1_200)
-      Process.send_after(self(), :generation_timeout, 9_500)
+      Process.send_after(self(), :generation_timeout, @generation_deadline_ms)
 
       {:noreply,
        socket
@@ -512,7 +514,9 @@ defmodule XpressbusWeb.AiTripBuilderLive do
       end
 
       started_at = socket.assigns.generation_started_at || System.monotonic_time(:millisecond)
-      remaining = max(5_000 - (System.monotonic_time(:millisecond) - started_at), 0)
+
+      remaining =
+        max(@generation_deadline_ms - (System.monotonic_time(:millisecond) - started_at), 0)
 
       if remaining > 0 do
         Process.send_after(self(), {:generation_complete, itinerary}, remaining)
