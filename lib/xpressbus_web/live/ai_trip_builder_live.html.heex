@@ -445,51 +445,85 @@
         <% end %>
 
         <%= if @step == 4 do %>
-          <div id="step-budget" class="mx-auto max-w-xl">
-            <p class="text-[10px] font-black uppercase tracking-[0.24em] text-[#FF4C00]">
-              Step 04 · Budget
-            </p>
-            <h1 class="mt-2 text-2xl font-black tracking-tight text-slate-900 md:text-3xl">
-              What's your budget?
-            </h1>
-            <p class="mt-2 text-sm font-bold text-slate-400">
-              A rough range is enough — we'll suggest options that fit.
-            </p>
-
-            <form id="budget-form" phx-submit="budget" class="mt-6 space-y-2">
-              <%= for budget <- @budgets do %>
-                <label class={[
-                  "flex cursor-pointer items-center gap-3 rounded-xl border-2 px-4 py-3 transition",
-                  @trip.budget == budget && "border-[#FF4C00] bg-orange-50",
-                  @trip.budget != budget && "border-slate-100 bg-white hover:border-slate-200"
-                ]}>
-                  <input
-                    type="radio"
-                    name="budget"
-                    value={budget}
-                    checked={@trip.budget == budget}
-                    class="h-4 w-4 accent-[#FF4C00]"
-                  />
-                  <span class="text-sm font-black text-slate-700">{budget}</span>
-                </label>
-              <% end %>
-
-              <div class="flex gap-2 pt-3">
+          <div id="step-budget" class="mx-auto max-w-4xl">
+            <div class="flex justify-center">
+              <div class="inline-flex max-w-full items-center gap-2 rounded-full border border-orange-200 bg-orange-50/70 px-3 py-1.5 text-[10px] font-black text-slate-700">
+                <.ui_icon name={:pin} class="h-3.5 w-3.5 shrink-0 text-[#FF4C00]" />
+                <span class="max-w-[190px] truncate">{@trip.destination}</span>
                 <button
+                  id="change-destination"
                   type="button"
-                  phx-click="back"
-                  class="rounded-xl border border-slate-200 px-5 py-3 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:border-slate-300"
+                  phx-click="change_destination"
+                  class="inline-flex shrink-0 items-center gap-1 rounded-full bg-white px-2 py-1 text-[9px] font-black uppercase tracking-widest text-[#FF4C00] shadow-sm"
                 >
-                  Back
-                </button>
-                <button
-                  type="submit"
-                  class="flex-1 rounded-xl bg-[#FF4C00] px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white hover:bg-[#E64400]"
-                >
-                  Continue
+                  <.ui_icon name={:search} class="h-3 w-3" /> Change
                 </button>
               </div>
-            </form>
+            </div>
+
+            <h1 class="mt-4 text-center text-2xl font-black tracking-tight text-slate-900 md:text-3xl">
+              Set your trip budget <span aria-hidden="true">💰</span>
+            </h1>
+            <p class="mt-1 text-center text-sm font-bold leading-relaxed text-slate-400">
+              Select your spending style to get appropriately matched lodging and dining recommendations.
+            </p>
+
+            <div class="mt-6 flex flex-wrap justify-center gap-3">
+              <%= for budget <- @budgets do %>
+                <% selected = @trip.budget == budget.key %>
+                <button
+                  type="button"
+                  id={"budget-" <> budget.key}
+                  phx-click="select_budget"
+                  phx-value-budget={budget.key}
+                  aria-pressed={to_string(selected)}
+                  class={[
+                    "flex w-full max-w-[260px] items-start gap-2.5 rounded-2xl border-2 bg-white px-3.5 py-3 text-left shadow-sm transition sm:w-[200px]",
+                    selected && "border-[#FF4C00] bg-orange-50/60 shadow-orange-100",
+                    !selected && "border-slate-100 hover:border-orange-200 hover:bg-orange-50/30"
+                  ]}
+                >
+                  <span class={[
+                    "grid h-7 w-7 shrink-0 place-items-center rounded-lg text-sm",
+                    selected && "bg-[#FF4C00] text-white",
+                    !selected && "bg-orange-50 text-[#FF4C00]"
+                  ]}>
+                    <.ui_icon name={budget.icon} class="h-3.5 w-3.5" />
+                  </span>
+                  <span class="min-w-0">
+                    <span class="block text-[11px] font-black text-slate-900">{budget.title}</span>
+                    <span class="mt-1 block text-[9px] font-bold leading-snug text-slate-400">
+                      {budget.description}
+                    </span>
+                  </span>
+                </button>
+              <% end %>
+            </div>
+
+            <div class="mt-7 flex items-center justify-between border-t border-slate-100 pt-4">
+              <button
+                type="button"
+                phx-click="back"
+                class="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-100 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-600 transition hover:border-slate-300"
+              >
+                <.ui_icon name={:chevron_right} class="h-3.5 w-3.5 rotate-180" /> Previous
+              </button>
+              <span class="text-[10px] font-bold text-slate-400">Step 4 of 5</span>
+              <button
+                id="budget-next"
+                type="button"
+                phx-click="budget_next"
+                disabled={is_nil(@trip.budget)}
+                class={[
+                  "inline-flex items-center gap-1 rounded-xl px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-white transition",
+                  !is_nil(@trip.budget) &&
+                    "bg-[#FF4C00] shadow-lg shadow-orange-500/25 hover:bg-[#E64400]",
+                  is_nil(@trip.budget) && "cursor-not-allowed bg-slate-200 text-slate-400"
+                ]}
+              >
+                Next <.ui_icon name={:arrow_right} class="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
         <% end %>
 

@@ -98,10 +98,17 @@ defmodule XpressbusWeb.AiTripBuilderTest do
     view |> element("#companions-next") |> render_click()
 
     assert has_element?(view, "#step-budget")
+    assert has_element?(view, "#budget-cheap")
+    assert has_element?(view, "#budget-balanced")
+    assert has_element?(view, "#budget-luxury")
+    assert has_element?(view, "#budget-flexible")
+    assert has_element?(view, "#budget-custom")
+    assert has_element?(view, "#budget-mars")
+    assert has_element?(view, "#budget-next[disabled]")
 
-    view
-    |> form("#budget-form", %{"budget" => "KES 50,000 – 100,000"})
-    |> render_submit()
+    view |> element("#budget-balanced") |> render_click()
+    refute has_element?(view, "#budget-next[disabled]")
+    view |> element("#budget-next") |> render_click()
 
     assert has_element?(view, "#step-preferences")
 
@@ -115,6 +122,7 @@ defmodule XpressbusWeb.AiTripBuilderTest do
     assert html =~ Calendar.strftime(start_date, "%d %b %Y")
     assert html =~ Calendar.strftime(end_date, "%d %b %Y")
     assert html =~ "Friends"
+    assert html =~ "Balanced"
     assert html =~ "Beach · Food"
     assert has_element?(view, "#open-chyllz-ai")
     assert has_element?(view, "#browse-chyllz")

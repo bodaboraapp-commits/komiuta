@@ -62,11 +62,45 @@ defmodule XpressbusWeb.AiTripBuilderLive do
   ]
 
   @budgets [
-    "Under KES 50,000",
-    "KES 50,000 – 100,000",
-    "KES 100,000 – 200,000",
-    "KES 200,000+"
+    %{
+      key: "cheap",
+      title: "Cheap",
+      description: "Budget-friendly economical travel",
+      icon: :money
+    },
+    %{
+      key: "balanced",
+      title: "Balanced",
+      description: "Moderate spending for a balanced trip",
+      icon: :wallet
+    },
+    %{
+      key: "luxury",
+      title: "Luxury",
+      description: "High-end, indulgent experiences",
+      icon: :gem
+    },
+    %{
+      key: "flexible",
+      title: "Flexible",
+      description: "No budget restrictions",
+      icon: :sparkles
+    },
+    %{
+      key: "custom",
+      title: "Custom Budget",
+      description: "Darjeeling 3 days tour",
+      icon: :map
+    },
+    %{
+      key: "mars",
+      title: "Mars Tour",
+      description: "Mars Tour with Elon Musk",
+      icon: :rocket
+    }
   ]
+
+  @budget_keys Enum.map(@budgets, & &1.key)
 
   @impl true
   def mount(_params, _session, socket) do
@@ -169,15 +203,22 @@ defmodule XpressbusWeb.AiTripBuilderLive do
     end
   end
 
-  def handle_event("budget", %{"budget" => budget}, socket) do
-    if budget in @budgets do
+  def handle_event("select_budget", %{"budget" => budget}, socket) do
+    if budget in @budget_keys do
       {:noreply,
        socket
        |> assign(:error, nil)
-       |> assign(:trip, %{socket.assigns.trip | budget: budget})
-       |> assign(:step, 5)}
+       |> assign(:trip, %{socket.assigns.trip | budget: budget})}
     else
-      {:noreply, assign(socket, :error, "Choose a budget range to continue.")}
+      {:noreply, socket}
+    end
+  end
+
+  def handle_event("budget_next", _params, socket) do
+    if socket.assigns.trip.budget do
+      {:noreply, socket |> assign(:error, nil) |> assign(:step, 5)}
+    else
+      {:noreply, assign(socket, :error, "Choose a spending style to continue.")}
     end
   end
 
@@ -225,7 +266,7 @@ defmodule XpressbusWeb.AiTripBuilderLive do
       end_date: nil,
       travel_party: nil,
       pets: false,
-      budget: hd(@budgets),
+      budget: nil,
       preferences: []
     })
   end
@@ -368,7 +409,14 @@ defmodule XpressbusWeb.AiTripBuilderLive do
   defp pets_label(%{pets: true}), do: " · with pets"
   defp pets_label(_trip), do: ""
 
-  defp budget_label(%{budget: budget}), do: budget
+  defp budget_label(%{budget: nil}), do: "Not set"
+
+  defp budget_label(%{budget: key}) do
+    case Enum.find(@budgets, &(&1.key == key)) do
+      %{title: title} -> title
+      nil -> key
+    end
+  end
 
   defp preference_label([]), do: "No preferences selected"
   defp preference_label(preferences), do: Enum.join(preferences, " · ")

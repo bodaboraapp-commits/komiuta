@@ -14,7 +14,8 @@ defmodule XpressbusWeb.ChyllzAccountArt do
   A stroked UI icon. Supported names: `:compass`, `:ticket`, `:chevron_right`,
   `:arrow_right`, `:pin`, `:calendar`, `:clock`, `:wallet`, `:seat`, `:search`,
   `:refresh`, `:route`, `:bag`, `:star`, `:sparkles`, `:plane`, `:map`, `:check`,
-  `:list`, `:eye`, `:share`, `:users`, `:sliders`, `:user`, `:heart`, `:paw`.
+  `:list`, `:eye`, `:share`, `:users`, `:sliders`, `:user`, `:heart`, `:paw`,
+  `:money`, `:gem`, `:rocket`.
   """
   attr :name, :atom, required: true
   attr :class, :string, default: "h-5 w-5"
@@ -115,6 +116,15 @@ defmodule XpressbusWeb.ChyllzAccountArt do
           <ellipse cx="4.5" cy="14" rx="1.8" ry="2.1" />
           <ellipse cx="19.5" cy="14" rx="1.8" ry="2.1" />
           <path d="M12 13.2c3.1 0 5.5 2.9 5.5 5.1 0 1.7-1.3 2.7-2.9 2.4-1.7-.3-3.4-.3-5.1 0-1.7.3-3-.7-3-2.4 0-2.2 2.4-5.1 5.5-5.1z" />
+        <% :money -> %>
+          <path d="M9 6.5h6l3 4.2c.5.7.3 1.6-.4 2.1L12 17l-5.6-4.2c-.7-.5-.9-1.4-.4-2.1z" />
+          <path d="M12 9v5M10.4 10.3h2.4a1 1 0 0 1 0 2h-1.6a1 1 0 0 0 0 2h2.4" />
+        <% :gem -> %>
+          <path d="M6 4h12l3 5-9 11L3 9z" />
+          <path d="M3 9h18M9 4l-1.5 5L12 20l4.5-11L15 4M9 9l3 11 3-11" />
+        <% :rocket -> %>
+          <path d="M13.5 5.5c3-3 6.5-2.8 6.5-2.8s.2 3.5-2.8 6.5l-3.7 3.7-4.2-1.1-1.2-4.2z" />
+          <path d="M9 13 6 16M11 17l-1 3M7 15H3.5L6 12.5M9 9 6.5 6.5 8 3l3 2.5" />
         <% :sliders -> %>
           <path d="M4 7h16M4 12h16M4 17h16" />
           <circle cx="9" cy="7" r="2" fill="white" />
