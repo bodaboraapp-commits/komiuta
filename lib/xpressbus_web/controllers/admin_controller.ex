@@ -3,7 +3,9 @@ defmodule XpressbusWeb.AdminController do
   alias Xpressbus.Admins
 
   def login(conn, _params) do
-    render(conn, :login)
+    conn
+    |> assign(:page_title, "Admin Login")
+    |> render(:login)
   end
 
   def authenticate(conn, %{"admin" => admin_params}) do
