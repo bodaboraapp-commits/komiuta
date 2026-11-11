@@ -67,6 +67,46 @@ defmodule Xpressbus.Firebase do
   def verify_id_token(_token), do: {:error, :invalid_token}
 
   @doc """
+  Shared phone-verification step used by both traveller and agent sign-in.
+
+  Verifies the Firebase token once, normalises the verified phone number and
+  returns every stored representation that identity lookups should try. Keeping
+  this in one place prevents the two sign-in surfaces from drifting apart in
+  validation or error handling.
+  """
+  def verify_phone_token(token) when is_binary(token) do
+    token = String.trim(token)
+
+    if token == "" do
+      {:error, :missing_token}
+    else
+      case verify_id_token(token) do
+        {:ok, phone} ->
+          {:ok,
+           %{
+             e164: phone,
+             local: normalize_phone(phone) || phone,
+             candidates: phone_candidates(phone)
+           }}
+
+        {:error, :not_configured} ->
+          {:error, :not_configured}
+
+        {:error, :no_phone} ->
+          {:error, :no_phone}
+
+        {:error, :invalid_token} ->
+          {:error, :invalid_token}
+
+        {:error, _reason} ->
+          {:error, :unavailable}
+      end
+    end
+  end
+
+  def verify_phone_token(_token), do: {:error, :missing_token}
+
+  @doc """
   Lightweight readiness check for the admin Integration screen.
 
   Firebase returns `CONFIGURATION_NOT_FOUND` until Authentication has been

@@ -77,48 +77,46 @@ defmodule XpressbusWeb.AgentSessionController do
         get_in(params, ["firebase", "id_token"]) ||
         ""
 
-    token = if is_binary(token), do: String.trim(token), else: ""
-
-    cond do
-      not Xpressbus.Firebase.configured?() ->
-        conn
-        |> put_status(:service_unavailable)
-        |> json(%{error: "SMS login is not configured yet. Please contact support."})
-
-      token == "" ->
-        conn
-        |> put_status(:bad_request)
-        |> json(%{error: "Missing Firebase verification token."})
-
-      true ->
-        case Xpressbus.Firebase.verify_id_token(token) do
-          {:ok, phone} ->
-            case Agents.find_by_phone(phone) do
-              %Xpressbus.Agents.AgentApplication{} = application ->
-                conn
-                |> configure_session(renew: true)
-                |> put_session(:agent_id, application.id)
-                |> json(%{ok: true, redirect: next_path(application)})
-
-              nil ->
-                conn
-                |> put_status(:not_found)
-                |> json(%{
-                  error:
-                    "No agent application was found for that phone number. Apply for an agent account first."
-                })
-            end
-
-          {:error, :not_configured} ->
+    case XpressbusWeb.FirebasePhoneAuth.verify_token(token) do
+      {:ok, identity} ->
+        case find_agent_application(identity) do
+          %Xpressbus.Agents.AgentApplication{} = application ->
             conn
-            |> put_status(:service_unavailable)
-            |> json(%{error: "SMS login is not configured yet. Please contact support."})
+            |> configure_session(renew: true)
+            |> put_session(:agent_id, application.id)
+            |> json(%{ok: true, redirect: next_path(application)})
 
-          {:error, _reason} ->
+          nil ->
             conn
-            |> put_status(:unauthorized)
-            |> json(%{error: "That SMS code could not be verified. Please try again."})
+            |> put_status(:not_found)
+            |> json(%{
+              error:
+                "No agent application was found for that phone number. Apply for an agent account first."
+            })
         end
+
+      {:error, reason} ->
+        XpressbusWeb.FirebasePhoneAuth.error(conn, reason)
+    end
+  end
+
+  defp find_agent_application(%{e164: e164, local: local}) do
+    Agents.find_by_phone(e164) || Agents.find_by_phone(local) ||
+      agent_from_traveller_account(e164)
+  end
+
+  # The traveller and agent portals can be used by the same person. If the
+  # agent application was saved with a different phone representation, resolve
+  # the verified phone through the traveller account first and then match the
+  # agent application by the same verified email. This keeps a number that works
+  # for traveller sign-in working for agent sign-in too.
+  defp agent_from_traveller_account(phone) do
+    case Xpressbus.Firebase.find_user_by_phone(phone) do
+      %Xpressbus.Accounts.User{email: email} when is_binary(email) ->
+        Agents.find_by_email(email)
+
+      _ ->
+        nil
     end
   end
 

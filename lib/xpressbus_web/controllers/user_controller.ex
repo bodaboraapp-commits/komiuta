@@ -44,62 +44,26 @@ defmodule XpressbusWeb.UserController do
         get_in(params, ["firebase", "id_token"]) ||
         ""
 
-    token = if is_binary(token), do: String.trim(token), else: ""
-
-    cond do
-      not Xpressbus.Firebase.configured?() ->
-        conn
-        |> put_status(:service_unavailable)
-        |> json(%{error: "SMS login is not configured yet."})
-
-      token == "" ->
-        conn
-        |> put_status(:bad_request)
-        |> json(%{error: "Missing SMS verification token."})
-
-      true ->
-        case Xpressbus.Firebase.verify_id_token(token) do
-          {:ok, phone} ->
-            case Xpressbus.Firebase.find_user_by_phone(phone) do
-              %Xpressbus.Accounts.User{} = user ->
-                conn
-                |> configure_session(renew: true)
-                |> put_session(:user_id, user.id)
-                |> json(%{ok: true, redirect: "/dashboard"})
-
-              nil ->
-                conn
-                |> put_status(:not_found)
-                |> json(%{
-                  error:
-                    "No KOMIUTA account is linked to this phone number. Please sign up with your email first."
-                })
-            end
-
-          {:error, :invalid_token} ->
+    case XpressbusWeb.FirebasePhoneAuth.verify_token(token) do
+      {:ok, identity} ->
+        case Xpressbus.Firebase.find_user_by_phone(identity.e164) do
+          %Xpressbus.Accounts.User{} = user ->
             conn
-            |> put_status(:unauthorized)
+            |> configure_session(renew: true)
+            |> put_session(:user_id, user.id)
+            |> json(%{ok: true, redirect: "/dashboard"})
+
+          nil ->
+            conn
+            |> put_status(:not_found)
             |> json(%{
-              error: "That SMS verification code could not be verified. Please try again."
-            })
-
-          {:error, :no_phone} ->
-            conn
-            |> put_status(:unprocessable_entity)
-            |> json(%{error: "No phone number was found on that Firebase session."})
-
-          {:error, :not_configured} ->
-            conn
-            |> put_status(:service_unavailable)
-            |> json(%{error: "SMS login is not configured yet."})
-
-          {:error, _reason} ->
-            conn
-            |> put_status(:bad_gateway)
-            |> json(%{
-              error: "SMS verification is temporarily unavailable. Please try email instead."
+              error:
+                "No KOMIUTA account is linked to this phone number. Please sign up with your email first."
             })
         end
+
+      {:error, reason} ->
+        XpressbusWeb.FirebasePhoneAuth.error(conn, reason)
     end
   end
 

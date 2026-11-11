@@ -152,11 +152,40 @@ defmodule Xpressbus.Agents do
   `{:error, {:cooldown, application}}` and `{:error, {:rate_limited, application}}`.
   """
   def find_by_phone(phone) when is_binary(phone) do
-    Xpressbus.Firebase.phone_candidates(phone)
-    |> Enum.find_value(fn candidate -> Repo.get_by(AgentApplication, phone: candidate) end)
+    candidates = Xpressbus.Firebase.phone_candidates(phone)
+
+    Repo.one(
+      from(application in AgentApplication,
+        where: application.phone in ^candidates,
+        limit: 1
+      )
+    ) || find_by_phone_digits(phone)
   end
 
   def find_by_phone(_phone), do: nil
+
+  # Legacy applications may store a phone number with spaces, dashes or a
+  # country-code prefix. Match on the last nine digits so the same verified
+  # Firebase number resolves regardless of how it was originally entered.
+  defp find_by_phone_digits(phone) do
+    digits = phone |> to_string() |> String.replace(~r/\D/, "")
+
+    if byte_size(digits) >= 9 do
+      last_nine = String.slice(digits, -9, 9)
+
+      Repo.one(
+        from(application in AgentApplication,
+          where:
+            fragment(
+              "RIGHT(REPLACE(REPLACE(REPLACE(REPLACE(?, ' ', ''), '-', ''), '+', ''), '(', ''), 9) = ?",
+              application.phone,
+              ^last_nine
+            ),
+          limit: 1
+        )
+      )
+    end
+  end
 
   def request_login_code(identifier) when is_binary(identifier) do
     case find_by_identifier(identifier) do
