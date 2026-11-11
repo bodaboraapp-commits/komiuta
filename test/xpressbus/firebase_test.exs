@@ -106,6 +106,8 @@ defmodule Xpressbus.FirebaseTest do
       assert source =~ "navigator.credentials"
       assert source =~ "displayPhone"
       assert source =~ "firebase-phone-hint"
+      assert source =~ "isMalformedResponse"
+      assert source =~ "incomplete response"
       assert template =~ "firebase-phone-hint"
       refute template =~ "Standard SMS rates may apply"
     end

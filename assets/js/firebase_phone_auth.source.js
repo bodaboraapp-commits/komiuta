@@ -110,6 +110,12 @@ function initSmsLogin(root) {
 
       if (isSecurityError(error)) {
         await enableVisibleRecaptcha()
+      } else if (isMalformedResponse(error)) {
+        setStatus(
+          "The SMS provider returned an incomplete response. Tap Send Login Code once more, or use Google sign-in.",
+          "error"
+        )
+        await resetVerifier()
       } else {
         setStatus(friendlyError(error), "error")
         await resetVerifier()
@@ -262,10 +268,12 @@ function initSmsLogin(root) {
     )
   }
 
-  function isSecurityError(error) {
+
+
+  function isMalformedResponse(error) {
     const code = (error && error.code) || ""
     const message = (error && error.message) || ""
-    return /captcha|security|recaptcha/i.test(code) || /security check failed/i.test(message)
+    return /MALFORMED_RESPONSE|malformed response/i.test(code +   + message)
   }
 
   function setBusy(busy) {
@@ -316,6 +324,10 @@ function friendlyError(error) {
     "auth/code-expired": "That code has expired. Request a new SMS code.",
     "auth/missing-verification-code": "Enter the 6-digit code from the SMS.",
     "auth/network-request-failed": "Network error. Please check your connection and try again.",
+  }
+
+  if (isMalformedResponse(error)) {
+    return "The SMS provider returned an incomplete response. Please retry, or use Google sign-in."
   }
 
   return messages[code] || (error && error.message) || "Something went wrong. Please try again."
