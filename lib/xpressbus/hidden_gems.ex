@@ -4,7 +4,7 @@ defmodule Xpressbus.HiddenGems do
   """
 
   import Ecto.Query
-  alias Xpressbus.Repo
+  alias Xpressbus.{ContentCache, Repo}
   alias Xpressbus.Bookings.HiddenGem
 
   def list_hidden_gems do
@@ -25,8 +25,12 @@ defmodule Xpressbus.HiddenGems do
   end
 
   def create_hidden_gem(attrs) do
-    %HiddenGem{}
-    |> HiddenGem.changeset(attrs)
-    |> Repo.insert()
+    result =
+      %HiddenGem{}
+      |> HiddenGem.changeset(attrs)
+      |> Repo.insert()
+
+    ContentCache.invalidate(Xpressbus.Chyllz)
+    result
   end
 end

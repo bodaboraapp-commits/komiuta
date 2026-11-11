@@ -32,6 +32,8 @@ defmodule XpressbusWeb.ConnCase do
   end
 
   setup tags do
+    # Content cache is process-wide; clear it so each test sees its own sandbox data.
+    Xpressbus.ContentCache.invalidate_all()
     XpressbusWeb.Plugs.IpThrottle.reset()
 
     # LiveView tests render the page on the server, so they touch the database.

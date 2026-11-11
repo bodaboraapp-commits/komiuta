@@ -24,9 +24,10 @@ defmodule Xpressbus.Chyllz do
 
   import Ecto.Query
 
-  alias Xpressbus.Repo
+  alias Xpressbus.{ContentCache, Repo}
   alias Xpressbus.Bookings.{CarHire, Event, HiddenGem, Hotel}
 
+  @cache_ttl_ms 30_000
   @default_limit 60
   @max_limit 120
   @max_search_length 80
@@ -45,14 +46,16 @@ defmodule Xpressbus.Chyllz do
     limit = limit(opts)
     search = search(opts)
 
-    from(h in Hotel,
-      where: h.active == true,
-      order_by: [desc: h.rating, asc: h.price_per_night, asc: h.name]
-    )
-    |> filter_hotels(search)
-    |> Repo.all()
-    |> Enum.uniq_by(& &1.name)
-    |> Enum.take(limit)
+    cache({:hotels, search, limit}, fn ->
+      from(h in Hotel,
+        where: h.active == true,
+        order_by: [desc: h.rating, asc: h.price_per_night, asc: h.name]
+      )
+      |> filter_hotels(search)
+      |> Repo.all()
+      |> Enum.uniq_by(& &1.name)
+      |> Enum.take(limit)
+    end)
   end
 
   @doc """
@@ -65,11 +68,13 @@ defmodule Xpressbus.Chyllz do
     limit = limit(opts)
     search = search(opts)
 
-    from(g in HiddenGem, where: g.active == true, order_by: [asc: g.title])
-    |> filter_hidden_gems(search)
-    |> Repo.all()
-    |> Enum.uniq_by(& &1.title)
-    |> Enum.take(limit)
+    cache({:hidden_gems, search, limit}, fn ->
+      from(g in HiddenGem, where: g.active == true, order_by: [asc: g.title])
+      |> filter_hidden_gems(search)
+      |> Repo.all()
+      |> Enum.uniq_by(& &1.title)
+      |> Enum.take(limit)
+    end)
   end
 
   @doc """
@@ -82,14 +87,16 @@ defmodule Xpressbus.Chyllz do
     limit = limit(opts)
     search = search(opts)
 
-    from(c in CarHire,
-      where: c.active == true,
-      order_by: [asc: c.price_per_day, asc: c.car_name]
-    )
-    |> filter_car_hires(search)
-    |> Repo.all()
-    |> Enum.uniq_by(&{&1.car_name, &1.location})
-    |> Enum.take(limit)
+    cache({:car_hires, search, limit}, fn ->
+      from(c in CarHire,
+        where: c.active == true,
+        order_by: [asc: c.price_per_day, asc: c.car_name]
+      )
+      |> filter_car_hires(search)
+      |> Repo.all()
+      |> Enum.uniq_by(&{&1.car_name, &1.location})
+      |> Enum.take(limit)
+    end)
   end
 
   @doc """
@@ -107,14 +114,16 @@ defmodule Xpressbus.Chyllz do
     limit = limit(opts)
     search = search(opts)
 
-    from(e in Event,
-      where: e.active == true and not is_nil(e.date) and e.date >= ^today(),
-      order_by: [asc: e.date, asc: e.title]
-    )
-    |> filter_events(search)
-    |> Repo.all()
-    |> Enum.uniq_by(&{&1.title, &1.date})
-    |> Enum.take(limit)
+    cache({:upcoming_events, search, limit, today()}, fn ->
+      from(e in Event,
+        where: e.active == true and not is_nil(e.date) and e.date >= ^today(),
+        order_by: [asc: e.date, asc: e.title]
+      )
+      |> filter_events(search)
+      |> Repo.all()
+      |> Enum.uniq_by(&{&1.title, &1.date})
+      |> Enum.take(limit)
+    end)
   end
 
   @doc """
@@ -127,14 +136,16 @@ defmodule Xpressbus.Chyllz do
     limit = limit(opts)
     search = search(opts)
 
-    from(e in Event,
-      where: e.active == true and not is_nil(e.date) and e.date < ^today(),
-      order_by: [desc: e.date, asc: e.title]
-    )
-    |> filter_events(search)
-    |> Repo.all()
-    |> Enum.uniq_by(&{&1.title, &1.date})
-    |> Enum.take(limit)
+    cache({:past_events, search, limit, today()}, fn ->
+      from(e in Event,
+        where: e.active == true and not is_nil(e.date) and e.date < ^today(),
+        order_by: [desc: e.date, asc: e.title]
+      )
+      |> filter_events(search)
+      |> Repo.all()
+      |> Enum.uniq_by(&{&1.title, &1.date})
+      |> Enum.take(limit)
+    end)
   end
 
   @doc """
@@ -143,16 +154,20 @@ defmodule Xpressbus.Chyllz do
   Used for the trust-building counters on the Chyllz overview page.
   """
   def counts do
-    %{
-      hotels: unique_count(from(h in Hotel, where: h.active == true, select: h.name)),
-      hidden_gems: unique_count(from(g in HiddenGem, where: g.active == true, select: g.title)),
-      car_hires:
-        unique_count(
-          from(c in CarHire, where: c.active == true, select: {c.car_name, c.location})
-        ),
-      events: unique_count(from(e in Event, where: e.active == true, select: {e.title, e.date}))
-    }
+    cache(:counts, fn ->
+      %{
+        hotels: unique_count(from(h in Hotel, where: h.active == true, select: h.name)),
+        hidden_gems: unique_count(from(g in HiddenGem, where: g.active == true, select: g.title)),
+        car_hires:
+          unique_count(
+            from(c in CarHire, where: c.active == true, select: {c.car_name, c.location})
+          ),
+        events: unique_count(from(e in Event, where: e.active == true, select: {e.title, e.date}))
+      }
+    end)
   end
+
+  defp cache(key, fun), do: ContentCache.fetch({__MODULE__, key}, fun, @cache_ttl_ms)
 
   defp unique_count(query) do
     query

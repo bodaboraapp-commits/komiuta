@@ -35,6 +35,16 @@ defmodule Xpressbus.AdminAlerts do
     deliver_async(fn -> deliver_payment(payment, ticket) end)
   end
 
+  @doc """
+  Sends a production error alert containing the route and request id.
+
+  Used by `XpressbusWeb.ErrorMonitoring` for 5xx responses on critical
+  LiveView and browser routes.
+  """
+  def error_alert(details) when is_map(details) do
+    deliver_async(fn -> AdminAlertEmail.deliver_error(details) end)
+  end
+
   @doc "Synchronous booking alert, useful for tests and manual resend tools."
   def deliver_booking(%Ticket{} = ticket) do
     payment = payment_for(ticket)

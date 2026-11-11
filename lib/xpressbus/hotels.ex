@@ -4,7 +4,7 @@ defmodule Xpressbus.Hotels do
   """
 
   import Ecto.Query
-  alias Xpressbus.Repo
+  alias Xpressbus.{ContentCache, Repo}
   alias Xpressbus.Bookings.Hotel
 
   def list_hotels do
@@ -25,8 +25,12 @@ defmodule Xpressbus.Hotels do
   end
 
   def create_hotel(attrs) do
-    %Hotel{}
-    |> Hotel.changeset(attrs)
-    |> Repo.insert()
+    result =
+      %Hotel{}
+      |> Hotel.changeset(attrs)
+      |> Repo.insert()
+
+    ContentCache.invalidate(Xpressbus.Chyllz)
+    result
   end
 end

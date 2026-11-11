@@ -89,4 +89,27 @@ defmodule Xpressbus.AdminAlertsTest do
 
     assert AdminAlerts.recipients() == ["komondiedward@gmail.com", "ops@example.com"]
   end
+
+  test "sends a production error alert with route and request id" do
+    details = %{
+      path: "/dashboard",
+      method: "GET",
+      status: 500,
+      request_id: "req-alert-123",
+      query_string: "tab=bus",
+      duration_ms: 42
+    }
+
+    assert :ok = AdminAlertEmail.deliver_error(details)
+
+    assert_email_sent(fn email ->
+      assert email.subject == "KOMIUTA production error 500 — /dashboard"
+      assert email.text_body =~ "Route: GET /dashboard"
+      assert email.text_body =~ "Request ID: req-alert-123"
+      assert email.text_body =~ "Status: 500"
+      assert email.html_body =~ "Production 500 detected"
+      assert email.html_body =~ "req-alert-123"
+      assert email.html_body =~ "/dashboard"
+    end)
+  end
 end

@@ -4,7 +4,7 @@ defmodule Xpressbus.Events do
   """
 
   import Ecto.Query
-  alias Xpressbus.Repo
+  alias Xpressbus.{ContentCache, Repo}
   alias Xpressbus.Bookings.Event
 
   def list_events do
@@ -25,8 +25,12 @@ defmodule Xpressbus.Events do
   end
 
   def create_event(attrs) do
-    %Event{}
-    |> Event.changeset(attrs)
-    |> Repo.insert()
+    result =
+      %Event{}
+      |> Event.changeset(attrs)
+      |> Repo.insert()
+
+    ContentCache.invalidate(Xpressbus.Chyllz)
+    result
   end
 end

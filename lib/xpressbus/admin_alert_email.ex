@@ -41,6 +41,72 @@ defmodule Xpressbus.AdminAlertEmail do
     end
   end
 
+  @doc "Sends a production 5xx error alert with route and request id."
+  def deliver_error(details) when is_map(details) do
+    case recipients() do
+      [] ->
+        :ok
+
+      recipients ->
+        path = Map.get(details, :path, "unknown route")
+        status = Map.get(details, :status, 500)
+
+        send_email(
+          recipients,
+          "KOMIUTA production error #{status} — #{path}",
+          error_body(details),
+          error_html(details)
+        )
+    end
+  end
+
+  defp error_body(details) do
+    """
+    KOMIUTA production error
+
+    Route: #{Map.get(details, :method, "GET")} #{Map.get(details, :path, "unknown")}
+    Status: #{Map.get(details, :status, 500)}
+    Request ID: #{Map.get(details, :request_id) || "unknown"}
+    Query: #{Map.get(details, :query_string) || "—"}
+    Duration: #{Map.get(details, :duration_ms) || "—"}ms
+    Detected at: #{DateTime.utc_now()}
+    """
+  end
+
+  defp error_html(details) do
+    rows = [
+      {"Route", "#{Map.get(details, :method, "GET")} #{Map.get(details, :path, "unknown")}"},
+      {"Status", Map.get(details, :status, 500)},
+      {"Request ID", Map.get(details, :request_id) || "unknown"},
+      {"Query", Map.get(details, :query_string) || "—"},
+      {"Duration", "#{Map.get(details, :duration_ms) || "—"}ms"},
+      {"Detected at", DateTime.utc_now()}
+    ]
+
+    rows_html =
+      Enum.map_join(rows, "", fn {label, value} ->
+        """
+        <tr>
+          <td style="padding:10px 14px;color:#64748b;font-size:12px;font-weight:700;">#{h(to_string(label))}</td>
+          <td style="padding:10px 14px;color:#0f172a;font-size:13px;font-weight:700;">#{h(to_string(value))}</td>
+        </tr>
+        """
+      end)
+
+    """
+    <div style="font-family:Arial,sans-serif;max-width:640px;margin:0 auto;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;">
+      <div style="background:#FF4C00;color:#fff;padding:20px 24px;">
+        <p style="margin:0;font-size:11px;letter-spacing:2px;font-weight:700;">KOMIUTA OPERATIONS ALERT</p>
+        <h1 style="margin:6px 0 0;font-size:22px;">Production 500 detected</h1>
+      </div>
+      <table style="width:100%;border-collapse:collapse;">#{rows_html}</table>
+      <p style="padding:16px 24px;color:#64748b;font-size:12px;">
+        Check the Render logs for the request id above. This alert is rate-limited per route.
+      </p>
+    </div>
+    """
+  end
+
   defp send_email(recipients, subject, text, html) do
     email =
       Swoosh.Email.new()

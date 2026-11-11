@@ -10,7 +10,7 @@ defmodule Xpressbus.CarHires do
   import Ecto.Query
 
   alias Xpressbus.Bookings.CarHire
-  alias Xpressbus.Repo
+  alias Xpressbus.{ContentCache, Repo}
 
   @doc "Lists every car hire row, including inactive rows."
   def list_car_hires do
@@ -55,18 +55,26 @@ defmodule Xpressbus.CarHires do
   def get_car_hire!(id), do: Repo.get!(CarHire, id)
 
   def create_car_hire(attrs) do
-    %CarHire{}
-    |> CarHire.changeset(attrs)
-    |> Repo.insert()
+    result =
+      %CarHire{}
+      |> CarHire.changeset(attrs)
+      |> Repo.insert()
+
+    ContentCache.invalidate(Xpressbus.Chyllz)
+    result
   end
 
   def update_car_hire(%CarHire{} = car_hire, attrs) do
-    car_hire
-    |> CarHire.changeset(attrs)
-    |> Repo.update()
+    result = car_hire |> CarHire.changeset(attrs) |> Repo.update()
+    ContentCache.invalidate(Xpressbus.Chyllz)
+    result
   end
 
-  def delete_car_hire(%CarHire{} = car_hire), do: Repo.delete(car_hire)
+  def delete_car_hire(%CarHire{} = car_hire) do
+    result = Repo.delete(car_hire)
+    ContentCache.invalidate(Xpressbus.Chyllz)
+    result
+  end
 
   @doc "Flips a car hire between active and inactive immediately."
   def toggle_active(%CarHire{} = car_hire) do

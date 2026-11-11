@@ -1,7 +1,7 @@
 defmodule XpressbusWeb.AdminDashboardLive do
   use XpressbusWeb, :live_view
   import XpressbusWeb.AdminComponents
-  alias Xpressbus.{Repo, Tickets, Hotels, HiddenGems, CarHires, Events, Accounts}
+  alias Xpressbus.{Repo, Tickets, Hotels, HiddenGems, CarHires, Events, Accounts, ContentCache}
   alias Xpressbus.Bookings.Bus
   import Ecto.Query
 
@@ -65,6 +65,10 @@ defmodule XpressbusWeb.AdminDashboardLive do
   end
 
   defp load_stats do
+    ContentCache.fetch({__MODULE__, :stats}, &query_stats/0, 15_000)
+  end
+
+  defp query_stats do
     buses = Repo.aggregate(Bus, :count, :id)
     tickets = Repo.aggregate(Tickets.Ticket, :count, :id)
     hotels = Hotels.count_hotels()

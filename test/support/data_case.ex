@@ -26,6 +26,8 @@ defmodule Xpressbus.DataCase do
   end
 
   setup tags do
+    # Content cache is process-wide; clear it so each test sees its own sandbox data.
+    Xpressbus.ContentCache.invalidate_all()
     Xpressbus.DataCase.setup_sandbox(tags)
     :ok
   end

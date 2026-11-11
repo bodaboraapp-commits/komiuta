@@ -13,7 +13,9 @@ defmodule Xpressbus.Application do
       {DNSCluster, query: Application.get_env(:xpressbus, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Xpressbus.PubSub},
       XpressbusWeb.Plugs.IpThrottleStore,
+      Xpressbus.ContentCache,
       Xpressbus.Bookings.SyncServer,
+      XpressbusWeb.ErrorMonitoring,
       XpressbusWeb.Endpoint
     ]
 

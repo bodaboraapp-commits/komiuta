@@ -3,7 +3,7 @@ defmodule XpressbusWeb.AdminAnalyticsLive do
 
   import XpressbusWeb.AdminComponents
 
-  alias Xpressbus.Analytics
+  alias Xpressbus.{Analytics, ContentCache}
 
   @periods [7, 30, 90]
 
@@ -42,7 +42,16 @@ defmodule XpressbusWeb.AdminAnalyticsLive do
   end
 
   defp load_funnels(socket) do
-    assign(socket, :funnels, Analytics.funnel_report(socket.assigns.days))
+    days = socket.assigns.days
+
+    funnels =
+      ContentCache.fetch(
+        {__MODULE__, :funnels, days},
+        fn -> Analytics.funnel_report(days) end,
+        15_000
+      )
+
+    assign(socket, :funnels, funnels)
   end
 
   defp period_label(7), do: "Last 7 days"
