@@ -104,6 +104,179 @@ const FlashAutoDismiss = {
   },
 }
 
+// --- Dialog focus management -------------------------------------------------
+// Applies to every current and future role="dialog"/role="alertdialog": moves
+// focus inside, traps Tab, closes on Escape and restores the previous focus.
+let activeDialog = null
+let dialogPreviousFocus = null
+
+const dialogFocusableSelector = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled]):not([type='hidden'])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  "[contenteditable='true']",
+  "[tabindex]:not([tabindex='-1'])",
+].join(",")
+
+function isVisibleDialog(dialog) {
+  if (!dialog || dialog.inert) return false
+  if (dialog.getAttribute("aria-hidden") === "true") return false
+  return dialog.getClientRects().length > 0 && getComputedStyle(dialog).visibility !== "hidden"
+}
+
+function focusableIn(dialog) {
+  return Array.from(dialog.querySelectorAll(dialogFocusableSelector)).filter(element => {
+    if (element.inert || element.getAttribute("aria-hidden") === "true") return false
+    return element.getClientRects().length > 0 && getComputedStyle(element).visibility !== "hidden"
+  })
+}
+
+function focusFirstIn(dialog) {
+  if (!dialog) return
+
+  const preferred =
+    dialog.querySelector("[autofocus]") ||
+    Array.from(dialog.querySelectorAll("input:not([type='hidden']):not([disabled]), textarea:not([disabled]), select:not([disabled])")).find(el => isVisibleDialog(el)) ||
+    focusableIn(dialog)[0]
+
+  if (preferred) {
+    preferred.focus({preventScroll: true})
+  } else {
+    dialog.setAttribute("tabindex", "-1")
+    dialog.focus({preventScroll: true})
+  }
+}
+
+function closeDialog(dialog) {
+  const close =
+    dialog.querySelector("[data-dialog-close]") ||
+    dialog.querySelector("[aria-label*='close' i]") ||
+    dialog.querySelector("[id$='-close']") ||
+    Array.from(dialog.querySelectorAll("button")).find(button => /close|cancel|dismiss/i.test(button.getAttribute("phx-click") || button.textContent || ""))
+
+  if (close) {
+    close.click()
+    return true
+  }
+
+  return false
+}
+
+function syncActiveDialog() {
+  const dialogs = Array.from(document.querySelectorAll("[role='dialog'], [role='alertdialog']")).filter(isVisibleDialog)
+  const next = dialogs[dialogs.length - 1] || null
+
+  if (next === activeDialog) return
+
+  if (next) {
+    if (!activeDialog) dialogPreviousFocus = document.activeElement
+    activeDialog = next
+    window.requestAnimationFrame(() => focusFirstIn(activeDialog))
+  } else {
+    activeDialog = null
+
+    if (dialogPreviousFocus && document.contains(dialogPreviousFocus)) {
+      window.requestAnimationFrame(() => dialogPreviousFocus.focus({preventScroll: true}))
+    }
+
+    dialogPreviousFocus = null
+  }
+}
+
+function initDialogFocusManagement() {
+  if (window.__komiutaDialogFocus) return
+  window.__komiutaDialogFocus = true
+
+  document.addEventListener("keydown", event => {
+    if (!activeDialog) return
+
+    if (event.key === "Escape") {
+      if (closeDialog(activeDialog)) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+      return
+    }
+
+    if (event.key !== "Tab") return
+
+    const focusable = focusableIn(activeDialog)
+    if (focusable.length === 0) {
+      event.preventDefault()
+      activeDialog.focus({preventScroll: true})
+      return
+    }
+
+    const first = focusable[0]
+    const last = focusable[focusable.length - 1]
+
+    if (event.shiftKey && (document.activeElement === first || !activeDialog.contains(document.activeElement))) {
+      event.preventDefault()
+      last.focus()
+    } else if (!event.shiftKey && (document.activeElement === last || !activeDialog.contains(document.activeElement))) {
+      event.preventDefault()
+      first.focus()
+    }
+  })
+
+  document.addEventListener("focusin", event => {
+    if (activeDialog && !activeDialog.contains(event.target)) {
+      focusFirstIn(activeDialog)
+    }
+  })
+
+  const observer = new MutationObserver(() => window.requestAnimationFrame(syncActiveDialog))
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ["inert", "aria-hidden", "class", "style"],
+  })
+
+  syncActiveDialog()
+}
+
+// --- Tablist keyboard navigation --------------------------------------------
+function initTabArrowNavigation() {
+  if (window.__komiutaTabArrowNavigation) return
+  window.__komiutaTabArrowNavigation = true
+
+  document.addEventListener("keydown", event => {
+    if (event.altKey || event.ctrlKey || event.metaKey) return
+    if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)) return
+
+    const tab = event.target.closest("[role='tab']")
+    if (!tab || tab.disabled) return
+
+    const tablist = tab.closest("[role='tablist']")
+    if (!tablist) return
+
+    const tabs = Array.from(tablist.querySelectorAll("[role='tab']")).filter(item => !item.disabled)
+    if (tabs.length === 0) return
+
+    const current = Math.max(0, tabs.indexOf(tab))
+    let next = current
+
+    if (event.key === "Home") next = 0
+    if (event.key === "End") next = tabs.length - 1
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") next = (current + 1) % tabs.length
+    if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = (current - 1 + tabs.length) % tabs.length
+
+    tabs.forEach((item, index) => {
+      item.tabIndex = index === next ? 0 : -1
+    })
+
+    event.preventDefault()
+    tabs[next].focus()
+    tabs[next].click()
+  })
+}
+
+initDialogFocusManagement()
+initTabArrowNavigation()
+
 // Prevent double-submitting non-LiveView forms (e.g. account creation).
 document.addEventListener("submit", event => {
   const form = event.target
