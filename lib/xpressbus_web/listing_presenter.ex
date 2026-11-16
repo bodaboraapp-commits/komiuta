@@ -32,6 +32,7 @@ defmodule XpressbusWeb.ListingPresenter do
       path: SEO.listing_path(kind, item),
       url: SEO.listing_url(kind, item),
       kind_label: SEO.listing_label(kind),
+      kind_noun: kind_noun(kind),
       index_path: SEO.listing_index_path(kind),
       date_label: Map.get(item, :date) && Calendar.strftime(item.date, "%d %b %Y"),
       category: Map.get(item, :category),
@@ -64,6 +65,12 @@ defmodule XpressbusWeb.ListingPresenter do
     pool = same_region ++ Enum.reject(all(kind), &(&1.id == item.id))
     pool |> Enum.uniq_by(& &1.id) |> Enum.take(limit) |> Enum.map(&to_map(kind, &1))
   end
+
+  defp kind_noun("hotel"), do: "stay"
+  defp kind_noun("hidden_gem"), do: "experience"
+  defp kind_noun("car_hire"), do: "vehicle"
+  defp kind_noun("event"), do: "event"
+  defp kind_noun(_kind), do: "listing"
 
   defp rating(item) do
     case Map.get(item, :rating) do

@@ -21,7 +21,8 @@
             class="h-full w-full object-cover"
             fetchpriority="high"
           />
-          <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent">
+          </div>
 
           <div class="absolute bottom-6 left-6 right-6 text-white md:bottom-8 md:left-8">
             <p class="mb-2 text-[10px] font-black uppercase tracking-[0.3em] text-[#FF7A3D]">
@@ -43,13 +44,17 @@
 
         <div class="grid gap-8 p-6 md:grid-cols-[minmax(0,1fr)_300px] md:p-10">
           <div>
-            <p class="text-base font-bold leading-relaxed text-slate-600">{@listing.description}</p>
+            <p class="text-base font-bold leading-relaxed text-slate-600">
+              {@listing.description}
+            </p>
 
             <%= if @listing.details != [] do %>
               <dl class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <%= for {label, value} <- @listing.details do %>
                   <div class="rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-3">
-                    <dt class="text-[9px] font-black uppercase tracking-widest text-slate-400">{label}</dt>
+                    <dt class="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                      {label}
+                    </dt>
                     <dd class="mt-1 text-sm font-black text-slate-800">{value}</dd>
                   </div>
                 <% end %>
@@ -92,9 +97,11 @@
           </div>
 
           <aside class="rounded-3xl border border-orange-100 bg-orange-50/60 p-5">
-            <h2 class="text-sm font-black uppercase tracking-widest text-slate-900">Plan this trip</h2>
+            <h2 class="text-sm font-black uppercase tracking-widest text-slate-900">
+              Plan this trip
+            </h2>
             <p class="mt-2 text-xs font-bold leading-relaxed text-slate-500">
-              Pair this {String.downcase(@listing.kind_label)} with intercity bus tickets.
+              Pair this {@listing.kind_noun} with intercity bus tickets.
               Compare fares, choose a seat and pay with M-PESA.
             </p>
             <a
@@ -112,11 +119,23 @@
           <h2 class="text-xl font-black tracking-tight text-slate-900">You may also like</h2>
           <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <%= for related <- @related do %>
-              <a href={related.path} class="group overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-                <img src={related.image} alt={related.name} class="h-36 w-full object-cover" loading="lazy" />
+              <a
+                href={related.path}
+                class="group overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+              >
+                <img
+                  src={related.image}
+                  alt={related.name}
+                  class="h-36 w-full object-cover"
+                  loading="lazy"
+                />
                 <div class="p-4">
-                  <p class="text-[9px] font-black uppercase tracking-widest text-[#FF4C00]">{related.location}</p>
-                  <h3 class="mt-1 text-base font-black text-slate-900 group-hover:text-[#FF4C00]">{related.name}</h3>
+                  <p class="text-[9px] font-black uppercase tracking-widest text-[#FF4C00]">
+                    {related.location}
+                  </p>
+                  <h3 class="mt-1 text-base font-black text-slate-900 group-hover:text-[#FF4C00]">
+                    {related.name}
+                  </h3>
                 </div>
               </a>
             <% end %>
