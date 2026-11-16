@@ -1,0 +1,20 @@
+name: Google hotel sync
+
+# Wakes the KOMIUTA web instance once a day so the in-app two-day Google hotel
+# refresh can run even when no visitors are browsing. The app records the last
+# run and skips the refresh until two days have elapsed.
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  wake-and-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Request the Chyllz hotels page
+        run: |
+          curl -fsS --max-time 120 --retry 2 --retry-delay 10 "https://www.komiuta.com/tour-packages/hotels?sync=1" > /dev/null
