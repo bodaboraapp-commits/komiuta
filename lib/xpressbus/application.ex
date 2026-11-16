@@ -15,6 +15,7 @@ defmodule Xpressbus.Application do
       XpressbusWeb.Plugs.IpThrottleStore,
       Xpressbus.ContentCache,
       Xpressbus.Bookings.SyncServer,
+      Xpressbus.Jobs.HotelSyncScheduler,
       XpressbusWeb.ErrorMonitoring,
       XpressbusWeb.Endpoint
     ]

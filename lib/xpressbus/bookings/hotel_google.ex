@@ -19,7 +19,7 @@ defmodule Xpressbus.Bookings.HotelGoogle do
   alias Xpressbus.Bookings.Hotel
   alias Xpressbus.{GooglePlaces, Repo}
 
-  @sync_ttl_days 7
+  @sync_ttl_days 2
 
   @doc "Enriches a list of `%Hotel{}` rows with Google Places data."
   def enrich(hotels, opts \\ [])

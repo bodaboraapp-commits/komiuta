@@ -27,6 +27,7 @@ defmodule XpressbusWeb.ChyllzLive do
   alias Xpressbus.{Accounts, Chyllz, HotelBookings, TravelAssistant}
 
   alias Xpressbus.Bookings.HotelGoogle
+  alias Xpressbus.GoogleHotelSync
 
   @listing_limit 60
   @room_images ["/images/room_1.webp", "/images/room_2.webp", "/images/room_3.webp"]
@@ -660,6 +661,10 @@ defmodule XpressbusWeb.ChyllzLive do
   end
 
   defp load_step(socket, :hotels, search) do
+    # Wake the two-day Google refresh in the background; hotel data shown on
+    # this page is served from the database either way.
+    GoogleHotelSync.run_if_due_async()
+
     assign(
       socket,
       :hotels,

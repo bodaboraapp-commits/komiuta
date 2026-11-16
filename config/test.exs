@@ -72,3 +72,9 @@ config :xpressbus, :weather,
 # Never call Google Places from the test suite. Tests use the curated fallback;
 # the HTTP client can be exercised with an injected Req plug where needed.
 config :xpressbus, :google_places_enabled, false
+
+
+# Never run the scheduled Google hotel refresh (or email reports) in tests.
+config :xpressbus, :hotel_sync_enabled, false
+config :xpressbus, :hotel_sync_scheduler_enabled, false
+config :xpressbus, :hotel_sync_notifications, false

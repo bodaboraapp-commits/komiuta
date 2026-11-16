@@ -301,6 +301,14 @@ if config_env() == :prod do
 
   config :xpressbus, :mailer_from, mailer_from
 
+  # Refresh Google Places hotel data every two days. The in-app scheduler runs
+  # whenever the instance is awake and the scheduled GitHub workflow requests
+  # the hotels page so a sleeping Render instance still refreshes.
+  config :xpressbus, :hotel_sync_enabled, true
+  config :xpressbus, :hotel_sync_scheduler_enabled, true
+  config :xpressbus, :hotel_sync_notifications, true
+  config :xpressbus, :hotel_sync_alert_email, env.("HOTEL_SYNC_ALERT_EMAIL") || "komondiedward@gmail.com"
+
   resend_key = env.("RESEND_API_KEY")
   mailgun_key = env.("MAILGUN_API_KEY")
   mailgun_domain = env.("MAILGUN_DOMAIN")
