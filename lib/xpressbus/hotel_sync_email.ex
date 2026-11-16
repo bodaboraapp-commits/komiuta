@@ -4,7 +4,7 @@ defmodule Xpressbus.HotelSyncEmail do
   import Swoosh.Email
   require Logger
 
-  alias Xpressbus.Mailer
+  alias Xpressbus.{EmailTemplate, Mailer}
 
   @default_recipient "komondiedward@gmail.com"
 
@@ -57,6 +57,8 @@ defmodule Xpressbus.HotelSyncEmail do
 
     Details:
     #{run.details || "—"}
+
+    #{EmailTemplate.text_footer()}
     """
   end
 
@@ -64,15 +66,39 @@ defmodule Xpressbus.HotelSyncEmail do
     details =
       (run.details || "")
       |> String.split("\n", trim: true)
-      |> Enum.map_join("", fn line -> "<li>#{line}</li>" end)
+      |> Enum.map_join("", fn line ->
+        ~s(<li style="margin:0 0 8px;font-size:13px;line-height:1.6;color:#475569;">#{EmailTemplate.html_escape(line)}</li>)
+      end)
 
+    status_color =
+      case run.status do
+        "success" -> "#059669"
+        "partial" -> "#d97706"
+        _ -> "#dc2626"
+      end
+
+    content = """
+    <tr>
+      <td style="padding:32px 28px 8px;">
+        <p style="margin:0 0 8px;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;color:#FF4C00;font-weight:800;">Operations report</p>
+        <h1 style="margin:0 0 16px;font-size:22px;line-height:1.2;">Google hotel sync</h1>
+        <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#475569;">
+          Status: <strong style="color:#{status_color};">#{EmailTemplate.html_escape(run.status)}</strong><br />
+          Hotels checked: <strong>#{run.hotels_count}</strong><br />
+          Matched on Google: <strong>#{run.matched_count}</strong>
+        </p>
+        <ul style="margin:0 0 20px;padding-left:18px;">#{details}</ul>
+        <p style="margin:0 0 24px;font-size:11px;line-height:1.6;color:#94a3b8;">
+          Run at #{run.inserted_at || DateTime.utc_now()} UTC
+        </p>
+      </td>
+    </tr>
     """
-    <h2>Chyllz Google hotel sync</h2>
-    <p><strong>Status:</strong> #{run.status}<br/>
-    <strong>Hotels checked:</strong> #{run.hotels_count}<br/>
-    <strong>Matched on Google:</strong> #{run.matched_count}</p>
-    <ul>#{details}</ul>
-    <p style="color:#64748b;font-size:12px">This report was generated automatically by KOMIUTA.</p>
-    """
+
+    EmailTemplate.render(content,
+      badge: "Hotel sync report",
+      preheader: "Google hotel sync #{run.status}: #{run.matched_count}/#{run.hotels_count} hotels matched."
+    )
   end
+
 end

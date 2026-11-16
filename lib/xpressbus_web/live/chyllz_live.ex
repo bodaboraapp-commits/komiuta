@@ -26,7 +26,6 @@ defmodule XpressbusWeb.ChyllzLive do
 
   alias Xpressbus.{Accounts, Chyllz, HotelBookings, TravelAssistant}
 
-  alias Xpressbus.Bookings.HotelGoogle
   alias Xpressbus.GoogleHotelSync
 
   @listing_limit 60
@@ -652,7 +651,7 @@ defmodule XpressbusWeb.ChyllzLive do
     events = upcoming_or_recent_events(2)
 
     socket
-    |> assign(:hotels, Chyllz.hotels(limit: 3) |> HotelGoogle.enrich())
+    |> assign(:hotels, Chyllz.hotels(limit: 3))
     |> assign(:hidden_gems, Chyllz.hidden_gems(limit: 3))
     |> assign(:car_hires, Chyllz.car_hires(limit: 4))
     |> assign(:events, events)
@@ -668,7 +667,7 @@ defmodule XpressbusWeb.ChyllzLive do
     assign(
       socket,
       :hotels,
-      Chyllz.hotels(search: search, limit: @listing_limit) |> HotelGoogle.enrich()
+      Chyllz.hotels(search: search, limit: @listing_limit)
     )
   end
 

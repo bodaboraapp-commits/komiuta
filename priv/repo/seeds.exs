@@ -127,32 +127,7 @@ for banner_attrs <- banners_data do
 end
 
 # 5. Seed Hotels
-hotels_data = [
-  %{
-    name: "Nomad Beach Resort",
-    price_per_night: 12500,
-    rating: 4.9,
-    location: "Diani",
-    description: "Boutique beachfront resort.",
-    amenities: ["Wi-Fi", "Pool", "Spa"]
-  },
-  %{
-    name: "Sarova Stanley",
-    price_per_night: 18000,
-    rating: 4.8,
-    location: "Nairobi",
-    description: "Historic luxury hotel.",
-    amenities: ["Business Center", "Gym", "Restaurant"]
-  },
-  %{
-    name: "Hemingways Watamu",
-    price_per_night: 25000,
-    rating: 5.0,
-    location: "Watamu",
-    description: "Iconic tropical paradise.",
-    amenities: ["Ocean View", "Bar", "Room Service"]
-  }
-]
+hotels_data = Xpressbus.Bookings.HotelSeedData.kenya_hotels()
 
 for hotel_attrs <- hotels_data do
   # Idempotent: hotels have a unique name, re-running seeds must not duplicate cards.
