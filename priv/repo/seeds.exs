@@ -129,7 +129,7 @@ end
 # 5. Seed Hotels
 hotels_data = [
   %{
-    name: "The Sands Resort",
+    name: "Nomad Beach Resort",
     price_per_night: 12500,
     rating: 4.9,
     location: "Diani",
@@ -301,6 +301,7 @@ IO.puts("Facilities in DB: #{length(facilities)}")
 
 # 10. Seed Mock Buses (if scraper fails)
 IO.puts("Seeding mock buses...")
+
 unless Repo.aggregate(Bus, :count, :id) > 0 do
   buses_data = [
     %{
@@ -349,6 +350,7 @@ IO.puts("Bus operators in DB: #{length(operators)}")
 # 12. Seed Recent Bookings (Tickets)
 IO.puts("Seeding mock tickets...")
 Xpressbus.Repo.delete_all(Xpressbus.Tickets.Ticket)
+
 tickets_data = [
   %{
     ticket_id: "TKT-A1B2C3",
@@ -399,8 +401,11 @@ tickets_data = [
 
 for ticket_attrs <- tickets_data do
   case Xpressbus.Tickets.create_ticket(ticket_attrs) do
-    {:ok, _} -> :ok
-    {:error, changeset} -> IO.inspect(changeset.errors, label: "❌ Failed to seed ticket #{ticket_attrs.ticket_id}")
+    {:ok, _} ->
+      :ok
+
+    {:error, changeset} ->
+      IO.inspect(changeset.errors, label: "❌ Failed to seed ticket #{ticket_attrs.ticket_id}")
   end
 end
 
