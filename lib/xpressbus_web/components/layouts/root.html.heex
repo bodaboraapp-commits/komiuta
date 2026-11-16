@@ -83,6 +83,8 @@
     <meta name="apple-mobile-web-app-title" content={assigns[:page_app_name] || "KOMIUTA"} />
     <meta name="application-name" content={assigns[:page_app_name] || "KOMIUTA"} />
     <link phx-track-static rel="manifest" href={assigns[:page_manifest] || "/manifest.json"} />
+    <link rel="alternate" type="application/atom+xml" title="KOMIUTA listings" href="/feeds/listings.xml" />
+    <link rel="search" type="application/opensearchdescription+xml" title="KOMIUTA search" href="/opensearch.xml" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" href="/images/favicon-32.png" sizes="32x32" />
     <link

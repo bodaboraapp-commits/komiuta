@@ -82,8 +82,8 @@ defmodule XpressbusWeb.ChyllzLive do
       |> assign(:selected, nil)
       |> assign(:page_title, page_title_for(step))
       |> assign(:page_canonical, canonical_for(step))
-      |> assign(:page_json_ld, chyllz_json_ld(step))
       |> load_step(step, search)
+      |> assign_listing_seo(step)
       |> maybe_open_assistant(params)
 
     {:noreply, socket}
@@ -736,6 +736,57 @@ defmodule XpressbusWeb.ChyllzLive do
   defp canonical_for(:events), do: XpressbusWeb.Endpoint.url() <> "/tour-packages/events"
   defp canonical_for(_step), do: XpressbusWeb.Endpoint.url() <> "/tour-packages"
 
+  defp assign_listing_seo(socket, step) do
+    items = listing_items(socket.assigns, step)
+    kind = step_kind(step)
+
+    json_ld =
+      if items == [] do
+        chyllz_json_ld(step)
+      else
+        [
+          XpressbusWeb.SEO.organization(),
+          XpressbusWeb.SEO.breadcrumb([
+            {"Home", XpressbusWeb.SEO.base_url() <> "/"},
+            {"Chyllz", XpressbusWeb.SEO.base_url() <> "/tour-packages"},
+            {page_title_for(step), canonical_for(step)}
+          ]),
+          XpressbusWeb.SEO.item_list(kind, items)
+        ]
+      end
+
+    assign(socket,
+      page_json_ld: json_ld,
+      page_description: page_description_for(step, length(items))
+    )
+  end
+
+  defp listing_items(assigns, :hotels), do: assigns[:hotels] || []
+  defp listing_items(assigns, :gems), do: assigns[:hidden_gems] || []
+  defp listing_items(assigns, :car), do: assigns[:car_hires] || []
+  defp listing_items(assigns, :events), do: assigns[:events] || []
+  defp listing_items(_assigns, _step), do: []
+
+  defp page_description_for(:hotels, count),
+    do:
+      "Browse #{count} curated hotels across Kenya with Chyllz by KOMIUTA. Compare real photos, guest ratings, nightly prices and book intercity bus tickets for the same trip."
+
+  defp page_description_for(:gems, count),
+    do:
+      "Discover #{count} hidden gems across Kenya with Chyllz by KOMIUTA: national parks, forests, gorges, cultural sites, coast and highlands, with photos, entry fees and access notes."
+
+  defp page_description_for(:car, count),
+    do:
+      "Compare #{count} car hire options across Kenya with Chyllz by KOMIUTA. Self-drive or chauffeured vehicles for coast, city and safari trips, alongside bus tickets."
+
+  defp page_description_for(:events, count),
+    do:
+      "See #{count} upcoming and recent events across East Africa with Chyllz by KOMIUTA, and plan bus travel to attend them."
+
+  defp page_description_for(_step, _count),
+    do:
+      "Discover handpicked hotels, hidden gems, car hire and events across East Africa with Chyllz by KOMIUTA."
+
   defp chyllz_json_ld(step) do
     [
       XpressbusWeb.SEO.organization(),
@@ -1306,7 +1357,16 @@ defmodule XpressbusWeb.ChyllzLive do
     ~H"""
     <div id="hotel-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       <%= for hotel <- @hotels do %>
-        <.hotel_card hotel={hotel} />
+        <div>
+          <.hotel_card hotel={hotel} />
+          <a
+            id={"hotel-page-#{hotel.id}"}
+            href={XpressbusWeb.SEO.listing_path("hotel", hotel)}
+            class="mt-2 inline-flex text-[9px] font-black uppercase tracking-widest text-[#FF4C00] hover:underline"
+          >
+            View hotel page
+          </a>
+        </div>
       <% end %>
     </div>
     """
@@ -1370,7 +1430,16 @@ defmodule XpressbusWeb.ChyllzLive do
     ~H"""
     <div id="gem-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       <%= for gem <- @gems do %>
-        <.gem_card gem={gem} />
+        <div>
+          <.gem_card gem={gem} />
+          <a
+            id={"gem-page-#{gem.id}"}
+            href={XpressbusWeb.SEO.listing_path("hidden_gem", gem)}
+            class="mt-2 inline-flex text-[9px] font-black uppercase tracking-widest text-yellow-500 hover:underline"
+          >
+            View full page
+          </a>
+        </div>
       <% end %>
     </div>
     """
@@ -1444,7 +1513,16 @@ defmodule XpressbusWeb.ChyllzLive do
     ~H"""
     <div id="car-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
       <%= for car <- @cars do %>
-        <.car_card car={car} />
+        <div>
+          <.car_card car={car} />
+          <a
+            id={"car-page-#{car.id}"}
+            href={XpressbusWeb.SEO.listing_path("car_hire", car)}
+            class="mt-2 inline-flex text-[9px] font-black uppercase tracking-widest text-[#FF4C00] hover:underline"
+          >
+            View car page
+          </a>
+        </div>
       <% end %>
     </div>
     """
@@ -1556,7 +1634,16 @@ defmodule XpressbusWeb.ChyllzLive do
             class="grid grid-cols-1 md:grid-cols-2 gap-8"
           >
             <%= for event <- @events do %>
-              <.event_card event={event} />
+              <div>
+                <.event_card event={event} />
+                <a
+                  id={"event-page-#{event.id}"}
+                  href={XpressbusWeb.SEO.listing_path("event", event)}
+                  class="inline-flex pb-6 text-[9px] font-black uppercase tracking-widest text-[#FF7A3D] hover:underline"
+                >
+                  View event page
+                </a>
+              </div>
             <% end %>
           </div>
         <% end %>

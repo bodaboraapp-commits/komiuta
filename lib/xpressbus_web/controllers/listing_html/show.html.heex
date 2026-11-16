@@ -1,0 +1,128 @@
+<Layouts.app flash={@flash}>
+  <.main_header step={:chyllz} current_user={@current_user} />
+
+  <main class="min-h-screen bg-[#f8fafc] pb-20 pt-24">
+    <div class="mx-auto max-w-5xl px-5 md:px-8">
+      <nav class="mb-6 flex flex-wrap items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+        <a href="/" class="hover:text-[#FF4C00]">Home</a>
+        <span>/</span>
+        <a href="/tour-packages" class="hover:text-[#FF4C00]">Chyllz</a>
+        <span>/</span>
+        <a href={@listing.index_path} class="hover:text-[#FF4C00]">{@listing.kind_label}</a>
+        <span>/</span>
+        <span class="text-slate-700">{@listing.name}</span>
+      </nav>
+
+      <article class="overflow-hidden rounded-[2rem] border border-slate-100 bg-white shadow-sm">
+        <div class="relative h-72 overflow-hidden bg-slate-900 md:h-96">
+          <img
+            src={@listing.image}
+            alt={"#{@listing.name} — #{@listing.location}"}
+            class="h-full w-full object-cover"
+            fetchpriority="high"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent"></div>
+
+          <div class="absolute bottom-6 left-6 right-6 text-white md:bottom-8 md:left-8">
+            <p class="mb-2 text-[10px] font-black uppercase tracking-[0.3em] text-[#FF7A3D]">
+              {@listing.kind_label} · {@listing.location}
+            </p>
+            <h1 class="text-3xl font-black leading-tight md:text-5xl">{@listing.name}</h1>
+
+            <%= if @listing.rating do %>
+              <p class="mt-3 flex items-center gap-2 text-sm font-bold text-white/90">
+                <span class="material-symbols-outlined text-yellow-400">star</span>
+                {@listing.rating}
+                <%= if @listing.reviews do %>
+                  <span class="text-white/60">({@listing.reviews} reviews)</span>
+                <% end %>
+              </p>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="grid gap-8 p-6 md:grid-cols-[minmax(0,1fr)_300px] md:p-10">
+          <div>
+            <p class="text-base font-bold leading-relaxed text-slate-600">{@listing.description}</p>
+
+            <%= if @listing.details != [] do %>
+              <dl class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <%= for {label, value} <- @listing.details do %>
+                  <div class="rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-3">
+                    <dt class="text-[9px] font-black uppercase tracking-widest text-slate-400">{label}</dt>
+                    <dd class="mt-1 text-sm font-black text-slate-800">{value}</dd>
+                  </div>
+                <% end %>
+              </dl>
+            <% end %>
+
+            <div class="mt-8 flex flex-wrap gap-3">
+              <a
+                id="listing-find-buses"
+                href={"/?#{URI.encode_query(%{to: @listing.location || "Kenya"})}"}
+                class="rounded-full bg-[#FF4C00] px-6 py-3.5 text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-[#E64400]"
+              >
+                Find buses to {@listing.location}
+              </a>
+
+              <%= if @listing.maps_url do %>
+                <a
+                  id="listing-google-maps"
+                  href={@listing.maps_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="rounded-full border border-slate-200 bg-white px-6 py-3.5 text-[10px] font-black uppercase tracking-widest text-slate-600 transition hover:border-[#FF4C00] hover:text-[#FF4C00]"
+                >
+                  View on Google Maps
+                </a>
+              <% end %>
+
+              <%= if @listing.website_url do %>
+                <a
+                  id="listing-website"
+                  href={@listing.website_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="rounded-full border border-slate-200 bg-white px-6 py-3.5 text-[10px] font-black uppercase tracking-widest text-slate-600 transition hover:border-[#FF4C00] hover:text-[#FF4C00]"
+                >
+                  Official website
+                </a>
+              <% end %>
+            </div>
+          </div>
+
+          <aside class="rounded-3xl border border-orange-100 bg-orange-50/60 p-5">
+            <h2 class="text-sm font-black uppercase tracking-widest text-slate-900">Plan this trip</h2>
+            <p class="mt-2 text-xs font-bold leading-relaxed text-slate-500">
+              Pair this {String.downcase(@listing.kind_label)} with intercity bus tickets.
+              Compare fares, choose a seat and pay with M-PESA.
+            </p>
+            <a
+              href={@listing.index_path}
+              class="mt-4 inline-flex text-[10px] font-black uppercase tracking-widest text-[#FF4C00] hover:underline"
+            >
+              ← All {@listing.kind_label}
+            </a>
+          </aside>
+        </div>
+      </article>
+
+      <%= if @related != [] do %>
+        <section class="mt-12">
+          <h2 class="text-xl font-black tracking-tight text-slate-900">You may also like</h2>
+          <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <%= for related <- @related do %>
+              <a href={related.path} class="group overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+                <img src={related.image} alt={related.name} class="h-36 w-full object-cover" loading="lazy" />
+                <div class="p-4">
+                  <p class="text-[9px] font-black uppercase tracking-widest text-[#FF4C00]">{related.location}</p>
+                  <h3 class="mt-1 text-base font-black text-slate-900 group-hover:text-[#FF4C00]">{related.name}</h3>
+                </div>
+              </a>
+            <% end %>
+          </div>
+        </section>
+      <% end %>
+    </div>
+  </main>
+</Layouts.app>

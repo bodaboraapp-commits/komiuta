@@ -43,4 +43,5 @@ Disallow: /dashboard
 User-agent: Google-Extended
 Allow: /
 
+# AI answer-engine index: https://www.komiuta.com/llms.txt
 Sitemap: https://www.komiuta.com/sitemap.xml

@@ -37,6 +37,9 @@ defmodule XpressbusWeb.Router do
     pipe_through [:browser]
 
     get "/sitemap.xml", SeoController, :sitemap
+    get "/llms.txt", SeoController, :llms
+    get "/opensearch.xml", SeoController, :opensearch
+    get "/feeds/listings.xml", SeoController, :listings_feed
 
     get "/places/photo", PlacePhotoController, :show
     live "/", BookingLive, :index
@@ -44,9 +47,13 @@ defmodule XpressbusWeb.Router do
     live "/tour-packages", ChyllzLive, :index
     live "/tour-packages/insurance", InsuranceLive, :index
     live "/tour-packages/hotels", ChyllzLive, :hotels
+    get "/tour-packages/hotels/:slug", ListingController, :hotel
     live "/our-packages/hidden-gems", ChyllzLive, :gems
+    get "/our-packages/hidden-gems/:slug", ListingController, :hidden_gem
     live "/tour-packages/car", ChyllzLive, :car
+    get "/tour-packages/car/:slug", ListingController, :car_hire
     live "/tour-packages/events", ChyllzLive, :events
+    get "/tour-packages/events/:slug", ListingController, :event
     live "/agent", AgentLive, :index
     get "/agent/google/start", AgentSessionController, :google_start
     get "/agent/google/complete", AgentSessionController, :google_complete
