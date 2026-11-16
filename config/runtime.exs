@@ -307,7 +307,14 @@ if config_env() == :prod do
   config :xpressbus, :hotel_sync_enabled, true
   config :xpressbus, :hotel_sync_scheduler_enabled, true
   config :xpressbus, :hotel_sync_notifications, true
-  config :xpressbus, :hotel_sync_alert_email, env.("HOTEL_SYNC_ALERT_EMAIL") || "komondiedward@gmail.com"
+
+  hotel_sync_alert_email =
+    case env.("HOTEL_SYNC_ALERT_EMAIL") do
+      "" -> "komondiedward@gmail.com"
+      value -> value
+    end
+
+  config :xpressbus, :hotel_sync_alert_email, hotel_sync_alert_email
 
   resend_key = env.("RESEND_API_KEY")
   mailgun_key = env.("MAILGUN_API_KEY")

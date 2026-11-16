@@ -87,4 +87,28 @@ defmodule Xpressbus.GoogleHotelSyncTest do
     assert Enum.any?(email.to, fn {_name, address} -> address == "komondiedward@gmail.com" end)
     assert email.text_body =~ "Hotels checked: 2"
   end
+
+  test "the report falls back to the default inbox when the alert email is blank" do
+    previous = Application.get_env(:xpressbus, :hotel_sync_alert_email)
+    Application.put_env(:xpressbus, :hotel_sync_alert_email, "")
+
+    on_exit(fn ->
+      if previous do
+        Application.put_env(:xpressbus, :hotel_sync_alert_email, previous)
+      else
+        Application.delete_env(:xpressbus, :hotel_sync_alert_email)
+      end
+    end)
+
+    run = %HotelSyncRun{
+      status: "success",
+      hotels_count: 1,
+      matched_count: 1,
+      inserted_at: DateTime.utc_now()
+    }
+
+    email = HotelSyncEmail.build(run)
+
+    assert Enum.any?(email.to, fn {_name, address} -> address == "komondiedward@gmail.com" end)
+  end
 end

@@ -9,14 +9,19 @@ defmodule Xpressbus.HotelSyncEmail do
   @default_recipient "komondiedward@gmail.com"
 
   def recipient do
-    Application.get_env(:xpressbus, :hotel_sync_alert_email, @default_recipient)
+    case Application.get_env(:xpressbus, :hotel_sync_alert_email) do
+      value when is_binary(value) and value != "" -> String.trim(value)
+      _other -> @default_recipient
+    end
   end
 
   def build(run) do
     new()
     |> to(recipient())
     |> from({"Komiuta", Application.get_env(:xpressbus, :mailer_from, "no-reply@komiuta.com")})
-    |> subject("Chyllz Google hotel sync: #{run.status} (#{run.matched_count}/#{run.hotels_count})")
+    |> subject(
+      "Chyllz Google hotel sync: #{run.status} (#{run.matched_count}/#{run.hotels_count})"
+    )
     |> text_body(body(run))
     |> html_body(html(run))
   end
