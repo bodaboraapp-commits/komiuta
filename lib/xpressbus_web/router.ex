@@ -37,6 +37,8 @@ defmodule XpressbusWeb.Router do
     pipe_through [:browser]
 
     get "/sitemap.xml", SeoController, :sitemap
+
+    get "/places/photo", PlacePhotoController, :show
     live "/", BookingLive, :index
     live "/trip/build-with-ai", AiTripBuilderLive, :index
     live "/tour-packages", ChyllzLive, :index

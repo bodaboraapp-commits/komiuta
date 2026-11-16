@@ -26,6 +26,8 @@ defmodule XpressbusWeb.ChyllzLive do
 
   alias Xpressbus.{Accounts, Chyllz, HotelBookings, TravelAssistant}
 
+  alias Xpressbus.Bookings.HotelGoogle
+
   @listing_limit 60
   @room_images ["/images/room_1.webp", "/images/room_2.webp", "/images/room_3.webp"]
   @assistant_hourly_limit 40
@@ -649,7 +651,7 @@ defmodule XpressbusWeb.ChyllzLive do
     events = upcoming_or_recent_events(2)
 
     socket
-    |> assign(:hotels, Chyllz.hotels(limit: 3))
+    |> assign(:hotels, Chyllz.hotels(limit: 3) |> HotelGoogle.enrich())
     |> assign(:hidden_gems, Chyllz.hidden_gems(limit: 3))
     |> assign(:car_hires, Chyllz.car_hires(limit: 4))
     |> assign(:events, events)
@@ -658,7 +660,11 @@ defmodule XpressbusWeb.ChyllzLive do
   end
 
   defp load_step(socket, :hotels, search) do
-    assign(socket, :hotels, Chyllz.hotels(search: search, limit: @listing_limit))
+    assign(
+      socket,
+      :hotels,
+      Chyllz.hotels(search: search, limit: @listing_limit) |> HotelGoogle.enrich()
+    )
   end
 
   defp load_step(socket, :gems, search) do
@@ -1322,7 +1328,11 @@ defmodule XpressbusWeb.ChyllzLive do
           <%= if @hotel.rating do %>
             <span class="material-symbols-outlined !text-sm text-yellow-500">star</span> {rating(
               @hotel.rating
-            )} <span>•</span>
+            )}
+            <%= if @hotel.review_count do %>
+              <span class="text-slate-300">({@hotel.review_count})</span>
+            <% end %>
+             <span>•</span>
           <% end %>
           <span>{@hotel.location}</span>
         </p>

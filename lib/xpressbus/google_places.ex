@@ -19,6 +19,7 @@ defmodule Xpressbus.GooglePlaces do
   @cache :xpressbus_google_places_cache
   @cache_ttl :timer.hours(6)
   @field_mask "places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.googleMapsUri,places.photos,places.location,places.types,places.primaryType"
+  @lookup_field_mask "places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.googleMapsUri,places.photos"
   @fallback_images [
     "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
     "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=600&q=80",
@@ -211,7 +212,10 @@ defmodule Xpressbus.GooglePlaces do
     name = get_in(place, ["displayName", "text"])
 
     if is_binary(name) and name != "" do
+      ref = photo_ref(place)
+
       %{
+        id: place["id"],
         name: name,
         address: place["formattedAddress"] || "",
         rating: normalize_rating(place["rating"]),
@@ -221,6 +225,8 @@ defmodule Xpressbus.GooglePlaces do
         latitude: get_in(place, ["location", "latitude"]),
         longitude: get_in(place, ["location", "longitude"]),
         image: photo_url(place, key),
+        photo_ref: ref,
+        image_proxy: if(is_binary(ref), do: photo_proxy_path(ref), else: nil),
         maps_url:
           place["googleMapsUri"] ||
             "https://www.google.com/maps/search/?api=1&query=#{URI.encode_www_form(name)}"
@@ -269,6 +275,129 @@ defmodule Xpressbus.GooglePlaces do
         value
     end
   end
+
+  @doc """
+  Looks up a single real hotel on Google Places by name and location.
+
+  Only a confident name match is returned; otherwise `{:error, :no_confident_match}`
+  is returned so the caller can keep its curated fallback image and rating.
+  """
+  def lookup_hotel(name, location) do
+    query =
+      [name, location]
+      |> Enum.reject(&(is_nil(&1) or to_string(&1) == ""))
+      |> Enum.join(" ")
+
+    with true <- query != "",
+         key when is_binary(key) and key != "" <- api_key(),
+         {:ok, body} <- search_hotel_places(key, query) do
+      places =
+        body
+        |> Map.get("places", [])
+        |> Enum.map(&parse_place(&1, key))
+        |> Enum.reject(&is_nil/1)
+
+      best_match(name, places)
+    else
+      _other -> {:error, :not_configured}
+    end
+  end
+
+  defp search_hotel_places(key, query) do
+    request = [
+      json: %{textQuery: query, maxResultCount: 5, languageCode: "en"},
+      headers: [{"X-Goog-Api-Key", key}, {"X-Goog-FieldMask", @lookup_field_mask}],
+      receive_timeout: 3_500,
+      retry: false
+    ]
+
+    case Req.post(@endpoint, request) do
+      {:ok, %Req.Response{status: 200, body: body}} when is_map(body) ->
+        {:ok, body}
+
+      {:ok, %Req.Response{status: 200, body: body}} when is_binary(body) ->
+        Jason.decode(body)
+
+      {:ok, %Req.Response{status: status}} ->
+        {:error, {:http_status, status}}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  defp best_match(_name, []), do: {:error, :no_nearby_results}
+
+  defp best_match(name, places) do
+    target = normalize_name(name)
+
+    {place, score} =
+      places
+      |> Enum.map(fn place ->
+        {place, String.jaro_distance(target, normalize_name(place.name))}
+      end)
+      |> Enum.max_by(&elem(&1, 1))
+
+    if score >= 0.7, do: {:ok, place}, else: {:error, :no_confident_match}
+  end
+
+  defp normalize_name(value) do
+    value
+    |> to_string()
+    |> String.downcase()
+    |> String.replace(~r/[^a-z0-9\s]/, " ")
+    |> String.split()
+    |> Enum.join(" ")
+  end
+
+  @doc "A same-origin path that proxies a Google photo without exposing the key."
+  def photo_proxy_path(ref) when is_binary(ref) do
+    "/places/photo?ref=" <> URI.encode_www_form(ref)
+  end
+
+  @doc """
+  Fetches a Google Places photo through the server API key.
+
+  Only the `places/.../photos/...` references Google returns are accepted, so the
+  endpoint cannot be used as an open image proxy.
+  """
+  def fetch_photo(ref) when is_binary(ref) do
+    case Application.get_env(:xpressbus, :place_photo_override) do
+      fun when is_function(fun, 1) -> fun.(ref)
+      _other -> fetch_photo_live(ref)
+    end
+  end
+
+  def fetch_photo(_ref), do: {:error, :invalid_ref}
+
+  defp fetch_photo_live(ref) do
+    with true <- valid_photo_ref?(ref),
+         key when is_binary(key) and key != "" <- api_key(),
+         url = "https://places.googleapis.com/v1/#{ref}/media?maxWidthPx=1200&key=#{key}",
+         {:ok, %Req.Response{status: 200, body: body, headers: headers}} <-
+           Req.get(url, decode_body: false, retry: false, receive_timeout: 6_000) do
+      {:ok, body, content_type(headers)}
+    else
+      {:ok, %Req.Response{status: status}} -> {:error, {:http_status, status}}
+      {:error, reason} -> {:error, reason}
+      _other -> {:error, :not_configured}
+    end
+  end
+
+  defp valid_photo_ref?(ref) do
+    String.starts_with?(ref, "places/") and String.contains?(ref, "/photos/") and
+      not String.contains?(ref, "..")
+  end
+
+  defp content_type(headers) do
+    headers
+    |> Enum.find_value("image/jpeg", fn {key, values} ->
+      if String.downcase(key) == "content-type", do: List.first(values)
+    end)
+  end
+
+  defp photo_ref(%{"photos" => [%{"name" => name} | _]}) when is_binary(name), do: name
+  defp photo_ref(_place), do: nil
 
   @doc false
   def fallback_image(index), do: Enum.at(@fallback_images, rem(index, length(@fallback_images)))
