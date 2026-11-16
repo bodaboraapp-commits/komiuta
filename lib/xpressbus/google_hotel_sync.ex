@@ -18,7 +18,7 @@ defmodule Xpressbus.GoogleHotelSync do
   require Logger
 
   alias Xpressbus.Repo
-  alias Xpressbus.Bookings.{Hotel, HotelGoogle, HotelSyncRun}
+  alias Xpressbus.Bookings.{HiddenGem, HiddenGemGoogle, Hotel, HotelGoogle, HotelSyncRun}
   alias Xpressbus.HotelSyncEmail
 
   @interval_seconds 2 * 24 * 60 * 60
@@ -65,43 +65,54 @@ defmodule Xpressbus.GoogleHotelSync do
 
   defp do_run do
     hotels = Repo.all(from(h in Hotel, where: h.active == true, order_by: [asc: h.name]))
-    enriched = HotelGoogle.enrich(hotels, force: true)
-    matched = Enum.count(enriched, &(is_binary(&1.google_place_id) and &1.google_place_id != ""))
+    gems = Repo.all(from(g in HiddenGem, where: g.active == true, order_by: [asc: g.title]))
+
+    enriched_hotels = HotelGoogle.enrich(hotels, force: true)
+    enriched_gems = HiddenGemGoogle.enrich(gems, force: true)
+
+    hotels_matched = matched_count(enriched_hotels)
+    gems_matched = matched_count(enriched_gems)
+    total = length(enriched_hotels) + length(enriched_gems)
+    matched = hotels_matched + gems_matched
 
     status =
       cond do
-        enriched != [] and matched == length(enriched) -> "success"
+        total > 0 and matched == total -> "success"
         matched > 0 -> "partial"
         true -> "failed"
       end
 
     details =
-      enriched
-      |> Enum.map(fn hotel ->
-        if is_binary(hotel.google_place_id) do
-          "#{hotel.name}: matched (rating #{hotel.rating}, #{hotel.review_count} reviews)"
-        else
-          "#{hotel.name}: no confident Google match"
-        end
-      end)
+      [
+        "Hotels:",
+        place_lines(enriched_hotels),
+        "",
+        "Hidden gems:",
+        place_lines(enriched_gems)
+      ]
       |> Enum.join("\n")
 
     {:ok, run} =
       %HotelSyncRun{}
       |> HotelSyncRun.changeset(%{
         status: status,
-        hotels_count: length(enriched),
-        matched_count: matched,
+        hotels_count: length(enriched_hotels),
+        matched_count: hotels_matched,
+        gems_count: length(enriched_gems),
+        gems_matched_count: gems_matched,
         details: details
       })
       |> Repo.insert()
 
-    Logger.info("Google hotel sync finished: #{status} #{matched}/#{length(enriched)}")
+    Logger.info(
+      "Google places sync finished: #{status} hotels #{hotels_matched}/#{length(enriched_hotels)}, gems #{gems_matched}/#{length(enriched_gems)}"
+    )
+
     HotelSyncEmail.deliver(run)
     {:ok, run}
   rescue
     error ->
-      Logger.error("Google hotel sync failed: #{Exception.format(:error, error, __STACKTRACE__)}")
+      Logger.error("Google places sync failed: #{Exception.format(:error, error, __STACKTRACE__)}")
 
       {:ok, run} =
         %HotelSyncRun{}
@@ -109,12 +120,36 @@ defmodule Xpressbus.GoogleHotelSync do
           status: "failed",
           hotels_count: 0,
           matched_count: 0,
+          gems_count: 0,
+          gems_matched_count: 0,
           details: Exception.message(error)
         })
         |> Repo.insert()
 
       HotelSyncEmail.deliver(run)
       {:ok, run}
+  end
+
+  defp matched_count(places) do
+    Enum.count(places, &(is_binary(&1.google_place_id) and &1.google_place_id != ""))
+  end
+
+  defp place_lines([]), do: "  (none)"
+
+  defp place_lines(places) do
+    places
+    |> Enum.map(fn place ->
+      name = Map.get(place, :name) || Map.get(place, :title)
+      rating = Map.get(place, :rating)
+      reviews = Map.get(place, :review_count)
+
+      if is_binary(place.google_place_id) do
+        "  #{name}: matched (rating #{rating}, #{reviews} reviews)"
+      else
+        "  #{name}: no confident Google match"
+      end
+    end)
+    |> Enum.join("\n")
   end
 
   defp last_run do

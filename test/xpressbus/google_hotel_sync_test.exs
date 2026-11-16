@@ -85,7 +85,7 @@ defmodule Xpressbus.GoogleHotelSyncTest do
 
     assert email.subject =~ "success"
     assert Enum.any?(email.to, fn {_name, address} -> address == "komondiedward@gmail.com" end)
-    assert email.text_body =~ "Hotels checked: 2"
+    assert email.text_body =~ "Hotels matched: 2/2"
     assert email.html_body =~ "logo_email.png"
     assert email.html_body =~ "Follow us"
     assert email.html_body =~ "Operations report"

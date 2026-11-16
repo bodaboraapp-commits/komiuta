@@ -20,7 +20,7 @@ defmodule Xpressbus.HotelSyncEmail do
     |> to(recipient())
     |> from({"Komiuta", Application.get_env(:xpressbus, :mailer_from, "no-reply@komiuta.com")})
     |> subject(
-      "Chyllz Google hotel sync: #{run.status} (#{run.matched_count}/#{run.hotels_count})"
+      "Chyllz Google places sync: #{run.status} (hotels #{run.matched_count}/#{run.hotels_count}, gems #{run.gems_matched_count}/#{run.gems_count})"
     )
     |> text_body(body(run))
     |> html_body(html(run))
@@ -48,11 +48,13 @@ defmodule Xpressbus.HotelSyncEmail do
 
   defp body(run) do
     """
-    Chyllz Google hotel sync
+    Chyllz Google hotel & hidden gem sync
 
     Status: #{run.status}
     Hotels checked: #{run.hotels_count}
-    Matched on Google: #{run.matched_count}
+    Hotels matched: #{run.matched_count}/#{run.hotels_count}
+    Hidden gems checked: #{run.gems_count}
+    Hidden gems matched: #{run.gems_matched_count}
     Run at: #{run.inserted_at || DateTime.utc_now()} UTC
 
     Details:
@@ -81,11 +83,11 @@ defmodule Xpressbus.HotelSyncEmail do
     <tr>
       <td style="padding:32px 28px 8px;">
         <p style="margin:0 0 8px;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;color:#FF4C00;font-weight:800;">Operations report</p>
-        <h1 style="margin:0 0 16px;font-size:22px;line-height:1.2;">Google hotel sync</h1>
+        <h1 style="margin:0 0 16px;font-size:22px;line-height:1.2;">Google hotel &amp; hidden gem sync</h1>
         <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#475569;">
           Status: <strong style="color:#{status_color};">#{EmailTemplate.html_escape(run.status)}</strong><br />
-          Hotels checked: <strong>#{run.hotels_count}</strong><br />
-          Matched on Google: <strong>#{run.matched_count}</strong>
+          Hotels checked: <strong>#{run.hotels_count}</strong> · matched <strong>#{run.matched_count}</strong><br />
+          Hidden gems checked: <strong>#{run.gems_count}</strong> · matched <strong>#{run.gems_matched_count}</strong>
         </p>
         <ul style="margin:0 0 20px;padding-left:18px;">#{details}</ul>
         <p style="margin:0 0 24px;font-size:11px;line-height:1.6;color:#94a3b8;">
@@ -96,8 +98,8 @@ defmodule Xpressbus.HotelSyncEmail do
     """
 
     EmailTemplate.render(content,
-      badge: "Hotel sync report",
-      preheader: "Google hotel sync #{run.status}: #{run.matched_count}/#{run.hotels_count} hotels matched."
+      badge: "Places sync report",
+      preheader: "Google places sync #{run.status}: hotels #{run.matched_count}/#{run.hotels_count}, gems #{run.gems_matched_count}/#{run.gems_count}."
     )
   end
 

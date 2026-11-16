@@ -6,6 +6,8 @@ defmodule Xpressbus.Bookings.HotelSyncRun do
     field(:status, :string)
     field(:hotels_count, :integer, default: 0)
     field(:matched_count, :integer, default: 0)
+    field(:gems_count, :integer, default: 0)
+    field(:gems_matched_count, :integer, default: 0)
     field(:details, :string)
 
     timestamps(type: :utc_datetime)
@@ -13,7 +15,14 @@ defmodule Xpressbus.Bookings.HotelSyncRun do
 
   def changeset(run, attrs) do
     run
-    |> cast(attrs, [:status, :hotels_count, :matched_count, :details])
+    |> cast(attrs, [
+      :status,
+      :hotels_count,
+      :matched_count,
+      :gems_count,
+      :gems_matched_count,
+      :details
+    ])
     |> validate_required([:status])
     |> validate_inclusion(:status, ~w(success partial failed))
   end

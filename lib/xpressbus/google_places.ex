@@ -19,7 +19,7 @@ defmodule Xpressbus.GooglePlaces do
   @cache :xpressbus_google_places_cache
   @cache_ttl :timer.hours(6)
   @field_mask "places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.googleMapsUri,places.photos,places.location,places.types,places.primaryType"
-  @lookup_field_mask "places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.googleMapsUri,places.photos"
+  @lookup_field_mask "places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.googleMapsUri,places.photos,places.websiteUri,places.location"
   @fallback_images [
     "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
     "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=600&q=80",
@@ -227,6 +227,7 @@ defmodule Xpressbus.GooglePlaces do
         image: photo_url(place, key),
         photo_ref: ref,
         image_proxy: if(is_binary(ref), do: photo_proxy_path(ref), else: nil),
+        website: place["websiteUri"],
         maps_url:
           place["googleMapsUri"] ||
             "https://www.google.com/maps/search/?api=1&query=#{URI.encode_www_form(name)}"
@@ -282,7 +283,7 @@ defmodule Xpressbus.GooglePlaces do
   Only a confident name match is returned; otherwise `{:error, :no_confident_match}`
   is returned so the caller can keep its curated fallback image and rating.
   """
-  def lookup_hotel(name, location) do
+  def lookup_place(name, location) do
     query =
       [name, location]
       |> Enum.reject(&(is_nil(&1) or to_string(&1) == ""))
@@ -302,6 +303,9 @@ defmodule Xpressbus.GooglePlaces do
       _other -> {:error, :not_configured}
     end
   end
+
+  @doc "Backwards-compatible wrapper for hotel lookups."
+  def lookup_hotel(name, location), do: lookup_place(name, location)
 
   defp search_hotel_places(key, query) do
     request = [

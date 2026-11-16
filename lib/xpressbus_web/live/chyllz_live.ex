@@ -879,7 +879,22 @@ defmodule XpressbusWeb.ChyllzLive do
   end
 
   defp item_details(%{kind: "hidden_gem", item: gem}) do
-    compact([{"Location", gem.location}])
+    google_rating =
+      if gem.rating do
+        reviews = if gem.review_count, do: " (#{gem.review_count} reviews)", else: ""
+        "#{rating(gem.rating)}#{reviews}"
+      end
+
+    compact([
+      {"Location", gem.location},
+      {"Category", gem.category},
+      {"Region", gem.region},
+      {"Best time", gem.best_time},
+      {"Entry fee", gem.entry_fee},
+      {"Access", gem.access_notes},
+      {"Google rating", google_rating},
+      {"Website", gem.website_url}
+    ])
   end
 
   defp item_details(%{kind: "car_hire", item: car}) do
@@ -1402,6 +1417,13 @@ defmodule XpressbusWeb.ChyllzLive do
           {@gem.location}
         </div>
 
+        <%= if @gem.rating do %>
+          <div class="mb-2 flex items-center gap-1 text-xs font-bold text-white/80">
+            <span class="material-symbols-outlined !text-sm text-yellow-400">star</span>
+            {rating(@gem.rating)}<%= if @gem.review_count do %><span class="text-white/60">({@gem.review_count})</span><% end %>
+          </div>
+        <% end %>
+
         <h3 class="text-2xl font-black text-white leading-tight">{@gem.title}</h3>
 
         <%= if @gem.description do %>
@@ -1684,6 +1706,18 @@ defmodule XpressbusWeb.ChyllzLive do
 
           <%= if item_description(@selected) do %>
             <p class="text-slate-500 font-bold leading-relaxed">{item_description(@selected)}</p>
+          <% end %>
+
+          <%= if @selected.kind == "hidden_gem" and is_binary(@selected.item.google_maps_url) and @selected.item.google_maps_url != "" do %>
+            <a
+              id="gem-google-maps"
+              href={@selected.item.google_maps_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-[#FF4C00] transition hover:bg-[#FF4C00] hover:text-white"
+            >
+              <span class="material-symbols-outlined !text-base">map</span> View on Google Maps
+            </a>
           <% end %>
 
           <%= if @selected.kind == "hotel" do %>

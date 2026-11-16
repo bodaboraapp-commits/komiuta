@@ -137,23 +137,7 @@ for hotel_attrs <- hotels_data do
 end
 
 # 6. Seed Hidden Gems
-gems_data = [
-  %{
-    title: "Chale Island Retreat",
-    location: "Kwale",
-    description: "East Africa's only individual island resort."
-  },
-  %{
-    title: "Hell's Gate Gorges",
-    location: "Naivasha",
-    description: "Dramatic cliffs and geothermal activity."
-  },
-  %{
-    title: "Lamu Archipelago",
-    location: "Lamu",
-    description: "A serene step back in time on the Swahili coast."
-  }
-]
+gems_data = Xpressbus.Bookings.HiddenGemSeedData.kenya_gems()
 
 for gem_attrs <- gems_data do
   # Idempotent: hidden gems have a unique title.

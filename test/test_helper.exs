@@ -6,11 +6,12 @@ ExUnit.start()
 # database is created).
 {:ok, _apps} = Application.ensure_all_started(:xpressbus)
 
-alias Xpressbus.Bookings.Hotel
+alias Xpressbus.Bookings.{HiddenGem, Hotel}
 alias Xpressbus.Repo
 
 Ecto.Adapters.SQL.Sandbox.mode(Repo, :manual)
 
 Ecto.Adapters.SQL.Sandbox.unboxed_run(Repo, fn ->
   Repo.delete_all(Hotel)
+  Repo.delete_all(HiddenGem)
 end)
