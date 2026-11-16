@@ -21,13 +21,16 @@ defmodule Xpressbus.Bookings.HotelGoogleTest do
   end
 
   test "stores real Google photos, ratings and review counts on the hotel" do
+    # Google photo references are long; the column must store the full value.
+    photo_ref = "places/place-1/photos/" <> String.duplicate("p", 300)
+
     Application.put_env(:xpressbus, :hotel_google_lookup_override, fn _name, _location ->
       {:ok,
        %{
          id: "place-1",
          rating: 4.6,
          reviews: 1_234,
-         photo_ref: "places/place-1/photos/photo-2",
+         photo_ref: photo_ref,
          maps_url: "https://maps.google.com/?cid=1",
          address: "Diani Beach, Kenya"
        }}
@@ -40,11 +43,9 @@ defmodule Xpressbus.Bookings.HotelGoogleTest do
     assert enriched.formatted_address == "Diani Beach, Kenya"
     assert enriched.google_maps_url == "https://maps.google.com/?cid=1"
     assert enriched.google_place_id == "place-1"
-    assert enriched.google_photo_ref == "places/place-1/photos/photo-2"
+    assert enriched.google_photo_ref == photo_ref
 
-    assert enriched.images == [
-             GooglePlaces.photo_proxy_path("places/place-1/photos/photo-2")
-           ]
+    assert enriched.images == [GooglePlaces.photo_proxy_path(photo_ref)]
 
     reloaded = Repo.reload!(hotel)
     assert Decimal.to_float(reloaded.rating) == 4.6
