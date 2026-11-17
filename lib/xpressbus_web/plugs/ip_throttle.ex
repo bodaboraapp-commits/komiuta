@@ -23,6 +23,7 @@ defmodule XpressbusWeb.Plugs.IpThrottle do
       bucket: Keyword.fetch!(opts, :bucket),
       limit: Keyword.get(opts, :limit, 10),
       window: Keyword.get(opts, :window, 600),
+      redirect_to: Keyword.get(opts, :redirect_to, "/user/login"),
       message:
         Keyword.get(
           opts,
@@ -33,7 +34,13 @@ defmodule XpressbusWeb.Plugs.IpThrottle do
   end
 
   @impl true
-  def call(conn, %{bucket: bucket, limit: limit, window: window, message: message}) do
+  def call(conn, %{
+        bucket: bucket,
+        limit: limit,
+        window: window,
+        message: message,
+        redirect_to: redirect_to
+      }) do
     case allow?(bucket, client_ip(conn), limit, window) do
       {:ok, _count} ->
         conn
@@ -42,7 +49,7 @@ defmodule XpressbusWeb.Plugs.IpThrottle do
         conn
         |> put_resp_header("retry-after", Integer.to_string(retry_after))
         |> maybe_put_flash(message)
-        |> Phoenix.Controller.redirect(to: "/user/login")
+        |> Phoenix.Controller.redirect(to: redirect_to)
         |> halt()
     end
   end
@@ -70,6 +77,16 @@ defmodule XpressbusWeb.Plugs.IpThrottle do
   def reset do
     ensure_table()
     :ets.delete_all_objects(@table)
+    :ok
+  end
+
+  @doc """
+  Clears one counter, e.g. after a successful login so a legitimate user does
+  not carry failed-attempt counts into the next window.
+  """
+  def clear(bucket, key) do
+    ensure_table()
+    :ets.delete(@table, {bucket, key})
     :ok
   end
 

@@ -44,6 +44,7 @@ defmodule XpressbusWeb.Endpoint do
 
   plug Plug.RequestId
   plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
+  plug XpressbusWeb.Plugs.RequestGuard
 
   plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],

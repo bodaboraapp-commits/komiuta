@@ -33,6 +33,38 @@ defmodule XpressbusWeb.Router do
     plug XpressbusWeb.Plugs.IpThrottle, bucket: :verify, limit: 20, window: 600
   end
 
+  pipeline :throttle_register do
+    plug XpressbusWeb.Plugs.IpThrottle,
+      bucket: :register,
+      limit: 5,
+      window: 3_600,
+      redirect_to: "/user/signup"
+  end
+
+  pipeline :throttle_agent_auth do
+    plug XpressbusWeb.Plugs.IpThrottle,
+      bucket: :agent_auth,
+      limit: 8,
+      window: 600,
+      redirect_to: "/agent/login"
+  end
+
+  pipeline :throttle_agent_verify do
+    plug XpressbusWeb.Plugs.IpThrottle,
+      bucket: :agent_verify,
+      limit: 20,
+      window: 600,
+      redirect_to: "/agent/verify"
+  end
+
+  pipeline :throttle_admin_auth do
+    plug XpressbusWeb.Plugs.IpThrottle,
+      bucket: :admin_auth,
+      limit: 5,
+      window: 300,
+      redirect_to: "/admin/login"
+  end
+
   scope "/", XpressbusWeb do
     pipe_through [:browser]
 
@@ -58,11 +90,7 @@ defmodule XpressbusWeb.Router do
     get "/agent/google/start", AgentSessionController, :google_start
     get "/agent/google/complete", AgentSessionController, :google_complete
     get "/agent/login", AgentSessionController, :login
-    post "/agent/auth", AgentSessionController, :request_code
-    post "/agent/firebase/verify", AgentSessionController, :firebase_verify
     get "/agent/verify", AgentSessionController, :verify
-    post "/agent/verify", AgentSessionController, :verify_code
-    post "/agent/verify/resend", AgentSessionController, :resend_code
     get "/agent/logout", AgentSessionController, :logout
     get "/agent/dashboard", AgentSessionController, :dashboard
     get "/agent/bookings", AgentSessionController, :bookings
@@ -70,8 +98,6 @@ defmodule XpressbusWeb.Router do
     get "/agent/verified/:token", AgentSessionController, :verified_agent
     get "/agent/account", AgentSessionController, :account
     get "/agent/verify-email", AgentSessionController, :verify_email
-    post "/agent/verify-email/send", AgentSessionController, :send_email_verification
-    post "/agent/verify-email/confirm", AgentSessionController, :confirm_email_verification
     live "/buses/*route", BookingLive, :results
     live "/cities/:slug", CityLive, :show
     live "/operators", OperatorLive, :index
@@ -120,7 +146,6 @@ defmodule XpressbusWeb.Router do
 
     get "/login", UserController, :login
     get "/signup", UserController, :registration
-    post "/register", UserController, :register
     get "/verify", UserController, :verify
     get "/complete-profile", UserController, :complete_profile
     post "/complete-profile", UserController, :save_complete_profile
@@ -147,8 +172,35 @@ defmodule XpressbusWeb.Router do
     pipe_through [:browser]
 
     get "/login", AdminController, :login
-    post "/auth", AdminController, :authenticate
     get "/logout", AdminController, :logout
+  end
+
+  scope "/user", XpressbusWeb do
+    pipe_through [:browser, :throttle_register]
+
+    post "/register", UserController, :register
+  end
+
+  scope "/agent", XpressbusWeb do
+    pipe_through [:browser, :throttle_agent_auth]
+
+    post "/auth", AgentSessionController, :request_code
+    post "/firebase/verify", AgentSessionController, :firebase_verify
+    post "/verify-email/send", AgentSessionController, :send_email_verification
+    post "/verify-email/confirm", AgentSessionController, :confirm_email_verification
+  end
+
+  scope "/agent", XpressbusWeb do
+    pipe_through [:browser, :throttle_agent_verify]
+
+    post "/verify", AgentSessionController, :verify_code
+    post "/verify/resend", AgentSessionController, :resend_code
+  end
+
+  scope "/admin", XpressbusWeb do
+    pipe_through [:browser, :throttle_admin_auth]
+
+    post "/auth", AdminController, :authenticate
   end
 
   scope "/admin", XpressbusWeb do
