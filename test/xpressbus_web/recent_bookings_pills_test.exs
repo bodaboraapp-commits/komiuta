@@ -48,7 +48,7 @@ defmodule XpressbusWeb.RecentBookingsPillsTest do
     assert has_element?(view, "#recent-booking-Nairobi-Mombasa")
 
     html = render(view)
-    assert html =~ "Live bookings"
+    assert html =~ "Trending Routes"
     assert html =~ "Nairobi"
     assert html =~ "Mombasa"
 
