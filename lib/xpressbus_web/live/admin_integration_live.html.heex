@@ -189,7 +189,7 @@
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Environment Mode</label>
                       <select
                         name="config[mode]"
-                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all appearance-none cursor-pointer"
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all appearance-none cursor-pointer"
                       >
                         <option value="sandbox" selected={mpesa_config["mode"] == "sandbox"}>
                           Sandbox / Test
@@ -205,7 +205,7 @@
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Service Type</label>
                       <select
                         name="config[type]"
-                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all appearance-none cursor-pointer"
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all appearance-none cursor-pointer"
                       >
                         <option value="paybill" selected={mpesa_config["type"] == "paybill"}>
                           Lipa Na M-PESA Paybill
@@ -224,7 +224,7 @@
                         name="config[business_shortcode]"
                         value={mpesa_config["business_shortcode"]}
                         placeholder="e.g. 174379"
-                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                         required
                       />
                     </div>
@@ -236,7 +236,7 @@
                         name="config[party_b]"
                         value={mpesa_config["party_b"]}
                         placeholder="e.g. 5145977 (leave blank for Paybill)"
-                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                       />
                     </div>
                     
@@ -247,7 +247,7 @@
                         name="config[initiator_name]"
                         value={mpesa_config["initiator_name"]}
                         placeholder="Business Initiator"
-                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                       />
                     </div>
                     
@@ -258,7 +258,7 @@
                         name="config[consumer_key]"
                         value={mpesa_config["consumer_key"]}
                         placeholder="Daraja API Consumer Key"
-                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                         required
                       />
                     </div>
@@ -270,7 +270,7 @@
                         name="config[consumer_secret]"
                         value={mpesa_config["consumer_secret"]}
                         placeholder="Daraja API Consumer Secret"
-                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                         required
                       />
                     </div>
@@ -282,7 +282,7 @@
                         name="config[passkey]"
                         value={mpesa_config["passkey"]}
                         placeholder="bfb279f9aa9bdbcf158e97dd71a467cd2..."
-                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                       />
                     </div>
                     
@@ -295,7 +295,7 @@
                           name="config[callback_url]"
                           value={mpesa_config["callback_url"]}
                           placeholder="https://api.komiuta.com/v1/payments/mpesa/callback"
-                          class="w-full pl-12 pr-3 py-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                          class="w-full pl-12 pr-3 py-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                           required
                         />
                       </div>
@@ -366,7 +366,7 @@
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Environment</label>
                       <select
                         name="config[environment]"
-                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all appearance-none cursor-pointer"
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all appearance-none cursor-pointer"
                       >
                         <option
                           value="sandbox"
@@ -391,7 +391,7 @@
                         name="config[public_key]"
                         value={flutterwave_config["public_key"]}
                         placeholder="FLWPUBK-..."
-                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                         required
                       />
                     </div>
@@ -403,7 +403,7 @@
                         name="config[secret_key]"
                         value={flutterwave_config["secret_key"]}
                         placeholder="FLWSECK-..."
-                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                         required
                       />
                     </div>
@@ -415,7 +415,7 @@
                         name="config[encryption_key]"
                         value={flutterwave_config["encryption_key"]}
                         placeholder="FLWSECK_TEST-..."
-                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                       />
                     </div>
                     
@@ -428,7 +428,7 @@
                           name="config[callback_url]"
                           value={flutterwave_config["callback_url"]}
                           placeholder="https://api.komiuta.com/v1/payments/flutterwave/callback"
-                          class="w-full pl-12 pr-3 py-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                          class="w-full pl-12 pr-3 py-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                           required
                         />
                       </div>
@@ -443,7 +443,7 @@
                           name="config[webhook_url]"
                           value={flutterwave_config["webhook_url"]}
                           placeholder="https://api.komiuta.com/v1/payments/flutterwave/webhook"
-                          class="w-full pl-12 pr-3 py-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                          class="w-full pl-12 pr-3 py-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                         />
                       </div>
                     </div>
@@ -513,7 +513,7 @@
                       <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 tracking-[0.2em]">Environment</label>
                       <select
                         name="config[environment]"
-                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all appearance-none cursor-pointer"
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all appearance-none cursor-pointer"
                       >
                         <option
                           value="sandbox"
@@ -538,7 +538,7 @@
                         name="config[public_key]"
                         value={paystack_config["public_key"]}
                         placeholder="pk_test_..."
-                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                         required
                       />
                     </div>
@@ -550,7 +550,7 @@
                         name="config[secret_key]"
                         value={paystack_config["secret_key"]}
                         placeholder="sk_test_..."
-                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        class="w-full p-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                         required
                       />
                     </div>
@@ -564,7 +564,7 @@
                           name="config[callback_url]"
                           value={paystack_config["callback_url"]}
                           placeholder="https://api.komiuta.com/v1/payments/paystack/callback"
-                          class="w-full pl-12 pr-3 py-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                          class="w-full pl-12 pr-3 py-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                           required
                         />
                       </div>
@@ -579,7 +579,7 @@
                           name="config[webhook_url]"
                           value={paystack_config["webhook_url"]}
                           placeholder="https://api.komiuta.com/v1/payments/paystack/webhook"
-                          class="w-full pl-12 pr-3 py-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                          class="w-full pl-12 pr-3 py-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                         />
                       </div>
                     </div>
@@ -648,7 +648,7 @@
                         name="config[client_id]"
                         value={google_config["client_id"]}
                         placeholder="your-app-id.apps.googleusercontent.com"
-                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                         required
                       />
                     </div>
@@ -660,7 +660,7 @@
                         name="config[client_secret]"
                         value={google_config["client_secret"]}
                         placeholder="Enter Google OAuth Client Secret"
-                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                         required
                       />
                     </div>
@@ -674,7 +674,7 @@
                           name="config[redirect_uri]"
                           value={google_config["redirect_uri"]}
                           placeholder="https://yourdomain.com/auth/google/callback"
-                          class="w-full pl-12 pr-4 py-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                          class="w-full pl-12 pr-4 py-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                           required
                         />
                       </div>
@@ -878,7 +878,7 @@
                         name="config[api_key]"
                         value={weather_config["api_key"]}
                         placeholder="Paste your WeatherAPI.com API key"
-                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                       />
                       <p class="mt-3 text-[10px] font-bold leading-relaxed text-slate-400">
                         Create a free key at
@@ -1004,7 +1004,7 @@
                         name="config[browser_key]"
                         value={browser_key}
                         placeholder="AIza..."
-                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                       />
                       <p class="mt-3 text-[10px] font-bold leading-relaxed text-slate-400">
                         HTTP-referrer restricted key for browser map views. Allow
@@ -1045,7 +1045,7 @@
                         name="config[server_key]"
                         value={server_key}
                         placeholder="AIza..."
-                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                       />
                       <p class="mt-3 text-[10px] font-bold leading-relaxed text-slate-400">
                         Used by server-side Places, Geocoding and Static Maps. Set Application
@@ -1228,7 +1228,7 @@
                             do: "•••••••• — leave blank to keep the saved key",
                             else: "sk-... or your provider key"
                         }
-                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                       />
                       <p class="mt-3 text-[10px] font-bold leading-relaxed text-slate-400">
                         <%= if ai_status.has_integration_key do %>
@@ -1253,7 +1253,7 @@
                         name="config[base_url]"
                         value={ai_base_url}
                         placeholder="https://api.openai.com/v1"
-                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                       />
                       <p class="mt-3 text-[10px] font-bold leading-relaxed text-slate-400">
                         Use an OpenAI-compatible <code class="font-black">/v1</code>
@@ -1271,7 +1271,7 @@
                         name="config[model]"
                         value={ai_model}
                         placeholder="gpt-4o-mini"
-                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                       />
                     </div>
                     
@@ -1285,7 +1285,7 @@
                         name="config[vision_model]"
                         value={ai_vision_model}
                         placeholder="gpt-4o-mini"
-                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                       />
                     </div>
                     
@@ -1301,7 +1301,7 @@
                         min="1000"
                         max="60000"
                         step="1000"
-                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-[#FF4C00] transition-all shadow-sm"
+                        class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-700 outline-none focus:border-slate-300 transition-all shadow-sm"
                       />
                     </div>
                   </div>

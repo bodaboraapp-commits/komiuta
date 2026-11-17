@@ -9,27 +9,27 @@
             width="146"
             height="40"
             class="h-9 w-auto"
-          />
-          <span class="hidden h-8 w-px bg-slate-200 sm:block"></span>
+          /> <span class="hidden h-8 w-px bg-slate-200 sm:block"></span>
           <span class="hidden text-[10px] font-black uppercase tracking-[0.3em] text-[#FF4C00] sm:block">
             Agent App
           </span>
         </a>
       </div>
     </header>
-
+    
     <main class="mx-auto max-w-md px-5 py-12 md:py-20">
       <div class="rounded-[2rem] border border-slate-100 bg-white p-6 shadow-xl shadow-slate-900/5 md:p-8">
         <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-[#FF4C00]">
           <span class="material-symbols-outlined !text-2xl">login</span>
         </div>
-
+        
         <h1 class="mt-5 text-2xl font-black tracking-tight">Agent sign in</h1>
+        
         <p class="mt-2 text-xs font-bold leading-relaxed text-slate-400">
           Sign in with Gmail for email, or receive a login code by SMS on the phone number on
           your agent application.
         </p>
-
+        
         <%= if @google_enabled do %>
           <a
             href={@google_start_url}
@@ -45,17 +45,18 @@
             /> Sign in with Gmail
           </a>
         <% end %>
-
+        
         <%= if @firebase_config do %>
           <div class="relative my-7">
             <div class="absolute inset-0 flex items-center">
               <div class="w-full border-t border-slate-100"></div>
             </div>
+            
             <div class="relative flex justify-center text-[9px] font-black uppercase tracking-widest">
               <span class="bg-white px-4 text-slate-400">or use SMS</span>
             </div>
           </div>
-
+          
           <div
             id="firebase-sms-auth"
             data-api-key={@firebase_config.api_key}
@@ -75,13 +76,14 @@
                 >
                   Phone Number
                 </label>
+                
                 <input
                   id="firebase-phone"
                   type="tel"
                   inputmode="tel"
                   autocomplete="tel"
                   placeholder="07XX XXX XXX"
-                  class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-sm font-bold outline-none transition focus:border-[#FF4C00] focus:bg-white"
+                  class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-sm font-bold outline-none transition focus:border-slate-300 focus:bg-white"
                   required
                 />
                 <p
@@ -92,9 +94,9 @@
                   code by SMS.
                 </p>
               </div>
-
+              
               <div id="firebase-recaptcha"></div>
-
+              
               <button
                 id="firebase-send-code"
                 type="submit"
@@ -102,7 +104,7 @@
               >
                 Send Login Code
               </button>
-
+              
               <div id="firebase-code-step" class="hidden space-y-3">
                 <div>
                   <label
@@ -111,6 +113,7 @@
                   >
                     SMS Code
                   </label>
+                  
                   <input
                     id="firebase-code"
                     type="text"
@@ -119,10 +122,10 @@
                     pattern="[0-9]{6}"
                     maxlength="6"
                     placeholder="000000"
-                    class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-center text-xl font-black tracking-[0.4em] outline-none transition focus:border-[#FF4C00] focus:bg-white"
+                    class="w-full rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-center text-xl font-black tracking-[0.4em] outline-none transition focus:border-slate-300 focus:bg-white"
                   />
                 </div>
-
+                
                 <button
                   id="firebase-verify-code"
                   type="submit"
@@ -130,7 +133,7 @@
                 >
                   Verify &amp; Sign In
                 </button>
-
+                
                 <button
                   id="firebase-change-number"
                   type="button"
@@ -139,7 +142,7 @@
                   Use a different number
                 </button>
               </div>
-
+              
               <p
                 id="firebase-status"
                 class="min-h-[16px] text-[11px] font-bold text-slate-500"
@@ -148,7 +151,7 @@
               >
               </p>
             </form>
-
+            
             <script
               defer
               phx-track-static
@@ -162,14 +165,14 @@
             SMS sign-in is not configured yet. Use Gmail above or contact support on 0800 211 211.
           </div>
         <% end %>
-
+        
         <p class="mt-6 text-center text-[11px] font-bold text-slate-400">
           Applying for the first time?
           <a href="/agent" class="font-black text-[#FF4C00] hover:underline">Create an agent account</a>
         </p>
       </div>
     </main>
-
+    
     <footer class="px-5 py-8 text-center text-[10px] font-black uppercase tracking-widest text-slate-400">
       © {DateTime.utc_now().year} KOMIUTA Agent
     </footer>

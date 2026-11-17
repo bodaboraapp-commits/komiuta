@@ -15,40 +15,40 @@
         <h2 class="text-xl font-black text-slate-900 tracking-tight uppercase tracking-widest">
           Coupon Management
         </h2>
-
+        
         <div class="flex items-center gap-6">
           <button class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-[#FF4C00] transition-colors relative">
             <span class="material-symbols-outlined">notifications</span>
             <div class="absolute top-2.5 right-2.5 w-2 h-2 bg-[#FF4C00] rounded-full border-2 border-white">
             </div>
           </button>
-
+          
           <div class="flex items-center gap-3 border-l border-slate-100 pl-6">
             <div class="text-right hidden sm:block">
               <p class="text-[11px] font-black text-slate-900 leading-none">Admin User</p>
-
+              
               <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">Super Admin</p>
             </div>
-
+            
             <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-[#FF4C00] font-black text-xs border-2 border-white shadow-sm">
               AD
             </div>
           </div>
         </div>
       </header>
-
+      
       <main class="p-8 md:p-12">
         <div class="flex justify-between items-center mb-8">
           <div>
             <h1 class="text-3xl font-black text-slate-900 tracking-tighter uppercase tracking-widest">
               Coupons & Discounts
             </h1>
-
+            
             <p class="text-sm font-bold text-slate-400 mt-1 tracking-wide">
               Manage promo codes and customer incentives
             </p>
           </div>
-
+          
           <button
             phx-click="open_add_modal"
             class="bg-[#FF4C00] text-white px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-orange-100 hover:bg-[#E64400] transition-all transform active:scale-95 flex items-center gap-3"
@@ -56,7 +56,7 @@
             <span class="material-symbols-outlined">add</span> Create New Coupon
           </button>
         </div>
-
+        
         <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full text-left">
@@ -65,37 +65,37 @@
                   <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-[#FF4C00]">
                     SR NO.
                   </th>
-
+                  
                   <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
                     CODE
                   </th>
-
+                  
                   <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
                     TYPE
                   </th>
-
+                  
                   <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
                     VALUE
                   </th>
-
+                  
                   <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
                     EXPIRY
                   </th>
-
+                  
                   <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
                     USAGE
                   </th>
-
+                  
                   <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
                     STATUS
                   </th>
-
+                  
                   <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">
                     ACTION
                   </th>
                 </tr>
               </thead>
-
+              
               <tbody class="divide-y divide-slate-50">
                 <%= if Enum.empty?(@coupons) do %>
                   <tr>
@@ -103,7 +103,7 @@
                       <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-200 mx-auto mb-4">
                         <span class="material-symbols-outlined !text-4xl">redeem</span>
                       </div>
-
+                      
                       <h3 class="text-lg font-black text-slate-400 uppercase tracking-widest">
                         No coupons found
                       </h3>
@@ -113,27 +113,27 @@
                   <%= for {coupon, index} <- Enum.with_index(@coupons) do %>
                     <tr class="hover:bg-slate-50/50 transition-colors group">
                       <td class="px-8 py-6 text-sm font-bold text-slate-400">{index + 1}</td>
-
+                      
                       <td class="px-8 py-6 font-mono font-black text-slate-900 tracking-wider uppercase text-sm">
                         {coupon.code}
                       </td>
-
+                      
                       <td class="px-8 py-6">
                         <span class="text-[10px] font-black uppercase tracking-widest text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
                           {coupon.type}
                         </span>
                       </td>
-
+                      
                       <td class="px-8 py-6 font-black text-slate-900">
                         {if coupon.type == "percentage",
                           do: "#{coupon.value}%",
                           else: "KES #{coupon.value}"}
                       </td>
-
+                      
                       <td class="px-8 py-6 text-sm font-bold text-slate-500">
                         {coupon.expiry_date}
                       </td>
-
+                      
                       <td class="px-8 py-6">
                         <div class="flex flex-col">
                           <span class="text-xs font-black text-slate-900">{coupon.usage_count || 0} / {coupon.usage_limit ||
@@ -147,7 +147,7 @@
                           </div>
                         </div>
                       </td>
-
+                      
                       <td class="px-8 py-6">
                         <button
                           phx-click="toggle_active"
@@ -165,7 +165,7 @@
                           ]}></span> {if coupon.active, do: "Active", else: "Paused"}
                         </button>
                       </td>
-
+                      
                       <td class="px-8 py-6">
                         <div class="flex items-center justify-end gap-2">
                           <button
@@ -176,7 +176,7 @@
                           >
                             <span class="material-symbols-outlined !text-lg" aria-hidden="true">edit_square</span>
                           </button>
-
+                          
                           <button
                             phx-click="delete_coupon"
                             phx-disable-with="Deleting..."
@@ -199,7 +199,7 @@
       </main>
     </div>
   </div>
-  <%!-- Add/Edit Modal --%>
+   <%!-- Add/Edit Modal --%>
   <%= if @show_modal do %>
     <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 overflow-y-auto">
       <div
@@ -217,7 +217,7 @@
           >
             {if @editing_coupon, do: "Edit Coupon", else: "New Discount Code"}
           </h3>
-
+          
           <button
             phx-click="close_modal"
             aria-label="Close coupon dialog"
@@ -227,7 +227,7 @@
             <span class="material-symbols-outlined">close</span>
           </button>
         </div>
-
+        
         <.form for={@form} phx-change="validate_coupon" phx-submit="save_coupon" class="space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="md:col-span-2">
@@ -237,28 +237,28 @@
                 name="coupon[code]"
                 value={@form[:code].value}
                 placeholder="e.g. SAVE20"
-                class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-slate-900 uppercase tracking-widest focus:bg-white focus:border-[#FF4C00] outline-none transition-all"
+                class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-slate-900 uppercase tracking-widest focus:bg-white focus:border-slate-300 outline-none transition-all"
                 required
               />
               <.error :for={msg <- @form[:code].errors}>{translate_error(msg)}</.error>
             </div>
-
+            
             <div>
               <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Discount Type</label>
               <select
                 name="coupon[type]"
-                class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-slate-900 focus:bg-white focus:border-[#FF4C00] outline-none transition-all appearance-none cursor-pointer"
+                class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-slate-900 focus:bg-white focus:border-slate-300 outline-none transition-all appearance-none cursor-pointer"
               >
                 <option value="percentage" selected={@form[:type].value == "percentage"}>
                   Percentage (%)
                 </option>
-
+                
                 <option value="fixed" selected={@form[:type].value == "fixed"}>
                   Fixed Amount (KES)
                 </option>
               </select>
             </div>
-
+            
             <div>
               <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Discount Value</label>
               <input
@@ -267,11 +267,11 @@
                 name="coupon[value]"
                 value={@form[:value].value}
                 placeholder="e.g. 15"
-                class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-slate-900 focus:bg-white focus:border-[#FF4C00] outline-none transition-all"
+                class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-slate-900 focus:bg-white focus:border-slate-300 outline-none transition-all"
                 required
               />
             </div>
-
+            
             <div>
               <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Min. Booking Amount</label>
               <input
@@ -279,10 +279,10 @@
                 name="coupon[min_amount]"
                 value={@form[:min_amount].value}
                 placeholder="0"
-                class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-slate-900 focus:bg-white focus:border-[#FF4C00] outline-none transition-all"
+                class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-slate-900 focus:bg-white focus:border-slate-300 outline-none transition-all"
               />
             </div>
-
+            
             <div>
               <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Max Discount (for %)</label>
               <input
@@ -290,20 +290,20 @@
                 name="coupon[max_discount]"
                 value={@form[:max_discount].value}
                 placeholder="∞"
-                class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-slate-900 focus:bg-white focus:border-[#FF4C00] outline-none transition-all"
+                class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-slate-900 focus:bg-white focus:border-slate-300 outline-none transition-all"
               />
             </div>
-
+            
             <div>
               <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Expiry Date</label>
               <input
                 type="date"
                 name="coupon[expiry_date]"
                 value={@form[:expiry_date].value}
-                class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-slate-900 focus:bg-white focus:border-[#FF4C00] outline-none transition-all"
+                class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-slate-900 focus:bg-white focus:border-slate-300 outline-none transition-all"
               />
             </div>
-
+            
             <div>
               <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Usage Limit</label>
               <input
@@ -311,10 +311,10 @@
                 name="coupon[usage_limit]"
                 value={@form[:usage_limit].value}
                 placeholder="∞"
-                class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-slate-900 focus:bg-white focus:border-[#FF4C00] outline-none transition-all"
+                class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-slate-900 focus:bg-white focus:border-slate-300 outline-none transition-all"
               />
             </div>
-
+            
             <div class="md:col-span-2 flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
               <input type="hidden" name="coupon[active]" value="false" />
               <input
@@ -322,12 +322,12 @@
                 name="coupon[active]"
                 value="true"
                 checked={@form[:active].value}
-                class="w-6 h-6 rounded-lg border-slate-300 text-[#FF4C00] focus:ring-[#FF4C00]"
+                class="w-6 h-6 rounded-lg border-slate-300 text-[#FF4C00] focus:ring-slate-300"
               />
               <span class="text-sm font-black text-slate-700 uppercase tracking-widest">Activate this coupon immediately</span>
             </div>
           </div>
-
+          
           <div class="pt-6">
             <button
               type="submit"

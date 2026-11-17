@@ -15,30 +15,30 @@
         <h2 class="text-xl font-black uppercase tracking-widest text-slate-900">
           Agent Applications
         </h2>
-
+        
         <div class="flex items-center gap-3">
           <span class="rounded-full bg-orange-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-[#FF4C00]">
             {@total_count} total
           </span>
-
+          
           <div class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-orange-100 text-xs font-black text-[#FF4C00] shadow-sm">
             AD
           </div>
         </div>
       </header>
-
+      
       <main class="p-6 md:p-10">
         <div class="mb-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 class="text-3xl font-black uppercase tracking-tighter text-slate-900">
               Agent sign-ups
             </h1>
-
+            
             <p class="mt-1 text-sm font-bold tracking-wide text-slate-400">
               Applications submitted from the KOMIUTA Agent PWA.
             </p>
           </div>
-
+          
           <form
             id="agent-applications-search-form"
             phx-change="search"
@@ -55,7 +55,7 @@
             />
           </form>
         </div>
-
+        
         <div class="space-y-4">
           <%= for application <- @applications do %>
             <article
@@ -79,13 +79,13 @@
                   <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-orange-50 text-[#FF4C00]">
                     <span class="material-symbols-outlined !text-xl">storefront</span>
                   </div>
-
+                  
                   <div class="min-w-0 flex-1">
                     <div class="flex flex-wrap items-center gap-2.5">
                       <h2 class="truncate text-base font-black tracking-tight text-slate-900">
                         {application.business_name}
                       </h2>
-
+                      
                       <span class={[
                         "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-widest",
                         application.status == "approved" && "bg-emerald-50 text-emerald-700",
@@ -95,22 +95,22 @@
                         <span class="h-1.5 w-1.5 rounded-full bg-current"></span> {application.status}
                       </span>
                     </div>
-
+                    
                     <div class="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-bold text-slate-500">
                       <span class="inline-flex min-w-0 items-center gap-1.5">
                         <span class="material-symbols-outlined !text-[14px] text-slate-300">person</span>
                         <span class="truncate">{application.full_name}</span>
                       </span>
-
+                      
                       <span class="inline-flex items-center gap-1.5">
                         <span class="material-symbols-outlined !text-[14px] text-slate-300">location_on</span> {application.city}
                       </span>
-
+                      
                       <span class="inline-flex min-w-0 items-center gap-1.5">
                         <span class="material-symbols-outlined !text-[14px] text-slate-300">mail</span>
                         <span class="truncate">{application.email}</span>
                       </span>
-
+                      
                       <span class="inline-flex min-w-0 items-center gap-1.5">
                         <span class="material-symbols-outlined !text-[14px] text-slate-300">directions_bus</span>
                         <span class="truncate">
@@ -121,24 +121,24 @@
                       </span>
                     </div>
                   </div>
-
+                  
                   <div class="hidden shrink-0 border-l border-slate-100 pl-5 xl:block">
                     <.review_timeline application={application} />
                   </div>
-
+                  
                   <div class="flex shrink-0 items-center gap-3">
                     <div class="hidden text-right sm:block">
                       <p class="font-mono text-[10px] font-black text-slate-500">
                         Ref {application.reference}
                       </p>
-
+                      
                       <%= if application.inserted_at do %>
                         <p class="mt-0.5 text-[9px] font-bold uppercase tracking-widest text-slate-300">
                           Submitted {Calendar.strftime(application.inserted_at, "%d %b %Y")}
                         </p>
                       <% end %>
                     </div>
-
+                    
                     <span class={[
                       "material-symbols-outlined text-slate-300 transition-transform duration-200",
                       MapSet.member?(@expanded_applications, application.id) && "rotate-180"
@@ -147,12 +147,12 @@
                     </span>
                   </div>
                 </div>
-
+                
                 <div class="w-full border-t border-slate-50 pt-3 xl:hidden">
                   <.review_timeline application={application} />
                 </div>
               </button>
-
+              
               <%= if MapSet.member?(@expanded_applications, application.id) do %>
                 <div
                   id={"application-details-#{application.id}"}
@@ -164,7 +164,7 @@
                         <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">
                           Contact
                         </p>
-
+                        
                         <div class="mt-1 flex flex-col gap-1 text-xs font-bold text-slate-600">
                           <a
                             href={"tel:" <> application.phone}
@@ -172,7 +172,7 @@
                           >
                             <span class="material-symbols-outlined !text-[14px] text-slate-300">call</span> {application.phone}
                           </a>
-
+                          
                           <a
                             href={"mailto:" <> application.email}
                             class="inline-flex min-w-0 items-center gap-1.5 transition hover:text-[#FF4C00]"
@@ -180,34 +180,33 @@
                             <span class="material-symbols-outlined !text-[14px] text-slate-300">mail</span>
                             <span class="truncate">{application.email}</span>
                           </a>
-
+                          
                           <span class="inline-flex items-center gap-1.5">
                             <span class="material-symbols-outlined !text-[14px] text-slate-300">payments</span>
                             Payout: {payout_label(application.payout_method)}
                           </span>
                         </div>
                       </div>
-
+                      
                       <div class="rounded-2xl bg-slate-50/80 px-4 py-3">
                         <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">
                           Bus operator / partner
                         </p>
-
+                        
                         <form
                           id={"assign-bus-operator-#{application.id}"}
                           phx-submit="assign_bus_operator"
                           class="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center"
                         >
                           <input type="hidden" name="application_id" value={application.id} />
-
                           <select
                             name="bus_operator_id"
-                            class="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-700 outline-none transition focus:border-[#FF4C00]"
+                            class="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-700 outline-none transition focus:border-slate-300"
                           >
                             <option value="" selected={is_nil(application.bus_operator_id)}>
                               No bus operator
                             </option>
-
+                            
                             <%= for bus_operator <- @bus_operators do %>
                               <option
                                 value={bus_operator.id}
@@ -217,7 +216,7 @@
                               </option>
                             <% end %>
                           </select>
-
+                          
                           <button
                             type="submit"
                             phx-disable-with="Assigning..."
@@ -227,7 +226,7 @@
                             Save bus operator
                           </button>
                         </form>
-
+                        
                         <p class="mt-2 text-[10px] font-bold text-slate-400">
                           <%= if Enum.empty?(@bus_operators) do %>
                             No bus operators yet — add them under Bus → Bus Operator.
@@ -236,48 +235,48 @@
                           <% end %>
                         </p>
                       </div>
-
+                      
                       <div class="rounded-2xl bg-slate-50/80 px-4 py-3">
                         <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">
                           Booking visibility
                         </p>
-
+                        
                         <form
                           id={"assign-booking-scope-#{application.id}"}
                           phx-submit="assign_booking_scope"
                           class="mt-2 space-y-2"
                         >
                           <input type="hidden" name="application_id" value={application.id} />
-
                           <select
                             name="booking_scope"
-                            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-700 outline-none transition focus:border-[#FF4C00]"
+                            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-700 outline-none transition focus:border-slate-300"
                           >
                             <option value="all" selected={application.booking_scope != "route"}>
                               All partner bookings from the platform
                             </option>
+                            
                             <option value="route" selected={application.booking_scope == "route"}>
                               Specific from → to location
                             </option>
                           </select>
-
+                          
                           <div class="grid gap-2 sm:grid-cols-2">
                             <input
                               type="text"
                               name="booking_from"
                               value={application.booking_from}
                               placeholder="From (e.g. Nairobi)"
-                              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-700 outline-none transition focus:border-[#FF4C00]"
+                              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-700 outline-none transition focus:border-slate-300"
                             />
                             <input
                               type="text"
                               name="booking_to"
                               value={application.booking_to}
                               placeholder="To (e.g. Mombasa)"
-                              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-700 outline-none transition focus:border-[#FF4C00]"
+                              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-700 outline-none transition focus:border-slate-300"
                             />
                           </div>
-
+                          
                           <button
                             type="submit"
                             phx-disable-with="Saving..."
@@ -287,42 +286,42 @@
                             Save booking visibility
                           </button>
                         </form>
-
+                        
                         <p class="mt-2 text-[10px] font-bold leading-relaxed text-slate-400">
                           All: the agent sees every partner booking on the platform. Specific: only bookings whose From and To match the two locations above.
                         </p>
                       </div>
-
+                      
                       <%= if application.admin_notes do %>
                         <div class="rounded-2xl bg-amber-50 px-4 py-3">
                           <p class="text-[9px] font-black uppercase tracking-widest text-amber-500">
                             Admin note
                           </p>
-
+                          
                           <p class="mt-1 text-xs font-bold leading-relaxed text-amber-800">
                             {application.admin_notes}
                           </p>
                         </div>
                       <% end %>
-
+                      
                       <%= if application.routes do %>
                         <div class="rounded-2xl bg-slate-50/80 px-4 py-3">
                           <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">
                             Routes
                           </p>
-
+                          
                           <p class="mt-1 text-xs font-bold leading-relaxed text-slate-600">
                             {application.routes}
                           </p>
                         </div>
                       <% end %>
-
+                      
                       <%= if application.notes do %>
                         <div class="rounded-2xl bg-slate-50/80 px-4 py-3">
                           <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">
                             Agent note
                           </p>
-
+                          
                           <p class="mt-1 text-xs font-bold leading-relaxed text-slate-600">
                             {application.notes}
                           </p>
@@ -330,7 +329,7 @@
                       <% end %>
                     </div>
                   </div>
-
+                  
                   <div
                     id={"application-actions-#{application.id}"}
                     class="mt-5 flex flex-col gap-3 border-t border-slate-50 bg-slate-50/50 px-5 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between"
@@ -346,7 +345,7 @@
                       >
                         <span class="material-symbols-outlined !text-base">check</span> Approve
                       </button>
-
+                      
                       <button
                         type="button"
                         phx-click="update_status"
@@ -358,7 +357,7 @@
                         <span class="material-symbols-outlined !text-base">schedule</span> Pending
                       </button>
                     </div>
-
+                    
                     <form
                       id={"reject-agent-#{application.id}"}
                       phx-submit="reject_application"
@@ -370,7 +369,7 @@
                       >
                         Rejection reason (sent to agent)
                       </label>
-
+                      
                       <div class="flex flex-col gap-2 sm:flex-row">
                         <input type="hidden" name="application_id" value={application.id} /> <textarea
                           id={"reject-reason-#{application.id}"}
@@ -378,7 +377,7 @@
                           rows="1"
                           required
                           placeholder="Why is this application rejected?"
-                          class="min-h-10 w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[11px] font-bold text-slate-700 outline-none transition placeholder:text-slate-300 focus:border-[#FF4C00] focus:ring-2 focus:ring-orange-100"
+                          class="min-h-10 w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[11px] font-bold text-slate-700 outline-none transition placeholder:text-slate-300 focus:border-slate-300 focus:ring-2 focus:ring-orange-100"
                         >{application.admin_notes}</textarea>
                         <button
                           type="submit"
@@ -394,24 +393,24 @@
               <% end %>
             </article>
           <% end %>
-
+          
           <%= if Enum.empty?(@applications) do %>
             <div class="rounded-[2rem] border border-slate-100 bg-white px-6 py-16 text-center">
               <span class="material-symbols-outlined !text-5xl text-slate-200">group</span>
               <p class="mt-4 text-sm font-black text-slate-500">No agent applications yet</p>
-
+              
               <p class="mt-1 text-xs font-bold text-slate-400">
                 Applications from the Agent PWA will appear here.
               </p>
             </div>
           <% end %>
         </div>
-
+        
         <div class="mt-6 flex items-center justify-between">
           <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">
             Page {@page} of {@total_pages}
           </p>
-
+          
           <div class="flex gap-2">
             <button
               type="button"
@@ -422,7 +421,7 @@
             >
               Previous
             </button>
-
+            
             <button
               type="button"
               phx-click="change_page"
