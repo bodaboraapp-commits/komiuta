@@ -1,0 +1,330 @@
+<Layouts.app flash={@flash}>
+  <div class="flex min-h-screen bg-[#f8fafc]">
+    <.sidebar
+      active_tab="refunds"
+      bus_expanded={@bus_expanded}
+      chyllz_expanded={@chyllz_expanded}
+      settings_expanded={@settings_expanded}
+      collapsed={@sidebar_collapsed}
+    />
+
+    <div class={[
+      "flex-1 transition-all duration-300",
+      if(@sidebar_collapsed, do: "lg:pl-20", else: "lg:pl-72")
+    ]}>
+      <header class="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-slate-100 bg-white px-8">
+        <div>
+          <h2 class="text-xl font-black uppercase tracking-widest text-slate-900">
+            Refund requests
+          </h2>
+          <p class="mt-1 text-[10px] font-black uppercase tracking-widest text-slate-400">
+            Review, approve and settle customer refunds
+          </p>
+        </div>
+        <a
+          href={~p"/admin/refunds"}
+          class="rounded-xl border border-slate-200 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-[#FF4C00]"
+        >
+          Refund history
+        </a>
+      </header>
+
+      <main class="p-6 md:p-10">
+        <div class="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div class="rounded-[2rem] border border-slate-100 bg-white p-6 shadow-sm">
+            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+              Awaiting decision
+            </p>
+            <p
+              id="refund-pending-count"
+              class="mt-2 text-3xl font-black tabular-nums text-[#FF4C00]"
+            >
+              {@stats.pending}
+            </p>
+          </div>
+          <div class="rounded-[2rem] border border-slate-100 bg-white p-6 shadow-sm">
+            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+              Refunded
+            </p>
+            <p class="mt-2 text-3xl font-black tabular-nums text-slate-900">{@stats.refunded}</p>
+            <p class="mt-1 text-xs font-bold text-slate-400">KES {@stats.refunded_amount}</p>
+          </div>
+          <div class="rounded-[2rem] border border-slate-100 bg-white p-6 shadow-sm">
+            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+              Retained customers
+            </p>
+            <p class="mt-2 text-3xl font-black tabular-nums text-emerald-600">
+              {@stats.retained}
+            </p>
+          </div>
+          <div class="rounded-[2rem] border border-slate-100 bg-white p-6 shadow-sm">
+            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+              Retention rate
+            </p>
+            <p
+              id="refund-retention-rate"
+              class="mt-2 text-3xl font-black tabular-nums text-slate-900"
+            >
+              {@stats.retention_rate}%
+            </p>
+          </div>
+        </div>
+
+        <section class="mb-8">
+          <div class="mb-4 flex items-end justify-between">
+            <div>
+              <h3 class="text-lg font-black uppercase tracking-tight text-slate-900">
+                Needs attention
+              </h3>
+              <p class="text-xs font-bold text-slate-400">
+                Requests move through review, approval and payment with an audit trail.
+              </p>
+            </div>
+          </div>
+
+          <div id="refund-requests" class="space-y-3">
+            <div
+              :for={refund <- @requests}
+              class="rounded-[2rem] border border-slate-100 bg-white p-5 shadow-sm"
+            >
+              <div class="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <p class="text-sm font-black text-slate-900">{refund.ticket_id}</p>
+                    <span class="rounded-full bg-orange-50 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-[#FF4C00]">
+                      {Xpressbus.Refunds.status_label(refund.status)}
+                    </span>
+                    <span
+                      :if={refund.resolution == "travel_credit"}
+                      class="rounded-full bg-emerald-50 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-emerald-600"
+                    >Retained</span>
+                  </div>
+                  <p class="mt-1 text-xs font-bold text-slate-500">
+                    {refund.customer_email || "No email"} · KES {refund.amount} · {Calendar.strftime(
+                      refund.inserted_at,
+                      "%d %b %Y, %H:%M"
+                    )}
+                  </p>
+                  <p class="mt-2 max-w-2xl text-xs font-bold leading-relaxed text-slate-600">
+                    {refund.reason}
+                  </p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    :if={refund.status in ["requested", "under_review"]}
+                    id={"approve-refund-#{refund.id}"}
+                    phx-click="review"
+                    phx-value-id={refund.id}
+                    phx-value-mode="approve"
+                    class="rounded-xl bg-slate-900 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white hover:bg-slate-800"
+                  >Approve</button>
+                  <button
+                    :if={refund.status in ["requested", "under_review"]}
+                    id={"reject-refund-#{refund.id}"}
+                    phx-click="review"
+                    phx-value-id={refund.id}
+                    phx-value-mode="reject"
+                    class="rounded-xl border border-slate-200 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:border-red-200 hover:text-red-600"
+                  >Decline</button>
+                  <button
+                    :if={refund.status in ["approved", "processing"]}
+                    id={"settle-refund-#{refund.id}"}
+                    phx-click="review"
+                    phx-value-id={refund.id}
+                    phx-value-mode="refund"
+                    class="rounded-xl bg-[#FF4C00] px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white hover:bg-[#E64400]"
+                  >Mark paid</button>
+                </div>
+              </div>
+              <div class="mt-4 flex flex-wrap gap-3 border-t border-slate-50 pt-3 text-[10px] font-bold text-slate-400">
+                <span>Requested: KES {refund.amount}</span>
+                <span :if={refund.amount_approved}>Approved: KES {refund.amount_approved}</span>
+                <span :if={refund.credit_code}>Credit: {refund.credit_code}</span>
+              </div>
+            </div>
+
+            <div
+              :if={Enum.empty?(@requests)}
+              class="rounded-[2rem] border border-dashed border-slate-200 bg-white p-12 text-center"
+            >
+              <span class="material-symbols-outlined !text-4xl text-slate-200">check_circle</span>
+              <p class="mt-3 text-sm font-black text-slate-500">
+                No refund requests need attention
+              </p>
+              <p class="mt-1 text-xs font-bold text-slate-400">
+                New customer requests will appear here.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="overflow-hidden rounded-[2rem] border border-slate-100 bg-white shadow-sm">
+          <div class="border-b border-slate-100 p-6">
+            <h3 class="text-sm font-black uppercase tracking-widest text-slate-900">
+              Recent decisions
+            </h3>
+          </div>
+          <table id="refund-requests-history" class="w-full text-left">
+            <thead class="border-b border-slate-100 bg-slate-50/60">
+              <tr>
+                <th class="px-5 py-3 text-[9px] font-black uppercase tracking-widest text-slate-400">
+                  Ticket
+                </th>
+                <th class="px-5 py-3 text-[9px] font-black uppercase tracking-widest text-slate-400">
+                  Customer
+                </th>
+                <th class="px-5 py-3 text-[9px] font-black uppercase tracking-widest text-slate-400">
+                  Amount
+                </th>
+                <th class="px-5 py-3 text-[9px] font-black uppercase tracking-widest text-slate-400">
+                  Status
+                </th>
+                <th class="px-5 py-3 text-[9px] font-black uppercase tracking-widest text-slate-400">
+                  Updated
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+              <tr :for={refund <- @history} class="hover:bg-slate-50/60">
+                <td class="px-5 py-3 text-xs font-black text-slate-800">{refund.ticket_id}</td>
+                <td class="px-5 py-3 text-xs font-bold text-slate-500">
+                  {refund.customer_email || "—"}
+                </td>
+                <td class="px-5 py-3 text-xs font-black text-[#FF4C00]">KES {refund.amount}</td>
+                <td class="px-5 py-3 text-xs font-bold text-slate-600">
+                  {Xpressbus.Refunds.status_label(refund.status)}
+                </td>
+                <td class="px-5 py-3 text-xs font-bold text-slate-400">
+                  {Calendar.strftime(refund.updated_at, "%d %b %Y, %H:%M")}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div
+    :if={@selected}
+    class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm"
+  >
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="refund-review-title"
+      class="w-full max-w-lg rounded-[2rem] bg-white p-7 shadow-2xl"
+    >
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-[10px] font-black uppercase tracking-widest text-[#FF4C00]">
+            Refund review
+          </p>
+          <h2 id="refund-review-title" class="mt-1 text-xl font-black text-slate-900">
+            {@selected.ticket_id}
+          </h2>
+          <p class="mt-1 text-xs font-bold text-slate-400">
+            Requested KES {@selected.amount} · {Xpressbus.Refunds.status_label(@selected.status)}
+          </p>
+        </div>
+        <button
+          phx-click="close_review"
+          class="rounded-full border border-slate-200 p-2 text-slate-400 hover:text-slate-700"
+          aria-label="Close refund review"
+        >
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <%= if @review_mode == "approve" do %>
+        <.form
+          for={to_form(%{"amount" => @selected.amount, "note" => ""})}
+          id="approve-refund-form"
+          phx-submit="approve"
+          class="mt-6 space-y-4"
+        >
+          <input type="hidden" name="refund_id" value={@selected.id} />
+          <label class="block text-[10px] font-black uppercase tracking-widest text-slate-500">
+            Approved amount (KES)
+            <input
+              name="refund[amount]"
+              type="number"
+              value={@selected.amount}
+              min="1"
+              required
+              class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-800"
+            />
+          </label>
+          <label class="block text-[10px] font-black uppercase tracking-widest text-slate-500">
+            Internal note (optional) <textarea
+              name="refund[note]"
+              rows="3"
+              class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-800"
+            ></textarea>
+          </label>
+          <button
+            type="submit"
+            class="w-full rounded-2xl bg-slate-900 px-5 py-3 text-xs font-black uppercase tracking-widest text-white"
+          >Approve refund</button>
+        </.form>
+      <% end %>
+
+      <%= if @review_mode == "reject" do %>
+        <.form
+          for={to_form(%{"note" => ""})}
+          id="reject-refund-form"
+          phx-submit="reject"
+          class="mt-6 space-y-4"
+        >
+          <input type="hidden" name="refund_id" value={@selected.id} />
+          <label class="block text-[10px] font-black uppercase tracking-widest text-slate-500">
+            Reason for declining <textarea
+              name="refund[note]"
+              rows="4"
+              required
+              class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-800"
+            ></textarea>
+          </label>
+          <button
+            type="submit"
+            class="w-full rounded-2xl bg-red-600 px-5 py-3 text-xs font-black uppercase tracking-widest text-white"
+          >Decline request</button>
+        </.form>
+      <% end %>
+
+      <%= if @review_mode == "refund" do %>
+        <.form
+          for={to_form(%{"reference" => "", "note" => ""})}
+          id="settle-refund-form"
+          phx-submit="mark_refunded"
+          class="mt-6 space-y-4"
+        >
+          <input type="hidden" name="refund_id" value={@selected.id} />
+          <label class="block text-[10px] font-black uppercase tracking-widest text-slate-500">
+            Provider refund reference
+            <input
+              name="refund[reference]"
+              type="text"
+              required
+              class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-800"
+            />
+          </label>
+          <label class="block text-[10px] font-black uppercase tracking-widest text-slate-500">
+            Internal note (optional) <textarea
+              name="refund[note]"
+              rows="3"
+              class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-800"
+            ></textarea>
+          </label>
+          <p class="rounded-xl bg-amber-50 p-3 text-[11px] font-bold text-amber-800">
+            This marks the refund paid, cancels the ticket and notifies the customer.
+          </p>
+          <button
+            type="submit"
+            class="w-full rounded-2xl bg-[#FF4C00] px-5 py-3 text-xs font-black uppercase tracking-widest text-white"
+          >Mark refund paid</button>
+        </.form>
+      <% end %>
+    </div>
+  </div>
+</Layouts.app>

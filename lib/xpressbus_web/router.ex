@@ -109,6 +109,7 @@ defmodule XpressbusWeb.Router do
     live "/passenger-details/:id", BookingLive, :passenger_details
     live "/review-and-pay/:id", BookingLive, :review_and_pay
     live "/tickets", TicketLive, :index
+    live "/refunds/:ticket_id", RefundLive, :show
     # Printable PDF boarding pass. Authorised either by the signed token in the
     # query string (guest/post-payment flow) or by the signed-in passenger.
     get "/tickets/:ticket_id/download", UserController, :ticket_download
@@ -228,6 +229,7 @@ defmodule XpressbusWeb.Router do
     live "/users", AdminUsersLive, :index
     live "/tickets", AdminTicketsLive, :index
     live "/refunds", AdminRefundsLive, :index
+    live "/refund-requests", AdminRefundRequestsLive, :index
     live "/agent-applications", AdminAgentApplicationsLive, :index
   end
 

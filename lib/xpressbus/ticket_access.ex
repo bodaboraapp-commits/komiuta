@@ -45,6 +45,14 @@ defmodule Xpressbus.TicketAccess do
     "/tickets/#{URI.encode_www_form(ticket.ticket_id)}/download?token=#{token(ticket)}"
   end
 
+  @doc """
+  Signed URL for the customer refund request and tracking page.
+  """
+  @spec refund_path(Ticket.t()) :: String.t()
+  def refund_path(%Ticket{} = ticket) do
+    "/refunds/#{URI.encode_www_form(ticket.ticket_id)}?token=#{token(ticket)}"
+  end
+
   @spec url(Ticket.t()) :: String.t()
   def url(%Ticket{} = ticket), do: XpressbusWeb.Endpoint.url() <> path(ticket)
 

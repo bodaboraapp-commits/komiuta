@@ -7,7 +7,7 @@ defmodule Xpressbus.Tickets do
   alias Xpressbus.{Accounts, Payments, SMS, TicketCancellationEmail}
   alias Xpressbus.Repo
   alias Xpressbus.Payments.Payment
-  alias Xpressbus.Tickets.{Ticket, TicketRefund}
+  alias Xpressbus.Tickets.{Ticket, TicketRefund, TicketRefundEvent}
 
   @doc """
   Cancels a ticket, records a refund and notifies the traveller by SMS and email.
@@ -31,6 +31,9 @@ defmodule Xpressbus.Tickets do
 
       refund_amount < 0 ->
         {:error, :invalid_amount}
+
+      refund_amount > (parse_amount(ticket.price) || 0) ->
+        {:error, :amount_exceeds_paid}
 
       true ->
         now = DateTime.utc_now() |> DateTime.truncate(:second)
@@ -57,6 +60,16 @@ defmodule Xpressbus.Tickets do
                      reference: reference,
                      status: "refunded",
                      admin_id: admin_id
+                   })
+                   |> Repo.insert(),
+                 {:ok, _event} <-
+                   %TicketRefundEvent{}
+                   |> TicketRefundEvent.changeset(%{
+                     refund_id: refund.id,
+                     status: "refunded",
+                     actor_type: "admin",
+                     actor_id: to_string(admin_id || ""),
+                     note: reason
                    })
                    |> Repo.insert() do
               {ticket, refund}

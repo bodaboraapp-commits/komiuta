@@ -834,6 +834,15 @@
                   <span class="material-symbols-outlined">download</span> Download PDF
                 </a>
                 
+                <a
+                  :if={@selected_ticket.status == "confirmed"}
+                  id="refund-ticket-link"
+                  href={Xpressbus.TicketAccess.refund_path(@selected_ticket)}
+                  class="px-6 py-4 rounded-2xl font-black text-sm border-2 border-slate-100 hover:border-[#FF4C00] hover:text-[#FF4C00] transition flex items-center justify-center"
+                >
+                  Refund / credit
+                </a>
+                
                 <button
                   phx-click="close_ticket"
                   class="px-6 py-4 rounded-2xl font-black text-sm border-2 border-slate-100 hover:border-[#FF4C00] hover:text-[#FF4C00] transition"
