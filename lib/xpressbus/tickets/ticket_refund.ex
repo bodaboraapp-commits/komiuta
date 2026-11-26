@@ -9,6 +9,9 @@ defmodule Xpressbus.Tickets.TicketRefund do
   @open_statuses ~w(requested under_review approved processing refund_pending)
 
   schema "ticket_refunds" do
+    field(:payment_id, :binary_id)
+    field(:payment_confirmation_code, :string)
+    field(:payment_reversal_code, :string)
     field(:ticket_id, :string)
     field(:amount, :integer)
     field(:amount_approved, :integer)
@@ -46,6 +49,9 @@ defmodule Xpressbus.Tickets.TicketRefund do
     refund
     |> cast(attrs, [
       :ticket_id,
+      :payment_id,
+      :payment_confirmation_code,
+      :payment_reversal_code,
       :amount,
       :amount_approved,
       :reason,

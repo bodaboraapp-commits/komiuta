@@ -3,7 +3,7 @@ defmodule XpressbusWeb.RefundLive do
 
   import XpressbusWeb.BrandComponents
 
-  alias Xpressbus.{Accounts, Refunds, TicketAccess, Tickets}
+  alias Xpressbus.{Accounts, Payments, Refunds, TicketAccess, Tickets}
 
   @impl true
   def mount(_params, session, socket) do
@@ -16,6 +16,7 @@ defmodule XpressbusWeb.RefundLive do
      |> assign(:current_user, session["user_id"])
      |> assign(:ticket, nil)
      |> assign(:refund, nil)
+     |> assign(:payment, nil)
      |> assign(:error, nil)
      |> assign(:form, to_form(%{"amount" => "", "reason" => "", "email" => ""}, as: :refund))}
   end
@@ -33,12 +34,14 @@ defmodule XpressbusWeb.RefundLive do
 
       true ->
         refund = Refunds.latest_for_ticket(ticket.ticket_id)
+        payment = Payments.completed_payment_for_ticket(ticket.ticket_id)
         email = (Accounts.get_user_by_phone(ticket.passenger_phone) || %{email: ""}).email
 
         {:noreply,
          socket
          |> assign(:ticket, ticket)
          |> assign(:refund, refund)
+         |> assign(:payment, payment)
          |> assign(
            :form,
            to_form(
@@ -101,6 +104,16 @@ defmodule XpressbusWeb.RefundLive do
     do: "There is already an open refund request for this ticket."
 
   defp error_message(:already_cancelled), do: "This ticket has already been cancelled."
+
+  defp error_message(:payment_not_completed),
+    do: "A refund can only be requested after a completed payment."
+
+  defp error_message(:payment_confirmation_missing),
+    do: "The payment confirmation code is missing. Please contact support."
+
+  defp error_message(:reversal_code_required),
+    do: "The payment company reversal code is required."
+
   defp error_message(:invalid_amount), do: "Enter a refund amount greater than zero."
 
   defp error_message(:amount_exceeds_paid),

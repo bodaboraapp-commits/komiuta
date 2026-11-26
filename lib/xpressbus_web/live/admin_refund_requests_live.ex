@@ -126,7 +126,13 @@ defmodule XpressbusWeb.AdminRefundRequestsLive do
   defp error_message(:reason_required), do: "Add a short reason before declining."
 
   defp error_message(:reference_required),
-    do: "Enter the payment provider reference before marking it paid."
+    do: "Enter the payment company's reversal code before marking it paid."
+
+  defp error_message(:reversal_code_required),
+    do: "Enter the payment company's reversal code before marking it paid."
+
+  defp error_message(:payment_not_completed),
+    do: "This ticket has no completed payment, so a refund cannot be settled."
 
   defp error_message(_reason), do: "That action could not be completed."
 end

@@ -140,6 +140,12 @@
                 <span>Requested: KES {refund.amount}</span>
                 <span :if={refund.amount_approved}>Approved: KES {refund.amount_approved}</span>
                 <span :if={refund.credit_code}>Credit: {refund.credit_code}</span>
+                <span :if={refund.payment_confirmation_code}>
+                  Confirmation: <span class="font-mono text-slate-600">{refund.payment_confirmation_code}</span>
+                </span>
+                <span :if={refund.payment_reversal_code}>
+                  Reversal: <span class="font-mono text-slate-600">{refund.payment_reversal_code}</span>
+                </span>
               </div>
             </div>
 
@@ -294,16 +300,16 @@
 
       <%= if @review_mode == "refund" do %>
         <.form
-          for={to_form(%{"reference" => "", "note" => ""})}
+          for={to_form(%{"reversal_code" => "", "note" => ""})}
           id="settle-refund-form"
           phx-submit="mark_refunded"
           class="mt-6 space-y-4"
         >
           <input type="hidden" name="refund_id" value={@selected.id} />
           <label class="block text-[10px] font-black uppercase tracking-widest text-slate-500">
-            Provider refund reference
+            Provider reversal code
             <input
-              name="refund[reference]"
+              name="refund[reversal_code]"
               type="text"
               required
               class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-800"

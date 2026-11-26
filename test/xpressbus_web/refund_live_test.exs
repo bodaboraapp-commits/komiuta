@@ -4,6 +4,7 @@ defmodule XpressbusWeb.RefundLiveTest do
   import Phoenix.LiveViewTest
 
   alias Xpressbus.{Repo, TicketAccess}
+  alias Xpressbus.Payments.Payment
   alias Xpressbus.Tickets.Ticket
 
   defp ticket_fixture do
@@ -25,8 +26,30 @@ defmodule XpressbusWeb.RefundLiveTest do
     %Ticket{} |> Ticket.changeset(attrs) |> Repo.insert!()
   end
 
-  test "customer can open the signed refund page and submit a request", %{conn: conn} do
+  defp payment_fixture(ticket) do
+    %Payment{}
+    |> Payment.changeset(%{
+      provider: "mpesa",
+      amount: 2000,
+      reference: "PAY-LIVE-#{System.unique_integer([:positive])}",
+      phone_number: "0712000111",
+      ticket_id: ticket.ticket_id,
+      status: "success",
+      raw_response: %{
+        "MpesaReceiptNumber" => "LIVE-RECEIPT-#{System.unique_integer([:positive])}"
+      }
+    })
+    |> Repo.insert!()
+  end
+
+  defp paid_ticket_fixture do
     ticket = ticket_fixture()
+    payment_fixture(ticket)
+    ticket
+  end
+
+  test "customer can open the signed refund page and submit a request", %{conn: conn} do
+    ticket = paid_ticket_fixture()
     path = "/refunds/#{ticket.ticket_id}?token=#{TicketAccess.token(ticket)}"
 
     {:ok, view, html} = live(conn, path)
@@ -49,6 +72,16 @@ defmodule XpressbusWeb.RefundLiveTest do
     assert has_element?(view, "#refund-timeline")
   end
 
+  test "refund form is blocked without a completed payment", %{conn: conn} do
+    ticket = ticket_fixture()
+    path = "/refunds/#{ticket.ticket_id}?token=#{TicketAccess.token(ticket)}"
+
+    {:ok, view, _html} = live(conn, path)
+
+    assert has_element?(view, "#refund-payment-required")
+    refute has_element?(view, "#refund-request-form")
+  end
+
   test "a tampered refund token is rejected", %{conn: conn} do
     ticket = ticket_fixture()
 
@@ -64,7 +97,7 @@ defmodule XpressbusWeb.RefundLiveTest do
         hashed_password: Xpressbus.Admins.hash_password("secret-password")
       })
 
-    ticket = ticket_fixture()
+    ticket = paid_ticket_fixture()
 
     {:ok, refund} =
       Xpressbus.Refunds.request_refund(ticket, %{

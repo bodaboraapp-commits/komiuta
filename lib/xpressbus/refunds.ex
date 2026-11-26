@@ -24,8 +24,12 @@ defmodule Xpressbus.Refunds do
     amount = Tickets.parse_amount(attrs["amount"]) || amount_for(ticket)
     reason = String.trim(to_string(attrs["reason"] || ""))
     email = String.trim(to_string(attrs["email"] || customer_email(ticket) || ""))
+    payment = Payments.completed_payment_for_ticket(ticket.ticket_id)
+    confirmation_code = Payments.confirmation_code(payment)
 
     with :ok <- ensure_refundable(ticket),
+         :ok <- ensure_completed_payment(payment),
+         :ok <- ensure_confirmation_code(confirmation_code),
          :ok <- ensure_no_open_request(ticket.ticket_id),
          :ok <- validate_amount(amount, ticket),
          :ok <- validate_reason(reason) do
@@ -47,6 +51,8 @@ defmodule Xpressbus.Refunds do
                 %TicketRefund{}
                 |> TicketRefund.changeset(%{
                   ticket_id: ticket.ticket_id,
+                  payment_id: payment.id,
+                  payment_confirmation_code: confirmation_code,
                   amount: amount,
                   reason: reason,
                   customer_email: email,
@@ -339,35 +345,45 @@ defmodule Xpressbus.Refunds do
   @doc "Marks an approved refund as paid and cancels the ticket."
   def mark_refunded(refund, admin_id, attrs) do
     attrs = normalize(attrs)
-    reference = String.trim(to_string(attrs["reference"] || ""))
+
+    reversal_code =
+      String.trim(to_string(attrs["reversal_code"] || attrs["reference"] || ""))
 
     cond do
       refund.status not in ["approved", "processing"] ->
         {:error, :invalid_transition}
 
-      reference == "" ->
-        {:error, :reference_required}
+      reversal_code == "" ->
+        {:error, :reversal_code_required}
 
       true ->
         ticket = ticket_for(refund)
 
         result =
           Repo.transaction(fn ->
-            with {:ok, ticket} <- cancel_ticket(ticket, refund, reference),
+            with {:ok, ticket} <- cancel_ticket(ticket, refund, reversal_code),
                  {:ok, _payment} <-
-                   refund_payment(ticket, refund.amount_approved || refund.amount, reference),
+                   refund_payment(ticket, refund, reversal_code),
                  updated <-
                    refund
                    |> TicketRefund.changeset(%{
                      status: "refunded",
-                     reference: reference,
+                     reference: reversal_code,
+                     payment_reversal_code: reversal_code,
                      processed_at: now(),
                      reviewed_by: admin_id,
                      admin_note: trim_note(attrs["note"]),
                      amount: refund.amount_approved || refund.amount
                    })
                    |> Repo.update!() do
-              record_event(updated, "refunded", "admin", to_string(admin_id), reference)
+              record_event(
+                updated,
+                "refunded",
+                "admin",
+                to_string(admin_id),
+                "Reversal code: #{reversal_code}"
+              )
+
               updated
             else
               {:error, reason} -> Repo.rollback(reason)
@@ -400,6 +416,13 @@ defmodule Xpressbus.Refunds do
 
   defp ensure_refundable(%Ticket{status: "cancelled"}), do: {:error, :already_cancelled}
   defp ensure_refundable(%Ticket{}), do: :ok
+
+  defp ensure_completed_payment(nil), do: {:error, :payment_not_completed}
+  defp ensure_completed_payment(%Payment{status: "success"}), do: :ok
+  defp ensure_completed_payment(_payment), do: {:error, :payment_not_completed}
+
+  defp ensure_confirmation_code(code) when is_binary(code) and code != "", do: :ok
+  defp ensure_confirmation_code(_code), do: {:error, :payment_confirmation_missing}
 
   defp ensure_no_open_request(ticket_id) do
     exists? =
@@ -452,18 +475,19 @@ defmodule Xpressbus.Refunds do
     |> Repo.update()
   end
 
-  defp refund_payment(ticket, amount, reference) do
-    case Payments.get_payment_by_reference(ticket.ticket_id) do
+  defp refund_payment(ticket, refund, reversal_code) do
+    case Payments.completed_payment_for_ticket(ticket.ticket_id) do
       nil ->
-        {:ok, nil}
+        {:error, :payment_not_completed}
 
       %Payment{} = payment ->
         raw = payment.raw_response || %{}
 
         raw =
           Map.put(raw, "refund", %{
-            "amount" => amount,
-            "reference" => reference,
+            "amount" => refund.amount_approved || refund.amount,
+            "confirmation_code" => refund.payment_confirmation_code,
+            "reversal_code" => reversal_code,
             "refunded_at" => DateTime.utc_now() |> DateTime.to_iso8601()
           })
 

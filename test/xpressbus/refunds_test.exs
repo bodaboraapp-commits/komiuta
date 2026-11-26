@@ -4,6 +4,7 @@ defmodule Xpressbus.RefundsTest do
   import Swoosh.TestAssertions
 
   alias Xpressbus.Refunds
+  alias Xpressbus.Payments.Payment
   alias Xpressbus.Repo
   alias Xpressbus.Tickets.Ticket
 
@@ -30,6 +31,30 @@ defmodule Xpressbus.RefundsTest do
     |> Repo.insert!()
   end
 
+  defp payment_fixture(ticket, attrs \\ %{}) do
+    attrs =
+      Map.merge(
+        %{
+          provider: "mpesa",
+          amount: 1800,
+          reference: "PAY-#{System.unique_integer([:positive])}",
+          phone_number: "0712345678",
+          ticket_id: ticket.ticket_id,
+          status: "success",
+          raw_response: %{"MpesaReceiptNumber" => "RECEIPT-#{System.unique_integer([:positive])}"}
+        },
+        attrs
+      )
+
+    %Payment{} |> Payment.changeset(attrs) |> Repo.insert!()
+  end
+
+  defp paid_ticket_fixture(attrs \\ %{}) do
+    ticket = ticket_fixture(attrs)
+    payment_fixture(ticket)
+    ticket
+  end
+
   defp request(ticket, attrs \\ %{}) do
     Refunds.request_refund(
       ticket,
@@ -46,7 +71,7 @@ defmodule Xpressbus.RefundsTest do
 
   describe "customer request" do
     test "creates a tracked request and sends an acknowledgement" do
-      ticket = ticket_fixture()
+      ticket = paid_ticket_fixture()
 
       assert {:ok, refund} = request(ticket)
 
@@ -63,21 +88,35 @@ defmodule Xpressbus.RefundsTest do
       end)
     end
 
-    test "rejects duplicate open requests" do
+    test "requires a payment the provider confirmed as completed" do
       ticket = ticket_fixture()
+
+      assert {:error, :payment_not_completed} = request(ticket)
+    end
+
+    test "captures the payment company's confirmation code" do
+      ticket = paid_ticket_fixture()
+
+      assert {:ok, refund} = request(ticket)
+      assert refund.payment_id
+      assert refund.payment_confirmation_code =~ "RECEIPT-"
+    end
+
+    test "rejects duplicate open requests" do
+      ticket = paid_ticket_fixture()
       assert {:ok, _refund} = request(ticket)
       assert {:error, :already_requested} = request(ticket)
     end
 
     test "caps the request at the amount paid" do
-      ticket = ticket_fixture()
+      ticket = paid_ticket_fixture()
 
       assert {:error, :amount_exceeds_paid} =
                request(ticket, %{"amount" => "5000"})
     end
 
     test "requires a meaningful reason" do
-      ticket = ticket_fixture()
+      ticket = paid_ticket_fixture()
 
       assert {:error, :reason_required} =
                request(ticket, %{"reason" => "x"})
@@ -86,7 +125,7 @@ defmodule Xpressbus.RefundsTest do
 
   describe "retention" do
     test "customer can accept travel credit instead of a cash refund" do
-      ticket = ticket_fixture()
+      ticket = paid_ticket_fixture()
       {:ok, refund} = request(ticket)
 
       assert {:ok, retained} = Refunds.accept_credit(ticket, refund)
@@ -99,7 +138,7 @@ defmodule Xpressbus.RefundsTest do
     end
 
     test "customer can keep the booking and withdraw the request" do
-      ticket = ticket_fixture()
+      ticket = paid_ticket_fixture()
       {:ok, refund} = request(ticket)
 
       assert {:ok, withdrawn} = Refunds.keep_booking(ticket, refund)
@@ -111,7 +150,7 @@ defmodule Xpressbus.RefundsTest do
 
   describe "admin controls" do
     test "approval requires the amount to stay within the request" do
-      ticket = ticket_fixture()
+      ticket = paid_ticket_fixture()
       {:ok, refund} = request(ticket)
 
       assert {:error, :invalid_amount} = Refunds.approve(refund, 1, %{"amount" => "2000"})
@@ -127,7 +166,7 @@ defmodule Xpressbus.RefundsTest do
     end
 
     test "rejection requires a reason and records it" do
-      ticket = ticket_fixture()
+      ticket = paid_ticket_fixture()
       {:ok, refund} = request(ticket)
 
       assert {:error, :reason_required} = Refunds.reject(refund, 1, %{})
@@ -138,39 +177,40 @@ defmodule Xpressbus.RefundsTest do
     end
 
     test "marking refunded requires a reference and cancels the ticket" do
-      ticket = ticket_fixture()
+      ticket = paid_ticket_fixture()
       {:ok, refund} = request(ticket)
       {:ok, refund} = Refunds.approve(refund, 1, %{"amount" => "1800"})
 
-      assert {:error, :reference_required} = Refunds.mark_refunded(refund, 1, %{})
+      assert {:error, :reversal_code_required} = Refunds.mark_refunded(refund, 1, %{})
 
       assert {:ok, refunded} =
                Refunds.mark_refunded(refund, 1, %{
-                 "reference" => "REF-123",
+                 "reversal_code" => "REV-123",
                  "note" => "Paid manually"
                })
 
       assert refunded.status == "refunded"
-      assert refunded.reference == "REF-123"
+      assert refunded.reference == "REV-123"
+      assert refunded.payment_reversal_code == "REV-123"
       assert refunded.processed_at
       cancelled = Repo.get_by!(Ticket, ticket_id: ticket.ticket_id)
       assert cancelled.status == "cancelled"
-      assert cancelled.refund_reference == "REF-123"
+      assert cancelled.refund_reference == "REV-123"
       assert cancelled.refund_amount == 1800
       assert Enum.any?(Refunds.get_refund(refunded.id).events, &(&1.status == "refunded"))
     end
 
     test "stats include pending, refunded and retained requests" do
-      first = ticket_fixture()
-      second = ticket_fixture()
-      third = ticket_fixture()
+      first = paid_ticket_fixture()
+      second = paid_ticket_fixture()
+      third = paid_ticket_fixture()
       {:ok, refund} = request(first)
       {:ok, _} = request(second)
       {:ok, third_refund} = request(third)
 
       Refunds.accept_credit(third, third_refund)
       {:ok, approved} = Refunds.approve(refund, 1, %{})
-      {:ok, _} = Refunds.mark_refunded(approved, 1, %{"reference" => "REF-STATS"})
+      {:ok, _} = Refunds.mark_refunded(approved, 1, %{"reversal_code" => "REV-STATS"})
 
       stats = Refunds.stats()
       assert stats.pending == 1
@@ -181,7 +221,7 @@ defmodule Xpressbus.RefundsTest do
   end
 
   test "only open requests can be decided" do
-    ticket = ticket_fixture()
+    ticket = paid_ticket_fixture()
     {:ok, refund} = request(ticket)
     {:ok, refund} = Refunds.reject(refund, 1, %{"note" => "Declined"})
 

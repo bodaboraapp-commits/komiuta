@@ -154,6 +154,59 @@ defmodule Xpressbus.Payments do
   def get_payment_by_reference(_), do: nil
 
   @doc """
+  Returns the completed payment for a ticket, if one exists.
+
+  A refund request is only valid against a payment the provider confirmed as
+  successful; pending, failed and cancelled attempts never qualify.
+  """
+  def completed_payment_for_ticket(ticket_id) when is_binary(ticket_id) do
+    from(p in Payment,
+      where: p.ticket_id == ^ticket_id and p.status == "success",
+      order_by: [desc: p.inserted_at],
+      limit: 1
+    )
+    |> Repo.one()
+  end
+
+  def completed_payment_for_ticket(_ticket_id), do: nil
+
+  @doc """
+  Returns the payment company's confirmation code for a completed payment.
+
+  Providers expose this under different names (M-PESA receipt number, Paystack
+  reference, Flutterwave flw_ref/tx_ref). Falling back to the stored payment
+  reference keeps older records usable.
+  """
+  def confirmation_code(%Payment{} = payment) do
+    raw = payment.raw_response || %{}
+
+    Enum.find_value(
+      [
+        "MpesaReceiptNumber",
+        "mpesa_receipt_number",
+        "receipt_number",
+        "transaction_reference",
+        "flw_ref",
+        "tx_ref",
+        "confirmation_code",
+        "reference"
+      ],
+      payment.reference,
+      fn key -> present_value(Map.get(raw, key)) end
+    )
+    |> to_string()
+  end
+
+  def confirmation_code(_payment), do: nil
+
+  defp present_value(value) when is_binary(value) do
+    value = String.trim(value)
+    if value == "", do: nil, else: value
+  end
+
+  defp present_value(_value), do: nil
+
+  @doc """
   Completes the payment lifecycle: updates status and, if successful, creates the ticket.
   """
   def complete_payment_lifecycle(reference, status, raw_response \\ %{}) do
